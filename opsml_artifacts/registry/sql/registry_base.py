@@ -1,29 +1,30 @@
 import uuid
-from typing import Any, Dict, Iterable, Optional, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 
 from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml_artifacts.helpers.request_helpers import api_routes
 from opsml_artifacts.helpers.settings import settings
+from opsml_artifacts.registry.cards.card_saver import save_card_artifacts
 from opsml_artifacts.registry.cards.cards import (
+    ArtifactCard,
     DataCard,
     ExperimentCard,
     ModelCard,
     PipelineCard,
 )
-from opsml_artifacts.registry.cards.types import ArtifactCardProto
-from opsml_artifacts.registry.sql.models import SaveInfo
-from opsml_artifacts.registry.sql.query_helpers import QueryCreator
-from opsml_artifacts.registry.sql.sql_schema import TableSchema
+from opsml_artifacts.registry.sql.query_helpers import QueryCreator, log_card_change
+from opsml_artifacts.registry.sql.records import LoadedRecordType, load_record
+from opsml_artifacts.registry.sql.sql_schema import RegistryTableNames, TableSchema
+from opsml_artifacts.registry.storage.types import ArtifactStorageSpecs
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
-CardTypes = Union[ExperimentCard, ModelCard, DataCard, PipelineCard]
-
 
 sem_var_map = {
     "major": 0,
@@ -32,6 +33,33 @@ sem_var_map = {
 }
 
 query_creator = QueryCreator()
+
+table_name_card_map = {
+    RegistryTableNames.DATA.value: DataCard,
+    RegistryTableNames.MODEL.value: ModelCard,
+    RegistryTableNames.EXPERIMENT.value: ExperimentCard,
+    RegistryTableNames.PIPELINE.value: PipelineCard,
+}
+
+
+def load_card_from_record(
+    table_name: str,
+    record: LoadedRecordType,
+) -> ArtifactCard:
+
+    """Loads an artifact card given a tablename and the loaded record
+    from backend database
+
+    Args:
+        table_name (str): Name of table
+        record (loaded record): Loaded record from backend database
+
+    Returns:
+        Artifact Card
+    """
+
+    card = table_name_card_map[table_name]
+    return card(**record.dict())
 
 
 class SQLRegistryBase:
@@ -78,10 +106,10 @@ class SQLRegistryBase:
 
         return ".".join(version_splits)
 
-    def _set_version(self, name: str, team: str, version_type: str) -> str:
+    def set_version(self, name: str, team: str, version_type: str) -> str:
         raise NotImplementedError
 
-    def _is_correct_card_type(self, card: ArtifactCardProto):
+    def _is_correct_card_type(self, card: ArtifactCard):
         """Checks wether the current card is associated with the correct registry type"""
         return self.supported_card.lower() == card.__class__.__name__.lower()
 
@@ -89,24 +117,82 @@ class SQLRegistryBase:
         """Sets a unique id to be applied to a card"""
         return uuid.uuid4().hex
 
-    def _query_record(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[str] = None,
-        uid: Optional[str] = None,
-    ):
+    def add_and_commit(self, record: Dict[str, Any]):
         raise NotImplementedError
 
-    def _add_and_commit(self, record: Dict[str, Any]):
+    def update_record(self, record: Dict[str, Any]):
         raise NotImplementedError
 
-    def _update_record(self, record: Dict[str, Any]):
-        raise NotImplementedError
+    def _validate(self, card: ArtifactCard):
+        # check compatibility
+        if not self._is_correct_card_type(card=card):
+            raise ValueError(
+                f"""Card of type {card.__class__.__name__} is not supported by registery
+                {self._table.__tablename__}"""
+            )
+
+        if self.check_uid(uid=str(card.uid), table_to_check=self.table_name):
+            raise ValueError(
+                """This Card has already been registered.
+            If the card has been modified try upating the Card in the registry.
+            If registering a new Card, create a new Card of the correct type.
+            """
+            )
+
+    def _set_artifact_storage_spec(self, card: ArtifactCard, save_path: Optional[str] = None) -> None:
+        """Creates artifact storage info to associate with artifacts"""
+
+        if save_path is None:
+            save_path = f"{self.table_name}/{card.team}/{card.name}/v-{card.version}"
+
+        artifact_storage_spec = ArtifactStorageSpecs(
+            save_path=save_path,
+            name=card.name,
+            team=card.team,
+            version=card.version,
+        )
+
+        card.storage_client = self.storage_client
+        self._update_storage_client_metadata(storage_specdata=artifact_storage_spec)
+
+    def _update_storage_client_metadata(self, storage_specdata: ArtifactStorageSpecs):
+        """Updates storage metadata"""
+        self.storage_client.storage_spec = storage_specdata
+
+    def _set_card_uid_version(self, card: ArtifactCard, version_type: str):
+        """Sets a given card's version and uid
+
+        Args:
+            card (ArtifactCard): Card to set
+            version_typer (str): Type of version increment
+        """
+
+        # need to find way to compare previous cards and automatically
+        # determine if change is major or minor
+        version = self.set_version(
+            name=card.name,
+            team=card.team,
+            version_type=version_type,
+        )
+        card.version = version
+
+        if card.uid is None:
+            card.uid = self._get_uid()
+
+    def _create_registry_record(self, card: ArtifactCard) -> None:
+        """Creates a registry record from a given ArtifactCard.
+        Saves artifacts prior to creating record
+
+        Args:
+            card (ArtifactCard): Card to create a registry record from
+        """
+        card = save_card_artifacts(card=card, storage_client=self.storage_client)
+        record = card.create_registry_record()
+        self.add_and_commit(record=record.dict())
 
     def register_card(
         self,
-        card: ArtifactCardProto,
+        card: ArtifactCard,
         version_type: str = "minor",
         save_path: Optional[str] = None,
     ) -> None:
@@ -117,12 +203,16 @@ class SQLRegistryBase:
             Card (ArtifactCard): Card to register
             version_type (str): Version type for increment. Options are "major", "minor" and
             "patch". Defaults to "minor"
-            save_path (str): Blob path to save card artifacts too. This path SHOULD NOT include the base prefix
-            (e.g. "gs://my_bucket") - this prefix is already inferred using either
-            "OPSML_TRACKING_URL" or "OPSML_STORAGE_URL" env variables. In addition, save_path should
-            specify a directory.
+            save_path (str): Blob path to save card artifacts too.
+            This path SHOULD NOT include the base prefix (e.g. "gs://my_bucket")
+            - this prefix is already inferred using either "OPSML_TRACKING_URI" or "OPSML_STORAGE_URI"
+            env variables. In addition, save_path should specify a directory.
         """
-        raise NotImplementedError
+
+        self._validate(card=card)
+        self._set_card_uid_version(card=card, version_type=version_type)
+        self._set_artifact_storage_spec(card=card, save_path=save_path)
+        self._create_registry_record(card=card)
 
     def list_cards(
         self,
@@ -130,23 +220,40 @@ class SQLRegistryBase:
         name: Optional[str] = None,
         team: Optional[str] = None,
         version: Optional[str] = None,
-    ) -> pd.DataFrame:
+    ) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
-    def _check_uid(self, uid: str, table_to_check: str):
+    def check_uid(self, uid: str, table_to_check: str):
         raise NotImplementedError
 
-    def load_card(  # type: ignore
+    def load_card(
         self,
         name: Optional[str] = None,
         team: Optional[str] = None,
         version: Optional[str] = None,
         uid: Optional[str] = None,
-    ) -> CardTypes:
-        raise NotImplementedError
+    ) -> ArtifactCard:
+
+        record_data = self.list_cards(
+            name=name,
+            team=team,
+            version=version,
+            uid=uid,
+        )[0]
+
+        loaded_record = load_record(
+            table_name=self.table_name,
+            record_data=record_data,
+            storage_client=self.storage_client,
+        )
+
+        return load_card_from_record(
+            table_name=self.table_name,
+            record=loaded_record,
+        )
 
 
-class SQLRegistry(SQLRegistryBase):
+class ServerRegistry(SQLRegistryBase):
     def __init__(self, table_name: str):
         super().__init__(table_name)
 
@@ -166,7 +273,7 @@ class SQLRegistry(SQLRegistryBase):
     def _create_table_if_not_exists(self):
         self._table.__table__.create(bind=self._engine, checkfirst=True)
 
-    def _set_version(self, name: str, team: str, version_type: str) -> str:
+    def set_version(self, name: str, team: str, version_type: str) -> str:
         """Sets a version following semantic version standards
 
         Args:
@@ -195,46 +302,18 @@ class SQLRegistry(SQLRegistryBase):
             )
         return "1.0.0"
 
-    def _query_record(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[str] = None,
-        uid: Optional[str] = None,
-    ):
-
-        """Creates and executes a query to pull a given record based on
-        name, team, version, or uid
-        """
-
-        query = query_creator.record_from_table_query(
-            table=self._table,
-            name=name,
-            team=team,
-            version=version,
-            uid=uid,
-        )
-
-        with self._session() as sess:
-            result = sess.scalars(query).first()
-
-        return result
-
-    def _add_and_commit(self, record: Dict[str, Any]):
+    @log_card_change
+    def add_and_commit(self, record: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         sql_record = self._table(**record)
 
         with self._session() as sess:
             sess.add(sql_record)
             sess.commit()
 
-        logger.info(
-            "%s: %s registered as version %s",
-            self._table.__tablename__,
-            record.get("name"),
-            record.get("version"),
-        )
+        return record, "registered"
 
-    def _update_record(self, record: Dict[str, Any]):
+    @log_card_change
+    def update_record(self, record: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         record_uid = cast(str, record.get("uid"))
 
         with self._session() as sess:
@@ -242,70 +321,7 @@ class SQLRegistry(SQLRegistryBase):
             query.update(record)
             sess.commit()
 
-        logger.info(
-            "%s: %s, version:%s updated",
-            self._table.__tablename__,
-            record.get("name"),
-            record.get("version"),
-        )
-
-    def register_card(
-        self,
-        card: ArtifactCardProto,
-        version_type: str = "minor",
-        save_path: Optional[str] = None,
-    ) -> None:
-        """
-        Adds new record to registry.
-
-        Args:
-            Card (ArtifactCard): Card to register
-            version_type (str): Version type for increment. Options are "major", "minor" and
-            "patch". Defaults to "minor"
-            save_path (str): Blob path to save card artifacts too.
-            This path SHOULD NOT include the base prefix (e.g. "gs://my_bucket")
-            - this prefix is already inferred using either "OPSML_TRACKING_URL" or "OPSML_STORAGE_URL"
-            env variables. In addition, save_path should specify a directory.
-        """
-
-        # check compatibility
-        if not self._is_correct_card_type(card=card):
-            raise ValueError(
-                f"""Card of type {card.__class__.__name__} is not supported by registery
-                {self._table.__tablename__}"""
-            )
-
-        if self._check_uid(uid=str(card.uid), table_to_check=self.table_name):
-            raise ValueError(
-                """This Card has already been registered.
-            If the card has been modified try upating the Card in the registry.
-            If registering a new Card, create a new Card of the correct type.
-            """
-            )
-
-        # need to find way to compare previous cards and automatically
-        # determine if change is major or minor
-        version = self._set_version(
-            name=card.name,
-            team=card.team,
-            version_type=version_type,
-        )
-
-        if save_path is None:
-            save_path = f"{self.table_name}/{card.team}/{card.name}/v-{version}"
-
-        record = card.create_registry_record(
-            save_info=SaveInfo(
-                blob_path=save_path,
-                name=card.name,
-                team=card.team,
-                version=version,
-                storage_client=self.storage_client,
-            ),
-            uid=self._get_uid(),
-        )
-
-        self._add_and_commit(record=record.dict())
+        return record, "updated"
 
     def list_cards(
         self,
@@ -313,7 +329,7 @@ class SQLRegistry(SQLRegistryBase):
         name: Optional[str] = None,
         team: Optional[str] = None,
         version: Optional[str] = None,
-    ) -> pd.DataFrame:
+    ) -> List[Dict[str, Any]]:
 
         """Retrieves records from registry
 
@@ -346,9 +362,9 @@ class SQLRegistry(SQLRegistryBase):
             result_dict.pop("_sa_instance_state")
             results_list.append(result_dict)
 
-        return pd.DataFrame(results_list)
+        return results_list
 
-    def _check_uid(self, uid: str, table_to_check: str):
+    def check_uid(self, uid: str, table_to_check: str):
         query = query_creator.uid_exists_query(
             uid=uid,
             table_to_check=table_to_check,
@@ -357,51 +373,107 @@ class SQLRegistry(SQLRegistryBase):
             result = sess.scalars(query).first()
         return bool(result)
 
-    # Read
-    def load_card(  # type: ignore
+
+class ClientRegistry(SQLRegistryBase):
+    def __init__(self, table_name: str):
+        super().__init__(table_name)
+
+        self._session = self._get_session()
+
+    def _get_session(self):
+        """Gets the requests session for connecting to the opsml api"""
+        return settings.request_client
+
+    def check_uid(self, uid: str, table_to_check: str):
+
+        data = self._session.post_request(
+            route=api_routes.CHECK_UID,
+            json={"uid": uid, "table_name": table_to_check},
+        )
+
+        return bool(data.get("uid_exists"))
+
+    def set_version(self, name: str, team: str, version_type: str = "minor") -> str:
+        data = self._session.post_request(
+            route=api_routes.VERSION,
+            json={
+                "name": name,
+                "team": team,
+                "version_type": version_type,
+                "table_name": self.table_name,
+            },
+        )
+        return data.get("version")
+
+    def list_cards(
         self,
+        uid: Optional[str] = None,
         name: Optional[str] = None,
         team: Optional[str] = None,
         version: Optional[str] = None,
-        uid: Optional[str] = None,
-    ) -> CardTypes:
-        """Loads data or model card"""
-        raise NotImplementedError
+    ) -> pd.DataFrame:
+
+        """Retrieves records from registry
+
+        Args:
+            name (str): Artifact record name
+            team (str): Team data is assigned to
+            version (int): Optional version number of existing data. If not specified,
+            the most recent version will be used
+            uid (str): Unique identifier for DataCard. If present, the uid takes precedence.
 
 
-# work in progress
-# class SQLRegistryAPI(SQLRegistryBase):
-#    def __init__(self, table_name: str):
-#        super().__init__(table_name)
-#
-#        self._session = self._get_session()
-#        self._api_url = settings.opsml_tacking_url
-#
-#    def _get_session(self):
-#        """Gets the requests session for connecting to the opsml api"""
-#        return request_session
-#
-#    def _set_version(self, name: str, team: str, version_type: str) -> str:
-#        url = f"{self._api_url}/set_version"
-#
-#        response = post(
-#            session=self._session,
-#            url=url,
-#            json={
-#                "name": name,
-#                "team": team,
-#                "table": self.self.table_name,
-#            },
-#        )
-#
-#        self._increment_version(version=response.get("version"))
+        Returns:
+            Dictionary of records
+        """
+
+        data = self._session.post_request(
+            route=api_routes.LIST,
+            json={
+                "name": name,
+                "team": team,
+                "version": version,
+                "uid": uid,
+                "table_name": self.table_name,
+            },
+        )
+
+        return data["records"]
+
+    @log_card_change
+    def add_and_commit(self, record: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+        data = self._session.post_request(
+            route=api_routes.CREATE,
+            json={
+                "record": record,
+                "table_name": self.table_name,
+            },
+        )
+
+        if bool(data.get("registered")):
+            return record, "registered"
+        raise ValueError("Failed to register card")
+
+    @log_card_change
+    def update_record(self, record: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+        data = self._session.post_request(
+            route=api_routes.UPDATE,
+            json={
+                "record": record,
+                "table_name": self.table_name,
+            },
+        )
+
+        if bool(data.get("updated")):
+            return record, "update"
+        raise ValueError("Failed to update card")
 
 
 # mypy isnt good with dynamic class creation
 def get_sql_registry_base() -> Any:
-    # if settings.request_client is not None:
-    # return None
-    return cast(Any, SQLRegistry)
+    if settings.request_client is not None:
+        return cast(Any, ClientRegistry)
+    return cast(Any, ServerRegistry)
 
 
 Registry = get_sql_registry_base()

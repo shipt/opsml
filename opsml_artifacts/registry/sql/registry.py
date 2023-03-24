@@ -5,19 +5,16 @@ from sqlalchemy.sql.expression import ColumnElement, FromClause
 
 from opsml_artifacts.helpers.logging import ArtifactLogger
 from opsml_artifacts.registry.cards.cards import (
+    ArtifactCard,
     DataCard,
     ExperimentCard,
     ModelCard,
     PipelineCard,
 )
-from opsml_artifacts.registry.cards.types import ArtifactCardProto
 from opsml_artifacts.registry.sql.records import (
     DataRegistryRecord,
     ExperimentRegistryRecord,
-    LoadedDataRecord,
-    LoadedExperimentRecord,
-    LoadedModelRecord,
-    LoadedPipelineRecord,
+    ModelRegistryRecord,
     PipelineRegistryRecord,
 )
 from opsml_artifacts.registry.sql.registry_base import Registry, SQLRegistryBase
@@ -27,41 +24,9 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
-CardTypes = Union[ExperimentCard, ModelCard, DataCard, PipelineCard]
 
 
 class DataCardRegistry(Registry):
-    # specific loading logic
-    def load_card(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[int] = None,
-        uid: Optional[str] = None,
-    ) -> DataCard:
-
-        """Loads a data card from the data registry
-
-        Args:
-            name (str): Data record name
-            team (str): Team data is assigned to
-            version (int): Optional version number of existing data. If not specified,
-            the most recent version will be used
-            uid (str): Unique identifier for DataCard. If present, the uid takes precedence.
-
-        Returns:
-            DataCard
-        """
-
-        sql_data = self._query_record(name=name, team=team, version=version, uid=uid)
-        loaded_record = LoadedDataRecord(
-            **{
-                **sql_data.__dict__,
-                **{"storage_client": self.storage_client},
-            }
-        )
-
-        return DataCard(**loaded_record.dict())
 
     # specific update logic
     def update_card(self, card: DataCard) -> None:
@@ -76,7 +41,7 @@ class DataCardRegistry(Registry):
         """
 
         record = DataRegistryRecord(**card.dict())
-        self._update_record(record=record.dict())
+        self.update_record(record=record.dict())
 
     @staticmethod
     def validate(registry_name: str):
@@ -84,45 +49,26 @@ class DataCardRegistry(Registry):
 
 
 class ModelCardRegistry(Registry):
-    # specific loading logic
-    def load_card(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[int] = None,
-        uid: Optional[str] = None,
-    ) -> ModelCard:
-        """Loads a data card from the data registry
+    def update_card(self, card: ModelCard) -> None:
+
+        """Updates an existing model card
 
         Args:
-            name (str): Card name
-            team (str): Team data is assigned to
-            version (int): Optional version number of existing data. If not specified,
-            the most recent version will be used
+            model_card (ModelCard): Existing model card record
 
         Returns:
-            Data card
+            None
         """
 
-        sql_data = self._query_record(name=name, team=team, version=version, uid=uid)
-        model_record = LoadedModelRecord(**sql_data.__dict__)
-        modelcard_definition = model_record.load_model_card_definition(storage_client=self.storage_client)
-
-        model_card = ModelCard.parse_obj(
-            {
-                **model_record.dict(),
-                **modelcard_definition,
-            }
-        )
-        model_card.storage_client = self.storage_client
-        return model_card
+        record = ModelRegistryRecord(**card.dict())
+        self.update_record(record=record.dict())
 
     def _get_data_table_name(self) -> str:
         return RegistryTableNames.DATA.value
 
     def _validate_datacard_uid(self, uid: str) -> None:
         table_to_check = self._get_data_table_name()
-        exists = self._check_uid(uid=uid, table_to_check=table_to_check)
+        exists = self.check_uid(uid=uid, table_to_check=table_to_check)
         if not exists:
             raise ValueError("""ModelCard must be assoicated with a valid DataCard uid""")
 
@@ -132,7 +78,7 @@ class ModelCardRegistry(Registry):
     # custom registration
     def register_card(
         self,
-        card: ArtifactCardProto,
+        card: ModelCard,
         version_type: str = "minor",
         save_path: Optional[str] = None,
     ) -> None:
@@ -145,14 +91,14 @@ class ModelCardRegistry(Registry):
             "patch". Defaults to "minor"
             save_path (str): Blob path to save card artifacts too.
             This path SHOULD NOT include the base prefix (e.g. "gs://my_bucket")
-            - this prefix is already inferred using either "OPSML_TRACKING_URL" or "OPSML_STORAGE_URL"
+            - this prefix is already inferred using either "OPSML_TRACKING_URI" or "OPSML_STORAGE_URI"
             env variables. In addition, save_path should specify a directory.
         """
 
         model_card = cast(ModelCard, card)
 
         if not self._has_data_card_uid(uid=model_card.data_card_uid):
-            raise ValueError("""ModelCard must be assoicated with a valid DataCard uid""")
+            raise ValueError("""ModelCard must be associated with a valid DataCard uid""")
 
         if model_card.data_card_uid is not None:
             self._validate_datacard_uid(uid=model_card.data_card_uid)
@@ -169,31 +115,6 @@ class ModelCardRegistry(Registry):
 
 
 class ExperimentCardRegistry(Registry):
-    def load_card(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[str] = None,
-        uid: Optional[str] = None,
-    ) -> ExperimentCard:
-
-        """Loads a data card from the data registry
-
-        Args:
-            name (str): Card name
-            team (str): Team data is assigned to
-            version (int): Optional version number of existing data. If not specified,
-            the most recent version will be used
-
-        Returns:
-            Data card
-        """
-
-        sql_data = self._query_record(name=name, team=team, version=version, uid=uid)
-        experiment_record = LoadedExperimentRecord(**sql_data.__dict__)
-        experiment_record.load_artifacts(storage_client=self.storage_client)
-        return ExperimentCard(**experiment_record.dict())
-
     def update_card(self, card: ExperimentCard) -> None:
 
         """Updates an existing pipeline card in the pipeline registry
@@ -206,7 +127,7 @@ class ExperimentCardRegistry(Registry):
         """
 
         record = ExperimentRegistryRecord(**card.dict())
-        self._update_record(record=record.dict())
+        self.update_record(record=record.dict())
 
     @staticmethod
     def validate(registry_name: str):
@@ -214,30 +135,6 @@ class ExperimentCardRegistry(Registry):
 
 
 class PipelineCardRegistry(Registry):
-    def load_card(
-        self,
-        name: Optional[str] = None,
-        team: Optional[str] = None,
-        version: Optional[int] = None,
-        uid: Optional[str] = None,
-    ) -> PipelineCard:
-
-        """Loads a PipelineCard from the pipeline registry
-
-        Args:
-            name (str): Card name
-            team (str): Team data is assigned to
-            version (int): Optional version number of existing data. If not specified,
-            the most recent version will be used
-
-        Returns:
-            PipelineCard
-        """
-
-        sql_data = self._query_record(name=name, team=team, version=version, uid=uid)
-        pipeline_record = LoadedPipelineRecord(**sql_data.__dict__)
-        return PipelineCard(**pipeline_record.dict())
-
     def update_card(self, card: PipelineCard) -> None:
 
         """Updates an existing pipeline card in the pipeline registry
@@ -250,7 +147,7 @@ class PipelineCardRegistry(Registry):
         """
 
         record = PipelineRegistryRecord(**card.dict())
-        self._update_record(record=record.dict())
+        self.update_record(record=record.dict())
 
     @staticmethod
     def validate(registry_name: str):
@@ -296,7 +193,6 @@ class CardRegistry:
         """
 
         registry_name = RegistryTableNames[registry_name.upper()].value
-
         registry = next(
             registry
             for registry in Registry.__subclasses__()
@@ -335,7 +231,8 @@ class CardRegistry:
         if team is not None:
             team = team.lower()
 
-        return self.registry.list_cards(uid=uid, name=name, team=team, version=version)
+        card_list = self.registry.list_cards(uid=uid, name=name, team=team, version=version)
+        return pd.DataFrame(card_list)
 
     def load_card(
         self,
@@ -343,7 +240,7 @@ class CardRegistry:
         team: Optional[str] = None,
         uid: Optional[str] = None,
         version: Optional[str] = None,
-    ) -> CardTypes:
+    ) -> ArtifactCard:
 
         """Loads a specific card
 
@@ -359,6 +256,7 @@ class CardRegistry:
         """
         if name is not None:
             name = name.lower()
+            name = name.replace("_", "-")
 
         if team is not None:
             team = team.lower()
@@ -367,7 +265,7 @@ class CardRegistry:
 
     def register_card(
         self,
-        card: ArtifactCardProto,
+        card: ArtifactCard,
         version_type: str = "minor",
         save_path: Optional[str] = None,
     ) -> None:
@@ -380,7 +278,7 @@ class CardRegistry:
             "patch". Defaults to "minor"
             save_path (str): Blob path to save card artifacts too.
             This path SHOULD NOT include the base prefix (e.g. "gs://my_bucket")
-            - this prefix is already inferred using either "OPSML_TRACKING_URL" or "OPSML_STORAGE_URL"
+            - this prefix is already inferred using either "OPSML_TRACKING_URI" or "OPSML_STORAGE_URI"
             env variables. In addition, save_path should specify a directory.
         """
 
@@ -392,7 +290,7 @@ class CardRegistry:
 
     def update_card(
         self,
-        card: CardTypes,
+        card: ArtifactCard,
     ) -> None:
         """Update and artifact card (DataCard only) based on current registry
 
@@ -420,6 +318,5 @@ class CardRegistry:
         Returns:
             Dictionary of column, values pairs
         """
-        results = self.registry._query_record(uid=uid)  # pylint: disable=protected-access
-        result_dict = results.__dict__
-        return {col: result_dict[col] for col in columns}
+        results = self.registry.list_cards(uid=uid)[0]  # pylint: disable=protected-access
+        return {col: results[col] for col in columns}

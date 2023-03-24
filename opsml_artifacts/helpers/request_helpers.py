@@ -1,37 +1,67 @@
-import functools
 from typing import Any, Dict, Optional
 
-import requests
+import httpx
+from tenacity import retry, stop_after_attempt
 
 from opsml_artifacts.helpers.logging import ArtifactLogger
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
-def retry(api_call):
-    @functools.wraps(api_call)
-    def wrapper_decorator(*args, **kwargs) -> Dict[str, Any]:
-        retries = 0
-        while retries < 5:
-            response: requests.Response = api_call(*args, **kwargs)
-            if response.status_code == 200:
-                return response.json()
-            retries += 1
-        raise ValueError(f"Failed to retrieve data from api. {response.json()}")
-
-    return wrapper_decorator
+PATH_PREFIX = "opsml"
 
 
-@retry
-def post_request(session: requests.Session, url: str, json: Optional[Dict[str, Any]]) -> Any:
+class ApiRoutes:
+    CHECK_UID = "check_uid"
+    VERSION = "version"
+    LIST = "list"
+    SETTINGS = "settings"
+    CREATE = "create"
+    UPDATE = "update"
 
-    response = session.post(url=url, json=json)
-    return response
+
+api_routes = ApiRoutes()
 
 
-@retry
-def get_request(session: requests.Session, url: str) -> Any:
+class ApiClient:
+    def __init__(
+        self,
+        base_url: str,
+        path_prefix: str = PATH_PREFIX,
+    ):
+        self.client = httpx.Client()
 
-    response = session.get(url=url)
+        self._base_url = self._get_base_url(
+            base_url=base_url,
+            path_prefix=path_prefix,
+        )
 
-    return response
+    def _get_base_url(self, base_url: str, path_prefix: str) -> str:
+        """Gets the base url to use with all requests"""
+        return f"{base_url}/{path_prefix}"
+
+    @retry(stop=stop_after_attempt(3))
+    def post_request(
+        self,
+        route: str,
+        json: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+
+        response = self.client.post(
+            url=f"{self._base_url}/{route}",
+            json=json,
+        )
+        if response.status_code == 200:
+            return response.json()
+
+        raise ValueError(f"""Failed to to make server call for post request Url: {route}""")
+
+    @retry(stop=stop_after_attempt(3))
+    def get_request(self, route: str) -> Dict[str, Any]:
+
+        response = self.client.get(url=f"{self._base_url}/{route}")
+
+        if response.status_code == 200:
+            return response.json()
+
+        raise ValueError(f"""Failed to to make server call for get request Url: {route}""")

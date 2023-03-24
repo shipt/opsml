@@ -1,214 +1,261 @@
 import os
 from functools import cached_property
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, cast
 
-import requests
+import httpx
 from pydantic import BaseSettings, Field, root_validator
 
 from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.helpers.models import (
-    GcsStorageClientInfo,
-    StorageClientInfo,
-    StorageInfo,
-)
-from opsml_artifacts.helpers.request_helpers import get_request
-from opsml_artifacts.registry.cards.storage_system import (
-    StorageClientGetter,
-    StorageClientTypes,
-)
+from opsml_artifacts.helpers.request_helpers import ApiClient, api_routes
+from opsml_artifacts.helpers.types import OpsmlAuth, OpsmlUri
 from opsml_artifacts.registry.sql.connectors import BaseSQLConnection, SQLConnector
+from opsml_artifacts.registry.storage.storage_system import (
+    StorageClientGetter,
+    StorageClientType,
+)
+from opsml_artifacts.registry.storage.types import (
+    GcsStorageClientSettings,
+    StorageClientSettings,
+    StorageSettings,
+)
 
-OPSML_PREFIX = "opsml"
-STORAGE_CLIENT_PATH = "storage_client"
+BASE_LOCAL_SQL = f"sqlite:///{os.path.expanduser('~')}/opsml_artifacts_database.db"
 
 
 logger = ArtifactLogger.get_logger(__name__)
+
+
+class StorageSettingsGetter:
+    def __init__(self, storage_uri: Optional[str] = None):
+        self.storage_uri = storage_uri
+
+    def _get_gcs_settings(self) -> GcsStorageClientSettings:
+        storage_settings: Dict[str, Any] = {}
+        from opsml_artifacts.helpers.gcp_utils import (  # pylint: disable=import-outside-toplevel
+            GcpCredsSetter,
+        )
+
+        gcp_creds = GcpCredsSetter().get_creds()
+        storage_settings["credentials"] = gcp_creds.creds.with_scopes(
+            ["https://www.googleapis.com/auth/cloud-platform"]
+        )
+        storage_settings["storage_type"] = "gcs"
+        storage_settings["storage_uri"] = self.storage_uri
+        storage_settings["gcp_project"] = gcp_creds.project
+
+        return GcsStorageClientSettings(**storage_settings)
+
+    def _get_default_settings(self) -> StorageClientSettings:
+        return StorageClientSettings(storage_uri=self.storage_uri)
+
+    def get_storage_settings(self) -> StorageSettings:
+        if self.storage_uri is not None:
+            if "gs://" in self.storage_uri:
+                return self._get_gcs_settings()
+            return self._get_default_settings()
+        return StorageClientSettings()
+
+
+class DefaultAttrCreator:
+    def __init__(self, env_vars: Dict[str, Any]):
+        """Class for setting default attributes for DefaulSettings
+
+        Args:
+            env_vars (dict): Dictionary of key value pairs
+        """
+        self._env_vars = env_vars
+        self.tracking_uri = self._set_tracking_uri()
+
+        self._set_storage_client()
+
+    def _set_tracking_uri(self) -> str:
+        """Sets tracking url to use for database entries
+
+        Returns:
+            tracking_uri string
+
+        """
+
+        tracking_uri = self._env_vars.get(OpsmlUri.TRACKING_URI.lower(), BASE_LOCAL_SQL)
+
+        if tracking_uri is BASE_LOCAL_SQL:
+            logger.info("""No tracking url set. Defaulting to Sqlite""")
+
+        self._env_vars[OpsmlUri.TRACKING_URI.lower()] = tracking_uri
+        self._get_api_client(tracking_uri=tracking_uri)
+
+        return tracking_uri
+
+    def _set_storage_client(self) -> None:
+        """Sets storage info and storage client attributes for DefaultSettings"""
+
+        self._get_storage_settings()
+        self._env_vars["storage_client"] = StorageClientGetter.get_storage_client(
+            storage_settings=self._env_vars["storage_settings"],
+        )
+
+    def _get_api_client(self, tracking_uri: str) -> None:
+        """Checks if tracking url is an http and sets a request client
+
+        Args:
+            tracking_uri (str): URL for tracking
+        """
+
+        username = os.environ.get(OpsmlAuth.USERNAME)
+        password = os.environ.get(OpsmlAuth.PASSWORD)
+
+        if "http" in tracking_uri:
+            request_client = ApiClient(base_url=tracking_uri)
+            if all(bool(cred) for cred in [username, password]):
+                request_client.client.auth = httpx.BasicAuth(
+                    username=str(username),
+                    password=str(password),
+                )
+            self._env_vars["request_client"] = request_client
+
+    def _get_storage_settings(self) -> None:
+        """Sets storage info based on tracking url. If tracking url is
+        http then external api will be used to get storage info. If no
+        external api is detected, local defaults will be used.
+
+        Args:
+            opsml_tracking_uri (str): Tracking url for opsml database entries
+
+        Returns:
+            StorageClientSettings pydantic Model
+        """
+
+        if self._env_vars.get("request_client") is not None:
+            self._env_vars["storage_settings"] = self._get_storage_settings_from_api()
+
+        else:
+            self._env_vars["storage_settings"] = self._get_storage_settings_from_local()
+
+    def _get_storage_settings_from_api(self) -> StorageSettings:
+        """Gets storage info from external opsml api
+
+        Args:
+            opsml_tracking_uri (str): External opsml api
+
+        Returns:
+            StorageClientSettings
+
+        """
+        request_client = cast(ApiClient, self._env_vars.get("request_client"))
+        storage_settings = request_client.get_request(route=api_routes.SETTINGS)
+        storage_uri = storage_settings.get("storage_uri")
+
+        if bool(storage_settings.get("proxy")):
+            storage_uri = "local"
+
+        return StorageSettingsGetter(
+            storage_uri=storage_uri,
+        ).get_storage_settings()
+
+    def _get_storage_settings_from_local(self) -> StorageSettings:
+        """Gets storage info from external opsml api
+
+        Returns:
+            StorageClientSettings
+
+        """
+        storage_uri = os.environ.get(OpsmlUri.STORAGE_URI)
+        return StorageSettingsGetter(
+            storage_uri=storage_uri,
+        ).get_storage_settings()
+
+    @property
+    def env_vars(self):
+        """Return dictionary are key value pairings for DefaultSettings"""
+        return self._env_vars
+
+
+class DefaultConnector:
+    def __init__(
+        self,
+        tracking_uri: str,
+        credentials: Optional[Any],
+    ):
+        self.tracking_uri = tracking_uri
+        self.credentials = credentials
+
+    def _get_connector_type(self) -> str:
+        """Gets the sql connection type when running opsml locally (without api proxy)"""
+
+        connector_type = "local"
+        for db_type in ["postgresql", "mysql"]:
+            if db_type in self.tracking_uri:
+                connector_type = db_type
+
+        if "cloudsql" in self.tracking_uri:
+            connector_type = f"cloudsql_{connector_type}"
+
+        return connector_type
+
+    def _get_sql_connector(self, connector_type: str):
+        """Gets the sql connection given a connector type"""
+        return SQLConnector.get_connector(connector_type=connector_type)
+
+    def get_connector(self) -> BaseSQLConnection:
+        """Gets the sql connector to use when running opsml locally (without api proxy)"""
+        connector_type = self._get_connector_type()
+        connector = self._get_sql_connector(connector_type=connector_type)
+
+        return connector(
+            tracking_uri=self.tracking_uri,
+            credentials=self.credentials,
+        )
 
 
 class DefaultSettings(BaseSettings):
     """Default variables to load"""
 
     app_env: str = Field("development", env="APP_ENV")
-    opsml_tacking_url: str = Field(..., env="OPSML_TRACKING_URL")
-    storage_info: StorageInfo
-    storage_client: StorageClientTypes
-    request_client: Optional[requests.Session] = Field(None)
+    opsml_tracking_uri: str = Field(..., env=OpsmlUri.TRACKING_URI)
+    storage_settings: StorageSettings
+    storage_client: StorageClientType
+    request_client: Optional[ApiClient] = Field(None)
 
     class Config:
         allow_mutation = True
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
+        validate_assignment = True
 
     @root_validator(pre=True)
     def set_base_settings(cls, env_vars) -> Dict[str, Any]:  # pylint: disable=no-self-argument
-
-        env_vars, tracking_url = cls._set_tracking_url(env_vars=env_vars)
-        env_vars = cls._get_api_client(env_vars=env_vars, tracking_url=tracking_url)
-        storage_info = cls._get_storage_info(env_vars=env_vars, tracking_url=tracking_url)
-
-        env_vars["storage_info"] = storage_info
-
-        # set storage client
-        env_vars["storage_client"] = StorageClientGetter.get_storage_client(storage_info=storage_info)
-
-        return env_vars
-
-    @classmethod
-    def _set_tracking_url(cls, env_vars: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
-        """Sets tracking url to use for database entries
-
-        Args:
-            env_vars (dict): Dictionary of key value pairs
-
-        Returns:
-            env_vars dictionary and tracking_url string
-
+        """Sets tracking url if it doesnt exist and sets storage
+        client-related vars
         """
-        tracking_url = env_vars.get("opsml_tacking_url")
 
-        if tracking_url is not None:
-            return env_vars, tracking_url
-
-        logger.info("""No tracking url set. Defaulting to Sqlite""")
-
-        tracking_url = "sqlite://"
-        env_vars["opsml_tacking_url"] = tracking_url
-        return env_vars, tracking_url
-
-    @classmethod
-    def _get_api_client(
-        cls,
-        env_vars: Dict[str, Any],
-        tracking_url: str,
-    ) -> Dict[str, Any]:
-
-        username = os.environ.get("OPSML_USERNAME")
-        password = os.environ.get("OPSML_PASSWORD")
-
-        if "http" in tracking_url:
-            request_client = requests.Session()
-            if all(bool(cred) for cred in [username, password]):
-                request_client.auth = (str(username), str(password))
-            env_vars["request_client"] = request_client
-        return env_vars
-
-    @staticmethod
-    def _get_storage_info(env_vars: Dict[str, Any], tracking_url: str) -> StorageInfo:
-        """Sets storage info based on tracking url. If tracking url is
-        http then external api will be used to get storage info. If no
-        external api is detected, local defaults will be used.
-
-        Args:
-            opsml_tracking_url (str): Tracking url for opsml database entries
-
-        Returns:
-            StorageClientInfo pydantic Model
-        """
-        request_client = env_vars.get("request_client")
-        if request_client is not None:
-            return DefaultSettings._get_storage_info_from_api(request_client, tracking_url)
-        return DefaultSettings._get_storage_info_from_local()
-
-    @staticmethod
-    def _get_storage_info_from_api(
-        request_client: requests.Session,
-        tracking_url: str,
-    ) -> StorageInfo:
-        """Gets storage info from external opsml api
-
-        Args:
-            opsml_tracking_url (str): External opsml api
-
-        Returns:
-            StorageClientInfo
-
-        """
-        storage_info = get_request(
-            session=request_client,
-            url=f"{tracking_url}/{OPSML_PREFIX}/{STORAGE_CLIENT_PATH}",
-        )
-
-        if "gcs" in storage_info.get("storage_type"):
-
-            from opsml_artifacts.helpers.gcp_utils import (  # pylint: disable=import-outside-toplevel
-                GcpCredsSetter,
-            )
-
-            gcp_creds = GcpCredsSetter().get_creds()
-            storage_info["credentials"] = gcp_creds.creds
-            storage_info["gcp_project"] = gcp_creds.project
-
-            return GcsStorageClientInfo(**storage_info)
-
-        return StorageClientInfo(**storage_info)
-
-    @staticmethod
-    def _get_storage_info_from_local(storage_url: Optional[str] = None) -> StorageClientInfo:
-        """Gets storage info from external opsml api
-
-        Returns:
-            StorageClientInfo
-
-        """
-        storage_info: Dict[str, Any] = {}
-        storage_url = storage_url or os.environ.get("OPSML_STORAGE_URL")
-
-        if storage_url is not None:
-            if "gs://" in storage_url:
-                from opsml_artifacts.helpers.gcp_utils import (  # pylint: disable=import-outside-toplevel
-                    GcpCredsSetter,
-                )
-
-                gcp_creds = GcpCredsSetter().get_creds()
-                storage_info["credentials"] = gcp_creds.creds
-                storage_info["storage_type"] = "gcs"
-                storage_info["storage_url"] = storage_url
-                storage_info["gcp_project"] = gcp_creds.project
-
-                return GcsStorageClientInfo(**storage_info)
-
-        else:
-            logger.info(
-                """No storage specified for local client. Default to local host""",
-            )
-
-        return StorageClientInfo(**storage_info)
+        return DefaultAttrCreator(env_vars=env_vars).env_vars
 
     @cached_property
     def connection_client(self) -> BaseSQLConnection:
-        """Retrieve sql connection client"""
+        """Retrieve sql connection client.
+        Connection client is only used in the Registry class.
+        """
 
-        connector_type = "local"
-        for db_type in ["postgresql", "mysql"]:
-            if db_type in self.opsml_tacking_url:
-                connector_type = db_type
-
-        if "cloudsql" in self.opsml_tacking_url:
-            connector_type = f"cloudsql_{connector_type}"
-
-        connector = SQLConnector.get_connector(connector_type=connector_type)
-
-        if hasattr(self.storage_info, "credentials"):
-            credentials = self.storage_info.credentials
+        if hasattr(self.storage_settings, "credentials"):
+            credentials = self.storage_settings.credentials
         else:
             credentials = None
 
-        return connector(
-            tracking_url=self.opsml_tacking_url,
+        return DefaultConnector(
+            tracking_uri=self.opsml_tracking_uri,
             credentials=credentials,
-        )
+        ).get_connector()
 
-    def set_storage_url(self, storage_url: str) -> None:
-        """Set storage url and storage client from storage_url
+    def set_storage(self, storage_settings: StorageSettings) -> None:
+        """Set storage url and storage client from storage_uri
 
         Args:
-            storage_url (str): Optional storage url
+            storage_uri (str): Optional storage url
         """
 
-        storage_info = self._get_storage_info_from_local(storage_url=storage_url)
-        storage_client = StorageClientGetter.get_storage_client(storage_info=storage_info)
+        storage_client = StorageClientGetter.get_storage_client(storage_settings=storage_settings)
 
-        setattr(self, "storage_info", storage_info)
+        setattr(self, "storage_settings", storage_settings)
         setattr(self, "storage_client", storage_client)
 
 

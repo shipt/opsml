@@ -1,10 +1,10 @@
-import os
 from enum import Enum
 from functools import cached_property
 from typing import Any, Type, cast
 
 import sqlalchemy
 
+from opsml_artifacts.helpers.utils import all_subclasses
 from opsml_artifacts.registry.sql.connectors.base import (
     BaseSQLConnection,
     CloudSQLConnection,
@@ -58,7 +58,7 @@ class CloudSqlMySql(CloudSQLConnection):
 class LocalSQLConnection(BaseSQLConnection):
     def __init__(
         self,
-        tracking_url: str,
+        tracking_uri: str,
         credentials: Any = None,
     ):
         """
@@ -72,31 +72,23 @@ class LocalSQLConnection(BaseSQLConnection):
         """
 
         super().__init__(
-            tracking_url=tracking_url,
+            tracking_uri=tracking_uri,
             credentials=credentials,
         )
 
-        self.db_file_path: str = f"{os.path.expanduser('~')}/opsml_artifacts_database.db"
         self.storage_backend: str = SqlType.LOCAL.value
 
     @cached_property
     def _sqlalchemy_prefix(self):
-        return self.tracking_url
+        return self.tracking_uri
 
     def get_engine(self) -> sqlalchemy.engine.base.Engine:
-        engine = sqlalchemy.create_engine(f"{self._sqlalchemy_prefix}/{self.db_file_path}")
+        engine = sqlalchemy.create_engine(self._sqlalchemy_prefix)
         return engine
 
     @staticmethod
     def validate_type(connector_type: str) -> bool:
         return connector_type == SqlType.LOCAL
-
-
-def all_subclasses(cls):
-    """Gets all subclasses associated with parent class"""
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in all_subclasses(c)],
-    )
 
 
 class SQLConnector:

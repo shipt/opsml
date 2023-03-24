@@ -15,10 +15,7 @@ class FindPath:
     """Helper class for finding paths to artifacts"""
 
     @staticmethod
-    def find_filepath(
-        name: str,
-        path: Optional[str] = None,
-    ) -> Path:
+    def find_filepath(name: str, path: Optional[str] = None) -> Path:
         """Finds the file path of a given file.
 
         Args:
@@ -112,3 +109,10 @@ class FindPath:
                 Found paths: {paths}
             """
         )
+
+
+def all_subclasses(cls):
+    """Gets all subclasses associated with parent class"""
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)],
+    )

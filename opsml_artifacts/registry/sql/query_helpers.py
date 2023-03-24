@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Any, Iterable, Optional, Type, Union, cast
 
 from sqlalchemy import select
@@ -5,17 +6,10 @@ from sqlalchemy.sql import FromClause, Select
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.registry.cards.cards import (
-    DataCard,
-    ExperimentCard,
-    ModelCard,
-    PipelineCard,
-)
 from opsml_artifacts.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
 
 logger = ArtifactLogger.get_logger(__name__)
 
-ArtifactCardTypes = Union[ModelCard, DataCard, ExperimentCard, PipelineCard]
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
 
@@ -74,3 +68,20 @@ class QueryCreator:
         query = query.filter(table.uid == uid)
 
         return cast(Select, query)
+
+
+def log_card_change(func):
+
+    """Decorator for logging card changes"""
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs) -> None:
+
+        record, state = func(self, *args, **kwargs)
+        name = str(record.get("name"))
+        version = str(record.get("version"))
+        logger.info(
+            "%s: %s, version:%s %s", self._table.__tablename__, name, version, state  # pylint: disable=protected-access
+        )
+
+    return wrapper
