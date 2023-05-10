@@ -3,22 +3,22 @@
 from typing import Any, Callable, List, Optional, cast
 from dataclasses import dataclass
 
-from opsml_artifacts.helpers.cli_utils import stdout_msg
-from opsml_artifacts.pipelines.package import PipelinePackager
-from opsml_artifacts.pipelines.types import (
+from opsml.helpers.cli_utils import stdout_msg
+from opsml.pipelines.package import PipelinePackager
+from opsml.pipelines.types import (
     PipelineWriterMetadata,
     PipelineConfig,
     PipelineJobModel,
     PipelineHelpers,
 )
-from opsml_artifacts.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
-from opsml_artifacts.pipelines.planner import PipelinePlanner
-from opsml_artifacts.pipelines.spec import PipelineSpec, PipelineParamCreator
-from opsml_artifacts.pipelines.types import (
+from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
+from opsml.pipelines.planner import PipelinePlanner
+from opsml.pipelines.spec import PipelineSpec, PipelineParamCreator
+from opsml.pipelines.types import (
     Tasks,
     INCLUDE_PARAMS,
 )
-from opsml_artifacts.pipelines.writer import PipelineWriter
+from opsml.pipelines.writer import PipelineWriter
 
 
 @dataclass
@@ -104,7 +104,6 @@ class PipelineRunner:
         filename: Optional[str] = None,
         file_format: Optional[str] = None,
     ) -> None:
-
         """
         Visualizes the current pipeline,
 
@@ -147,7 +146,6 @@ class PipelineRunner:
         return None
 
     def run(self, schedule: bool = False) -> PipelineJobModel:
-
         """
         Will run the machine learning pipeline outlined in the
         pipeline_runner.py file or generated from decorated functions.
@@ -185,6 +183,8 @@ class PipelineRunner:
         return pipeline_job
 
 
+# you should be able to add tasks to pipeline runner directly
+# no need to create a "task list"
 class BaseRunner:
     def add_task(self):
         ...
@@ -199,7 +199,6 @@ class BaseRunner:
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
     ):
-
         """
         Decorator for building machine learning pipeline asks out of a python function.
 
@@ -222,11 +221,10 @@ class BaseRunner:
         """
 
         def task(func):
-        """Decorator for func"""
+            """Decorator for func"""
 
             @wraps(func)
             def wrapper(*args, **kwargs):
-
                 machine_meta = MachineType(
                     memory=memory,
                     cpu=cpu,

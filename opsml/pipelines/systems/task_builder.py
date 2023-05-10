@@ -3,11 +3,11 @@
 from typing import Any, Dict, List, Optional
 
 
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.pipelines.container_op import get_op_builder
-from opsml_artifacts.pipelines.systems.images import ContainerImageRegistry
-from opsml_artifacts.pipelines.types import (
+from opsml.pipelines.container_op import get_op_builder
+from opsml.pipelines.systems.images import ContainerImageRegistry
+from opsml.pipelines.types import (
     MachineSpec,
     MachineType,
     PipelineParams,
@@ -52,7 +52,6 @@ class TaskBuilder:
         gpu_type: Optional[str] = None,
         gpu_count: Optional[int] = None,
     ) -> MachineSpec:
-
         return MachineSpec(
             machine_type=machine_type,
             accelerator_count=gpu_count,
@@ -192,7 +191,6 @@ class KubeflowTaskBuilder(TaskBuilder):
         gpu_type: Optional[str] = None,
         gpu_count: Optional[int] = None,
     ) -> MachineSpec:
-
         return MachineSpec(
             machine_type=machine_type,
             accelerator_count=gpu_count,
@@ -220,7 +218,6 @@ class KubeflowTaskBuilder(TaskBuilder):
         env_vars: Dict[str, Any],
         params: PipelineParams,
     ) -> Any:
-
         """Builds a KubeFlow task
 
         Args:

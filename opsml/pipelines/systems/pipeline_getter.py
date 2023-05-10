@@ -1,8 +1,8 @@
-from opsml_artifacts.helpers.utils import all_subclasses
-from opsml_artifacts.helpers import exceptions
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.pipelines.systems.base import Pipeline
-from opsml_artifacts.pipelines.types import (
+from opsml.helpers.utils import all_subclasses
+from opsml.helpers import exceptions
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.systems.base import Pipeline
+from opsml.pipelines.types import (
     PipelineConfig,
     PipelineSystem,
     PipelineHelpers,
@@ -16,7 +16,6 @@ def get_pipeline_system(
     pipeline_config: PipelineConfig,
     helpers: PipelineHelpers,
 ) -> Pipeline:
-
     pipeline = next(
         (
             pipeline_subclass

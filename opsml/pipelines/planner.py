@@ -4,10 +4,10 @@ import ast
 import inspect
 import textwrap
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.pipelines.types import PipelinePlan, MachineType, TaskArgs
-from opsml_artifacts.pipelines.writer_utils.types import SigTypeHints
-from opsml_artifacts.pipelines.types import PipelineParams, Tasks, PipelineSystem
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.types import PipelinePlan, MachineType, TaskArgs
+from opsml.pipelines.writer_utils.types import SigTypeHints
+from opsml.pipelines.types import PipelineParams, Tasks, PipelineSystem
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -40,7 +40,6 @@ class TaskFuncParser:
         self.func_sig_params = inspect.signature(function).parameters
 
     def _parse_var_for_attribute(self, var: Any):
-
         if isinstance(var, ast.Assign) and hasattr(var.value, "n"):
             var_names = cast(List[ast.Name], var.targets)
             var_name = var_names[0].id
@@ -173,7 +172,6 @@ class PipelinePlanner:
     def pipeline_plan(
         self,
     ) -> PipelinePlan:
-
         """
         Returns the pipeline plan
         """

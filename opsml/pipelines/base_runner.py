@@ -1,9 +1,9 @@
 from functools import wraps
 from typing import Any, Callable, List, Optional
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.pipelines.types import CodeInfo, MachineType, TaskArgs
-from opsml_artifacts.pipelines.spec import PipelineSpec
+from opsml.pipelines.types import CodeInfo, MachineType, TaskArgs
+from opsml.pipelines.spec import PipelineSpec
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -43,7 +43,6 @@ class BaseRunner:
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
     ):
-
         """
         Decorator for building machine learning pipeline asks out of a python function.
 
@@ -70,7 +69,6 @@ class BaseRunner:
 
             @wraps(func)
             def wrapper(*args, **kwargs):
-
                 machine_meta = MachineType(
                     memory=memory,
                     cpu=cpu,

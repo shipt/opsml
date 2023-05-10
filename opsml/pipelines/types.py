@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, List, Optional, Protocol
 from pydantic import BaseModel, Extra, Field, validator
 
 
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.helpers import exceptions
+from opsml.helpers import exceptions
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -108,7 +108,6 @@ class TaskArgs(BaseModel):
         """gpu_type validator"""
 
         if gpu_type is not None:
-
             try:
                 VertexGPUs(gpu_type)
             except ValueError as error:
@@ -120,7 +119,6 @@ class TaskArgs(BaseModel):
 
             # check gpu count based on type
             if values.get("gpu_count") is None:
-
                 logger.warning(
                     """No gpu count specified for %s although gpu_type was set. Defaulting to 1.""",
                     values["name"],  # noqa
@@ -217,7 +215,6 @@ class ContainerOpInputs:
 
 
 class Tasks(BaseModel):
-
     task_list: List[Callable[..., Any]]
     decorated: Optional[bool] = False
 

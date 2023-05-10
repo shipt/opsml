@@ -4,7 +4,7 @@ import re
 from enum import Enum
 from typing import Optional
 from dataclasses import dataclass
-from opsml_artifacts.registry.cards.types import CardName
+from opsml.registry.cards.types import CardName
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 

@@ -11,7 +11,7 @@ except ImportError:
 import yaml
 from kubernetes.client.models import V1EnvVar
 
-from opsml_artifacts.pipelines.types import MachineSpec, ContainerOpInputs
+from opsml.pipelines.types import MachineSpec, ContainerOpInputs
 
 
 CUSTOM_OP_PATH = os.path.join(os.path.dirname(__file__), "custom_component.yaml")
@@ -24,7 +24,6 @@ class KubeflowOpBuilder:
         op_inputs: ContainerOpInputs,
         env_vars: List[V1EnvVar],
     ):
-
         self._container_op = self.load_conainter_op(op_inputs=op_inputs)  # pylint: disable=invalid-name
         self.machine_spec = op_inputs.machine_spec
         self.retry = op_inputs.retry
@@ -107,7 +106,6 @@ class VertexOpBuilder:
         reserved_ip_ranges: Optional[List[str]] = None,
         service_account: Optional[str] = None,
     ):
-
         self.machine_spec = self.set_machine_specs(spec=op_inputs.machine_spec)
         command, args = self.create_container_command(op_inputs=op_inputs)
 
@@ -128,7 +126,6 @@ class VertexOpBuilder:
         self,
         op_inputs: ContainerOpInputs,
     ) -> Tuple[List[str], List[str]]:
-
         command = ["sh", "/app/train.sh"]
         args = [
             f"-c {op_inputs.code_uri}",
@@ -154,7 +151,6 @@ class VertexOpBuilder:
         }
 
     def set_machine_specs(self, spec: MachineSpec) -> Dict[str, Union[int, float, str]]:
-
         machine_spec: Dict[str, Union[int, float, str]] = {}
         machine_spec["machineType"] = str(spec.machine_type.machine_type)
         if bool(spec.accelerator_type):
@@ -164,7 +160,6 @@ class VertexOpBuilder:
         return machine_spec
 
     def buil_op(self) -> Any:
-
         """Builds a custom Vertex training op"""
 
         custom_op = VertexTrainingOp(

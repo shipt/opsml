@@ -3,8 +3,8 @@ import inspect
 import textwrap
 from typing import Any, Callable, List, Mapping, Optional, cast
 
-from opsml_artifacts.pipelines.writer_utils.ast_parser import FuncAstParser
-from opsml_artifacts.pipelines.writer_utils.types import (
+from opsml.pipelines.writer_utils.ast_parser import FuncAstParser
+from opsml.pipelines.writer_utils.types import (
     ARTIFACT_CARD_TYPES,
     FuncMetadata,
     ParserOutput,
@@ -118,7 +118,6 @@ class FuncCardParser(Parser):
         return type_ in ARTIFACT_CARD_TYPES
 
     def parse(self) -> ParserOutput:
-
         cards_to_load = self.get_cards_to_load()
         cards_to_save = self.get_cards_to_save()
 
@@ -153,7 +152,6 @@ class FuncMetaCreator:
         return parser
 
     def parse(self) -> FuncMetadata:
-
         definition = self._parse_type(parse_type="definition")
         body = self._parse_type(parse_type="body")
         cards = self._parse_type(parse_type="card")
@@ -167,7 +165,6 @@ class FuncMetaCreator:
         )
 
     def _parse_type(self, parse_type: str) -> ParserOutput:
-
         parser = next(parser for parser in Parser.__subclasses__() if parser.validate(parse_type=parse_type))
 
         return parser(

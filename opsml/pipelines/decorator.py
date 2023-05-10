@@ -3,10 +3,10 @@
 from functools import wraps
 from typing import Optional
 
-from opsml_artifacts.registry import CardRegistry, PipelineCard
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.registry import CardRegistry, PipelineCard
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.pipelines.types import CodeInfo, MachineType, TaskArgs
+from opsml.pipelines.types import CodeInfo, MachineType, TaskArgs
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -21,7 +21,6 @@ def ml_task(
     custom_image: Optional[str] = None,
     machine_type: Optional[str] = None,
 ):
-
     """
     Decorator for building machine learning pipeline asks out of a python function.
 
@@ -49,7 +48,6 @@ def ml_task(
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-
             machine_meta = MachineType(
                 memory=memory,
                 cpu=cpu,
@@ -73,7 +71,6 @@ def ml_task(
 
 
 def sql_task(filename: str):
-
     """
     Decorator for running a sql task
 
@@ -87,7 +84,6 @@ def sql_task(filename: str):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-
             machine_type = MachineType()
             task_args = TaskArgs(
                 machine_type=machine_type,
@@ -105,12 +101,10 @@ def sql_task(filename: str):
 
 
 def create_pipeline_card(func):
-
     """Decorator for creating PipelineCard and assigning uid to pipeline params"""
 
     @wraps(func)
     def wrapper(self, *args, **kwargs) -> CodeInfo:
-
         code_info: CodeInfo = func(self, *args, **kwargs)
         params = kwargs["params"]
 

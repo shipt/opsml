@@ -7,10 +7,10 @@ from typing import Any, Dict, Optional, Union, List
 import yaml
 from pydantic import BaseModel, validator, Field, Extra
 
-from opsml_artifacts.helpers.settings import settings
-from opsml_artifacts.helpers.utils import ConfigFileLoader
-from opsml_artifacts.pipelines.types import PipelineSystem
-from opsml_artifacts.helpers.types import OpsmlEnvVars
+from opsml.helpers.settings import settings
+from opsml.helpers.utils import ConfigFileLoader
+from opsml.pipelines.types import PipelineSystem
+from opsml.helpers.types import OpsmlEnvVars
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 
@@ -162,7 +162,6 @@ class PipelineParamCreator:
         self,
         spec: Optional[PipelineSpec] = None,
     ):
-
         """
         Class for setting up pipeline parameters
 
@@ -181,7 +180,6 @@ class PipelineParamCreator:
         return PipelineParams(**params)
 
     def create_pipeline_path_params(self) -> Dict[str, str]:
-
         """Sets pipeline path parameters that are used when building pipeline systems"""
 
         suffix = "yaml" if self.pipe_spec.pipeline_system == PipelineSystem.KUBEFLOW else "json"
@@ -206,7 +204,6 @@ class PipelineParamCreator:
         return paths
 
     def set_pipe_spec(self, spec: Optional[PipelineSpec] = None) -> PipelineSpec:
-
         if spec is None:
             loaded_spec = self._get_pipeline_spec(filename=ParamDefaults.SPEC_FILENAME.value)
             spec = PipelineSpec(**loaded_spec)
@@ -218,7 +215,6 @@ class PipelineParamCreator:
         filename: str,
         dir_name: Optional[str] = None,
     ) -> Dict[Union[str, int], Any]:
-
         """
         Extracts pipeline config
 

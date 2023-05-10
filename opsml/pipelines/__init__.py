@@ -1,4 +1,4 @@
 # pylint: skip-file
-# from opsml_artifacts.pipelines.pipeline import Pipeline, PipelineSys
-# from opsml_artifacts.pipelines.planner import PipelinePlanner
-# from opsml_artifacts.pipelines.types import PipelineParams
+# from opsml.pipelines.pipeline import Pipeline, PipelineSys
+# from opsml.pipelines.planner import PipelinePlanner
+# from opsml.pipelines.types import PipelineParams

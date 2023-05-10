@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Union, Dict, Any, Protocol
 import tempfile
-from opsml_artifacts.helpers.settings import settings
-from opsml_artifacts.helpers.utils import FindPath
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.helpers.settings import settings
+from opsml.helpers.utils import FindPath
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.pipelines.systems.task_builder import get_task_builder
-from opsml_artifacts.pipelines.types import CodeInfo, PipelineParams, ParamDefaults
-from opsml_artifacts.pipelines.types import (
+from opsml.pipelines.systems.task_builder import get_task_builder
+from opsml.pipelines.types import CodeInfo, PipelineParams, ParamDefaults
+from opsml.pipelines.types import (
     PipelineHelpers,
     PipelineConfig,
     PipelineJob,
@@ -57,7 +57,6 @@ class Pipeline:
         return self.config.resources
 
     def _package_and_upload(self, filepath: str, dir_name: str):
-
         code_info = self.helpers.packager.package_and_upload_pipeline(
             runner_file_path=filepath,
             runner_dir_name=dir_name,
@@ -88,7 +87,6 @@ class Pipeline:
         return self._package_and_upload(filepath=runner_path_info.file)
 
     def _get_pipeline_runner_path_info(self) -> PathInfo:
-
         """
         Searches for the `pipeline_runner.py` file along a given path.
         If a unique directory is given, that directory is searched. This is helpful
@@ -157,7 +155,6 @@ class Pipeline:
         raise NotImplementedError
 
     def delete_files(self) -> None:
-
         paths: List[Union[str, Path]] = list(Path(os.getcwd()).rglob(f"{self.params.project_name}-*.json"))
         paths.append(ParamDefaults.COMPRESSED_FILENAME)
 
@@ -176,7 +173,6 @@ class Pipeline:
                 pass
 
     def _package_code(self) -> CodeInfo:
-
         if self.tasks.decorated:
             code_info = self._create_temp_package()
 

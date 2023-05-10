@@ -2,8 +2,8 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Union
 
-from opsml_artifacts.helpers.utils import Copier, TemplateWriter
-from opsml_artifacts.pipelines.writer_utils.types import FuncMetadata
+from opsml.helpers.utils import Copier, TemplateWriter
+from opsml.pipelines.writer_utils.types import FuncMetadata
 
 
 class FuncWriter:

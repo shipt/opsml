@@ -1,11 +1,11 @@
 import os
 from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
 
-from opsml_artifacts.registry import CardRegistry, DataCard, ExperimentCard, ModelCard, PipelineCard
-from opsml_artifacts.registry.cards.pipeline_loader import PipelineLoader
-from opsml_artifacts.helpers.logging import ArtifactLogger
+from opsml.registry import CardRegistry, DataCard, ExperimentCard, ModelCard, PipelineCard
+from opsml.registry.cards.pipeline_loader import PipelineLoader
+from opsml.helpers.logging import ArtifactLogger
 
-from opsml_artifacts.helpers.utils import ConfigFileLoader
+from opsml.helpers.utils import ConfigFileLoader
 
 ArtifactCards = Union[ModelCard, ExperimentCard, DataCard]
 
@@ -26,7 +26,6 @@ class CardLoader:
         return self.pipeline_registry.load_card(uid=self.uid)
 
     def load_card_object(self, card: ArtifactCards):
-
         for attr in (
             "load_data",
             "load_trained_model",
@@ -122,7 +121,6 @@ class MetadataTracker:
         return ConfigFileLoader(filename=filename).load()
 
     def save_card_to_pipeline(self, card: ArtifactCards):
-
         """Registers the current card and updates the current PipelineCard
 
         Args:
@@ -180,7 +178,6 @@ class MetadataTracker:
         for card_name in self.card_loader.card_deck:
             current_card = global_vars.get(card_name)
             if bool(current_card):
-
                 current_card = cast(ArtifactCards, current_card)
                 self._check_and_update_card(current_card)
 
@@ -202,7 +199,6 @@ class MetadataTracker:
             updater(registry_name=registry_name).update_card(card=current_card)
 
     def _register_and_update(self, card_name: str, card: ArtifactCards):
-
         card_type = self._register_assigned_card(card=card)
         self._update_pipeline_card(card=card, card_name=card_name, card_type=card_type)
 

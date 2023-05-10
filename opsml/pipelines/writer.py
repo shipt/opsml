@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from black import FileMode, WriteBack, format_file_in_place
-from opsml_artifacts.helpers.utils import FindPath
+from opsml.helpers.utils import FindPath
 
-from opsml_artifacts.helpers.utils import Copier, YamlWriter
-from opsml_artifacts.pipelines.types import PipelineWriterMetadata
-from opsml_artifacts.pipelines.writer_utils import FuncMetaCreator, FuncWriter
-from opsml_artifacts.pipelines.writer_utils.types import FuncMetadata
+from opsml.helpers.utils import Copier, YamlWriter
+from opsml.pipelines.types import PipelineWriterMetadata
+from opsml.pipelines.writer_utils import FuncMetaCreator, FuncWriter
+from opsml.pipelines.writer_utils.types import FuncMetadata
 
 _MODULE_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -52,10 +52,9 @@ class PipelineDirCreator:
         for file_ in ["__init__.py", self.runner_filename]:
             with open(file=f"{self.pipeline_dir}/{file_}", mode="w", encoding="utf-8") as new_file:
                 if file_ == self.runner_filename:
-                    new_file.write("from opsml_artifacts import PipelineRunner" + "\n")
+                    new_file.write("from opsml import PipelineRunner" + "\n")
 
     def create_starter_dir(self) -> str:
-
         # create dir
         Path(self.pipeline_dir).mkdir(exist_ok=True)
         pipeline_path = glob.glob(pathname=f"{self.pipeline_dir}", recursive=True)[0]
@@ -72,7 +71,6 @@ class PipelineWriter:
         template_name: str = "template.txt",
         runner_filename: str = "pipeline_runner.py",
     ):
-
         self.pipeline_metadata = pipeline_metadata
         self.template_name = template_name
         self.template_path = FindPath.find_filepath(name=self.template_name, path=_MODULE_PATH)
@@ -176,7 +174,6 @@ class PipelineWriter:
 
     def finalize_runner(self, task_list: List[str]):
         with open(f"{self.pipeline_path}/{self.runner_filename}", "a", encoding="utf-8") as file_:
-
             # add final imports
             file_.write(f"task_list = [{','.join(map(str, task_list))}]" + "\n")
             file_.write("\n")
@@ -187,7 +184,6 @@ class PipelineWriter:
         self.format_code(self.runner_filename)
 
     def format_code(self, filename: str):
-
         src = Path(f"{self.pipeline_path}/{filename}")
         format_file_in_place(
             src=src,

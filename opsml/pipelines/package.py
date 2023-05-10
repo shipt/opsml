@@ -4,15 +4,15 @@ import tarfile
 from pathlib import Path
 from typing import Dict, Optional
 
-from opsml_artifacts.helpers.settings import settings
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.helpers.utils import FindPath, YamlWriter
-from opsml_artifacts.helpers import exceptions
+from opsml.helpers.settings import settings
+from opsml.helpers.logging import ArtifactLogger
+from opsml.helpers.utils import FindPath, YamlWriter
+from opsml.helpers import exceptions
 
-# from opsml_artifacts.pipelines.decorator import create_pipeline_card
-from opsml_artifacts.pipelines.types import RequirementPath, CodeInfo
-from opsml_artifacts.pipelines.spec import ParamDefaults, PipelineParams
-from opsml_artifacts.pipelines.writer import PipelineWriter
+# from opsml.pipelines.decorator import create_pipeline_card
+from opsml.pipelines.types import RequirementPath, CodeInfo
+from opsml.pipelines.spec import ParamDefaults, PipelineParams
+from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -26,7 +26,6 @@ class RequirementsCopier:
         requirements_file: str,
         runner_file_path: str,
     ):
-
         self.requirements = requirements_file
         self.runner_file_path = runner_file_path
 
@@ -108,14 +107,12 @@ class PipelineCompressor:
 
 class PipelineCodeUploader:
     def __init__(self, params: PipelineParams, runner_dir_name: str):
-
         """Uploads compressed pipeline code to a given storage location"""
 
         self.params = params
         self.runner_dir_name = runner_dir_name
 
     def _upload_code_to_server(self):
-
         # iterate and load file to server
         filename = ParamDefaults.COMPRESSED_FILENAME
         response = settings.request_client.post_request()
@@ -159,7 +156,6 @@ class PipelinePackager:
         requirements_file: Optional[str],
         req_path: Optional[RequirementPath] = None,
     ):
-
         """
         Helper class for packaging pipeline code
 
@@ -177,11 +173,9 @@ class PipelinePackager:
         self.req_path = req_path
 
     def package_pipeline(self, config_writer: YamlWriter, runner_file_path: str):
-
         config_writer.write_file()
 
         if self.requirements is not None:
-
             self.req_path = RequirementsCopier(
                 requirements_file=self.requirements,
                 runner_file_path=runner_file_path,
@@ -190,7 +184,6 @@ class PipelinePackager:
         PipelineCompressor.tar_compress_code(dir_path=runner_file_path)
 
     def _delete_copied_req(self):
-
         try:
             os.remove(self.req_path.req_path)
         except OSError as error:
@@ -203,7 +196,6 @@ class PipelinePackager:
                 logger.error("Failed to remove toml file: %s", error)
 
     def clean_up(self, writer: YamlWriter):
-
         # revert original spec file
         writer.revert_temp_to_orig()
 
@@ -215,7 +207,6 @@ class PipelinePackager:
         runner_dir_name: str,
         params: PipelineParams,
     ) -> CodeInfo:
-
         code_info = PipelineCodeUploader(
             params=params,
             runner_dir_name=runner_dir_name,
@@ -230,7 +221,6 @@ class PipelinePackager:
         runner_dir_name: str,
         params: PipelineParams,
     ) -> CodeInfo:
-
         writer = YamlWriter(dict_=self.spec, path=runner_file_path)
 
         self.package_pipeline(writer=writer, runner_file_path=runner_file_path)
@@ -245,7 +235,6 @@ class PipelinePackager:
         return code_info
 
     def package_local(self, writer: PipelineWriter, params: PipelineParams):
-
         Path(params.run_id).mkdir(parents=True, exist_ok=True)
         params.path = writer.write_pipeline(tmp_dir=params.run_id)
 

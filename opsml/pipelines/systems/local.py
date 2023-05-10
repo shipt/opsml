@@ -2,12 +2,12 @@ from graphlib import TopologicalSorter
 from typing import Dict, List, Union
 
 
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.pipelines.systems.base import Pipeline
-from opsml_artifacts.helpers import utils
-from opsml_artifacts.helpers.cli_utils import stdout_msg
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.systems.base import Pipeline
+from opsml.helpers import utils
+from opsml.helpers.cli_utils import stdout_msg
 
-from opsml_artifacts.pipelines.types import TaskArgs, PipelineJob, PipelineSystem, CodeInfo
+from opsml.pipelines.types import TaskArgs, PipelineJob, PipelineSystem, CodeInfo
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -38,7 +38,6 @@ def _execute_subprocess(command: str) -> None:
 
 class LocalPipeline(Pipeline):
     def package_code(self) -> CodeInfo:
-
         """Packages code for a local pipeline run"""
 
         code_info = self.helpers.packager.package_local(
@@ -79,7 +78,6 @@ class LocalPipeline(Pipeline):
         )
 
     def build(self) -> PipelineJob:
-
         """
         Builds a LocalPipeline
 
@@ -103,7 +101,6 @@ class LocalPipeline(Pipeline):
 
     @staticmethod
     def run(pipeline_job: PipelineJob) -> None:
-
         """
         Runs a Local Pipeline
 

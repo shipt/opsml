@@ -61,7 +61,7 @@ print(cards[0])
     "timestamp": 1682472648928559,
     "name": "linnerrud",
     "version": "1.2.0",
-    "data_uri": "opsml_artifacts/OPSML_DATA_REGISTRY/opsml/linnerrud/v-1.2.0/linnerrud.parquet",
+    "data_uri": "opsml/OPSML_DATA_REGISTRY/opsml/linnerrud/v-1.2.0/linnerrud.parquet",
     "feature_descriptions": None,
     "data_type": "DataFrame",
     "dependent_vars": ["Pulse"],
@@ -80,7 +80,7 @@ print(cards[0])
     },
     "additional_info": {},
     "runcard_uid": None,
-    "datacard_uri": "opsml_artifacts/OPSML_DATA_REGISTRY/opsml/linnerrud/v-1.2.0/datacard.joblib",
+    "datacard_uri": "opsml/OPSML_DATA_REGISTRY/opsml/linnerrud/v-1.2.0/datacard.joblib",
 }
 
 """

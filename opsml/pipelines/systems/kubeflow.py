@@ -1,10 +1,10 @@
 from typing import Dict, List, Any
 
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.pipelines.systems.base import Pipeline
-from opsml_artifacts.helpers.cli_utils import stdout_msg
-from opsml_artifacts.helpers.settings import settings
-from opsml_artifacts.pipelines.types import (
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.systems.base import Pipeline
+from opsml.helpers.cli_utils import stdout_msg
+from opsml.helpers.settings import settings
+from opsml.pipelines.types import (
     PipelineJob,
     PipelineSystem,
     CustomTrainingOp,
@@ -46,7 +46,6 @@ class KubeFlowServerPipeline(Pipeline):
 
     @staticmethod
     def run(pipeline_job: PipelineJob) -> None:
-
         """
         Runs a Kubeflow pipeline
 
@@ -72,7 +71,6 @@ class KubeFlowServerPipeline(Pipeline):
         custom_tasks = {}
 
         for task_name in self.resources.keys():
-
             stdout_msg(f"Building pipeline task: {task_name}")
             custom_tasks[task_name] = self._task_builder.build(
                 task_args=self.resources[task_name],
@@ -85,7 +83,6 @@ class KubeFlowServerPipeline(Pipeline):
     def _set_task_dependencies(self, custom_tasks: Dict[str, Any]) -> Dict[str, Any]:
         # set dependencies
         for task_name, task_args in self.resources.items():
-
             custom_tasks = self._set_dependencies(
                 task_name=task_name,
                 custom_tasks=custom_tasks,
@@ -99,7 +96,6 @@ class KubeFlowServerPipeline(Pipeline):
         return self._set_task_dependencies(custom_tasks=custom_tasks)
 
     def build(self) -> None:
-
         """
         Builds a Vertex Pipeline
 

@@ -1,10 +1,10 @@
 from typing import Dict, List, Any
 
-from opsml_artifacts.helpers.logging import ArtifactLogger
-from opsml_artifacts.pipelines.systems.kubeflow import KubeFlowServerPipeline
-from opsml_artifacts.helpers.cli_utils import stdout_msg
-from opsml_artifacts.helpers.settings import settings
-from opsml_artifacts.pipelines.types import (
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.systems.kubeflow import KubeFlowServerPipeline
+from opsml.helpers.cli_utils import stdout_msg
+from opsml.helpers.settings import settings
+from opsml.pipelines.types import (
     PipelineJob,
     PipelineSystem,
     PipelineParams,
@@ -16,7 +16,6 @@ logger = ArtifactLogger.get_logger(__name__)
 class VertexServerPipeline(KubeFlowServerPipeline):
     @staticmethod
     def run(pipeline_job: PipelineJob) -> None:
-
         """
         Runs a Vertex pipeline
 
@@ -57,7 +56,6 @@ class VertexServerPipeline(KubeFlowServerPipeline):
 
     @staticmethod
     def upload_pipeline_to_gcs(compiled_pipeline_path: str, destination_path: str):
-
         """
         Uploads vertex pipeline to cloud storage (gcs)
 
@@ -81,8 +79,7 @@ class VertexServerPipeline(KubeFlowServerPipeline):
 
     @staticmethod
     def _submit_schedule_from_payload(params: PipelineParams, payload: Dict[str, str]):
-
-        from opsml_artifacts.helpers.gcp_utils import GCPClient
+        from opsml.helpers.gcp_utils import GCPClient
 
         if not bool(params.cron):
             raise ValueError(
@@ -108,7 +105,6 @@ class VertexServerPipeline(KubeFlowServerPipeline):
 
     @staticmethod
     def schedule(pipeline_job: PipelineJob) -> None:
-
         """
         Schedules a Vertex pipeline using Cloud Scheduler
 
