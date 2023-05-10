@@ -1,0 +1,10 @@
+from opsml_pipelines import MetadataTracker
+import os
+
+if os.getenv("PIPELINEcard_uid"):
+    tracker = MetadataTracker()
+    tracker.load_cards_to_global(cards_to_load={load_code},global_vars=globals(),)
+
+if __name__ == "__main__":
+{code}
+{end_code}  

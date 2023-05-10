@@ -1,0 +1,185 @@
+"""Code for building Tasks and Pipelines"""
+import os
+import shutil
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Union, Dict, Any, Protocol
+import tempfile
+from opsml_artifacts.helpers.settings import settings
+from opsml_artifacts.helpers.utils import FindPath
+from opsml_artifacts.helpers.logging import ArtifactLogger
+
+from opsml_artifacts.pipelines.systems.task_builder import get_task_builder
+from opsml_artifacts.pipelines.types import CodeInfo, PipelineParams, ParamDefaults
+from opsml_artifacts.pipelines.types import (
+    PipelineHelpers,
+    PipelineConfig,
+    PipelineJob,
+    PipelineSystem,
+    TaskArgs,
+    PathInfo,
+)
+
+
+logger = ArtifactLogger.get_logger(__name__)
+
+
+class Pipeline:
+    def __init__(self, config: PipelineConfig, helpers: PipelineHelpers):
+        """
+        Parent pipeline class that all pipeline systems inherit from. This class will
+        set params, a pipeline packager, an httpx session if running as a client, a storage client,
+        and a task builder that's used to build pipeline tasks.
+
+        Args:
+            params:
+                `PipelineParams`
+            helpers:
+                `PipelineHelpers`
+
+        """
+        self.config = config
+        self.helpers = helpers
+        self._session = self._get_session()
+        self._storage_client = settings.storage_client
+        self._task_builder = get_task_builder(pipeline_system=self.params.pipeline_system)
+
+    @property
+    def params(self) -> PipelineParams:
+        return self.config.params
+
+    @property
+    def env_vars(self) -> Dict[str, Any]:
+        return self.config.env_vars
+
+    @property
+    def resources(self) -> Dict[str, TaskArgs]:
+        return self.config.resources
+
+    def _package_and_upload(self, filepath: str, dir_name: str):
+
+        code_info = self.helpers.packager.package_and_upload_pipeline(
+            runner_file_path=filepath,
+            runner_dir_name=dir_name,
+            params=self.params,
+        )
+        for name, value in code_info:
+            setattr(self.params, name, value)
+
+        return code_info
+
+    def package_code(self) -> CodeInfo:
+        """
+        Packages and uploads pipeline code. If the pipeline is created using decorators,
+        a temp directory is created and the pipeline is written to it prior to compression and upload.
+        """
+
+        if self.params.decorated:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                self.params.path = self.helpers.writer.write_pipeline(tmp_dir=tmp_dir)
+                runner_path_info = self._get_pipeline_runner_path_info()
+
+                return self._package_and_upload(
+                    filepath=runner_path_info.filepath,
+                    dir_name=runner_path_info.dir_name,
+                )
+
+        runner_path_info = self._get_pipeline_runner_path_info()
+        return self._package_and_upload(filepath=runner_path_info.file)
+
+    def _get_pipeline_runner_path_info(self) -> PathInfo:
+
+        """
+        Searches for the `pipeline_runner.py` file along a given path.
+        If a unique directory is given, that directory is searched. This is helpful
+        in cases where multiple pipelines are in one repository. If no directory is specified,
+        it is assumed there is only one `pipeline_runner.py` present, and the path associated
+        with this pipeline will be used.
+        """
+
+        # if directory has been specified
+        if self.params.directory is not None:
+            dir_path = FindPath.find_dirpath(
+                dir_name=self.params.directory,
+                anchor_file=self.params.source_file,
+            )
+
+            return FindPath.find_source_dir(
+                path=dir_path,
+                runner_file=self.params.source_file,
+            )
+
+        return FindPath.find_source_dir(
+            path=self.params.path,
+            runner_file=self.params.source_file,
+        )
+
+    def _get_session(self):
+        """Gets the requests session for connecting to the opsml api"""
+        return settings.request_client
+
+    def build(self) -> PipelineJob:
+        """
+        Builds a pipeline.
+
+        Args:
+            pipeline_config:
+                Pydantic pipeline configuration
+
+        Returns:
+            AI platform pipeline job. Will also incude airflow job in the future
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def run(pipeline_job: PipelineJob) -> None:
+        """
+        Runs a pipeline.
+
+        Args:
+            pipeline_job (PipelineJob): Pipeline job to run
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def schedule(pipeline_job: PipelineJob):
+        """
+        Schedules a pipelines.
+
+        Args:
+            pipeline_job:
+                `PipelineJob`
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
+        raise NotImplementedError
+
+    def delete_files(self) -> None:
+
+        paths: List[Union[str, Path]] = list(Path(os.getcwd()).rglob(f"{self.params.project_name}-*.json"))
+        paths.append(ParamDefaults.COMPRESSED_FILENAME)
+
+        # remove deco dir
+        ops_pipeline_name = f"ops_pipeline_{self.params.project_name}_{self.params.run_id}"
+
+        shutil.rmtree(ops_pipeline_name, ignore_errors=True)
+
+        # remove local dir if running local pipeline
+        shutil.rmtree(self.params.run_id, ignore_errors=True)
+
+        for path in paths:
+            try:
+                os.remove(path)
+            except Exception as error:  # pylint: disable=broad-except,unused-variable # noqa
+                pass
+
+    def _package_code(self) -> CodeInfo:
+
+        if self.tasks.decorated:
+            code_info = self._create_temp_package()
+
+        self._add_code_info_to_params(code_info=code_info)
+
+        return code_info
