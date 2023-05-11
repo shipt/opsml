@@ -76,21 +76,29 @@ class MachineType:
     machine_type: Optional[str] = None
 
 
-class TaskArgs(BaseModel):
+class Task(BaseModel):
     """Model the contains expected parameters for a pipeline task"""
 
     entry_point: str = Field(..., description="Entry point for pipeline task")
     name: str = Field(..., description="Task name")
     flavor: Optional[str] = Field(None, description="Environment to run task in")
-    number_instances: Optional[int] = Field(1, description="Number of compute vms to allocate for the specified task")
-    machine_type: MachineType = Field(..., description="Memory and CPU to set")
+    number_instances: int = Field(1, description="Number of compute vms to allocate for the specified task")
+    memory: int = Field(16, description="Memory to assign to compute resource")
+    cpu: int = Field(2, description="CPU to assign to compute resource")
+
     gpu_count: Optional[int] = Field(None, description="Number of gpus to use")
     gpu_type: Optional[str] = Field(None, description="Type of gpu to use")
     custom_image: Optional[str] = Field(None, description="Custom docker image to use if specified")
-    retry: Optional[int] = Field(0, description="Number of retries in case of task failure")
+    machine_type: Optional[str] = Field(
+        None, description="Optional compute resource name (e.g. vertex would use n1-standard-4). Overrides cpu/memory"
+    )
 
-    class Config:
-        extra = Extra.allow
+    retry: int = Field(0, description="Number of retries in case of task failure")
+    decorated: bool = Field(False, description="Whether task refers to decorated function")
+    func: Optional[Callable[[Any], Any]] = Field(None, description="Decorated function")
+
+    # class Config:
+    # extra = Extra.allow
 
     @validator("entry_point", allow_reuse=True)
     def entry_point_valid(cls, entry_point, values):  # pylint: disable=no-self-argument
@@ -127,10 +135,27 @@ class TaskArgs(BaseModel):
 
         return gpu_type
 
+    @validator("flavor", allow_reuse=True)
+    def flavor_custom_image_assigned(cls, flavor, values):  # pylint: disable=no-self-argument
+        """Checks flavor and custom image"""
+
+        if not any(bool(arg) for arg in [flavor, values.get("custom_image")]):
+            raise ValueError("Either flavor or custom image must be specified for a task")
+
+        return flavor
+
+    @validator("func", allow_reuse=True)
+    def decorated(cls, func, values):  # pylint: disable=no-self-argument
+        """Checks if func is assigned"""
+
+        if func is not None:
+            values["decorated"] = True
+        return func
+
 
 class PipelinePlan(BaseModel):
     tasks: List[Callable[..., Any]]
-    resources: Dict[str, TaskArgs]
+    resources: Dict[str, Task]
 
 
 @dataclass
@@ -145,7 +170,7 @@ class PipelineConfig:
             Pipeline parameters
     """
 
-    resources: Dict[str, TaskArgs]
+    resources: Dict[str, Task]
     params: PipelineParams
     env_vars: Dict[str, Any]
     pipelinecard_uid: str = ""
@@ -172,7 +197,7 @@ class PipelineWriterMetadata:
     run_id: str
     project: str
     pipeline_tasks: List[Callable[..., Any]]
-    pipeline_resources: Dict[str, TaskArgs]
+    pipeline_resources: Dict[str, Task]
     config: Dict[str, Any]
 
 

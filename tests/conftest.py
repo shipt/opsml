@@ -60,6 +60,7 @@ from opsml.projects.base.types import ProjectInfo
 from opsml.registry import CardRegistries
 from opsml.projects import OpsmlProject
 from opsml.deploy.fastapi.api import ModelApi
+from opsml.pipelines.base_runner import Task
 
 
 # testing
@@ -917,3 +918,28 @@ def fastapi_model_app():
 def test_fastapi_client(fastapi_model_app):
     with TestClient(fastapi_model_app) as test_client:
         yield test_client
+
+
+######################################
+
+## Pipeline helpers
+
+######################################
+
+
+@pytest.fixture(scope="module")
+def mock_pipeline_task():
+    return Task(
+        name="test_task",
+        entry_point="test_task.py",
+        flavor="sklearn",
+    )
+
+
+@pytest.fixture(scope="module")
+def mock_sql_pipeline_task():
+    return Task(
+        name="sql_task",
+        entry_point="sql_task.sql",
+        flavor="snowflake",
+    )

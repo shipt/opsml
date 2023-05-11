@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Union, List
 import yaml
 from pydantic import BaseModel, validator, Field, Extra
 
-from opsml.helpers.settings import settings
+from opsml.pipelines import settings
 from opsml.helpers.utils import ConfigFileLoader
 from opsml.pipelines.types import PipelineSystem
 from opsml.helpers.types import OpsmlEnvVars

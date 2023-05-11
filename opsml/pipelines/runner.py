@@ -2,8 +2,8 @@
 
 from typing import Any, Callable, List, Optional, cast
 from dataclasses import dataclass
-
-from opsml.helpers.cli_utils import stdout_msg
+from functools import wraps
+from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.package import PipelinePackager
 from opsml.pipelines.types import (
     PipelineWriterMetadata,
@@ -185,9 +185,74 @@ class PipelineRunner:
 
 # you should be able to add tasks to pipeline runner directly
 # no need to create a "task list"
+
+
+@dataclass
+class Task:
+    name: str
+    entry_point: str
+    number_instances: int = 1
+    flavor: str
+    memory: int = 16
+    cpu: int = 2
+    retry: int = 0
+    custom_image: Optional[str]
+    machine_type: Optional[str]
+
+
 class BaseRunner:
-    def add_task(self):
-        ...
+    def __init__(self):
+        self.tasks = []
+
+    def add_task(
+        self,
+        name: str,
+        entry_point: str,
+        flavor: str,
+        number_instances: int = 1,
+        memory: int = 16,
+        cpu: int = 2,
+        retry: int = 0,
+        gpu_count: int = 0,
+        gpu_type: Optional[str] = None,
+        custom_image: Optional[str] = None,
+        machine_type: Optional[str] = None,
+        upstream_tasks: Optional[List[Tasks]] = None,
+        **kwargs,
+    ):
+        """
+        Adds a task to the current pipeline. This is used for non-decorator-based pipeline
+        building.
+
+        Args:
+            name:
+                Name of pipeline task
+            entry_point:
+                Name of python or sql file to run
+            flavor:
+                Flavor of pipeline task (e.g. sklearn, snowflake)
+            number_instances:
+                Number compute instances to use. Defaults to 1
+            memory:
+                How much memory to attach to each compute resource. Defaults to 16 GB
+            cpu:
+                How much cpu to allocate for each compute resource. Default to 2
+            gpu_count:
+                Number of gpus to asign to each compute resource
+            gpu_type:
+                Type of gpu to use
+            retry:
+                How many times to retry the task if it fails. Defaults to 0
+            custom_image:
+                Optional argument for providing a custom docker image. This will override "flavor"
+            machine_type:
+                Optional argument to name a a compute resource by name (e.g. vertex would use n1-standard-4).
+                This will override cpu and memory arguments
+            upstream_tasks:
+                Optional list of upstream tasks that this task depends on.
+        """
+
+        print(**kwargs)
 
     def ml_task(
         memory: Optional[int] = None,
@@ -225,26 +290,24 @@ class BaseRunner:
 
             @wraps(func)
             def wrapper(*args, **kwargs):
-                machine_meta = MachineType(
+                task_args = Task(
+                    name=func.__name__,
+                    entry_point=f"{func.__name__}.py",
+                    flavor=flavor,
                     memory=memory,
                     cpu=cpu,
-                    machine_type=machine_type,
-                )
-                task_args = TaskArgs(
-                    machine_type=machine_meta,
-                    flavor=flavor,
                     number_vms=number_vms,
                     gpu_count=gpu_count,
                     gpu_type=gpu_type,
                     custom_image=custom_image,
-                    entry_point=f"{func.__name__}.py",
-                    name=func.__name__,
+                    machine_type=machine_type,
                 )
+
                 return task_args, func
 
-        return wrapper
+            return wrapper
 
-    return task
+        return task
 
     def sql_task(self):
         ...

@@ -4,7 +4,7 @@ import tarfile
 from pathlib import Path
 from typing import Dict, Optional
 
-from opsml.helpers.settings import settings
+from opsml.pipelines import settings
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import FindPath, YamlWriter
 from opsml.helpers import exceptions
