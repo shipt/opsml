@@ -1,6 +1,7 @@
 from functools import wraps
-from typing import List, Optional, Callable, Any, Union
+from typing import List, Optional, Callable, Any, Union, Dict
 from opsml.pipelines.types import Task
+from opsml.pipelines.utils import ConfigFileLoader
 from opsml.helpers.logging import ArtifactLogger
 
 
@@ -8,11 +9,30 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 class BaseRunner:
-    def __init__(self, pipeline_config: Optional[str]):
-        self.tasks: List[Task] = []  # list of Task
-        self.relationships = {}  # dictionary of parent child relationships
+    def __init__(self, config_file: Optional[str] = None):
+        self.tasks: List[Task] = []  # list of Tasks
 
-    def _set_upstream_task(self, downstream_task: str, upstream_tasks: List[Task]) -> None:
+        self.relationships = {}  # dictionary of child (key) parent(list values)
+
+        # will load a config and parse tasks if present
+        if config_file is not None:
+            self.pipeline_config = self._load_config(config_file=config_file)
+
+    def _load_config(self, config_file: Optional[str] = None) -> Dict[Union[str, int], Any]:
+        loader = ConfigFileLoader(filename=config_file)
+        config = loader.load()
+
+        tasks = config.get("tasks")
+        if tasks is not None:
+            self._extract_tasks(tasks=tasks)
+
+        return config
+
+    def _extract_tasks(self, tasks: Dict[Union[str, int], Any]):
+        for name, kwargs in tasks.items():
+            self.add_task(name=name, **kwargs)
+
+    def _set_upstream_task(self, current_task: str, upstream_tasks: List[Union[Task, str]]) -> None:
         """
         Sets upstream and downstream tasks for pipelines
 
@@ -25,10 +45,15 @@ class BaseRunner:
         """
 
         for upstream_task in upstream_tasks:
-            if self.relationships.get(upstream_task.name) is not None:
-                self.relationships[upstream_task.name].append(downstream_task)
+            if isinstance(upstream_task, Task):
+                upstream_name = upstream_task.name
             else:
-                self.relationships[upstream_task.name] = [downstream_task]
+                upstream_name = upstream_task
+
+            if self.relationships.get(current_task) is not None:
+                self.relationships[current_task].append(upstream_name)
+            else:
+                self.relationships[current_task] = [upstream_name]
 
     def add_task(
         self,
@@ -79,13 +104,14 @@ class BaseRunner:
                 Argument is only used with decorator-based tasks
         """
 
+        task = Task.parse_obj(locals())
+
         if bool(upstream_tasks):
             self._set_upstream_task(
-                downstream_task=name,
+                current_task=name,
                 upstream_tasks=upstream_tasks,
             )
 
-        task = Task.parse_obj(locals())
         self.tasks.append(task)
 
         return task
@@ -142,6 +168,7 @@ class BaseRunner:
                 custom_image=custom_image,
                 machine_type=machine_type,
                 func=func,
+                upstream_tasks=upstream_tasks,
             )
 
         return task

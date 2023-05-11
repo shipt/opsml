@@ -19,7 +19,7 @@ def test_add_task(mock_pipeline_task: Task):
     )
 
     assert len(runner.tasks) == 2
-    assert runner.relationships[mock_pipeline_task.name][0] == f"{mock_pipeline_task.name}_2"
+    assert runner.relationships[f"{mock_pipeline_task.name}_2"][0] == mock_pipeline_task.name
 
     with pytest.raises(ValueError):
         runner.add_task(
@@ -59,5 +59,14 @@ def test_decorator_task(
         entry_point=mock_sql_pipeline_task.entry_point,
         flavor=mock_sql_pipeline_task.flavor,
     )
+
+    assert len(runner.tasks) == 3
+
+    # "test_task"
+    assert runner.relationships["test_task2"][0] == "test_task"
+
+
+def test_config_load():
+    runner = BaseRunner(config_file="pipeline.yaml")
 
     assert len(runner.tasks) == 3
