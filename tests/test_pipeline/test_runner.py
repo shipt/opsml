@@ -70,3 +70,4 @@ def test_config_load():
     runner = BaseRunner(config_file="pipeline.yaml")
 
     assert len(runner.tasks) == 3
+    assert runner.relationships["train_model"][0] == "get_data"
