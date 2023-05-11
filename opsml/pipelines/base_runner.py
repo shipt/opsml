@@ -8,7 +8,7 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 class BaseRunner:
-    def __init__(self):
+    def __init__(self, pipeline_config: Optional[str]):
         self.tasks: List[Task] = []  # list of Task
         self.relationships = {}  # dictionary of parent child relationships
 
