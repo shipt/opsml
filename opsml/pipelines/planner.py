@@ -7,7 +7,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.types import PipelinePlan, MachineType, TaskArgs
 from opsml.pipelines.writer_utils.types import SigTypeHints
-from opsml.pipelines.types import PipelineParams, Tasks, PipelineSystem
+from opsml.pipelines.types import PipelineSystem
+from opsml.pipelines.spec import PipelineSpec
+
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -115,8 +117,8 @@ class PipelinePlanner:
 
     def __init__(
         self,
-        params: PipelineParams,
-        tasks: Tasks,
+        spec: PipelineSpec,
+        tasks: List[Task],
     ):
         self.params = params
         self.tasks, self.resources = self._set_pipeline_tasks(tasks=tasks)

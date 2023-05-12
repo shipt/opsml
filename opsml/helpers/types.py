@@ -10,3 +10,9 @@ class OpsmlUri(str, Enum):
 class OpsmlAuth(str, Enum):
     USERNAME = "OPSML_USERNAME"
     PASSWORD = "OPSML_PASSWORD"
+
+
+class OpsmlPipelineVars(str, Enum):
+    CONTAINER_REGISTRY = "OPSML_CONTAINER_REGISTRY"
+    SCHEDULER_URI = "OPSML_SCHEDULER_URI"
+    PIPELINE_HOST_URI = "OPSML_PIPELINE_HOST_URI"

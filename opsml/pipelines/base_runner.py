@@ -1,35 +1,47 @@
-from functools import wraps
-from typing import List, Optional, Callable, Any, Union, Dict
+from typing import List, Optional, Callable, Any, Union
 from opsml.pipelines.types import Task
-from opsml.pipelines.utils import ConfigFileLoader
+from opsml.pipelines.spec import PipelineSpecCreator, PipelineSpec
 from opsml.helpers.logging import ArtifactLogger
 
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
-class BaseRunner:
-    def __init__(self, config_file: Optional[str] = None):
+class PipelineRunnerBase:
+    def __init__(
+        self,
+        spec_filename: Optional[str] = None,
+        pipeline_spec: Optional[PipelineSpec] = None,
+        requirements: Optional[str] = None,
+    ):
+        """
+        Interface for building a machine learning pipeline.
+
+        Args:
+            spec_filename:
+                Optional filename for spec file
+            pipeline_spec:
+                Optional `PipelineSpec`
+            requirements:
+                Requirement file name. Name values can be "requirements.txt" (or specific *.txt name) or "poetry.lock"
+
+        """
+
         self.tasks: List[Task] = []  # list of Tasks
-
         self.relationships = {}  # dictionary of child (key) parent(list values)
+        self.specs = PipelineSpecCreator(
+            spec_filename=spec_filename,
+            spec=pipeline_spec,
+        ).specs
 
-        # will load a config and parse tasks if present
-        if config_file is not None:
-            self.pipeline_config = self._load_config(config_file=config_file)
+        # for declarative pipelines in spec
+        if self.specs.pipeline is not None:
+            self._extract_tasks()
 
-    def _load_config(self, config_file: Optional[str] = None) -> Dict[Union[str, int], Any]:
-        loader = ConfigFileLoader(filename=config_file)
-        config = loader.load()
+        self.requirements = requirements
 
-        tasks = config.get("tasks")
-        if tasks is not None:
-            self._extract_tasks(tasks=tasks)
-
-        return config
-
-    def _extract_tasks(self, tasks: Dict[Union[str, int], Any]):
-        for name, kwargs in tasks.items():
+    def _extract_tasks(self):
+        for name, kwargs in self.specs.pipeline.tasks.items():
             self.add_task(name=name, **kwargs)
 
     def _set_upstream_task(self, current_task: str, upstream_tasks: List[Union[Task, str]]) -> None:

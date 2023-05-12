@@ -1,16 +1,30 @@
-tasks:
-  get_data:
-    entry_point: "get_data.sql"
-    flavor: "snowflake"
 
-  train_model:
-    entry_point: "train_model.py"
-    flavor: "sklearn"
-    upstream_tasks: ["get_data"]
+project_name: opsml-test
+cron: 0 5 * * *
+owner: test_owner
+team: mlops
+pipeline_system: vertex
+user_email: test@shipt.com
+container_registry: "test"
 
-  validate_model:
-    entry_point: "validate_model.py"
-    flavor: "sklearn"
-    upstream_tasks: ["train_model"]
+pipeline:
+  tasks:
+    get_data:
+      entry_point: "get_data.sql"
+      flavor: "snowflake"
+
+    train_model:
+      entry_point: "train_model.py"
+      flavor: "sklearn"
+      upstream_tasks: ["get_data"]
+
+    validate_model:
+      entry_point: "validate_model.py"
+      flavor: "sklearn"
+      upstream_tasks: ["train_model"]
+
+env_vars:
+  test_env_var: ${TEST_ENV_VAR}
+
 
 

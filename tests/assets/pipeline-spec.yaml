@@ -1,0 +1,7 @@
+project_name: opsml-test
+cron: 0 5 * * *
+owner: test_owner
+team: mlops
+pipeline_system: vertex
+user_email: test@shipt.com
+container_registry: "test"

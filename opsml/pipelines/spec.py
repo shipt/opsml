@@ -8,9 +8,9 @@ import yaml
 from pydantic import BaseModel, validator, Field, Extra
 
 from opsml.pipelines import settings
-from opsml.helpers.utils import ConfigFileLoader
+from opsml.pipelines.utils import SpecLoader
 from opsml.pipelines.types import PipelineSystem
-from opsml.helpers.types import OpsmlEnvVars
+from opsml.helpers.types import OpsmlPipelineVars
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 
@@ -39,10 +39,11 @@ class VertexExtraArgs(BaseModel):
     )
     gcp_region = Field("us-central1", description="gcp region to use when running pipelines")
     scheduler_uri: Optional[str] = Field(
-        None, description="Scheduler URI to use when scheduling jobs", env=OpsmlEnvVars.SCHEDULER_URI
+        None, description="Scheduler URI to use when scheduling jobs", env=OpsmlPipelineVars.SCHEDULER_URI
     )
 
 
+# used with decorator - exposed to user
 class PipelineSpec(BaseModel):
     """
     Config used as part decorator-based training of pipelines
@@ -79,7 +80,11 @@ class PipelineSpec(BaseModel):
     additional_dir: Optional[str] = Field(None, description="Optional directory to include with code")
     env_vars: Dict[str, Any] = Field({}, description="Env vars for pipeline")
     additional_task_args: Optional[VertexExtraArgs] = Field(None, description="Extra args to pass during job build")
-    container_registry: str = Field(..., description="Container registry path", env=OpsmlEnvVars.CONTAINER_REGISTRY)
+    container_registry: str = Field(
+        ...,
+        description="Container registry path",
+        env=OpsmlPipelineVars.CONTAINER_REGISTRY,
+    )
     cache: bool = Field(False, description="Boolean indicating whether pipeline tasks should be cached")
 
     class Config:
@@ -87,27 +92,18 @@ class PipelineSpec(BaseModel):
         arbitrary_types_allowed = True
 
 
-def env_constructor(loader, node):
-    """Constructor for finding env vars"""
-
-    value = loader.construct_scalar(node)
-    for group in env_pattern.findall(value):
-        value = value.replace(f"${{{group}}}", os.environ.get(group))
-    return value
-
-
-yaml.add_implicit_resolver("!pathex", env_pattern)
-yaml.add_constructor("!pathex", env_constructor)
-
-
-class ParamDefaults(str, Enum):
+class SpecDefaults(str, Enum):
     SOURCE_FILE = "pipeline_runner.py"
     COMPRESSED_FILENAME = "archive.tar.gz"
-    SPEC_FILENAME = "pipeline-config.yaml"
+    SPEC_FILENAME = "pipeline-spec.yaml"
     SOURCE_DIR = "src_dir"
 
 
-class PipelineParams(BaseModel):
+class PipelineTasks(BaseModel):
+    tasks: Dict[str, Dict[str, Any]]
+
+
+class PipelineBaseSpecs(BaseModel):
     """
     Creates pipeline params associated with the current pipeline run.
     """
@@ -136,9 +132,16 @@ class PipelineParams(BaseModel):
     code_uri: Optional[str] = None
     source_dir: Optional[str] = None
     pipelinecard_uid: str = "NO_ID"
-    source_file: str = ParamDefaults.SOURCE_FILE
+    source_file: str = SpecDefaults.SOURCE_FILE
     path: str = os.getcwd()
     additional_task_args: Dict[str, Any]
+
+    # pipeline spec
+    pipeline: Optional[PipelineTasks] = None
+
+    class Config:
+        extra = Extra.allow
+        arbitrary_types_allowed = True
 
     @validator("is_proxy", pre=True)
     def set_default(cls, value):
@@ -157,9 +160,10 @@ class PipelineParams(BaseModel):
         setattr(self, name, value)
 
 
-class PipelineParamCreator:
+class PipelineSpecCreator:
     def __init__(
         self,
+        spec_filename: Optional[str] = SpecDefaults.SPEC_FILENAME.value,
         spec: Optional[PipelineSpec] = None,
     ):
         """
@@ -170,14 +174,16 @@ class PipelineParamCreator:
                 Pipeline specification
 
         """
+
+        self.spec_filename = spec_filename or SpecDefaults.SPEC_FILENAME.value
         self.pipe_spec = self.set_pipe_spec(spec=spec)
 
     @property
-    def params(self) -> PipelineParams:
+    def specs(self) -> PipelineBaseSpecs:
         pipeline_paths = self.create_pipeline_path_params()
-        params = {**self.pipe_spec.dict(), **pipeline_paths}
+        specs = {**self.pipe_spec.dict(), **pipeline_paths}
 
-        return PipelineParams(**params)
+        return PipelineBaseSpecs(**specs)
 
     def create_pipeline_path_params(self) -> Dict[str, str]:
         """Sets pipeline path parameters that are used when building pipeline systems"""
@@ -203,9 +209,16 @@ class PipelineParamCreator:
 
         return paths
 
+    def set_pipeline_tasks(self, loaded_spec: Dict[str, Any]):
+        tasks = loaded_spec.get("pipeline")
+        if tasks is not None:
+            loaded_spec["pipeline"] = PipelineTasks(tasks=tasks)
+
+        return loaded_spec
+
     def set_pipe_spec(self, spec: Optional[PipelineSpec] = None) -> PipelineSpec:
         if spec is None:
-            loaded_spec = self._get_pipeline_spec(filename=ParamDefaults.SPEC_FILENAME.value)
+            loaded_spec = self._get_pipeline_spec(filename=self.spec_filename)
             spec = PipelineSpec(**loaded_spec)
 
         return spec
@@ -214,14 +227,14 @@ class PipelineParamCreator:
         self,
         filename: str,
         dir_name: Optional[str] = None,
-    ) -> Dict[Union[str, int], Any]:
+    ) -> Dict[str, Any]:
         """
-        Extracts pipeline config
+        Loads pipeline spec from file
 
         Args:
             filename:
                 Name of pipeline configuration file
         """
 
-        loader = ConfigFileLoader(dir_name=dir_name, filename=filename)
+        loader = SpecLoader(dir_name=dir_name, filename=filename)
         return loader.load()

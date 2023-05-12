@@ -239,42 +239,6 @@ class ContainerOpInputs:
     retry: Optional[int] = None
 
 
-class Tasks(BaseModel):
-    task_list: List[Callable[..., Any]]
-    decorated: Optional[bool] = False
-
-    def __init__(self, **data):
-        """
-        Holder for callable pipeline tasks
-
-        Args:
-            task_list:
-                List of pipeline tasks as functions
-            decorated:
-                Boolean indicating if the function is decorated
-
-        """
-
-        data["decorated"] = self.check_decorated(input_task=data["task_list"][0])
-        super().__init__(**data)
-
-    def check_decorated(self, input_task: Callable[..., Any]) -> bool:
-        """
-        Checks if a given input task is decorated
-
-        Args:
-            input_data:
-                Callable task
-
-        Returns:
-            `bool`
-        """
-
-        if hasattr(input_task, "__wrapped__"):
-            return True
-        return False
-
-
 @dataclass
 class PathInfo:
     filepath: Optional[str]
