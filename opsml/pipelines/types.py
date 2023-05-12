@@ -196,9 +196,8 @@ class PipelineJob:
 class PipelineWriterMetadata:
     run_id: str
     project: str
-    pipeline_tasks: List[Callable[..., Any]]
-    pipeline_resources: Dict[str, Task]
-    config: Dict[str, Any]
+    pipeline_tasks: List[Task]
+    specs: Dict[str, Any]
 
 
 class MachineSpec(BaseModel):

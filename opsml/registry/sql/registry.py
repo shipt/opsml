@@ -1,11 +1,11 @@
 # pylint: disable=protected-access
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
-
+import os
 import pandas as pd
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.cards.cards import ArtifactCard, ModelCard
+from opsml.registry.cards.cards import ArtifactCard, ModelCard, PipelineCard
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.registry_base import OpsmlRegistry, ServerRegistry, VersionType
 from opsml.registry.sql.sql_schema import RegistryTableNames
@@ -242,6 +242,7 @@ class CardRegistry:
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
         save_path: Optional[str] = None,
+        assign_to_pipeline: bool = False,
     ) -> None:
         """
         Adds new record to registry.
@@ -258,6 +259,8 @@ class CardRegistry:
                 already inferred using either "OPSML_TRACKING_URI" or
                 "OPSML_STORAGE_URI" env variables. In addition, save_path should
                 specify a directory.
+            assign_to_pipeline:
+                Assigns card to current `PipelineCard` if true. Used during pipeline runs
         """
 
         self._registry.register_card(
@@ -265,6 +268,29 @@ class CardRegistry:
             version_type=version_type,
             save_path=save_path,
         )
+
+        if assign_to_pipeline:
+            self._update_pipeline_card(card=card)
+
+    def _update_pipeline_card(self, card: ArtifactCard):
+        """
+        Updates a pipeline card with current card uid
+
+        Args:
+            card:
+                `ArtifactCard`
+        """
+        pipeline_uid = os.getenv("PIPELINECARD_UID").strip()
+
+        if pipeline_uid is not None:
+            pipeline_registry = self._set_registry("pipeline")
+            pipeline_card: PipelineCard = pipeline_registry.load_card(uid=pipeline_uid)
+            pipeline_card.add_card_uid(uid=card.uid, card_type=card.card_type)
+            self.update_card(pipeline_card)
+            return None
+
+        logger.info("No active pipeline card is set")
+        return None
 
     def update_card(self, card: ArtifactCard) -> None:
         """

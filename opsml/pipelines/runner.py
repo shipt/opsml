@@ -72,30 +72,35 @@ class PipelineRunner(PipelineRunnerBase):
             `PipelineHelpers`
 
         """
-        spec = self.params.dict(include=INCLUDE_PARAMS)
+        specs = self.specs.dict(include=INCLUDE_PARAMS)
 
-        planner = PipelinePlanner(params=self.params, tasks=self.tasks)
-        packager = PipelinePackager(config=spec, requirements_file=requirements)
+        # planner = PipelinePlanner(specs=self.specs, tasks=self.tasks)
+        packager = PipelinePackager(specs=specs, requirements_file=requirements)
 
         pipe_meta = PipelineWriterMetadata(
-            run_id=self.params.run_id,
-            project=self.params.project_name,
-            pipeline_resources=planner.pipeline_plan.resources,
-            pipeline_tasks=planner.pipeline_plan.tasks,
-            config=spec,
+            run_id=self.specs.run_id,
+            project=self.specs.project_name,
+            pipeline_tasks=self.tasks,
+            config=specs,
         )
 
         writer = PipelineWriter(
             pipeline_metadata=pipe_meta,
-            additional_dir=cast(str, self.params.additional_dir),
-            runner_filename=self.params.source_file,
+            additional_dir=cast(str, self.specs.additional_dir),
+            runner_filename=self.specs.source_file,
         )
 
-        return PipelineHelpers(
-            planner=planner,
-            writer=writer,
-            packager=packager,
-        )
+        return PipelineHelpers(writer=writer, packager=packager)
+
+    def generate_pipeline_code(self) -> Optional[str]:
+        """
+        If creating a pipeline through the decorator style, this method
+        will auto-generate the pipeline template for you.
+        """
+
+        if self.is_decorated:
+            return self.helpers.writer.write_pipeline()
+        return None
 
 
 class _PipelineRunner:

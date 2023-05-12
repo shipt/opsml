@@ -1,8 +1,8 @@
 import textwrap
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Union, List
 
-from opsml.helpers.utils import Copier, TemplateWriter
+from opsml.pipelines.utils import Copier, TemplateWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
 
 
@@ -39,16 +39,16 @@ class SqlWriter(FuncWriter):
 
 
 class PyWriter(FuncWriter):
-    def _get_var_saver_text(self, assigned_var_text: str) -> str:
-        txt = f"""if os.getenv('PIPELINEcard_uid'): tracker.save_cards(assigned_cards={assigned_var_text}"""
-        return textwrap.indent(
-            txt + ", global_vars=globals())",
-            prefix="\t",
-        )
+    def _get_var_saver_text(self, assigned_cards: List[str]) -> str:
+        text = ""
+        for card in assigned_cards:
+            text + f"registry = CardRegistry(registry_type={card.card_type}) \n"
+            text + f"registry.register_card(card={card}, assign_to_pipeline=True) \n"
+
+        return textwrap.indent(text, prefix="\t")
 
     def _creat_template(self) -> Dict[str, str]:
         return {
-            "load_code": self.func_meta.input_vars,
             "code": textwrap.indent(self.func_meta.text, prefix="\t"),
             "assigned_vars": self.func_meta.assigned_vars,
             "end_code": self._get_var_saver_text(assigned_var_text=self.func_meta.assigned_vars),

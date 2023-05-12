@@ -2,7 +2,7 @@
 
 import re
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from dataclasses import dataclass
 from opsml.registry.cards.types import CardName
 
@@ -11,8 +11,7 @@ env_pattern = re.compile(r".*?\${(.*?)}.*?")
 
 @dataclass
 class ParserOutput:
-    cards_to_save: Optional[str] = None
-    cards_to_load: Optional[str] = None
+    cards_to_save: Optional[List[str]] = None
     func_body: Optional[str] = None
     func_def: Optional[str] = None
 
@@ -20,10 +19,9 @@ class ParserOutput:
 @dataclass
 class FuncMetadata:
     name: str
-    assigned_vars: str
+    assigned_vars: Optional[List[str]] = None
     text: str
     definition: str
-    input_vars: str
 
 
 class SigTypeHints(str, Enum):

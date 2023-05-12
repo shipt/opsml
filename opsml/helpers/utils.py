@@ -3,6 +3,7 @@ import glob
 import os
 import re
 import string
+import shutil
 from functools import wraps
 from pathlib import Path
 from typing import Optional, Union
@@ -160,6 +161,70 @@ class FindPath:
                 Please check your project structure.
                 Found paths: {paths}
             """
+        )
+
+
+class Copier:
+    """Helper class to copy files to a specified directory"""
+
+    @staticmethod
+    def copy(
+        src_dir: str,
+        dest_dir: str,
+    ):
+        """
+        Copies provided source directory to specified
+        destination.
+
+        Args:
+            src_dir:
+                Source directory
+            dest_dir:
+                Destination directory
+
+        """
+        # Make dest dir if not exist
+        Path(dest_dir).mkdir(exist_ok=True)
+        src_files = os.listdir(src_dir)
+        for file_name in src_files:
+            full_file_name = os.path.join(src_dir, file_name)
+            if os.path.isfile(full_file_name):
+                shutil.copy(full_file_name, dest_dir)
+
+    @staticmethod
+    def copy_file_to_dir(
+        dir_path: str,
+        dir_name: str,
+        filename: str,
+    ):
+        """
+        Creates directory to store file in
+
+        Args:
+            dir_name:
+                Directory name to create
+            filename:
+                File to copy to new directory
+        """
+
+        # create dir
+        Path(f"{dir_path}/{dir_name}").mkdir(parents=True, exist_ok=True)
+
+        # get file path
+        filepath = glob.glob(pathname=f"{os.getcwd()}/**/{filename}", recursive=True)[0]
+
+        shutil.copy(
+            src=filepath,
+            dst=f"{dir_path}/{dir_name}/{filename}",
+        )
+
+    @staticmethod
+    def copy_dir_to_path(dir_name: str, new_path: str):
+        dir_path = glob.glob(pathname=f"{os.getcwd()}/**/{dir_name}", recursive=True)[0]
+        shutil.copytree(
+            src=dir_path,
+            dst=f"{new_path}/{dir_name}",
+            dirs_exist_ok=True,
         )
 
 

@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.types import PipelinePlan, MachineType, TaskArgs
 from opsml.pipelines.writer_utils.types import SigTypeHints
-from opsml.pipelines.types import PipelineSystem
+from opsml.pipelines.types import PipelineSystem, Task
 from opsml.pipelines.spec import PipelineSpec
 
 
@@ -117,33 +117,28 @@ class PipelinePlanner:
 
     def __init__(
         self,
-        spec: PipelineSpec,
+        specs: PipelineSpec,
         tasks: List[Task],
     ):
-        self.params = params
-        self.tasks, self.resources = self._set_pipeline_tasks(tasks=tasks)
+        self.specs = specs
+        self.tasks = tasks
 
-        if not self._has_resources:
-            self.resources = cast(Dict[str, TaskArgs], self._parse_non_deco_tasks())
-
-        self._validate_compute_resources(pipeline_system=self.params.pipeline_system)
+        self._validate_compute_resources(pipeline_system=self.specs.pipeline_system)
         self._parse_task_dependencies()
 
     def _validate_vertex(self):
-        for name, task_args in self.resources.items():
-            if not bool(task_args.machine_type.machine_type):
+        for task in self.tasks:
+            if not bool(task.machine_type):
                 raise ValueError(
-                    f"""Error on task {name}. Machine type must be specified for Vertex Pipelines""",
+                    f"""Error on task {task.name}. Machine type must be specified for Vertex Pipelines""",
                 )
 
     def _validate_kubeflow(self):
-        for name, task_args in self.resources.items():
-            if not all(bool(arg) for arg in [task_args.machine_type.memory, task_args.machine_type.cpu]):
+        for task in self.tasks:
+            if not all(bool(arg) for arg in [task.memory, task.cpu]):
                 logger.info(
                     """Task: %s - Memory and CPU must both be set if running on Kubeflow. Setting defaults""", name
                 )
-                task_args.machine_type.memory = 16
-                task_args.machine_type.cpu = 2
 
     def _validate_compute_resources(self, pipeline_system: PipelineSystem):
         if pipeline_system == PipelineSystem.VERTEX:
@@ -151,7 +146,7 @@ class PipelinePlanner:
         elif pipeline_system != PipelineSystem.KUBEFLOW:
             self._validate_kubeflow()
 
-    def _set_pipeline_tasks(self, tasks: Tasks) -> TaskResourceType:
+    def _set_pipeline_tasks(self, tasks: List[Task]) -> TaskResourceType:
         if tasks.decorated:
             task_list, task_args = DecoParser.parse_decorated_funcs(deco_task_list=tasks.task_list)
             resources = ResourceCreator.create_resources_from_task_args(task_args=task_args)

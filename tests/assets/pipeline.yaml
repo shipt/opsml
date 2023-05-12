@@ -12,6 +12,8 @@ pipeline:
     get_data:
       entry_point: "get_data.sql"
       flavor: "snowflake"
+      memory: 10
+      cpu: 2
 
     train_model:
       entry_point: "train_model.py"

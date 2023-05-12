@@ -9,7 +9,7 @@ from black import FileMode, WriteBack, format_file_in_place
 from opsml.helpers.utils import FindPath
 
 from opsml.helpers.utils import Copier, YamlWriter
-from opsml.pipelines.types import PipelineWriterMetadata
+from opsml.pipelines.types import PipelineWriterMetadata, Task
 from opsml.pipelines.writer_utils import FuncMetaCreator, FuncWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
 
@@ -109,16 +109,16 @@ class PipelineWriter:
 
     def write_pipeline_tasks(self):
         task_list = []
-        for func in self.pipeline_metadata.pipeline_tasks:
-            self.write_pipeline_step(func=func)
-            task_list.append(func.__name__)
+        for task in self.pipeline_metadata.pipeline_tasks:
+            self.write_pipeline_task(task=task)
+            task_list.append(task.name)
+
         self.finalize_runner(task_list=task_list)
 
-    def write_pipeline_step(self, func: Callable[..., Any]):
-        name, entry_point, task_args = self._get_func_args(func=func)
-        func_metadata = FuncMetaCreator(function=func, name=name).parse()
+    def write_pipeline_task(self, task: Task):
+        func_metadata = FuncMetaCreator(function=task.func, name=task.name).parse()
+        self._write_file(entry_point=task.entry_point, func_meta=func_metadata)
 
-        self._write_file(entry_point=entry_point, func_meta=func_metadata)
         self.append_args_to_runner(func_definition=func_metadata.definition, task_args=task_args)
 
     def _get_func_args(self, func: Any) -> Tuple[str, str, Dict[str, Any]]:

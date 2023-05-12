@@ -2,10 +2,10 @@ import os
 from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
 
 from opsml.registry import CardRegistry, DataCard, ExperimentCard, ModelCard, PipelineCard
+from opsml.registry.cards import ArtifactCard
 from opsml.registry.cards.pipeline_loader import PipelineLoader
 from opsml.helpers.logging import ArtifactLogger
-
-from opsml.helpers.utils import ConfigFileLoader
+from opsml.pipelines.utils import SpecLoader
 
 ArtifactCards = Union[ModelCard, ExperimentCard, DataCard]
 
@@ -42,8 +42,8 @@ class CardLoader:
 
 
 class CardRegister:
-    def get_registry_name(self, card: ArtifactCards):
-        return card.__class__.__name__.split("Card")[0].lower()
+    def get_registry_name(self, card: ArtifactCard) -> str:
+        return card.card_type
 
     def register_card(self, registry_name: str, card: ArtifactCards):
         registry = CardRegistry(registry_name=registry_name)
@@ -76,7 +76,7 @@ class CardUpdater:
         raise NotImplementedError
 
 
-class ExperimentUpdater(CardUpdater):
+class RunUpdater(CardUpdater):
     def update_card(self, card: ArtifactCards) -> None:
         registry = self._create_registry()
         registered_card = self._load_card(registry=registry, uid=card.uid)
@@ -86,7 +86,7 @@ class ExperimentUpdater(CardUpdater):
 
     @staticmethod
     def validate(registry_name: str) -> bool:
-        return registry_name == "experiment"
+        return registry_name == "run"
 
 
 class MetadataTracker:
@@ -96,7 +96,7 @@ class MetadataTracker:
         Args:
             cards_to_load (list): Optional list of cards to load
         """
-        pipeline_id = os.getenv("PIPELINEcard_uid").strip()
+        pipeline_id = os.getenv("PIPELINECARD_UID").strip()
 
         logger.info("Loading Pipeline data for %s", pipeline_id)
 
@@ -108,17 +108,17 @@ class MetadataTracker:
     def pipeline_card(self) -> PipelineCard:
         return self._pipeline_card
 
-    def load_config(self, filename: str = "pipeline-config.yaml") -> Dict[Union[str, int], Any]:
+    def load_spec(self, filename: str = "pipeline-spec.yaml") -> Dict[Union[str, int], Any]:
         """Loads a pipeline configuration file
 
         Args:
             Filename: Name of your configuration file. Default is
-            "pipeline-config.yaml".
+            "pipeline-spec.yaml".
 
         Returns:
-            Configuration file as dictionary
+            Spec file as dictionary
         """
-        return ConfigFileLoader(filename=filename).load()
+        return SpecLoader(filename=filename).load()
 
     def save_card_to_pipeline(self, card: ArtifactCards):
         """Registers the current card and updates the current PipelineCard
@@ -210,6 +210,7 @@ class MetadataTracker:
             self.card_register.register_card(registry_name=registry_name, card=card)
         return registry_name
 
-    def _update_pipeline_card(self, card: ArtifactCards, card_type: str, card_name: str):
-        self.pipeline_card.addcard_uid(uid=card.uid, name=card_name, card_type=card_type)
+    def _update_pipeline_card(self, card: ArtifactCards):
+        """Updates pipeline card"""
+        self.pipeline_card.add_card_uid(uid=card.uid, card_type=card.card_type)
         self.card_loader.pipeline_registry.update_card(card=self.pipeline_card)

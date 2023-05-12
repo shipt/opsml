@@ -7,6 +7,7 @@ import os
 import click
 import re
 import yaml
+from pathlib import Path
 
 from opsml.helpers.utils import FindPath
 
@@ -119,3 +120,139 @@ class SpecLoader:
         spec = self._load_env_vars(spec=spec)
 
         return spec
+
+
+class FileWriter:
+    """Abstract writer class"""
+
+    def write_file(self):
+        """Writes file"""
+        raise NotImplementedError
+
+
+class TemplateWriter(FileWriter):
+    def __init__(
+        self,
+        template_mapping: Dict[str, str],
+        template_path: Union[str, Path],
+        file_path: str,
+        filename: str,
+    ):
+        """
+        Helper for decorator-based pipeline training that opens and writes to a pipeline task template
+
+        Args:
+            template_mapping:
+                Dictionary mapping to apply to template
+            template_path:
+                Path to template file
+            file_path:
+                Path to file
+            filename:
+                name of file
+
+        """
+        self.template_mapping = template_mapping
+        self.template_path = template_path
+        self.file_path = file_path
+        self.filename = filename
+
+    def write_file(self) -> None:
+        template = self.populate_template(template_mapping=self.template_mapping)
+
+        with open(file=f"{self.file_path}/{self.filename}", mode="w", encoding="utf=8") as file_:
+            file_.write(template)
+
+    def populate_template(self, template_mapping: Dict[str, str]) -> str:
+        with open(file=self.template_path, mode="r", encoding="utf=8") as file_:
+            template = file_.read()
+            template = template.format_map(template_mapping)
+
+        return template
+
+
+class YamlWriter(FileWriter):
+    """Writer for yaml files"""
+
+    def __init__(
+        self,
+        dict_: Dict[str, Any],
+        path: str = os.getcwd(),
+    ):
+        """
+        Instantiates class used to writing and re-writing
+        pipeline configuration files.
+
+        Args:
+            dict_:
+                Dictionary containing pipeline params/metadata
+            path:
+                Path to use to find file.
+            filename:
+                Name of pipeline config file.
+
+        """
+        self.filename = PIPELINE_SPEC_FILENAME
+        self.path = self._get_path(path=path)
+        self.dict_ = dict_
+        self.original_config = dict_
+
+    def _get_path(self, path):
+        """Gets path of pipeline config file."""
+
+        path_info = FindPath.find_source_dir(
+            path=path,
+            runner_file=self.filename,
+        )
+
+        return path_info.filepath
+
+    def load_orig_config(self):
+        orig_file = f"{self.path}/{self.filename}"
+        with open(orig_file, encoding="utf-8") as file_:
+            orig_config = yaml.safe_load(file_)
+
+        self.original_config = orig_config
+
+    @staticmethod
+    def dict_to_yaml(
+        dict_: Dict[Any, Any],
+        filename: str,
+        path: str = os.getcwd(),
+    ):
+        """
+        Static method for writing a dictionary to yaml.
+
+        Args:
+            dict_:
+                Dictionary
+            filename:
+                Name of file to write to
+            path:
+                Path to write file to
+        """
+
+        with open(f"{path}/{filename}", "w", encoding="utf-8") as file_:
+            yaml.dump(dict_, file_, sort_keys=False)
+
+    def write_file(self):
+        """
+        Aggregated function that writes dictionary to
+        pipeline config
+
+        """
+        self.load_orig_config()
+        self.dict_to_yaml(
+            dict_=self.dict_,
+            path=self.path,
+            filename=self.filename,
+        )
+
+    def revert_temp_to_orig(self):
+        """Reverts temporary config to original config file"""
+
+        self.dict_to_yaml(
+            dict_=self.original_config,
+            path=self.path,
+            filename=self.filename,
+        )

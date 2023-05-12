@@ -40,6 +40,10 @@ class PipelineRunnerBase:
 
         self.requirements = requirements
 
+    @property
+    def is_decorated(self) -> bool:
+        return any(task.decorated for task in self.tasks)
+
     def _extract_tasks(self):
         for name, kwargs in self.specs.pipeline.tasks.items():
             self.add_task(name=name, **kwargs)

@@ -118,13 +118,9 @@ class FuncCardParser(Parser):
         return type_ in ARTIFACT_CARD_TYPES
 
     def parse(self) -> ParserOutput:
-        cards_to_load = self.get_cards_to_load()
         cards_to_save = self.get_cards_to_save()
 
-        return ParserOutput(
-            cards_to_load=f"{cards_to_load}",
-            cards_to_save=f"{cards_to_save}",
-        )
+        return ParserOutput(cards_to_save=cards_to_save)
 
     @staticmethod
     def validate(parse_type: str) -> bool:
@@ -161,7 +157,6 @@ class FuncMetaCreator:
             assigned_vars=cards.cards_to_save,
             text=body.func_body,
             definition=definition.func_def,
-            input_vars=cards.cards_to_load,
         )
 
     def _parse_type(self, parse_type: str) -> ParserOutput:
