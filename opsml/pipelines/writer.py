@@ -8,7 +8,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from black import FileMode, WriteBack, format_file_in_place
 from opsml.helpers.utils import FindPath
 
-from opsml.helpers.utils import Copier, YamlWriter
+from opsml.helpers.utils import Copier
+from opsml.pipelines.utils import YamlWriter
 from opsml.pipelines.types import PipelineWriterMetadata, Task
 from opsml.pipelines.writer_utils import FuncMetaCreator, FuncWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
@@ -118,7 +119,7 @@ class PipelineWriter:
     def write_pipeline_task(self, task: Task):
         func_metadata = FuncMetaCreator(function=task.func, name=task.name).parse()
         self._write_file(entry_point=task.entry_point, func_meta=func_metadata)
-
+        a
         self.append_args_to_runner(func_definition=func_metadata.definition, task_args=task_args)
 
     def _get_func_args(self, func: Any) -> Tuple[str, str, Dict[str, Any]]:

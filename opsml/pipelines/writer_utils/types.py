@@ -4,7 +4,7 @@ import re
 from enum import Enum
 from typing import Optional, List
 from dataclasses import dataclass
-from opsml.registry.cards.types import CardName
+from opsml.registry.cards.types import CardType
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 
@@ -32,4 +32,4 @@ class SigTypeHints(str, Enum):
 SIG_TYPES = list(SigTypeHints)
 
 
-ARTIFACT_CARD_TYPES = list(CardName)
+ARTIFACT_CARD_TYPES = list(CardType)

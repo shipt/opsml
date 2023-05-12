@@ -10,7 +10,7 @@ from opsml.helpers.utils import FindPath
 from opsml.helpers.logging import ArtifactLogger
 
 from opsml.pipelines.systems.task_builder import get_task_builder
-from opsml.pipelines.types import CodeInfo, PipelineParams, ParamDefaults
+from opsml.pipelines.types import CodeInfo, PipelineParams, SpecDefaults
 from opsml.pipelines.types import (
     PipelineHelpers,
     PipelineConfig,
@@ -156,7 +156,7 @@ class Pipeline:
 
     def delete_files(self) -> None:
         paths: List[Union[str, Path]] = list(Path(os.getcwd()).rglob(f"{self.params.project_name}-*.json"))
-        paths.append(ParamDefaults.COMPRESSED_FILENAME)
+        paths.append(SpecDefaults.COMPRESSED_FILENAME)
 
         # remove deco dir
         ops_pipeline_name = f"ops_pipeline_{self.params.project_name}_{self.params.run_id}"

@@ -6,12 +6,13 @@ from typing import Dict, Optional
 
 from opsml.pipelines import settings
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import FindPath, YamlWriter
+from opsml.pipelines.utils import YamlWriter
+from opsml.helpers.utils import FindPath
 from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
 from opsml.pipelines.types import RequirementPath, CodeInfo
-from opsml.pipelines.spec import ParamDefaults, PipelineParams
+from opsml.pipelines.spec import SpecDefaults, PipelineSpec
 from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -101,12 +102,12 @@ class RequirementsCopier:
 class PipelineCompressor:
     @staticmethod
     def tar_compress_code(dir_path: str):
-        with tarfile.open(ParamDefaults.COMPRESSED_FILENAME, bufsize=10240, mode="w:gz") as tar:
+        with tarfile.open(SpecDefaults.COMPRESSED_FILENAME, bufsize=10240, mode="w:gz") as tar:
             tar.add(dir_path, arcname=os.path.basename(dir_path))
 
 
 class PipelineCodeUploader:
-    def __init__(self, params: PipelineParams, runner_dir_name: str):
+    def __init__(self, params: PipelineSpec, runner_dir_name: str):
         """Uploads compressed pipeline code to a given storage location"""
 
         self.params = params
@@ -114,7 +115,7 @@ class PipelineCodeUploader:
 
     def _upload_code_to_server(self):
         # iterate and load file to server
-        filename = ParamDefaults.COMPRESSED_FILENAME
+        filename = SpecDefaults.COMPRESSED_FILENAME
         response = settings.request_client.post_request()
 
         # need to add storage_uri + path
@@ -128,7 +129,7 @@ class PipelineCodeUploader:
             return self._upload_code_to_server()
 
         return settings.storage_client.upload(
-            local_path=ParamDefaults.COMPRESSED_FILENAME,
+            local_path=SpecDefaults.COMPRESSED_FILENAME,
             write_path=f"{settings.storage_settings.storage_uri}/{destination_path}",
         )
 
@@ -140,7 +141,7 @@ class PipelineCodeUploader:
             `CodeInfo`
 
         """
-        destination_path = f"{self.params.pipe_storage_root}/{ParamDefaults.COMPRESSED_FILENAME}"
+        destination_path = f"{self.params.pipe_storage_root}/{SpecDefaults.COMPRESSED_FILENAME}"
         code_uri = self._upload_code(destination_path=destination_path)
 
         return CodeInfo(
@@ -152,7 +153,7 @@ class PipelineCodeUploader:
 class PipelinePackager:
     def __init__(
         self,
-        spec: Dict[str, str],
+        specs: Dict[str, str],
         requirements_file: Optional[str],
         req_path: Optional[RequirementPath] = None,
     ):
@@ -169,7 +170,7 @@ class PipelinePackager:
 
         """
         self.requirements = requirements_file
-        self.spec = spec
+        self.specs = specs
         self.req_path = req_path
 
     def package_pipeline(self, config_writer: YamlWriter, runner_file_path: str):
@@ -205,7 +206,7 @@ class PipelinePackager:
     def upload_pipeline(
         self,
         runner_dir_name: str,
-        params: PipelineParams,
+        params: PipelineSpec,
     ) -> CodeInfo:
         code_info = PipelineCodeUploader(
             params=params,
@@ -219,7 +220,7 @@ class PipelinePackager:
         self,
         runner_file_path: str,
         runner_dir_name: str,
-        params: PipelineParams,
+        params: PipelineSpec,
     ) -> CodeInfo:
         writer = YamlWriter(dict_=self.spec, path=runner_file_path)
 
@@ -234,7 +235,7 @@ class PipelinePackager:
 
         return code_info
 
-    def package_local(self, writer: PipelineWriter, params: PipelineParams):
+    def package_local(self, writer: PipelineWriter, params: PipelineSpec):
         Path(params.run_id).mkdir(parents=True, exist_ok=True)
         params.path = writer.write_pipeline(tmp_dir=params.run_id)
 

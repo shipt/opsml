@@ -24,9 +24,9 @@ pipeline:
       entry_point: "validate_model.py"
       flavor: "sklearn"
       upstream_tasks: ["train_model"]
-
-env_vars:
-  test_env_var: ${TEST_ENV_VAR}
+      
+  env_vars:
+    test_env_var: ${TEST_ENV_VAR}
 
 
 
