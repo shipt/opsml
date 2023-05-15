@@ -48,7 +48,10 @@ class Pipeline:
         return self.specs.pipeline.env_vars
 
     def _package_and_upload(self, spec_dirpath: str):
-        code_info = self.helpers.packager.package_and_upload_pipeline(spec_dirpath=spec_dirpath)
+        code_info = self.helpers.packager.package_and_upload_pipeline(
+            spec_dirpath=spec_dirpath,
+            spec_filename=self.specs.source_file,
+        )
         for name, value in code_info:
             setattr(self.specs, name, value)
 
@@ -71,7 +74,7 @@ class Pipeline:
                 )
 
         spec_dir_path = self._get_pipeline_spec_path_info()
-        return self._package_and_upload(spec_dirpath=spec_dir_path, filename=self.specs.source_file)
+        return self._package_and_upload(spec_dirpath=spec_dir_path)
 
     def _get_pipeline_spec_path_info(self) -> str:
         """

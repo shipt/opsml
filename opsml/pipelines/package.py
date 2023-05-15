@@ -216,9 +216,17 @@ class PipelinePackager:
         return code_info
 
     # @create_pipeline_card
-    def package_and_upload_pipeline(self, spec_dirpath: str) -> CodeInfo:
-        writer = YamlWriter(dict_=self.specs, path=spec_dirpath)
-        self.package_pipeline(spec_writer=writer, spec_filepath=spec_filepath)
+    def package_and_upload_pipeline(self, spec_dirpath: str, spec_filename: str) -> CodeInfo:
+        writer = YamlWriter(
+            dict_=self.specs,
+            path=spec_dirpath,
+            filename=spec_filename,
+        )
+
+        self.package_pipeline(
+            spec_writer=writer,
+            spec_filepath=spec_dirpath,
+        )
         a
         code_info = self.upload_pipeline(spec_dir_name=spec_dir_name, specs=self.specs)
 

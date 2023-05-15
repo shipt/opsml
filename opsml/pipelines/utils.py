@@ -181,6 +181,7 @@ class YamlWriter(FileWriter):
     def __init__(
         self,
         dict_: Dict[str, Any],
+        filename: str,
         path: str = os.getcwd(),
     ):
         """
@@ -196,7 +197,7 @@ class YamlWriter(FileWriter):
                 Name of pipeline config file.
 
         """
-        self.filename = PIPELINE_SPEC_FILENAME
+        self.filename = filename
         self.path = path
         self.dict_ = dict_
         self.original_config = dict_
