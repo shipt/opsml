@@ -79,10 +79,9 @@ def _test_config_load():
 
 def test_pipeline_run():
     os.environ["TEST_ENV_VAR"] = "test"
-    runner = PipelineRunner(spec_filename="pipeline.yaml")
+    runner = PipelineRunner(spec_filename="example-spec.yaml")
 
-    assert len(runner.tasks) == 3
-    assert runner.relationships["train_model"][0] == "get_data"
+    assert len(runner.tasks) == 1
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
     runner.run()

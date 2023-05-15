@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "opsml"
+version = "0.36.1"
+description = "A multi-puprose machine learning operations package built to simplify SPMT ML workflows."
+authors = ["Thorrester <48217609+thorrester@users.noreply.github.com>"]
+
+packages = [
+    { include = "opsml" },
+]
+
+[tool.poetry.scripts]
+create_ds_template = "opsml.templates.template_utils:create_pipeline_template"
+
+[tool.poetry.dependencies]
+python = ">=3.8, <3.11"
+fn-graph = "^0.14.3"
+google-cloud-storage = "1.44.0"
+GitPython = "^3.1.27"
+cookiecutter = "1.7.3"
+snowflake-connector-python = {extras = ["pandas"], version = "^2.7.9"}
+pyshipt-logging = "^0.4.3"
+google-cloud-pipeline-components = {version ="^1.0.13", optional = true}
+mlflow = {version = "^1.27.0", optional = true}
+pyyaml = "5.4.1"
+scikit-learn = "^1.1.1"
+markupsafe = "2.0.1"
+altair = "^4.2.0"
+pyshipt = "^2.1.8"
+kfp = "1.8.12"
+
+[tool.poetry.extras]
+all = ["apache-airflow", "google-cloud-pipeline-components", "kfp", "mlflow"]
+airflow = ["apache-airflow"]
+vertex = ["google-cloud-pipeline-components", "kfp"]
+mlflow = ["mlflow"]
+
+[tool.poetry.dev-dependencies]
+pytest-cov = "^3.0.0"
+black = "22.3.0"
+pytest = "^7.1.2"
+flake8 = "^4.0.1"
+pylint = "^2.14.5"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "shipt-resolve"
+url = "https://artifactory.shipt.com/artifactory/api/pypi/pypi-virtual/simple"
+default = true
+
+[tool.black]
+exclude="opsml/trips/airflow_dags"
+

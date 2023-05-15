@@ -33,7 +33,6 @@ INCLUDE_PARAMS = {
     "project_name",
     "cron",
     "owner",
-    "env_vars",
     "additional_dir",
     "team",
     "pipeline_system",

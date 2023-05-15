@@ -6,7 +6,7 @@ import string
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 from opsml.helpers.logging import ArtifactLogger
 
@@ -136,28 +136,27 @@ class FindPath:
         )
 
     @staticmethod
-    def find_source_dir(
-        path: str,
-        runner_file: str,
-    ):
+    def find_source_dir(path: str, spec_file: str) -> str:
         """Finds the dir path of a given of the pipeline
-        runner file.
+        spec file.
 
         Args:
-            path (str): Current directory
-            runner_file (str): Name of pipeline runner file
+            path:
+                Current directory
+            spec_file:
+                Name of pipeline spec file
 
         Returns:
-            dirpath (str)
+            source dir and dir path
         """
-        paths = glob.glob(f"{path}/**/{runner_file}", recursive=True)
+        paths = glob.glob(f"{path}/**/{spec_file}", recursive=True)
         if len(paths) <= 1:
             source_path = "/".join(paths[0].split("/")[:-1])
-            source_dir = paths[0].split("/")[:-1][-1]
-            return source_dir, source_path
+            # source_dir = paths[0].split("/")[:-1][-1]
+            return source_path
 
         raise exceptions.MoreThanOnePath(
-            f"""More than one path was found for the trip configuration file.
+            f"""More than one path was found for the pipeline spec file.
                 Please check your project structure.
                 Found paths: {paths}
             """

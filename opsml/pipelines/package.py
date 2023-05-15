@@ -2,7 +2,7 @@ import os
 import shutil
 import tarfile
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 from opsml.pipelines import settings
 from opsml.helpers.logging import ArtifactLogger
@@ -25,10 +25,10 @@ class RequirementsCopier:
     def __init__(
         self,
         requirements_file: str,
-        runner_file_path: str,
+        spec_filepath: str,
     ):
         self.requirements = requirements_file
-        self.runner_file_path = runner_file_path
+        self.spec_filepath = spec_filepath
 
     def copy_req_to_src(self) -> RequirementPath:
         """
@@ -58,7 +58,7 @@ class RequirementsCopier:
             )
 
         self._check_requirements(req_path=req_path)
-        shutil.copy(req_path, self.runner_file_path)
+        shutil.copy(req_path, self.spec_filepath)
 
         if ".txt" in self.requirements:
             moved_req_path = self._rename_requirements_file()
@@ -68,7 +68,7 @@ class RequirementsCopier:
 
         return RequirementPath(
             req_path=moved_req_path,
-            toml_path=f"{self.runner_file_path}/{PYPROJECT_FILE}",
+            toml_path=f"{self.spec_filepath}/{PYPROJECT_FILE}",
         )
 
     def _check_requirements(self, req_path: str):
@@ -84,19 +84,19 @@ class RequirementsCopier:
 
     def _rename_requirements_file(self) -> str:
         os.rename(
-            f"{self.runner_file_path}/{self.requirements}",
-            f"{self.runner_file_path}/{REQUIREMENTS_FILE}",
+            f"{self.spec_filepath}/{self.requirements}",
+            f"{self.spec_filepath}/{REQUIREMENTS_FILE}",
         )
-        return f"{self.runner_file_path}/{REQUIREMENTS_FILE}"
+        return f"{self.spec_filepath}/{REQUIREMENTS_FILE}"
 
     def _copy_pyproject_toml(self, req_path: str) -> str:
         path_split = req_path.split("/")
         req_file = path_split[-1]
         base_path = "/".join(path_split[:-1])
         toml_path = f"{base_path}/{PYPROJECT_FILE}"
-        shutil.copy(toml_path, self.runner_file_path)
+        shutil.copy(toml_path, self.spec_filepath)
 
-        return f"{self.runner_file_path}/{req_file}"
+        return f"{self.spec_filepath}/{req_file}"
 
 
 class PipelineCompressor:
@@ -107,11 +107,11 @@ class PipelineCompressor:
 
 
 class PipelineCodeUploader:
-    def __init__(self, specs: PipelineBaseSpecs, runner_dir_name: str):
+    def __init__(self, specs: PipelineBaseSpecs, spec_dir_name: str):
         """Uploads compressed pipeline code to a given storage location"""
 
         self.specs = specs
-        self.runner_dir_name = runner_dir_name
+        self.spec_dir_name = spec_dir_name
 
     def _upload_code_to_server(self):
         # iterate and load file to server
@@ -146,14 +146,14 @@ class PipelineCodeUploader:
 
         return CodeInfo(
             code_uri=code_uri,
-            source_dir=self.runner_dir_name,
+            source_dir=self.spec_dir_name,
         )
 
 
 class PipelinePackager:
     def __init__(
         self,
-        specs: Dict[str, str],
+        specs: Dict[str, Any],
         requirements_file: Optional[str],
         req_path: Optional[RequirementPath] = None,
     ):
@@ -173,16 +173,16 @@ class PipelinePackager:
         self.specs = specs
         self.req_path = req_path
 
-    def package_pipeline(self, config_writer: YamlWriter, runner_file_path: str):
-        config_writer.write_file()
+    def package_pipeline(self, spec_writer: YamlWriter, spec_dirpath: str):
+        spec_writer.write_file()
 
         if self.requirements is not None:
             self.req_path = RequirementsCopier(
                 requirements_file=self.requirements,
-                runner_file_path=runner_file_path,
+                spec_dirpath=spec_dirpath,
             ).copy_req_to_src()
 
-        PipelineCompressor.tar_compress_code(dir_path=runner_file_path)
+        PipelineCompressor.tar_compress_code(dir_path=spec_dirpath)
 
     def _delete_copied_req(self):
         try:
@@ -205,27 +205,22 @@ class PipelinePackager:
 
     def upload_pipeline(
         self,
-        runner_dir_name: str,
+        spec_dir_name: str,
         specs: PipelineBaseSpecs,
     ) -> CodeInfo:
         code_info = PipelineCodeUploader(
             specs=specs,
-            runner_dir_name=runner_dir_name,
+            spec_dir_name=spec_dir_name,
         ).upload_compressed_code()
 
         return code_info
 
     # @create_pipeline_card
-    def package_and_upload_pipeline(
-        self,
-        runner_file_path: str,
-        runner_dir_name: str,
-        specs: PipelineBaseSpecs,
-    ) -> CodeInfo:
-
-        writer = YamlWriter(dict_=self.spec, path=runner_file_path)
-        self.package_pipeline(writer=writer, runner_file_path=runner_file_path)
-        code_info = self.upload_pipeline(runner_dir_name=runner_dir_name, specs=specs)
+    def package_and_upload_pipeline(self, spec_dirpath: str) -> CodeInfo:
+        writer = YamlWriter(dict_=self.specs, path=spec_dirpath)
+        self.package_pipeline(spec_writer=writer, spec_filepath=spec_filepath)
+        a
+        code_info = self.upload_pipeline(spec_dir_name=spec_dir_name, specs=self.specs)
 
         self.clean_up(writer=writer)
 

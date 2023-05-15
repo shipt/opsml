@@ -132,7 +132,7 @@ class PipelineBaseSpecs(BaseModel):
     code_uri: Optional[str] = None
     source_dir: Optional[str] = None
     pipelinecard_uid: str = "NO_ID"
-    source_file: str = SpecDefaults.SOURCE_FILE
+    source_file: str = SpecDefaults.SPEC_FILENAME
     path: str = os.getcwd()
     additional_task_args: Dict[str, Any]
 
@@ -188,9 +188,10 @@ class PipelineSpecCreator:
     @property
     def specs(self) -> PipelineBaseSpecs:
         pipeline_paths = self.create_pipeline_path_params()
-        specs = {**self.pipe_spec.dict(), **pipeline_paths}
+        specs = PipelineBaseSpecs(**{**self.pipe_spec.dict(), **pipeline_paths})
+        specs.source_file = self.spec_filename
 
-        return PipelineBaseSpecs(**specs)
+        return specs
 
     def create_pipeline_path_params(self) -> Dict[str, str]:
         """Sets pipeline path parameters that are used when building pipeline systems"""
@@ -225,7 +226,6 @@ class PipelineSpecCreator:
 
     def set_pipe_spec(self, spec: Optional[PipelineSpec] = None) -> PipelineSpec:
         if spec is None:
-
             # loading spec from yaml
             loaded_spec = self._get_pipeline_spec(filename=self.spec_filename)
             spec = PipelineSpec(**loaded_spec)

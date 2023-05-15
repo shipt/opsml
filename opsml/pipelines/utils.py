@@ -197,19 +197,9 @@ class YamlWriter(FileWriter):
 
         """
         self.filename = PIPELINE_SPEC_FILENAME
-        self.path = self._get_path(path=path)
+        self.path = path
         self.dict_ = dict_
         self.original_config = dict_
-
-    def _get_path(self, path):
-        """Gets path of pipeline config file."""
-
-        path_info = FindPath.find_source_dir(
-            path=path,
-            runner_file=self.filename,
-        )
-
-        return path_info.filepath
 
     def load_orig_config(self):
         orig_file = f"{self.path}/{self.filename}"

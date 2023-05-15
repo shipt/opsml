@@ -29,18 +29,20 @@ class PipelineRunnerBase:
 
         self.tasks: List[Task] = []  # list of Tasks
         self.relationships = {}  # dictionary of child (key) parent(list values)
+        self._decorated = True
         self.specs = PipelineSpecCreator(spec_filename=spec_filename, spec=pipeline_spec).specs
-        self.specs.decorated = self.is_decorated
 
         # for declarative pipelines in spec
         if self.specs.pipeline is not None:
             self._extract_tasks()
+            self._decorated = False
 
         self.requirements = requirements
+        self.specs.decorated = self.is_decorated
 
     @property
     def is_decorated(self) -> bool:
-        return any(task.decorated for task in self.tasks)
+        return self._decorated
 
     def _extract_tasks(self):
         for name, kwargs in self.specs.pipeline.tasks.items():

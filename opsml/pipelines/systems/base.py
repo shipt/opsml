@@ -47,12 +47,8 @@ class Pipeline:
     def env_vars(self) -> Dict[str, Any]:
         return self.specs.pipeline.env_vars
 
-    def _package_and_upload(self, filepath: str, dir_name: str):
-        code_info = self.helpers.packager.package_and_upload_pipeline(
-            runner_file_path=filepath,
-            runner_dir_name=dir_name,
-            params=self.specss,
-        )
+    def _package_and_upload(self, spec_dirpath: str):
+        code_info = self.helpers.packager.package_and_upload_pipeline(spec_dirpath=spec_dirpath)
         for name, value in code_info:
             setattr(self.specs, name, value)
 
@@ -63,8 +59,7 @@ class Pipeline:
         Packages and uploads pipeline code. If the pipeline is created using decorators,
         a temp directory is created and the pipeline is written to it prior to compression and upload.
         """
-        print(self.specs)
-        a
+
         if self.specs.decorated:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 self.specs.path = self.helpers.writer.write_pipeline(tmp_dir=tmp_dir)
@@ -75,10 +70,10 @@ class Pipeline:
                     dir_name=runner_path_info.dir_name,
                 )
 
-        runner_path_info = self._get_pipeline_runner_path_info()
-        return self._package_and_upload(filepath=runner_path_info.file)
+        spec_dir_path = self._get_pipeline_spec_path_info()
+        return self._package_and_upload(spec_dirpath=spec_dir_path, filename=self.specs.source_file)
 
-    def _get_pipeline_runner_path_info(self) -> PathInfo:
+    def _get_pipeline_spec_path_info(self) -> str:
         """
         Searches for the `pipeline_runner.py` file along a given path.
         If a unique directory is given, that directory is searched. This is helpful
@@ -101,7 +96,7 @@ class Pipeline:
 
         return FindPath.find_source_dir(
             path=self.specs.path,
-            runner_file=self.specs.source_file,
+            spec_file=self.specs.source_file,
         )
 
     def _get_session(self):
