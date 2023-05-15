@@ -5,9 +5,9 @@ from typing import Dict, List, Union
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
 from opsml.helpers import utils
-from opsml.helpers.cli_utils import stdout_msg
+from opsml.pipelines.utils import stdout_msg
 
-from opsml.pipelines.types import TaskArgs, PipelineJob, PipelineSystem, CodeInfo
+from opsml.pipelines.types import Task, PipelineJob, PipelineSystem, CodeInfo
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -51,7 +51,7 @@ class LocalPipeline(Pipeline):
         return code_info
 
     @staticmethod
-    def get_run_order(resources: Dict[str, TaskArgs]) -> List[str]:
+    def get_run_order(resources: Dict[str, Task]) -> List[str]:
         relationships = {}
         for _, args in resources.items():
             relationships[args.entry_point] = {

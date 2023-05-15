@@ -2,7 +2,8 @@
 
 from time import gmtime, strftime
 from typing import Dict, Optional, Union, Any
-
+import glob
+import shutil
 import os
 import click
 import re
@@ -90,15 +91,18 @@ class SpecLoader:
         Returns:
             spec dictionary with environment variables injected
         """
-        env_vars: Dict[str, str] = spec.get("env_vars")
+        pipeline = spec.get("pipeline")
 
-        if env_vars is not None:
-            for key, val in env_vars.items():
-                if isinstance(val, str) and "$" in val:
-                    matches = env_pattern.findall(val)
+        if pipeline is not None:
+            env_vars: Dict[str, str] = pipeline.get("env_vars")
 
-                    for match in matches:
-                        spec["env_vars"][key] = os.getenv(match)
+            if env_vars is not None:
+                for key, val in env_vars.items():
+                    if isinstance(val, str) and "$" in val:
+                        matches = env_pattern.findall(val)
+
+                        for match in matches:
+                            spec["pipeline"]["env_vars"][key] = os.getenv(match)
 
         return spec
 
@@ -255,4 +259,68 @@ class YamlWriter(FileWriter):
             dict_=self.original_config,
             path=self.path,
             filename=self.filename,
+        )
+
+
+class Copier:
+    """Helper class to copy files to a specified directory"""
+
+    @staticmethod
+    def copy(
+        src_dir: str,
+        dest_dir: str,
+    ):
+        """
+        Copies provided source directory to specified
+        destination.
+
+        Args:
+            src_dir:
+                Source directory
+            dest_dir:
+                Destination directory
+
+        """
+        # Make dest dir if not exist
+        Path(dest_dir).mkdir(exist_ok=True)
+        src_files = os.listdir(src_dir)
+        for file_name in src_files:
+            full_file_name = os.path.join(src_dir, file_name)
+            if os.path.isfile(full_file_name):
+                shutil.copy(full_file_name, dest_dir)
+
+    @staticmethod
+    def copy_file_to_dir(
+        dir_path: str,
+        dir_name: str,
+        filename: str,
+    ):
+        """
+        Creates directory to store file in
+
+        Args:
+            dir_name:
+                Directory name to create
+            filename:
+                File to copy to new directory
+        """
+
+        # create dir
+        Path(f"{dir_path}/{dir_name}").mkdir(parents=True, exist_ok=True)
+
+        # get file path
+        filepath = glob.glob(pathname=f"{os.getcwd()}/**/{filename}", recursive=True)[0]
+
+        shutil.copy(
+            src=filepath,
+            dst=f"{dir_path}/{dir_name}/{filename}",
+        )
+
+    @staticmethod
+    def copy_dir_to_path(dir_name: str, new_path: str):
+        dir_path = glob.glob(pathname=f"{os.getcwd()}/**/{dir_name}", recursive=True)[0]
+        shutil.copytree(
+            src=dir_path,
+            dst=f"{new_path}/{dir_name}",
+            dirs_exist_ok=True,
         )

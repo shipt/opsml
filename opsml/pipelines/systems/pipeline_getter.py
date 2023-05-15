@@ -1,28 +1,25 @@
 from opsml.helpers.utils import all_subclasses
 from opsml.helpers import exceptions
 from opsml.helpers.logging import ArtifactLogger
-from opsml.pipelines.systems.base import Pipeline
-from opsml.pipelines.types import (
-    PipelineConfig,
-    PipelineSystem,
-    PipelineHelpers,
-)
+from opsml.pipelines.systems import Pipeline
+from opsml.pipelines.spec import PipelineBaseSpecs
+from opsml.pipelines.types import PipelineHelpers
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
 def get_pipeline_system(
-    pipeline_system: PipelineSystem,
-    pipeline_config: PipelineConfig,
+    specs: PipelineBaseSpecs,
     helpers: PipelineHelpers,
 ) -> Pipeline:
+
     pipeline = next(
         (
             pipeline_subclass
             for pipeline_subclass in all_subclasses(Pipeline)
             if pipeline_subclass.validate(
-                pipeline_system=pipeline_system,
-                is_proxy=pipeline_config.params.is_proxy,
+                pipeline_system=specs.pipeline_system,
+                is_proxy=specs.is_proxy,
             )
         ),
     )
@@ -31,6 +28,6 @@ def get_pipeline_system(
         raise exceptions.PipelineSystemNotFound
 
     return pipeline(
-        config=pipeline_config,
+        specs=specs,
         helpers=helpers,
     )

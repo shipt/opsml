@@ -7,15 +7,17 @@ from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.package import PipelinePackager
 from opsml.pipelines.types import (
     PipelineWriterMetadata,
-    PipelineConfig,
-    PipelineJobModel,
+    # PipelineConfig,
+    PipelineJob,
     PipelineHelpers,
 )
+
 from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
-from opsml.pipelines.planner import PipelinePlanner
-from opsml.pipelines.spec import PipelineSpec, PipelineParamCreator
+
+# from opsml.pipelines.planner import PipelinePlanner
+from opsml.pipelines.spec import PipelineSpec  # PipelineParamCreator
 from opsml.pipelines.types import (
-    Tasks,
+    # Tasks,
     INCLUDE_PARAMS,
 )
 from opsml.pipelines.writer import PipelineWriter
@@ -27,7 +29,7 @@ class PipelineHelpers:
     Pipeline helper class
     """
 
-    planner: PipelinePlanner
+    # planner: PipelinePlanner
     writer: PipelineWriter
     packager: PipelinePackager
 
@@ -77,18 +79,15 @@ class PipelineRunner(PipelineRunnerBase):
         # planner = PipelinePlanner(specs=self.specs, tasks=self.tasks)
         packager = PipelinePackager(specs=specs, requirements_file=requirements)
 
+        # writer is used for decorator-style pipelines
         pipe_meta = PipelineWriterMetadata(
             run_id=self.specs.run_id,
             project=self.specs.project_name,
             pipeline_tasks=self.tasks,
-            config=specs,
+            specs=specs,
         )
 
-        writer = PipelineWriter(
-            pipeline_metadata=pipe_meta,
-            additional_dir=cast(str, self.specs.additional_dir),
-            runner_filename=self.specs.source_file,
-        )
+        writer = PipelineWriter(pipeline_metadata=pipe_meta)
 
         return PipelineHelpers(writer=writer, packager=packager)
 
@@ -101,6 +100,30 @@ class PipelineRunner(PipelineRunnerBase):
         if self.is_decorated:
             return self.helpers.writer.write_pipeline()
         return None
+
+    def run(self, schedule: bool = False) -> PipelineJob:
+        """
+        Will run the machine learning pipeline.
+
+        Args:
+            schedule:
+                Required. Whether to schedule a pipeline. If True, the cron will be extracted from the
+                pipeline_config.yaml file (low-level) or PipelineSpec (low-level).
+                local (bool): Whether to run the pipeline locally
+
+        Returns:
+            `PipelineJob`
+        """
+
+        stdout_msg("Building pipeline")
+        # Get pipeline system
+
+        pipeline: Pipeline = get_pipeline_system(
+            helpers=self.helpers,
+            specs=self.specs,
+        )
+
+        pipeline_job = pipeline.build()
 
 
 # class _PipelineRunner:

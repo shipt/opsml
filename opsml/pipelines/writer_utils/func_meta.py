@@ -93,7 +93,9 @@ class FuncCardParser(Parser):
         """
         assigned_cards = []
         for var_name, var_value in self.ast_parser.assigned_vars.items():
-            if self._is_card(type_=var_value.lower()):
+            card_type = var_value.lower().split("card")[0]
+
+            if self._is_card(card_type=card_type):
                 assigned_cards.append(var_name)
 
             if bool(self.ast_parser.returned_vars):
@@ -101,7 +103,7 @@ class FuncCardParser(Parser):
 
         if self.has_return:
             return self._compare_assigned_and_returned(
-                assigned_vars=assigned_cards,
+                assigned_cards=assigned_cards,
                 return_vars=self.ast_parser.returned_vars,
             )
 
@@ -109,13 +111,13 @@ class FuncCardParser(Parser):
 
     def _compare_assigned_and_returned(
         self,
-        assigned_vars: List[str],
+        assigned_cards: List[str],
         return_vars: List[str],
     ):
-        return [var_ for var_ in return_vars if var_ in assigned_vars]
+        return [var_ for var_ in return_vars if var_ in assigned_cards]
 
-    def _is_card(self, type_: str):
-        return type_ in ARTIFACT_CARD_TYPES
+    def _is_card(self, card_type: str):
+        return card_type in ARTIFACT_CARD_TYPES
 
     def parse(self) -> ParserOutput:
         cards_to_save = self.get_cards_to_save()
@@ -154,7 +156,7 @@ class FuncMetaCreator:
 
         return FuncMetadata(
             name=self.func_name,
-            assigned_vars=cards.cards_to_save,
+            assigned_cards=cards.cards_to_save,
             text=body.func_body,
             definition=definition.func_def,
         )

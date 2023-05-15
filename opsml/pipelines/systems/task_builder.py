@@ -7,14 +7,7 @@ from opsml.helpers.logging import ArtifactLogger
 
 from opsml.pipelines.container_op import get_op_builder
 from opsml.pipelines.systems.images import ContainerImageRegistry
-from opsml.pipelines.types import (
-    MachineSpec,
-    MachineType,
-    PipelineParams,
-    TaskArgs,
-    PipelineSystem,
-    ContainerOpInputs,
-)
+from opsml.pipelines.types import MachineSpec, MachineType, PipelineParams, PipelineSystem, ContainerOpInputs, Task
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -41,7 +34,7 @@ class TaskBuilder:
         """Get the container op builder class"""
         return get_op_builder(pipeline_system=pipeline_system)
 
-    def get_task_image(self, task_args: TaskArgs) -> str:
+    def get_task_image(self, task_args: Task) -> str:
         if task_args.custom_image is None:
             return self.image_client.get_image_uri(str(task_args.flavor))
         return task_args.custom_image
@@ -101,7 +94,7 @@ class TaskBuilder:
 
     def build(
         self,
-        task_args: TaskArgs,
+        task_args: Task,
         env_vars: Dict[str, Any],
         params: PipelineParams,
     ):
@@ -116,7 +109,7 @@ class TaskBuilder:
 class LocalTaskBuilder(TaskBuilder):
     def build(
         self,
-        task_args: TaskArgs,
+        task_args: Task,
         env_vars: Dict[str, Any],
         params: PipelineParams,
     ):
@@ -136,13 +129,13 @@ class VertexTaskBuilder(TaskBuilder):
 
     def build(
         self,
-        task_args: TaskArgs,
+        task_args: Task,
         env_vars: Dict[str, Any],
         params: PipelineParams,
     ) -> Any:
         """Builds a Vertex task
         Args:
-            Task_args (TaskArgs): Pydantic model of task args
+            Task_args (Task): Pydantic model of task args
             env_vars (Params): Pydantic model of pipeline params
         Returns:
             Vertex custom training job
@@ -207,21 +200,21 @@ class KubeflowTaskBuilder(TaskBuilder):
 
         return env_vars_list
 
-    def get_task_image(self, task_args: TaskArgs) -> str:
+    def get_task_image(self, task_args: Task) -> str:
         if task_args.custom_image is None:
             return self.image_client.get_image_uri(str(task_args.flavor))
         return task_args.custom_image
 
     def build(
         self,
-        task_args: TaskArgs,
+        task_args: Task,
         env_vars: Dict[str, Any],
         params: PipelineParams,
     ) -> Any:
         """Builds a KubeFlow task
 
         Args:
-            Task_args (TaskArgs): Pydantic model of task args
+            Task_args (Task): Pydantic model of task args
             env_vars (Dict): Dictionary of environment vars (name, value pairs)
             params (PipelineParams): Pydantic model of pipeline params
 

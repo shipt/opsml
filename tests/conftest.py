@@ -87,6 +87,10 @@ def cleanup() -> None:
     # remove test folder for loading model
     shutil.rmtree("loader_test", ignore_errors=True)
 
+    paths = [path for path in pathlib.Path(os.getcwd()).rglob("opsml-test-*")]
+    for path in paths:
+        shutil.rmtree(path, ignore_errors=True)
+
 
 ################ Test Classes
 class Blob(BaseModel):
@@ -929,11 +933,12 @@ def test_fastapi_client(fastapi_model_app):
 
 @pytest.fixture(scope="module")
 def mock_pipeline_task():
-    return Task(
+    yield Task(
         name="test_task",
         entry_point="test_task.py",
         flavor="sklearn",
     )
+    cleanup()
 
 
 @pytest.fixture(scope="module")

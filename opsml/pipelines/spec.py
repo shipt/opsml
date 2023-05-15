@@ -5,11 +5,11 @@ from datetime import datetime
 
 from typing import Any, Dict, Optional, Union, List
 import yaml
-from pydantic import BaseModel, validator, Field, Extra
+from pydantic import BaseModel, validator, Field, Extra, root_validator
 
 from opsml.pipelines import settings
 from opsml.pipelines.utils import SpecLoader
-from opsml.pipelines.types import PipelineSystem
+from opsml.pipelines.types import PipelineSystem, Task
 from opsml.helpers.types import OpsmlPipelineVars
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
@@ -101,6 +101,7 @@ class SpecDefaults(str, Enum):
 
 class PipelineTasks(BaseModel):
     tasks: Dict[str, Dict[str, Any]]
+    env_vars: Dict[str, Any]
 
 
 class PipelineBaseSpecs(BaseModel):
@@ -114,7 +115,6 @@ class PipelineBaseSpecs(BaseModel):
     team: str
     pipeline_system: str
     container_registry: str
-    env_vars: Dict[str, Any]
     pipe_filename: str
     pipe_filepath: str
     pipe_storage_root: str
@@ -158,6 +158,13 @@ class PipelineBaseSpecs(BaseModel):
 
     def add_attr(self, name: str, value: Union[int, float, str]):
         setattr(self, name, value)
+
+    @root_validator(pre=True)
+    def set_pipeline_vars(cls, values):
+        if bool(values.get("env_vars")):
+            values["pipeline"]["env_vars"] = values.get("env_vars")
+        values.pop("env_vars")
+        return values
 
 
 class PipelineSpecCreator:
@@ -218,6 +225,8 @@ class PipelineSpecCreator:
 
     def set_pipe_spec(self, spec: Optional[PipelineSpec] = None) -> PipelineSpec:
         if spec is None:
+
+            # loading spec from yaml
             loaded_spec = self._get_pipeline_spec(filename=self.spec_filename)
             spec = PipelineSpec(**loaded_spec)
 
@@ -237,4 +246,5 @@ class PipelineSpecCreator:
         """
 
         loader = SpecLoader(dir_name=dir_name, filename=filename)
+
         return loader.load()

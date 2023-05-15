@@ -12,7 +12,7 @@ from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
 from opsml.pipelines.types import RequirementPath, CodeInfo
-from opsml.pipelines.spec import SpecDefaults, PipelineSpec
+from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs
 from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -107,10 +107,10 @@ class PipelineCompressor:
 
 
 class PipelineCodeUploader:
-    def __init__(self, params: PipelineSpec, runner_dir_name: str):
+    def __init__(self, specs: PipelineBaseSpecs, runner_dir_name: str):
         """Uploads compressed pipeline code to a given storage location"""
 
-        self.params = params
+        self.specs = specs
         self.runner_dir_name = runner_dir_name
 
     def _upload_code_to_server(self):
@@ -141,7 +141,7 @@ class PipelineCodeUploader:
             `CodeInfo`
 
         """
-        destination_path = f"{self.params.pipe_storage_root}/{SpecDefaults.COMPRESSED_FILENAME}"
+        destination_path = f"{self.specs.pipe_storage_root}/{SpecDefaults.COMPRESSED_FILENAME}"
         code_uri = self._upload_code(destination_path=destination_path)
 
         return CodeInfo(
@@ -206,10 +206,10 @@ class PipelinePackager:
     def upload_pipeline(
         self,
         runner_dir_name: str,
-        params: PipelineSpec,
+        specs: PipelineBaseSpecs,
     ) -> CodeInfo:
         code_info = PipelineCodeUploader(
-            params=params,
+            specs=specs,
             runner_dir_name=runner_dir_name,
         ).upload_compressed_code()
 
@@ -220,28 +220,24 @@ class PipelinePackager:
         self,
         runner_file_path: str,
         runner_dir_name: str,
-        params: PipelineSpec,
+        specs: PipelineBaseSpecs,
     ) -> CodeInfo:
+
         writer = YamlWriter(dict_=self.spec, path=runner_file_path)
-
         self.package_pipeline(writer=writer, runner_file_path=runner_file_path)
-
-        code_info = self.upload_pipeline(
-            runner_dir_name=runner_dir_name,
-            params=params,
-        )
+        code_info = self.upload_pipeline(runner_dir_name=runner_dir_name, specs=specs)
 
         self.clean_up(writer=writer)
 
         return code_info
 
-    def package_local(self, writer: PipelineWriter, params: PipelineSpec):
-        Path(params.run_id).mkdir(parents=True, exist_ok=True)
-        params.path = writer.write_pipeline(tmp_dir=params.run_id)
+    def package_local(self, writer: PipelineWriter, specs: PipelineBaseSpecs):
+        Path(specs.run_id).mkdir(parents=True, exist_ok=True)
+        specs.path = writer.write_pipeline(tmp_dir=specs.run_id)
 
         code_info = CodeInfo(
-            code_uri=params.path,
-            source_dir=params.run_id,
+            code_uri=specs.path,
+            source_dir=specs.run_id,
         )
 
         return code_info

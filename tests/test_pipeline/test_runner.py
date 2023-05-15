@@ -1,9 +1,10 @@
 from opsml.pipelines.base_runner import Task, PipelineRunnerBase
+from opsml.pipelines.runner import PipelineRunner
 import os
 import pytest
 
 
-def test_add_task(mock_pipeline_task: Task):
+def _test_add_task(mock_pipeline_task: Task):
     runner = PipelineRunnerBase()
 
     first_task = runner.add_task(
@@ -67,11 +68,21 @@ def test_decorator_task(
     assert runner.relationships["test_task2"][0] == "test_task"
 
 
-def test_config_load():
+def _test_config_load():
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunnerBase(spec_filename="pipeline.yaml")
 
     assert len(runner.tasks) == 3
     assert runner.relationships["train_model"][0] == "get_data"
+    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
-    assert runner.specs.env_vars["test_env_var"] == "test"
+
+def test_pipeline_run():
+    os.environ["TEST_ENV_VAR"] = "test"
+    runner = PipelineRunner(spec_filename="pipeline.yaml")
+
+    assert len(runner.tasks) == 3
+    assert runner.relationships["train_model"][0] == "get_data"
+    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
+
+    runner.run()

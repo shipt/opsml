@@ -57,6 +57,8 @@ pymysql = {version="^1.0.2", optional = true}
 #fn-graph = {version="^0.14.3", optional = true}
 graphviz = {version="^0.20.1", optional = true}
 pylatex = "^1.4.1"
+typer = "^0.9.0"
+rich = "^13.3.5"
 
 [tool.poetry.extras]
 server = ["streaming-form-data", "fastapi", "uvicorn", "rollbar", "gunicorn", "prometheus-fastapi-instrumentator", "wsgi-basic-auth", "mlflow", "libclang", "llvmlite", "numba"]

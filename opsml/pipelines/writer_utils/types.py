@@ -19,9 +19,9 @@ class ParserOutput:
 @dataclass
 class FuncMetadata:
     name: str
-    assigned_vars: Optional[List[str]] = None
     text: str
     definition: str
+    assigned_cards: Optional[List[str]] = None
 
 
 class SigTypeHints(str, Enum):

@@ -1,6 +1,6 @@
 """Module for importing custom ops"""
 
-from opsml.helpers.types import PipelineSystem
+from opsml.pipelines.types import PipelineSystem
 
 
 def get_op_builder(pipeline_system: PipelineSystem):
