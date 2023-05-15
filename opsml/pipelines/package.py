@@ -107,11 +107,11 @@ class PipelineCompressor:
 
 
 class PipelineCodeUploader:
-    def __init__(self, specs: PipelineBaseSpecs, spec_dir_name: str):
+    def __init__(self, specs: PipelineBaseSpecs, spec_dirpath: str):
         """Uploads compressed pipeline code to a given storage location"""
 
         self.specs = specs
-        self.spec_dir_name = spec_dir_name
+        self.spec_dirpath = spec_dirpath
 
     def _upload_code_to_server(self):
         # iterate and load file to server
@@ -128,6 +128,8 @@ class PipelineCodeUploader:
         if settings.request_client:
             return self._upload_code_to_server()
 
+        print(settings.storage_client)
+        a
         return settings.storage_client.upload(
             local_path=SpecDefaults.COMPRESSED_FILENAME,
             write_path=f"{settings.storage_settings.storage_uri}/{destination_path}",
@@ -205,12 +207,12 @@ class PipelinePackager:
 
     def upload_pipeline(
         self,
-        spec_dir_name: str,
+        spec_dirpath: str,
         specs: PipelineBaseSpecs,
     ) -> CodeInfo:
         code_info = PipelineCodeUploader(
             specs=specs,
-            spec_dir_name=spec_dir_name,
+            spec_dirpath=spec_dirpath,
         ).upload_compressed_code()
 
         return code_info
@@ -227,8 +229,11 @@ class PipelinePackager:
             spec_writer=writer,
             spec_dirpath=spec_dirpath,
         )
-        a
-        code_info = self.upload_pipeline(spec_dir_name=spec_dir_name, specs=self.specs)
+
+        code_info = self.upload_pipeline(
+            spec_dir_name=spec_dirpath,
+            specs=self.specs,
+        )
 
         self.clean_up(writer=writer)
 
