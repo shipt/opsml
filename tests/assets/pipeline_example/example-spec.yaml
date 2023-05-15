@@ -1,19 +1,15 @@
-
 project_name: opsml-test
-cron: 0 5 * * *
 owner: test_owner
 team: mlops
 pipeline_system: vertex
-user_email: test@shipt.com
-container_registry: "test"
-
+cron: 0 5 * * *
+additional_dir: null
 pipeline:
   tasks:
     get_data:
-      entry_point: "get_data.py"
-      flavor: "sklearn"
+      entry_point: get_data.py
+      flavor: sklearn
       memory: 10
       cpu: 2
-
   env_vars:
-    test_env_var: ${TEST_ENV_VAR}
+    test_env_var: test

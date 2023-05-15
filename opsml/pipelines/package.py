@@ -225,7 +225,7 @@ class PipelinePackager:
 
         self.package_pipeline(
             spec_writer=writer,
-            spec_filepath=spec_dirpath,
+            spec_dirpath=spec_dirpath,
         )
         a
         code_info = self.upload_pipeline(spec_dir_name=spec_dir_name, specs=self.specs)
