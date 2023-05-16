@@ -1,9 +1,10 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, cast
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.kubeflow import KubeFlowServerPipeline
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
+from opsml.pipelines.spec import VertexSpecHolder
 from opsml.pipelines.types import (
     PipelineJob,
     PipelineSystem,
@@ -14,8 +15,7 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 class VertexServerPipeline(KubeFlowServerPipeline):
-    @staticmethod
-    def run(pipeline_job: PipelineJob) -> None:
+    def run(self) -> None:
         """
         Runs a Vertex pipeline
 
@@ -30,26 +30,26 @@ class VertexServerPipeline(KubeFlowServerPipeline):
         """
         import google.cloud.aiplatform as aip
 
-        params: PipelineParams = pipeline_job.job  # these are params passed by pipeline_job
-
+        self.specs = cast(VertexSpecHolder, self.specs)
         aip.init(
             project=settings.storage_settings.gcp_project,
             staging_bucket=settings.storage_settings.gcs_bucket,
             credentials=settings.storage_settings.credentials,
-            location=params.additional_task_args.get("gcp_region"),
+            location=self.specs.gcp_region,
         )
 
+        filepath = f"{self.specs.pipeline_metadata.storage_root}/{self.specs.pipeline_metadata.filename}"
         pipeline_job = aip.PipelineJob(
-            display_name=params.pipe_project_name,
-            template_path=params.pipe_filepath,
-            job_id=params.pipe_job_id,
-            pipeline_root=params.pipe_root,
-            enable_caching=params.cache,
+            display_name=self.specs.project_name,
+            template_path=filepath,
+            job_id=self.specs.pipeline_metadata.job_id,
+            pipeline_root=self.specs.pipeline_metadata.storage_root,
+            enable_caching=self.specs.cache,
         )
 
         pipeline_job.job.submit(
-            service_account=params.additional_task_args.get("service_account"),
-            network=params.additional_task_args.get("network"),
+            service_account=self.specs.service_account,
+            network=self.specs.network,
         )
 
         stdout_msg("Pipeline Submitted!")

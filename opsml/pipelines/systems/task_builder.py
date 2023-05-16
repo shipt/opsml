@@ -7,7 +7,7 @@ from opsml.helpers.logging import ArtifactLogger
 
 from opsml.pipelines.container_op import get_op_builder
 from opsml.pipelines.systems.images import ContainerImageRegistry
-from opsml.pipelines.spec import PipelineBaseSpecs
+from opsml.pipelines.spec import PipelineBaseSpecHolder, VertexSpecHolder
 from opsml.pipelines.types import MachineSpec, MachineType, PipelineSystem, ContainerOpInputs, Task
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -16,7 +16,7 @@ logger = ArtifactLogger.get_logger(__name__)
 class TaskBuilder:
     def __init__(
         self,
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
         pipeline_system: PipelineSystem,
     ):
         """
@@ -54,7 +54,7 @@ class TaskBuilder:
 
     def get_op_inputs(
         self,
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
         entry_point: str,
         name: str,
         image: str,
@@ -97,7 +97,7 @@ class TaskBuilder:
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
     ):
         raise NotImplementedError
 
@@ -112,7 +112,7 @@ class LocalTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
     ):
         pass
 
@@ -132,7 +132,7 @@ class VertexTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecs,
+        specs: VertexSpecHolder,
     ) -> Any:
         """Builds a Vertex task
         Args:
@@ -166,9 +166,9 @@ class VertexTaskBuilder(TaskBuilder):
 
         op_builder = self.op_builder(
             op_inputs=op_inputs,
-            network=specs.additional_task_args.get("network"),
-            reserved_ip_ranges=specs.additional_task_args.get("reserved_ip_ranges"),
-            service_account=specs.additional_task_args.get("service_account"),
+            network=specs.network,
+            reserved_ip_ranges=specs.reserved_ip_ranges,
+            service_account=specs.service_account,
             gcp_project_id=specs.gcp_project,
             env_vars=env_vars_list,
         )
@@ -214,7 +214,7 @@ class KubeflowTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
     ) -> Any:
         """Builds a KubeFlow task
 
@@ -261,7 +261,7 @@ class KubeflowTaskBuilder(TaskBuilder):
 
 
 def get_task_builder(
-    specs: PipelineBaseSpecs,
+    specs: PipelineBaseSpecHolder,
     pipeline_system: PipelineSystem,
 ) -> TaskBuilder:
     """

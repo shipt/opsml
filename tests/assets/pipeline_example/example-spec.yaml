@@ -1,12 +1,14 @@
-project_name: opsml-test
-owner: test_owner
-user_email: test@shipt.com
-team: mlops
-pipeline_system: vertex
-container_registry: test
-cron: 0 5 * * *
-gcp_project: shipt-ds-stg-spms
 pipeline:
+  args:
+    project_name: opsml-test
+    owner: test_owner
+    user_email: test@shipt.com
+    team: mlops
+    cron: 0 5 * * *
+    gcp_project: shipt-ds-stg-spms
+    gcp_region: us-central1
+    pipeline_system: vertex
+    container_registry: test
   tasks:
     get_data:
       entry_point: get_data.py

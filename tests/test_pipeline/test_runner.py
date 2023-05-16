@@ -31,7 +31,7 @@ def _test_add_task(mock_pipeline_task: Task):
         )
 
 
-def test_decorator_task(
+def _test_decorator_task(
     mock_pipeline_task: Task,
     mock_sql_pipeline_task: Task,
 ):

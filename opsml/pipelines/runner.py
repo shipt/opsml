@@ -117,6 +117,7 @@ class PipelineRunner(PipelineRunnerBase):
             tasks=self.tasks,
         )
         pipeline_job = pipeline.build()
+        pipeline.run(pipeline_job=pipeline_job)
 
 
 # class _PipelineRunner:

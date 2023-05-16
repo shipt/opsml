@@ -44,8 +44,7 @@ class KubeFlowServerPipeline(Pipeline):
 
         return custom_tasks
 
-    @staticmethod
-    def run(pipeline_job: PipelineJob) -> None:
+    def run(self) -> None:
         """
         Runs a Kubeflow pipeline
 
@@ -56,13 +55,15 @@ class KubeFlowServerPipeline(Pipeline):
         """
         from kfp import Client
 
-        params: PipelineParams = pipeline_job.job
+        storage_root = self.specs.pipeline_metadata.storage_root
+        filename = self.specs.pipeline_metadata.filename
+
         client = Client(host=settings.pipeline_host_uri)
         client.create_run_from_pipeline_package(
-            pipeline_file=params.pipe_filepath,
-            run_name=params.pipe_project_name,
-            pipeline_root=params.pipe_storage_root,
-            enable_caching=params.cache,
+            pipeline_file=f"{storage_root}/{filename}",
+            run_name=self.specs.project_name,
+            pipeline_root=storage_root,
+            enable_caching=self.specs.cache,
         )
 
         stdout_msg("Pipeline Submitted!")
@@ -83,19 +84,18 @@ class KubeFlowServerPipeline(Pipeline):
     def _set_task_dependencies(self, custom_tasks: Dict[str, Any]) -> Dict[str, Any]:
         # set dependencies
         for task in self.tasks:
-            custom_tasks = self._set_dependencies(
-                task_name=task.name,
-                upstream_tasks=task.upstream_tasks,
-                custom_tasks=custom_tasks,
-            )
+            if task.upstream_tasks is not None:
+                custom_tasks = self._set_dependencies(
+                    task_name=task.name,
+                    upstream_tasks=task.upstream_tasks,
+                    custom_tasks=custom_tasks,
+                )
 
         return custom_tasks
 
     def _build_tasks(self) -> Dict[str, Any]:
         custom_tasks = self._build_task_spec()
 
-        print(custom_tasks)
-        a
         return self._set_task_dependencies(custom_tasks=custom_tasks)
 
     def build(self) -> None:

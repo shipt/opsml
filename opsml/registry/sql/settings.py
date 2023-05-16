@@ -7,7 +7,7 @@ from pydantic import BaseSettings, Field, root_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import ApiClient, api_routes
-from opsml.helpers.types import OpsmlAuth, OpsmlUri
+from opsml.helpers.types import OpsmlAuth, OpsmlUri, OpsmlPipelineVars
 from opsml.registry.sql.connectors import BaseSQLConnection, SQLConnector
 from opsml.registry.storage.storage_system import (
     StorageClientGetter,
@@ -257,6 +257,9 @@ class DefaultSettings(BaseSettings):
     storage_settings: StorageSettings
     storage_client: StorageClientType
     request_client: Optional[ApiClient] = Field(None)
+    container_registry: Optional[str] = Field(None, env=OpsmlPipelineVars.CONTAINER_REGISTRY)
+    scheduler_uri: Optional[str] = Field(None, env=OpsmlPipelineVars.SCHEDULER_URI)
+    pipeline_host_uri: Optional[str] = Field(None, env=OpsmlPipelineVars.PIPELINE_HOST_URI)
 
     class Config:
         allow_mutation = True

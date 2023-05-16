@@ -116,11 +116,24 @@ class VertexOpBuilder:
             args=args,
         )
 
+        self._additional_task_args = {
+            "service_account": service_account,
+            "network": network,
+            "reserved_ip_ranges": reserved_ip_ranges,
+        }
         self.op_inputs = op_inputs
-        self.network = network
-        self.service_account = service_account
         self.gcp_project_id = gcp_project_id
-        self.reserved_ip_ranges = reserved_ip_ranges
+
+    @property
+    def additional_task_args(self) -> Dict[str, str]:
+        """Remove all None value args from task args. Vertex does not support NoneType"""
+
+        args = {}
+        for key, value in self._additional_task_args.items():
+            if value is not None:
+                args[key] = value
+
+        return args
 
     def create_container_command(
         self,
@@ -163,9 +176,6 @@ class VertexOpBuilder:
         """Builds a custom Vertex training op"""
 
         custom_op = VertexTrainingOp(
-            service_account=self.service_account,
-            network=self.network,
-            reserved_ip_ranges=self.reserved_ip_ranges,
             project=self.gcp_project_id,
             display_name=self.op_inputs.name,
             worker_pool_specs=[
@@ -175,8 +185,8 @@ class VertexOpBuilder:
                     "machineSpec": self.machine_spec,
                 }
             ],
+            **self.additional_task_args,
         ).set_retry(self.op_inputs.retry)
         custom_op.name = self.op_inputs.name
-        a
 
         return custom_op
