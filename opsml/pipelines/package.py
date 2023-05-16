@@ -11,8 +11,8 @@ from opsml.helpers.utils import FindPath
 from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
-from opsml.pipelines.types import RequirementPath, CodeInfo
-from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs
+from opsml.pipelines.types import RequirementPath, CodeInfo, INCLUDE_ARGS
+from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs, PipelineMetadata
 from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -112,6 +112,7 @@ class PipelineCodeUploader:
 
         self.specs = specs
         self.spec_dirpath = spec_dirpath
+        self.spec_dir_name = self.spec_dirpath.split("/")[-1]
 
     def _upload_code_to_server(self):
         # iterate and load file to server
@@ -128,8 +129,6 @@ class PipelineCodeUploader:
         if settings.request_client:
             return self._upload_code_to_server()
 
-        print(settings.storage_client)
-        a
         return settings.storage_client.upload(
             local_path=SpecDefaults.COMPRESSED_FILENAME,
             write_path=f"{settings.storage_settings.storage_uri}/{destination_path}",
@@ -143,7 +142,8 @@ class PipelineCodeUploader:
             `CodeInfo`
 
         """
-        destination_path = f"{self.specs.pipe_storage_root}/{SpecDefaults.COMPRESSED_FILENAME}"
+        pipeline_metadata: PipelineMetadata = self.specs.get("pipeline_metadata")
+        destination_path = f"{pipeline_metadata.get('pipe_storage_root')}/{SpecDefaults.COMPRESSED_FILENAME}"
         code_uri = self._upload_code(destination_path=destination_path)
 
         return CodeInfo(
@@ -155,7 +155,7 @@ class PipelineCodeUploader:
 class PipelinePackager:
     def __init__(
         self,
-        specs: Dict[str, Any],
+        specs: PipelineBaseSpecs,
         requirements_file: Optional[str],
         req_path: Optional[RequirementPath] = None,
     ):
@@ -220,7 +220,7 @@ class PipelinePackager:
     # @create_pipeline_card
     def package_and_upload_pipeline(self, spec_dirpath: str, spec_filename: str) -> CodeInfo:
         writer = YamlWriter(
-            dict_=self.specs,
+            dict_=self.specs.dict(include=INCLUDE_ARGS),
             path=spec_dirpath,
             filename=spec_filename,
         )
@@ -231,7 +231,7 @@ class PipelinePackager:
         )
 
         code_info = self.upload_pipeline(
-            spec_dir_name=spec_dirpath,
+            spec_dirpath=spec_dirpath,
             specs=self.specs,
         )
 
@@ -239,13 +239,11 @@ class PipelinePackager:
 
         return code_info
 
-    def package_local(self, writer: PipelineWriter, specs: PipelineBaseSpecs):
-        Path(specs.run_id).mkdir(parents=True, exist_ok=True)
-        specs.path = writer.write_pipeline(tmp_dir=specs.run_id)
+    def package_local(self, writer: PipelineWriter):
+        run_id = self.specs.pipeline_metadata.run_id
+        Path(run_id).mkdir(parents=True, exist_ok=True)
+        self.specs.path = writer.write_pipeline(tmp_dir=run_id)
 
-        code_info = CodeInfo(
-            code_uri=specs.path,
-            source_dir=specs.run_id,
-        )
+        code_info = CodeInfo(code_uri=self.specs.path, source_dir=run_id)
 
         return code_info

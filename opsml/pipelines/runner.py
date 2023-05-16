@@ -16,10 +16,6 @@ from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipelin
 
 # from opsml.pipelines.planner import PipelinePlanner
 from opsml.pipelines.spec import PipelineSpec  # PipelineParamCreator
-from opsml.pipelines.types import (
-    # Tasks,
-    INCLUDE_PARAMS,
-)
 from opsml.pipelines.writer import PipelineWriter
 
 
@@ -74,17 +70,14 @@ class PipelineRunner(PipelineRunnerBase):
             `PipelineHelpers`
 
         """
-        specs = self.specs.dict(include=INCLUDE_PARAMS)
-
-        # planner = PipelinePlanner(specs=self.specs, tasks=self.tasks)
-        packager = PipelinePackager(specs=specs, requirements_file=requirements)
+        packager = PipelinePackager(specs=self.specs, requirements_file=requirements)
 
         # writer is used for decorator-style pipelines
         pipe_meta = PipelineWriterMetadata(
-            run_id=self.specs.run_id,
+            run_id=self.specs.pipeline_metadata.run_id,
             project=self.specs.project_name,
             pipeline_tasks=self.tasks,
-            specs=specs,
+            specs=self.specs,
         )
 
         writer = PipelineWriter(pipeline_metadata=pipe_meta)

@@ -104,6 +104,16 @@ class PipelineTasks(BaseModel):
     env_vars: Dict[str, Any]
 
 
+class PipelineMetadata(BaseModel):
+    pipe_filename: str
+    pipe_filepath: str
+    pipe_storage_root: str
+    pipe_project_name: str
+    pipe_job_id: str
+    app_env: str
+    run_id: str
+
+
 class PipelineBaseSpecs(BaseModel):
     """
     Creates pipeline params associated with the current pipeline run.
@@ -115,12 +125,7 @@ class PipelineBaseSpecs(BaseModel):
     team: str
     pipeline_system: str
     container_registry: str
-    pipe_filename: str
-    pipe_filepath: str
-    pipe_storage_root: str
-    pipe_project_name: str
-    pipe_job_id: str
-    run_id: str
+    pipeline_metadata: PipelineMetadata
     cache: bool
 
     # defaults
@@ -187,13 +192,13 @@ class PipelineSpecCreator:
 
     @property
     def specs(self) -> PipelineBaseSpecs:
-        pipeline_paths = self.create_pipeline_path_params()
-        specs = PipelineBaseSpecs(**{**self.pipe_spec.dict(), **pipeline_paths})
+        pipeline_metadata = self.create_pipeline_metadata()
+        specs = PipelineBaseSpecs(**{**self.pipe_spec.dict(), **pipeline_metadata})
         specs.source_file = self.spec_filename
 
         return specs
 
-    def create_pipeline_path_params(self) -> Dict[str, str]:
+    def create_pipeline_metadata(self) -> Dict[str, str]:
         """Sets pipeline path parameters that are used when building pipeline systems"""
 
         suffix = "yaml" if self.pipe_spec.pipeline_system == PipelineSystem.KUBEFLOW else "json"
@@ -205,17 +210,17 @@ class PipelineSpecCreator:
         pipe_storage_path = f"{project_name}/pipeline"
         pipe_storage_root = f"{settings.storage_settings.storage_uri}/{pipe_storage_path}/{run_id}"
 
-        paths = {
-            "pipe_filename": pipe_filename,
-            "pipe_filepath": pipe_filename.replace(" ", "_"),
-            "pipe_storage_root": pipe_storage_root,
-            "pipe_project_name": pipe_project_name,
-            "pipe_job_id": f"{pipe_project_name}-{run_id}",
-            "app_env": settings.app_env,
-            "run_id": run_id,
-        }
+        metadata = PipelineMetadata(
+            pipe_filename=pipe_filename,
+            pipe_filepath=pipe_filename.replace(" ", "_"),
+            pipe_storage_root=pipe_storage_root,
+            pipe_project_name=pipe_project_name,
+            pipe_job_id=f"{pipe_project_name}-{run_id}",
+            app_env=settings.app_env,
+            run_id=run_id,
+        )
 
-        return paths
+        return {"pipeline_metadata": metadata}
 
     def set_pipeline_tasks(self, loaded_spec: Dict[str, Any]):
         tasks = loaded_spec.get("pipeline")

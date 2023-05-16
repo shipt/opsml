@@ -52,8 +52,9 @@ class Pipeline:
             spec_dirpath=spec_dirpath,
             spec_filename=self.specs.source_file,
         )
-        for name, value in code_info:
-            setattr(self.specs, name, value)
+
+        setattr(self.specs, "code_uri", code_info.code_uri)
+        setattr(self.specs, "source_dir", code_info.source_dir)
 
         return code_info
 

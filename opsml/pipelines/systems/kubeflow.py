@@ -110,6 +110,8 @@ class KubeFlowServerPipeline(Pipeline):
         from kfp.v2 import compiler, dsl
 
         code_info = self.package_code()
+        print(code_info)
+        a
 
         @dsl.pipeline(pipeline_root=self.params.pipe_root, name=self.params.pipe_project_name)
         def pipeline():

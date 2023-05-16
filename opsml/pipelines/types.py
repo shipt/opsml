@@ -29,15 +29,17 @@ class PipelineSystem(str, Enum):
     KUBEFLOW = "kubeflow"
 
 
-INCLUDE_PARAMS = {
+INCLUDE_ARGS = {
     "project_name",
     "cron",
     "owner",
     "additional_dir",
     "team",
     "pipeline_system",
-    "user_emails",
+    "user_email",
     "pipeline",
+    "pipeline_metadata",
+    "container_registry",
 }
 
 
@@ -57,7 +59,6 @@ class CodeInfo:
 
     code_uri: str
     source_dir: str
-    pipelinecard_uid: str
 
 
 class VertexGPUs(str, Enum):
@@ -235,7 +236,8 @@ class PipelineWriter(Protocol):
 
 
 class PipelinePackager(Protocol):
-    ...
+    def package_and_upload_pipeline(spec_dirpath: str, spec_filename: str) -> CodeInfo:
+        ...
 
 
 @dataclass

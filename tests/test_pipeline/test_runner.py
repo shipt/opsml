@@ -77,7 +77,7 @@ def _test_config_load():
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
-def test_pipeline_run():
+def test_pipeline_run(mock_packager):
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunner(spec_filename="example-spec.yaml")
 

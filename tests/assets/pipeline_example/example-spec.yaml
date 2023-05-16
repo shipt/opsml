@@ -1,9 +1,10 @@
 project_name: opsml-test
 owner: test_owner
+user_email: test@shipt.com
 team: mlops
 pipeline_system: vertex
+container_registry: test
 cron: 0 5 * * *
-additional_dir: null
 pipeline:
   tasks:
     get_data:

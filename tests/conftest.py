@@ -61,6 +61,7 @@ from opsml.registry import CardRegistries
 from opsml.projects import OpsmlProject
 from opsml.deploy.fastapi.api import ModelApi
 from opsml.pipelines.base_runner import Task
+from opsml.pipelines.types import CodeInfo
 
 
 # testing
@@ -948,3 +949,17 @@ def mock_sql_pipeline_task():
         entry_point="sql_task.sql",
         flavor="snowflake",
     )
+
+
+@pytest.fixture(scope="module")
+def mock_packager():
+    with patch.multiple(
+        "opsml.pipelines.package.PipelinePackager",
+        upload_pipeline=MagicMock(
+            return_value=CodeInfo(
+                code_uri="code_uri",
+                source_dir="source_dir",
+            )
+        ),
+    ) as mock_package_uploader:
+        yield mock_package_uploader
