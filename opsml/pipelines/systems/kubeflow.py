@@ -110,14 +110,18 @@ class KubeFlowServerPipeline(Pipeline):
         from kfp.v2 import compiler, dsl
 
         code_info = self.package_code()
-        print(code_info)
-        a
 
-        @dsl.pipeline(pipeline_root=self.params.pipe_root, name=self.params.pipe_project_name)
+        @dsl.pipeline(
+            pipeline_root=self.specs.pipeline_metadata.pipe_storage_root,
+            name=self.specs.project_name,
+        )
         def pipeline():
             self._build_tasks(pipeline_config=self.config)
 
-        compiler.Compiler().compile(pipeline_func=pipeline, package_path=self.params.pipe_filepath)
+        compiler.Compiler().compile(
+            pipeline_func=pipeline,
+            package_path=self.specs.pipeline_metadata.pipe_filepath,
+        )
 
         # need to return params because they're used in the 'run' staticmethod
         return PipelineJob(job=self.params, code_info=code_info)

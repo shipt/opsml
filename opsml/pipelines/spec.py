@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional, Union, List
 import yaml
 from pydantic import BaseModel, validator, Field, Extra, root_validator
 
+from opsml.helpers.utils import clean_string
 from opsml.pipelines import settings
 from opsml.pipelines.utils import SpecLoader
 from opsml.pipelines.types import PipelineSystem, Task
@@ -106,9 +107,7 @@ class PipelineTasks(BaseModel):
 
 class PipelineMetadata(BaseModel):
     pipe_filename: str
-    pipe_filepath: str
     pipe_storage_root: str
-    pipe_project_name: str
     pipe_job_id: str
     app_env: str
     run_id: str
@@ -147,6 +146,10 @@ class PipelineBaseSpecs(BaseModel):
     class Config:
         extra = Extra.allow
         arbitrary_types_allowed = True
+
+    @validator("project_name", pre=True)
+    def clean_name(cls, value):
+        return clean_string(value)
 
     @validator("is_proxy", pre=True)
     def set_default(cls, value):
@@ -206,16 +209,13 @@ class PipelineSpecCreator:
         run_id = str(datetime.now().strftime("%Y%m%d%H%M%S"))
         project_name = self.pipe_spec.project_name
         pipe_filename = f"{project_name}-{run_id}-pipeline.{suffix}"
-        pipe_project_name = project_name.replace("_", "-")
         pipe_storage_path = f"{project_name}/pipeline"
         pipe_storage_root = f"{settings.storage_settings.storage_uri}/{pipe_storage_path}/{run_id}"
 
         metadata = PipelineMetadata(
             pipe_filename=pipe_filename,
-            pipe_filepath=pipe_filename.replace(" ", "_"),
             pipe_storage_root=pipe_storage_root,
-            pipe_project_name=pipe_project_name,
-            pipe_job_id=f"{pipe_project_name}-{run_id}",
+            pipe_job_id=f"{self.pipe_spec.project_name}-{run_id}",
             app_env=settings.app_env,
             run_id=run_id,
         )
