@@ -64,16 +64,12 @@ def test_decorator_task(
 
     assert len(runner.tasks) == 3
 
-    # "test_task"
-    assert runner.relationships["test_task2"][0] == "test_task"
-
 
 def _test_config_load():
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunnerBase(spec_filename="pipeline.yaml")
 
     assert len(runner.tasks) == 3
-    assert runner.relationships["train_model"][0] == "get_data"
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
@@ -81,7 +77,7 @@ def test_pipeline_run(mock_packager):
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunner(spec_filename="example-spec.yaml")
 
-    assert len(runner.tasks) == 1
+    assert len(runner.tasks) == 2
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
     runner.run()

@@ -96,10 +96,11 @@ class Task(BaseModel):
 
     retry: int = Field(0, description="Number of retries in case of task failure")
     decorated: bool = Field(False, description="Whether task refers to decorated function")
+    upstream_tasks: List[Optional[str]] = Field(None, description="List of upstream tasks")
     func: Optional[Callable[[Any], Any]] = Field(None, description="Decorated function")
 
-    # class Config:
-    # extra = Extra.allow
+    class Config:
+        allow_mutation = True
 
     @validator("entry_point", allow_reuse=True)
     def entry_point_valid(cls, entry_point, values):  # pylint: disable=no-self-argument

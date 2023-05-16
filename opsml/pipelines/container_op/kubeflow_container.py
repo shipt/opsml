@@ -177,5 +177,6 @@ class VertexOpBuilder:
             ],
         ).set_retry(self.op_inputs.retry)
         custom_op.name = self.op_inputs.name
+        a
 
         return custom_op

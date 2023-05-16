@@ -48,7 +48,7 @@ class PipelineRunnerBase:
         for name, kwargs in self.specs.pipeline.tasks.items():
             self.add_task(name=name, **kwargs)
 
-    def _set_upstream_task(self, current_task: str, upstream_tasks: List[Union[Task, str]]) -> None:
+    def _set_upstream_task(self, current_task: Task, upstream_tasks: List[Union[Task, str]]) -> None:
         """
         Sets upstream and downstream tasks for pipelines
 
@@ -66,10 +66,7 @@ class PipelineRunnerBase:
             else:
                 upstream_name = upstream_task
 
-            if self.relationships.get(current_task) is not None:
-                self.relationships[current_task].append(upstream_name)
-            else:
-                self.relationships[current_task] = [upstream_name]
+            current_task.upstream_tasks.append(upstream_name)
 
     def add_task(
         self,
@@ -121,13 +118,6 @@ class PipelineRunnerBase:
         """
 
         task = Task.parse_obj(locals())
-
-        if bool(upstream_tasks):
-            self._set_upstream_task(
-                current_task=name,
-                upstream_tasks=upstream_tasks,
-            )
-
         self.tasks.append(task)
 
         return task

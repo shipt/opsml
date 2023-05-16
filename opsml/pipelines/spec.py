@@ -106,9 +106,9 @@ class PipelineTasks(BaseModel):
 
 
 class PipelineMetadata(BaseModel):
-    pipe_filename: str
-    pipe_storage_root: str
-    pipe_job_id: str
+    filename: str
+    storage_root: str
+    job_id: str
     app_env: str
     run_id: str
 
@@ -164,9 +164,6 @@ class PipelineBaseSpecs(BaseModel):
             return {}
         return value
 
-    def add_attr(self, name: str, value: Union[int, float, str]):
-        setattr(self, name, value)
-
     @root_validator(pre=True)
     def set_pipeline_vars(cls, values):
         if bool(values.get("env_vars")):
@@ -213,9 +210,9 @@ class PipelineSpecCreator:
         pipe_storage_root = f"{settings.storage_settings.storage_uri}/{pipe_storage_path}/{run_id}"
 
         metadata = PipelineMetadata(
-            pipe_filename=pipe_filename,
-            pipe_storage_root=pipe_storage_root,
-            pipe_job_id=f"{self.pipe_spec.project_name}-{run_id}",
+            filename=pipe_filename,
+            storage_root=pipe_storage_root,
+            job_id=f"{self.pipe_spec.project_name}-{run_id}",
             app_env=settings.app_env,
             run_id=run_id,
         )

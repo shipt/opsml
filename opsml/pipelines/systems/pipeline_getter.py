@@ -1,18 +1,20 @@
+from typing import List
+
 from opsml.helpers.utils import all_subclasses
 from opsml.helpers import exceptions
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems import Pipeline
 from opsml.pipelines.spec import PipelineBaseSpecs
-from opsml.pipelines.types import PipelineHelpers
+from opsml.pipelines.types import PipelineHelpers, Task
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
 def get_pipeline_system(
+    tasks: List[Task],
     specs: PipelineBaseSpecs,
     helpers: PipelineHelpers,
 ) -> Pipeline:
-
     pipeline = next(
         (
             pipeline_subclass
@@ -27,7 +29,4 @@ def get_pipeline_system(
     if pipeline is None:
         raise exceptions.PipelineSystemNotFound
 
-    return pipeline(
-        specs=specs,
-        helpers=helpers,
-    )
+    return pipeline(tasks=tasks, specs=specs, helpers=helpers)

@@ -12,19 +12,19 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.task_builder import get_task_builder
 from opsml.pipelines.types import CodeInfo
 from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs
-from opsml.pipelines.types import (
-    PipelineHelpers,
-    PipelineJob,
-    PipelineSystem,
-    PathInfo,
-)
+from opsml.pipelines.types import PipelineHelpers, PipelineJob, PipelineSystem, PathInfo, Task
 
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
 class Pipeline:
-    def __init__(self, specs: PipelineBaseSpecs, helpers: PipelineHelpers):
+    def __init__(
+        self,
+        specs: PipelineBaseSpecs,
+        tasks: List[Task],
+        helpers: PipelineHelpers,
+    ):
         """
         Parent pipeline class that all pipeline systems inherit from. This class will
         set params, a pipeline packager, an httpx session if running as a client, a storage client,
@@ -33,15 +33,21 @@ class Pipeline:
         Args:
             specs:
                 `PipelineBaseSpecs`
+            tasks:
+                List of pipeline `Task`s
             helpers:
                 `PipelineHelpers`
 
         """
         self.specs = specs
+        self.tasks = tasks
         self.helpers = helpers
         self._session = self._get_session()
         self._storage_client = settings.storage_client
-        self._task_builder = get_task_builder(pipeline_system=self.specs.pipeline_system)
+        self._task_builder = get_task_builder(
+            specs=specs,
+            pipeline_system=self.specs.pipeline_system,
+        )
 
     @property
     def env_vars(self) -> Dict[str, Any]:

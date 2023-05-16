@@ -7,7 +7,8 @@ from opsml.helpers.logging import ArtifactLogger
 
 from opsml.pipelines.container_op import get_op_builder
 from opsml.pipelines.systems.images import ContainerImageRegistry
-from opsml.pipelines.types import MachineSpec, MachineType, PipelineParams, PipelineSystem, ContainerOpInputs, Task
+from opsml.pipelines.spec import PipelineBaseSpecs
+from opsml.pipelines.types import MachineSpec, MachineType, PipelineSystem, ContainerOpInputs, Task
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -15,7 +16,7 @@ logger = ArtifactLogger.get_logger(__name__)
 class TaskBuilder:
     def __init__(
         self,
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
         pipeline_system: PipelineSystem,
     ):
         """
@@ -27,7 +28,7 @@ class TaskBuilder:
             pipeline_system:
                 Pipeline system
         """
-        self.image_client = ContainerImageRegistry(container_registry=params.container_registry)
+        self.image_client = ContainerImageRegistry(container_registry=specs.container_registry)
         self.op_builder = self._get_op_builder(pipeline_system=pipeline_system)
 
     def _get_op_builder(self, pipeline_system: PipelineSystem):
@@ -53,7 +54,7 @@ class TaskBuilder:
 
     def get_op_inputs(
         self,
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
         entry_point: str,
         name: str,
         image: str,
@@ -64,8 +65,8 @@ class TaskBuilder:
         Sets the input args for building the container op for a given task
 
         Args:
-            params:
-                Pipeline params
+            specs:
+                Pipeline specification
             entry_point:
                 Entry point for task
             name:
@@ -83,9 +84,9 @@ class TaskBuilder:
         """
         return ContainerOpInputs(
             name=name,
-            code_uri=str(params.code_uri),
-            source_dir=str(params.source_dir),
-            pipelinecard_uid=str(params.pipelinecard_uid),
+            code_uri=str(specs.code_uri),
+            source_dir=str(specs.source_dir),
+            pipelinecard_uid=str(specs.pipelinecard_uid),
             entry_point=str(entry_point),
             image=image,
             machine_spec=machine_spec,
@@ -96,7 +97,7 @@ class TaskBuilder:
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
     ):
         raise NotImplementedError
 
@@ -111,7 +112,7 @@ class LocalTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
     ):
         pass
 
@@ -131,7 +132,7 @@ class VertexTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
     ) -> Any:
         """Builds a Vertex task
         Args:
@@ -144,14 +145,18 @@ class VertexTaskBuilder(TaskBuilder):
         image_uri = self.get_task_image(task_args=task_args)
 
         machine_spec = self.set_machine_type(
-            machine_type=task_args.machine_type,
+            machine_type=MachineType(
+                memory=task_args.memory,
+                cpu=task_args.cpu,
+                machine_type=task_args.machine_type,
+            ),
             gpu_count=task_args.gpu_count,
             gpu_type=task_args.gpu_type,
         )
         env_vars_list = self.set_env_vars(env_vars=env_vars)
 
         op_inputs = self.get_op_inputs(
-            params=params,
+            specs=specs,
             entry_point=task_args.entry_point,
             name=task_args.name,
             image=image_uri,
@@ -161,10 +166,10 @@ class VertexTaskBuilder(TaskBuilder):
 
         op_builder = self.op_builder(
             op_inputs=op_inputs,
-            network=params.additional_task_args.get("network"),
-            reserved_ip_ranges=params.additional_task_args.get("reserved_ip_ranges"),
-            service_account=params.additional_task_args.get("service_account"),
-            gcp_project_id=params.gcp_project,
+            network=specs.additional_task_args.get("network"),
+            reserved_ip_ranges=specs.additional_task_args.get("reserved_ip_ranges"),
+            service_account=specs.additional_task_args.get("service_account"),
+            gcp_project_id=specs.gcp_project,
             env_vars=env_vars_list,
         )
 
@@ -209,7 +214,7 @@ class KubeflowTaskBuilder(TaskBuilder):
         self,
         task_args: Task,
         env_vars: Dict[str, Any],
-        params: PipelineParams,
+        specs: PipelineBaseSpecs,
     ) -> Any:
         """Builds a KubeFlow task
 
@@ -235,7 +240,7 @@ class KubeflowTaskBuilder(TaskBuilder):
         container_env_vars = self.set_env_vars(env_vars=env_vars)
 
         op_inputs = self.get_op_inputs(
-            params=params,
+            specs=specs,
             entry_point=task_args.entry_point,
             name=task_args.name,
             image=image_uri,
@@ -255,7 +260,10 @@ class KubeflowTaskBuilder(TaskBuilder):
         return pipeline_system == PipelineSystem.KUBEFLOW
 
 
-def get_task_builder(pipeline_system: PipelineSystem) -> TaskBuilder:
+def get_task_builder(
+    specs: PipelineBaseSpecs,
+    pipeline_system: PipelineSystem,
+) -> TaskBuilder:
     """
     Gets task builder based on provided pipeline system
 
@@ -275,4 +283,7 @@ def get_task_builder(pipeline_system: PipelineSystem) -> TaskBuilder:
         )
     )
 
-    return task_builder
+    return task_builder(
+        specs=specs,
+        pipeline_system=pipeline_system,
+    )

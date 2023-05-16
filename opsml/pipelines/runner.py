@@ -111,7 +111,11 @@ class PipelineRunner(PipelineRunnerBase):
         stdout_msg("Building pipeline")
         # Get pipeline system
 
-        pipeline: Pipeline = get_pipeline_system(helpers=self.helpers, specs=self.specs)
+        pipeline: Pipeline = get_pipeline_system(
+            helpers=self.helpers,
+            specs=self.specs,
+            tasks=self.tasks,
+        )
         pipeline_job = pipeline.build()
 
 

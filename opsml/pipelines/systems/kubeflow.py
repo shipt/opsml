@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
@@ -19,7 +19,7 @@ class KubeFlowServerPipeline(Pipeline):
         self,
         task_name: str,
         custom_tasks: Dict[str, CustomTrainingOp],
-        dependencies: List[str],
+        upstream_tasks: List[Optional[str]],
     ):
         """
         Sets dependencies for a task
@@ -36,10 +36,10 @@ class KubeFlowServerPipeline(Pipeline):
             Modified custom_tasks
         """
 
-        if len(dependencies) > 0:
-            for dependency in dependencies:
+        if len(upstream_tasks) > 0:
+            for upstream_task in upstream_tasks:
                 custom_tasks[task_name].after(  # type: ignore
-                    custom_tasks[dependency],
+                    custom_tasks[upstream_task],
                 )
 
         return custom_tasks
@@ -70,29 +70,32 @@ class KubeFlowServerPipeline(Pipeline):
     def _build_task_spec(self) -> Dict[str, Any]:
         custom_tasks = {}
 
-        for task_name in self.resources.keys():
-            stdout_msg(f"Building pipeline task: {task_name}")
-            custom_tasks[task_name] = self._task_builder.build(
-                task_args=self.resources[task_name],
+        for task in self.tasks:
+            stdout_msg(f"Building pipeline task: {task.name}")
+            custom_tasks[task.name] = self._task_builder.build(
+                task_args=task,
                 env_vars=self.env_vars,
-                params=self.params,
+                specs=self.specs,
             )
 
         return custom_tasks
 
     def _set_task_dependencies(self, custom_tasks: Dict[str, Any]) -> Dict[str, Any]:
         # set dependencies
-        for task_name, task_args in self.resources.items():
+        for task in self.tasks:
             custom_tasks = self._set_dependencies(
-                task_name=task_name,
+                task_name=task.name,
+                upstream_tasks=task.upstream_tasks,
                 custom_tasks=custom_tasks,
-                dependencies=task_args.depends_on,
             )
 
         return custom_tasks
 
     def _build_tasks(self) -> Dict[str, Any]:
         custom_tasks = self._build_task_spec()
+
+        print(custom_tasks)
+        a
         return self._set_task_dependencies(custom_tasks=custom_tasks)
 
     def build(self) -> None:
@@ -112,19 +115,19 @@ class KubeFlowServerPipeline(Pipeline):
         code_info = self.package_code()
 
         @dsl.pipeline(
-            pipeline_root=self.specs.pipeline_metadata.pipe_storage_root,
+            pipeline_root=self.specs.pipeline_metadata.storage_root,
             name=self.specs.project_name,
         )
         def pipeline():
-            self._build_tasks(pipeline_config=self.config)
+            self._build_tasks()
 
         compiler.Compiler().compile(
             pipeline_func=pipeline,
-            package_path=self.specs.pipeline_metadata.pipe_filepath,
+            package_path=self.specs.pipeline_metadata.filename,
         )
 
         # need to return params because they're used in the 'run' staticmethod
-        return PipelineJob(job=self.params, code_info=code_info)
+        return PipelineJob(job=self.specs, code_info=code_info)
 
     @staticmethod
     def schedule(pipeline_job: PipelineJob):
