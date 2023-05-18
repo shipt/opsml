@@ -189,10 +189,28 @@ def mock_gcsfs():
     with patch.multiple(
         "gcsfs.GCSFileSystem",
         ls=MagicMock(return_value=["test"]),
-        upload=MagicMock(return_value=True),
+        upload=MagicMock(return_value="fake_path"),
         download=MagicMock(return_value="gs://test"),
     ) as mocked_gcsfs:
         yield mocked_gcsfs
+
+
+@pytest.fixture(scope="module")
+def mock_gcp_scheduler():
+    class Job:
+        def __init__(self):
+            self.name = None
+
+    jobs = [Job()]
+
+    with patch.multiple(
+        "google.cloud.scheduler_v1.CloudSchedulerClient",
+        common_location_path=MagicMock(return_value="common_path"),
+        list_jobs=MagicMock(return_value=jobs),
+        delete_job=MagicMock(return_value=None),
+        create_job=MagicMock(return_value="created"),
+    ) as mocked_scheduler:
+        yield mocked_scheduler
 
 
 @pytest.fixture(scope="function")
@@ -999,7 +1017,29 @@ def mock_packager():
         ),
     ) as mock_package_uploader:
         yield mock_package_uploader
-        
+
+
+@pytest.fixture(scope="module")
+def mock_gcp_storage_settings():
+    from opsml.registry.sql.settings import settings
+
+    settings.storage_settings = GcsStorageClientSettings(
+        storage_uri="test",
+        gcp_project="test_project",
+    )
+
+    yield settings
+
+
+@pytest.fixture(scope="module")
+def mock_gcp_pipelinejob():
+    with patch.multiple(
+        "google.cloud.aiplatform.PipelineJob",
+        submit=MagicMock(return_value=None),
+    ) as mock_gcp_pipelinejob:
+        yield mock_gcp_pipelinejob
+
+
 ##### Sklearn estimators for onnx
 @pytest.fixture(scope="module")
 def ard_regression(regression_data):

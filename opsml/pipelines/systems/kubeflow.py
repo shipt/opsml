@@ -44,7 +44,8 @@ class KubeFlowServerPipeline(Pipeline):
 
         return custom_tasks
 
-    def run(self) -> None:
+    @staticmethod
+    def run(self, specs) -> None:
         """
         Runs a Kubeflow pipeline
 

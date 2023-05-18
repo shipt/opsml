@@ -73,9 +73,9 @@ def _test_config_load():
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
-def test_pipeline_run(mock_packager):
+def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
     os.environ["TEST_ENV_VAR"] = "test"
-    runner = PipelineRunner(spec_filename="example-spec.yaml")
+    runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
 
     assert len(runner.tasks) == 2
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"

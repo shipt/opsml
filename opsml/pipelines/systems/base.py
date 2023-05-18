@@ -11,7 +11,7 @@ from opsml.helpers.logging import ArtifactLogger
 
 from opsml.pipelines.systems.task_builder import get_task_builder
 from opsml.pipelines.types import CodeInfo
-from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs
+from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecHolder
 from opsml.pipelines.types import PipelineHelpers, PipelineJob, PipelineSystem, PathInfo, Task
 
 
@@ -21,7 +21,7 @@ logger = ArtifactLogger.get_logger(__name__)
 class Pipeline:
     def __init__(
         self,
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
         tasks: List[Task],
         helpers: PipelineHelpers,
     ):
@@ -85,7 +85,7 @@ class Pipeline:
 
     def _get_pipeline_spec_path_info(self) -> str:
         """
-        Searches for the `pipeline_runner.py` file along a given path.
+        Searches for the pipeline specification file along a given path.
         If a unique directory is given, that directory is searched. This is helpful
         in cases where multiple pipelines are in one repository. If no directory is specified,
         it is assumed there is only one `pipeline_runner.py` present, and the path associated
@@ -156,12 +156,12 @@ class Pipeline:
         paths.append(SpecDefaults.COMPRESSED_FILENAME)
 
         # remove deco dir
-        ops_pipeline_name = f"{self.specs.project_name}-{self.specs.run_id}"
+        ops_pipeline_name = self.specs.pipeline_metadata.job_id
 
         shutil.rmtree(ops_pipeline_name, ignore_errors=True)
 
         # remove local dir if running local pipeline
-        shutil.rmtree(self.specs.run_id, ignore_errors=True)
+        shutil.rmtree(self.specs.pipeline_metadata.job_id, ignore_errors=True)
 
         for path in paths:
             try:

@@ -116,9 +116,6 @@ class VertexPipelineSpecs(PipelineSpec):
     )
     gcp_region = Field("us-central1", description="gcp region to use when running pipelines")
     gcp_project: Optional[str] = Field(None, description="gcp project associated with vertex pipeline")
-    scheduler_uri: Optional[str] = Field(
-        None, description="Scheduler URI to use when scheduling jobs", env=OpsmlPipelineVars.SCHEDULER_URI
-    )
 
     @property
     def pipeline_system(self):
@@ -191,7 +188,6 @@ class VertexSpecHolder(PipelineBaseSpecHolder):
     reserved_ip_ranges: Optional[List[str]] = None
     gcp_region: Optional[str] = None
     gcp_project: Optional[str] = None
-    scheduler_uri: Optional[str] = None
 
     @staticmethod
     def validate(pipeline_system: str):

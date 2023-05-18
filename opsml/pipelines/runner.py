@@ -116,8 +116,15 @@ class PipelineRunner(PipelineRunnerBase):
             specs=self.specs,
             tasks=self.tasks,
         )
-        pipeline_job = pipeline.build()
-        pipeline.run(pipeline_job=pipeline_job)
+
+        pipeline.build()
+        pipeline.run(specs=self.specs)
+
+        # schedule
+        if schedule:
+            pipeline.schedule()
+
+        pipeline.delete_files()
 
 
 # class _PipelineRunner:

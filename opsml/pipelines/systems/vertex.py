@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, cast
 
 from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.spec import VertexPipelineSpecs
 from opsml.pipelines.systems.kubeflow import KubeFlowServerPipeline
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
@@ -15,7 +16,8 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 class VertexServerPipeline(KubeFlowServerPipeline):
-    def run(self) -> None:
+    @staticmethod
+    def run(specs: VertexPipelineSpecs) -> None:
         """
         Runs a Vertex pipeline
 
@@ -30,32 +32,29 @@ class VertexServerPipeline(KubeFlowServerPipeline):
         """
         import google.cloud.aiplatform as aip
 
-        self.specs = cast(VertexSpecHolder, self.specs)
         aip.init(
             project=settings.storage_settings.gcp_project,
-            staging_bucket=settings.storage_settings.gcs_bucket,
+            staging_bucket=settings.storage_settings.storage_uri,
             credentials=settings.storage_settings.credentials,
-            location=self.specs.gcp_region,
+            location=specs.gcp_region,
         )
 
-        filepath = f"{self.specs.pipeline_metadata.storage_root}/{self.specs.pipeline_metadata.filename}"
         pipeline_job = aip.PipelineJob(
-            display_name=self.specs.project_name,
-            template_path=filepath,
-            job_id=self.specs.pipeline_metadata.job_id,
-            pipeline_root=self.specs.pipeline_metadata.storage_root,
-            enable_caching=self.specs.cache,
+            display_name=specs.project_name,
+            template_path=specs.pipeline_metadata.filename,
+            job_id=specs.pipeline_metadata.job_id,
+            pipeline_root=specs.pipeline_metadata.storage_root,
+            enable_caching=specs.cache,
         )
 
-        pipeline_job.job.submit(
-            service_account=self.specs.service_account,
-            network=self.specs.network,
+        pipeline_job.submit(
+            service_account=specs.service_account,
+            network=specs.network,
         )
 
         stdout_msg("Pipeline Submitted!")
 
-    @staticmethod
-    def upload_pipeline_to_gcs(compiled_pipeline_path: str, destination_path: str):
+    def upload_pipeline_to_gcs(compiled_pipeline_path: str, destination_path: str) -> str:
         """
         Uploads vertex pipeline to cloud storage (gcs)
 
@@ -77,34 +76,35 @@ class VertexServerPipeline(KubeFlowServerPipeline):
 
         return pipeline_uri
 
-    @staticmethod
-    def _submit_schedule_from_payload(params: PipelineParams, payload: Dict[str, str]):
+    def _submit_schedule_from_payload(self, payload: Dict[str, str]):
         from opsml.helpers.gcp_utils import GCPClient
 
-        if not bool(params.cron):
+        self.specs = cast(VertexSpecHolder, self.specs)
+
+        if self.specs.cron is not None:
+            job_name = f"{payload.get('display_name')}-ml-model"
+
+            schedule_client = GCPClient.get_service(
+                "scheduler",
+                gcp_credentials=settings.storage_settings.credentials,
+            )
+
+            schedule_client.submit_schedule(
+                payload=payload,
+                job_name=job_name,
+                schedule=self.specs.cron,
+                scheduler_uri=settings.scheduler_uri,
+                gcp_project=str(self.specs.gcp_project),
+                gcp_region=str(self.specs.gcp_region),
+            )
+
+        else:
             raise ValueError(
                 """No CRON found in PipelineSpec of pipeline_config.yaml file.
                 Please ensure the CRON is specified""",
             )
 
-        job_name = f"{payload.get('display_name')}-ml-model"
-
-        schedule_client = GCPClient.get_service(
-            "scheduler",
-            gcp_credentials=settings.storage_settings.credentials,
-        )
-
-        schedule_client.submit_schedule(
-            payload=payload,
-            job_name=job_name,
-            schedule=str(params.cron),
-            scheduler_uri=str(params.additional_task_args.get("scheduler_uri")),
-            gcp_project=settings.storage_settings.gcp_project,
-            gcp_region=params.additional_task_args.get("gcp_region"),
-        )
-
-    @staticmethod
-    def schedule(pipeline_job: PipelineJob) -> None:
+    def schedule(self) -> None:
         """
         Schedules a Vertex pipeline using Cloud Scheduler
 
@@ -113,30 +113,25 @@ class VertexServerPipeline(KubeFlowServerPipeline):
                 Pydantic model of pipeline params
 
         """
-        # params are passed during pipeline building
-        params: PipelineParams = pipeline_job.job
 
-        destination_path = f"{params.pipe_storage_root}/{params.pipe_filepath}"
-        pipeline_uri = VertexServerPipeline.upload_pipeline_to_gcs(
-            compiled_pipeline_path=params.pipe_filepath,
+        destination_path = f"{self.specs.pipeline_metadata.storage_root}/{self.specs.pipeline_metadata.filepath}"
+        pipeline_uri = self.upload_pipeline_to_gcs(
+            compiled_pipeline_path=self.specs.pipeline_metadata.filepath,
             destination_path=destination_path,
         )
 
         payload = {
-            "name": params.project_name,
-            "team": params.team,
-            "user_email": params.user_email,
-            "pipeline_code_uri": params.code_uri,
+            "name": self.specs.project_name,
+            "team": self.specs.team,
+            "user_email": self.specs.user_email,
+            "pipeline_code_uri": self.specs.code_uri,
             "pipeline_spec_uri": pipeline_uri,
-            "pipeline_root": params.pipeline_root,
-            "display_name": params.pipe_project_name,
-            "job_id": params.pipe_job_id,
+            "pipeline_root": self.specs.pipeline_metadata.storage_root,
+            "display_name": self.specs.project_name,
+            "job_id": self.specs.pipeline_metadata.job_id,
         }
 
-        VertexServerPipeline._submit_schedule_from_payload(
-            params=params,
-            payload=payload,
-        )
+        self._submit_schedule_from_payload(payload=payload)
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:

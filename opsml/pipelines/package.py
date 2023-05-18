@@ -2,9 +2,10 @@ import os
 import shutil
 import tarfile
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, cast
 
 from opsml.pipelines import settings
+from opsml.helpers.request_helpers import ApiClient, ApiRoutes
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.utils import YamlWriter
 from opsml.helpers.utils import FindPath
@@ -12,7 +13,7 @@ from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
 from opsml.pipelines.types import RequirementPath, CodeInfo, INCLUDE_ARGS
-from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecs, PipelineMetadata
+from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecHolder, PipelineMetadata
 from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -107,7 +108,7 @@ class PipelineCompressor:
 
 
 class PipelineCodeUploader:
-    def __init__(self, specs: PipelineBaseSpecs, spec_dirpath: str):
+    def __init__(self, specs: PipelineBaseSpecHolder, spec_dirpath: str):
         """Uploads compressed pipeline code to a given storage location"""
 
         self.specs = specs
@@ -115,23 +116,36 @@ class PipelineCodeUploader:
         self.spec_dir_name = self.spec_dirpath.split("/")[-1]
 
     def _upload_code_to_server(self):
-        # iterate and load file to server
+        """Uploads compressed pipeline package to opsml server"""
+        api_client = cast(ApiClient, settings.request_client)
         filename = SpecDefaults.COMPRESSED_FILENAME
-        response = settings.request_client.post_request()
+        files = {"file": open(os.path.join(filename), "rb")}  # pylint: disable=consider-using-with
+        headers = {
+            "Filename": filename,
+            "WritePath": self.specs.pipeline_metadata.storage_root,
+        }
 
-        # need to add storage_uri + path
-        return response["pipeline_storage_path"]
+        response = api_client.stream_post_request(
+            route=ApiRoutes.UPLOAD,
+            files=files,
+            headers=headers,
+        )
 
-    # change to storage client
+        storage_uri = response.get("storage_uri")
+
+        if storage_uri is not None:
+            return storage_uri
+        raise ValueError("No storage_uri found")
+
     def _upload_code(self, destination_path: str) -> str:
-        # if settings.request_client, upload file to path
+        """Uploads pipeline code via api call or storage"""
 
-        if settings.request_client:
+        if settings.request_client is not None:
             return self._upload_code_to_server()
 
         return settings.storage_client.upload(
             local_path=SpecDefaults.COMPRESSED_FILENAME,
-            write_path=f"{settings.storage_settings.storage_uri}/{destination_path}",
+            write_path=destination_path,
         )
 
     def upload_compressed_code(self) -> CodeInfo:
@@ -142,8 +156,7 @@ class PipelineCodeUploader:
             `CodeInfo`
 
         """
-        pipeline_metadata: PipelineMetadata = self.specs.get("pipeline_metadata")
-        destination_path = f"{pipeline_metadata.get('pipe_storage_root')}/{SpecDefaults.COMPRESSED_FILENAME}"
+        destination_path = f"{self.specs.pipeline_metadata.storage_root}/{SpecDefaults.COMPRESSED_FILENAME}"
         code_uri = self._upload_code(destination_path=destination_path)
 
         return CodeInfo(
@@ -155,7 +168,7 @@ class PipelineCodeUploader:
 class PipelinePackager:
     def __init__(
         self,
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
         requirements_file: Optional[str],
         req_path: Optional[RequirementPath] = None,
     ):
@@ -208,7 +221,7 @@ class PipelinePackager:
     def upload_pipeline(
         self,
         spec_dirpath: str,
-        specs: PipelineBaseSpecs,
+        specs: PipelineBaseSpecHolder,
     ) -> CodeInfo:
         code_info = PipelineCodeUploader(
             specs=specs,
