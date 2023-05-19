@@ -279,6 +279,17 @@ def test_app() -> Iterator[TestClient]:
     cleanup()
 
 
+@pytest.fixture(scope="module")
+def test_app_gcp_settings() -> Iterator[TestClient]:
+    cleanup()
+    from opsml.app.main import OpsmlApp
+
+    opsml_app = OpsmlApp(run_mlflow=True)
+    with TestClient(opsml_app.get_app()) as tc:
+        yield tc
+    cleanup()
+
+
 def mock_registries(test_client: TestClient) -> dict[str, ClientCardRegistry]:
     def callable_api():
         return test_client
@@ -489,7 +500,7 @@ def mock_gcs_storage_response():
 
 
 @pytest.fixture(scope="function")
-def mock_gcp_scheduler():
+def _mock_gcp_scheduler():
     class ScheduleClient:
         def common_location_path(self, project: str, location: str):
             return f"{project}-{location}"
