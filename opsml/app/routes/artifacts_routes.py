@@ -40,6 +40,7 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
 from opsml.registry.storage.storage_system import StorageSystem
 from opsml.pipelines.systems.pipeline_getter import get_pipeline_system
+from opsml.pipelines.systems.base import Pipeline
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -384,16 +385,16 @@ def submit_pipeline(
     Submits a pipeline job
     """
 
-    pipeline_system = get_pipeline_system(
-        is_proxy=payload.specs.is_proxy,
-        pipeline_system=payload.specs.pipeline_system,
+    pipeline: Pipeline = get_pipeline_system(
+        specs=payload.specs,
+        tasks=payload.tasks,
     )
 
-    # need to write to local first
-    pipeline_system.write_pipeline_file(
-        pipeline_definition=payload.pipeline_definition,
-        filename=payload.specs.pipeline_metadata.filename,
-    )
+    pipeline.build()
+    pipeline.run()
 
-    # run pipeline
-    pipeline_system.run(specs=payload.specs)
+    # schedule
+    if payload.schedule:
+        pipeline.schedule()
+
+    pipeline.delete_files()

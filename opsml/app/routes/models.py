@@ -3,7 +3,8 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, validator
 
 from opsml.registry.sql.registry_base import VersionType
-from opsml.pipelines.spec import PipelineBaseSpecHolder, VertexSpecHolder, PipelineSpecCreator
+from opsml.pipelines.spec import PipelineBaseSpecHolder, PipelineSpecCreator, VertexSpecHolder
+from opsml.pipelines.types import Task
 
 
 class StorageUri(BaseModel):
@@ -111,15 +112,17 @@ class ListFileResponse(BaseModel):
 
 
 class PipelineSubmitRequest(BaseModel):
-    pipeline_definition: Dict[Any, Any]
-    specs: PipelineBaseSpecHolder
+    specs: Any  # pydantic validation always results in False when typing with PipelineBaseSpecHolder
+    tasks: List[Task]
+    schedule: bool
 
     class Config:
         arbitrary_types_allowed = True
 
     @validator("specs", pre=True)
     def get_spec(cls, specs) -> PipelineBaseSpecHolder:
-        return PipelineSpecCreator.get_pipeline_spec(specs=specs)
+        specs = PipelineSpecCreator.get_pipeline_spec(specs=specs)
+        return specs
 
 
 class PipelineResponse(BaseModel):

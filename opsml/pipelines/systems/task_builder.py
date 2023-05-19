@@ -29,11 +29,7 @@ class TaskBuilder:
                 Pipeline system
         """
         self.image_client = ContainerImageRegistry(container_registry=specs.container_registry)
-        self.op_builder = self._get_op_builder(pipeline_system=pipeline_system)
-
-    def _get_op_builder(self, pipeline_system: PipelineSystem):
-        """Get the container op builder class"""
-        return get_op_builder(pipeline_system=pipeline_system)
+        self.op_builder = get_op_builder(pipeline_system=pipeline_system)
 
     def get_task_image(self, task_args: Task) -> str:
         if task_args.custom_image is None:

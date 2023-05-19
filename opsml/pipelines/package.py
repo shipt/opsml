@@ -3,7 +3,7 @@ import shutil
 import tarfile
 from pathlib import Path
 from typing import Dict, Optional, Any, cast
-
+import tempfile
 from opsml.pipelines import settings
 from opsml.helpers.request_helpers import ApiClient, ApiRoutes
 from opsml.helpers.logging import ArtifactLogger
@@ -231,7 +231,24 @@ class PipelinePackager:
         return code_info
 
     # @create_pipeline_card
-    def package_and_upload_pipeline(self, spec_dirpath: str, spec_filename: str) -> CodeInfo:
+    def package_and_upload_pipeline(
+        self,
+        spec_dirpath: str,
+        spec_filename: str,
+    ) -> CodeInfo:
+        """
+        Packages and uploads pipeline code
+
+        Args:
+            spec_dirpath:
+                Directory of specification file
+            spec_filename:
+                Specification filename
+
+        Returns:
+            `CodeInfo`
+        """
+
         writer = YamlWriter(
             dict_=self.specs.dict(include=INCLUDE_ARGS),
             path=spec_dirpath,
@@ -242,7 +259,6 @@ class PipelinePackager:
             spec_writer=writer,
             spec_dirpath=spec_dirpath,
         )
-
         code_info = self.upload_pipeline(
             spec_dirpath=spec_dirpath,
             specs=self.specs,
@@ -260,3 +276,63 @@ class PipelinePackager:
         code_info = CodeInfo(code_uri=self.specs.path, source_dir=run_id)
 
         return code_info
+
+    def package_code(self, writer: PipelineWriter):
+        """
+        Packages and uploads pipeline code. If the pipeline is created using decorators,
+        a temp directory is created and the pipeline is written to it prior to compression and upload.
+
+        Args:
+            writer:
+                `PipelineWriter`
+        """
+
+        if self.specs.decorated:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                self.specs.path = writer.write_pipeline(tmp_dir=tmp_dir)
+                spec_dir_path = self._get_pipeline_spec_path_info()
+                return self._package_and_upload(spec_dirpath=spec_dir_path)
+
+        spec_dir_path = self._get_pipeline_spec_path_info()
+        return self._package_and_upload(spec_dirpath=spec_dir_path)
+
+    def _package_and_upload(self, spec_dirpath: str):
+        code_info = self.package_and_upload_pipeline(
+            spec_dirpath=spec_dirpath,
+            spec_filename=self.specs.source_file,
+        )
+
+        setattr(self.specs, "code_uri", code_info.code_uri)
+        setattr(self.specs, "source_dir", code_info.source_dir)
+
+        return code_info
+
+    def _get_pipeline_spec_path_info(self) -> str:
+        """
+        Searches for the pipeline specification file along a given path.
+        If a unique directory is given, that directory is searched. This is helpful
+        in cases where multiple pipelines are in one repository. If no directory is specified,
+        it is assumed there is only one `pipeline_runner.py` present, and the path associated
+        with this pipeline will be used.
+        """
+
+        # if directory has been specified
+        if self.specs.directory is not None:
+            dir_path = FindPath.find_dirpath(
+                dir_name=self.specs.directory,
+                anchor_file=self.specs.source_file,
+            )
+
+            return FindPath.find_source_dir(
+                path=dir_path,
+                runner_file=self.specs.source_file,
+            )
+
+        return FindPath.find_source_dir(
+            path=self.specs.path,
+            spec_file=self.specs.source_file,
+        )
+
+    def _get_session(self):
+        """Gets the requests session for connecting to the opsml api"""
+        return settings.request_client

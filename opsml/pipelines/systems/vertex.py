@@ -2,7 +2,7 @@ from typing import Dict, List, Any, cast
 import json
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import VertexPipelineSpecs
-from opsml.pipelines.systems.kubeflow import KubeFlowServerPipeline
+from opsml.pipelines.systems.kubeflow import KubeFlowPipeline
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
 from opsml.pipelines.spec import VertexSpecHolder
@@ -15,9 +15,8 @@ from opsml.pipelines.types import (
 logger = ArtifactLogger.get_logger(__name__)
 
 
-class VertexServerPipeline(KubeFlowServerPipeline):
-    @staticmethod
-    def run(specs: VertexPipelineSpecs) -> None:
+class VertexPipeline(KubeFlowPipeline):
+    def run(self) -> None:
         """
         Runs a Vertex pipeline
 
@@ -36,20 +35,20 @@ class VertexServerPipeline(KubeFlowServerPipeline):
             project=settings.storage_settings.gcp_project,
             staging_bucket=settings.storage_settings.storage_uri,
             credentials=settings.storage_settings.credentials,
-            location=specs.gcp_region,
+            location=self.specs.gcp_region,
         )
 
         pipeline_job = aip.PipelineJob(
-            display_name=specs.project_name,
-            template_path=specs.pipeline_metadata.filename,
-            job_id=specs.pipeline_metadata.job_id,
-            pipeline_root=specs.pipeline_metadata.storage_root,
-            enable_caching=specs.cache,
+            display_name=self.specs.project_name,
+            template_path=self.specs.pipeline_metadata.filename,
+            job_id=self.specs.pipeline_metadata.job_id,
+            pipeline_root=self.specs.pipeline_metadata.storage_root,
+            enable_caching=self.specs.cache,
         )
 
         pipeline_job.submit(
-            service_account=specs.service_account,
-            network=specs.network,
+            service_account=self.specs.service_account,
+            network=self.specs.network,
         )
 
         stdout_msg("Pipeline Submitted!")
@@ -132,27 +131,6 @@ class VertexServerPipeline(KubeFlowServerPipeline):
         }
 
         self._submit_schedule_from_payload(payload=payload)
-
-    @staticmethod
-    def write_pipeline_to_temp_file(pipeline_definition: Dict[Any, Any], filename: str) -> None:
-        """
-        Writes a pipeline definition to a file
-
-        Args:
-            pipeline_definition:
-                dictionary containing compiled pipeline
-            filename:
-                name or file to write
-
-        Returns:
-            Path to temp json file
-        """
-
-        json_object = json.dumps(pipeline_definition, indent=4)
-        with open(filename, "w", encoding="utf8") as temp_file:
-            temp_file.write(json_object)
-
-        return filename
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:

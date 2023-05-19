@@ -4,7 +4,6 @@
 
 class ContainerImageRegistry:
     def __init__(self, container_registry: str):
-
         """
         Class for storing different docker images used for pipeline training
 

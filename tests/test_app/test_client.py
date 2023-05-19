@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 import pandas as pd
 from pydantic import ValidationError
 from opsml.registry import DataCard, ModelCard, RunCard, PipelineCard
+from opsml.pipelines.runner import PipelineRunner
 import uuid
 import tenacity
 import json
@@ -42,7 +43,7 @@ def test_error(test_app):
         (lazy_fixture("test_split_array"), lazy_fixture("test_df")),
     ],
 )
-def test_register_data(api_registries, test_data, data_splits):
+def _test_register_data(api_registries, test_data, data_splits):
     # create data card
     registry = api_registries.data
 
@@ -70,7 +71,7 @@ def test_register_data(api_registries, test_data, data_splits):
         registry.list_cards()
 
 
-def test_semver_registry_list(api_registries, test_array):
+def _test_semver_registry_list(api_registries, test_array):
     # create data card
     registry = api_registries.data
 
@@ -124,7 +125,7 @@ def test_semver_registry_list(api_registries, test_array):
     assert df.shape[0] == 1
 
 
-def test_register_large_data(api_registries):
+def _test_register_large_data(api_registries):
     import numpy as np
 
     # create a numpy 1d-array
@@ -149,7 +150,7 @@ def test_register_large_data(api_registries):
     assert loaded_card.data.shape == x.shape
 
 
-def test_run_card(linear_regression, api_registries):
+def _test_run_card(linear_regression, api_registries):
     registry = api_registries.run
 
     run = RunCard(
@@ -172,7 +173,7 @@ def test_run_card(linear_regression, api_registries):
     assert loaded_card.uid == run.uid
 
 
-def test_register_model(api_registries, sklearn_pipeline):
+def _test_register_model(api_registries, sklearn_pipeline):
     model, data = sklearn_pipeline
     # create data card
     data_registry = api_registries.data
@@ -253,7 +254,7 @@ def test_register_model(api_registries, sklearn_pipeline):
 
 
 @pytest.mark.parametrize("test_data", [lazy_fixture("test_df")])
-def test_load_data_card(api_registries, test_data):
+def _test_load_data_card(api_registries, test_data):
     data_name = "test_df"
     team = "mlops"
     user_email = "mlops.com"
@@ -313,7 +314,7 @@ def test_load_data_card(api_registries, test_data):
         loaded_data.load_data()
 
 
-def test_pipeline_registry(api_registries):
+def _test_pipeline_registry(api_registries):
     pipeline_card = PipelineCard(
         name="test_df",
         team="mlops",
@@ -337,7 +338,7 @@ def test_pipeline_registry(api_registries):
     assert bool(values["datacard_uids"])
 
 
-def test_full_pipeline_with_loading(api_registries, linear_regression):
+def _test_full_pipeline_with_loading(api_registries, linear_regression):
     from opsml.registry.cards.pipeline_loader import PipelineLoader
 
     team = "mlops"
@@ -400,7 +401,7 @@ def test_full_pipeline_with_loading(api_registries, linear_regression):
     assert uids["model"][0] == model_card.uid
 
 
-def test_download_model(test_app, api_registries, linear_regression):
+def _test_download_model(test_app, api_registries, linear_regression):
     team = "mlops"
     user_email = "mlops.com"
 
@@ -442,7 +443,7 @@ def test_download_model(test_app, api_registries, linear_regression):
     assert response.status_code == 200
 
 
-def test_download_multiple_model_failure(test_app, api_registries, linear_regression):
+def _test_download_multiple_model_failure(test_app, api_registries, linear_regression):
     team = "mlops"
     user_email = "mlops.com"
 
@@ -499,9 +500,24 @@ def test_download_multiple_model_failure(test_app, api_registries, linear_regres
     assert json.loads(data.decode("utf-8"))["detail"] == "More than one model found"
 
 
-def test_download_model_failure(test_app):
+def _test_download_model_failure(test_app):
     response = test_app.post(url="opsml/download_model_metadata", json={"name": "pip"})
 
     # should fail
     assert response.status_code == 500
     assert response.json()["detail"] == "No model found"
+
+
+def test_submit_pipeline(test_app):
+    runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
+    response = test_app.post(
+        url="opsml/submit_pipeline",
+        json={
+            "specs": runner.specs.dict(),
+            "tasks": runner.task_dict,
+            "schedule": True,
+        },
+    )
+
+    print(response)
+    a

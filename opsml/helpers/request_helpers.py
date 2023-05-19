@@ -19,6 +19,7 @@ class ApiRoutes:
     UPLOAD = "upload"
     DOWNLOAD_FILE = "download_file"
     LIST_FILES = "list_files"
+    SUBMIT_PIPELINE = "submit_pipeline"
 
 
 api_routes = ApiRoutes()
@@ -74,7 +75,6 @@ class ApiClient:
         files: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-
         with self.client.stream(
             method="POST",
             url=f"{self._base_url}/{route}",
@@ -82,7 +82,6 @@ class ApiClient:
             headers=headers,
             json=json,
         ) as response:
-
             for data in response.iter_bytes():
                 result = data.decode("utf-8")
 

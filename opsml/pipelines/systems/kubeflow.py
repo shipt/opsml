@@ -2,20 +2,18 @@ from typing import Dict, List, Any, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
-from opsml.pipelines.spec import PipelineBaseSpecHolder
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
 from opsml.pipelines.types import (
     PipelineJob,
     PipelineSystem,
     CustomTrainingOp,
-    PipelineParams,
 )
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
-class KubeFlowServerPipeline(Pipeline):
+class KubeFlowPipeline(Pipeline):
     def _set_dependencies(
         self,
         task_name: str,
@@ -45,8 +43,7 @@ class KubeFlowServerPipeline(Pipeline):
 
         return custom_tasks
 
-    @staticmethod
-    def run(specs: PipelineBaseSpecHolder) -> None:
+    def run(self) -> None:
         """
         Runs a Kubeflow pipeline
 
@@ -57,15 +54,15 @@ class KubeFlowServerPipeline(Pipeline):
         """
         from kfp import Client
 
-        storage_root = specs.pipeline_metadata.storage_root
-        filename = specs.pipeline_metadata.filename
+        storage_root = self.specs.pipeline_metadata.storage_root
+        filename = self.specs.pipeline_metadata.filename
 
         client = Client(host=settings.pipeline_host_uri)
         client.create_run_from_pipeline_package(
             pipeline_file=f"{storage_root}/{filename}",
-            run_name=specs.project_name,
+            run_name=self.specs.project_name,
             pipeline_root=storage_root,
-            enable_caching=specs.cache,
+            enable_caching=self.specs.cache,
         )
 
         stdout_msg("Pipeline Submitted!")
@@ -102,7 +99,7 @@ class KubeFlowServerPipeline(Pipeline):
 
     def build(self) -> None:
         """
-        Builds a Vertex Pipeline
+        Builds Kubeflow/Vertex tasks
 
         Args:
             pipeline_config:
@@ -113,8 +110,6 @@ class KubeFlowServerPipeline(Pipeline):
         """
 
         from kfp.v2 import compiler, dsl
-
-        code_info = self.package_code()
 
         @dsl.pipeline(
             pipeline_root=self.specs.pipeline_metadata.storage_root,
@@ -127,9 +122,6 @@ class KubeFlowServerPipeline(Pipeline):
             pipeline_func=pipeline,
             package_path=self.specs.pipeline_metadata.filename,
         )
-
-        # need to return params because they're used in the 'run' staticmethod
-        return PipelineJob(job=self.specs, code_info=code_info)
 
     def schedule(self):
         """
