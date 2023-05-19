@@ -127,7 +127,7 @@ class Pipeline:
         raise NotImplementedError
 
     @staticmethod
-    def run(pipeline_job: PipelineJob) -> None:
+    def run(specs: PipelineBaseSpecHolder) -> None:
         """
         Runs a pipeline.
 
@@ -137,7 +137,21 @@ class Pipeline:
         raise NotImplementedError
 
     @staticmethod
-    def schedule(pipeline_job: PipelineJob):
+    def write_pipeline_file(pipeline_definition: Dict[Any, Any], filename: str) -> str:
+        """
+        Writes a pipeline definition to a file
+
+        Args:
+            pipeline_definition:
+                dictionary containing compiled pipeline
+            filename:
+                name or file to write
+
+
+        """
+        raise NotImplementedError
+
+    def schedule():
         """
         Schedules a pipelines.
 

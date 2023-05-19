@@ -213,7 +213,7 @@ class PipelineSpecCreator:
         self.pipe_spec = self.set_pipe_spec(spec=spec)
 
     @property
-    def specs(self) -> PipelineSpec:
+    def specs(self) -> PipelineBaseSpecHolder:
         pipeline_metadata = self.create_pipeline_metadata()
         specs = {
             **self.pipe_spec,
@@ -221,9 +221,10 @@ class PipelineSpecCreator:
             **{"source_file": self.spec_filename},
         }
 
-        return self._get_pipeline_spec(specs=specs)
+        return PipelineSpecCreator.get_pipeline_spec(specs=specs)
 
-    def _get_pipeline_spec(self, specs: Dict[str, Any]):
+    @staticmethod
+    def get_pipeline_spec(specs: Dict[str, Any]) -> PipelineBaseSpecHolder:
         pipeline_spec = next(
             pipeline_spec
             for pipeline_spec in PipelineBaseSpecHolder.__subclasses__()

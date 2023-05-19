@@ -1,5 +1,5 @@
 from typing import Dict, List, Any, cast
-
+import json
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import VertexPipelineSpecs
 from opsml.pipelines.systems.kubeflow import KubeFlowServerPipeline
@@ -132,6 +132,27 @@ class VertexServerPipeline(KubeFlowServerPipeline):
         }
 
         self._submit_schedule_from_payload(payload=payload)
+
+    @staticmethod
+    def write_pipeline_to_temp_file(pipeline_definition: Dict[Any, Any], filename: str) -> None:
+        """
+        Writes a pipeline definition to a file
+
+        Args:
+            pipeline_definition:
+                dictionary containing compiled pipeline
+            filename:
+                name or file to write
+
+        Returns:
+            Path to temp json file
+        """
+
+        json_object = json.dumps(pipeline_definition, indent=4)
+        with open(filename, "w", encoding="utf8") as temp_file:
+            temp_file.write(json_object)
+
+        return filename
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:

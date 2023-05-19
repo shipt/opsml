@@ -109,9 +109,15 @@ class PipelineRunner(PipelineRunnerBase):
         """
 
         stdout_msg("Building pipeline")
-        # Get pipeline system
 
-        pipeline: Pipeline = get_pipeline_system(
+        # Get pipeline system
+        pipeline_system = get_pipeline_system(
+            is_proxy=self.specs.is_proxy,
+            pipeline_system=self.specs.pipeline_system,
+        )
+
+        # instantiate
+        pipeline: Pipeline = pipeline_system(
             helpers=self.helpers,
             specs=self.specs,
             tasks=self.tasks,

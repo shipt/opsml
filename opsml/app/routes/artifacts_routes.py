@@ -26,6 +26,8 @@ from opsml.app.routes.models import (
     UpdateRecordResponse,
     VersionRequest,
     VersionResponse,
+    PipelineSubmitRequest,
+    PipelineResponse,
 )
 from opsml.app.routes.utils import (
     MODEL_METADATA_FILE,
@@ -37,6 +39,7 @@ from opsml.app.routes.utils import (
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
 from opsml.registry.storage.storage_system import StorageSystem
+from opsml.pipelines.systems.pipeline_getter import get_pipeline_system
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -350,7 +353,7 @@ def list_files(
     request: Request,
     payload: ListFileRequest,
 ) -> ListFileResponse:
-    """Downloads a file
+    """Lists files
 
     Args:
         read_path (str):
@@ -370,3 +373,27 @@ def list_files(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"There was an error listing files. {error}",
         ) from error
+
+
+@router.post("/submit_pipeline", name="submit_pipeline")
+def submit_pipeline(
+    request: Request,
+    payload: PipelineSubmitRequest,
+) -> PipelineResponse:
+    """
+    Submits a pipeline job
+    """
+
+    pipeline_system = get_pipeline_system(
+        is_proxy=payload.specs.is_proxy,
+        pipeline_system=payload.specs.pipeline_system,
+    )
+
+    # need to write to local first
+    pipeline_system.write_pipeline_file(
+        pipeline_definition=payload.pipeline_definition,
+        filename=payload.specs.pipeline_metadata.filename,
+    )
+
+    # run pipeline
+    pipeline_system.run(specs=payload.specs)

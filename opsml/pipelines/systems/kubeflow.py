@@ -2,6 +2,7 @@ from typing import Dict, List, Any, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
+from opsml.pipelines.spec import PipelineBaseSpecHolder
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
 from opsml.pipelines.types import (
@@ -45,7 +46,7 @@ class KubeFlowServerPipeline(Pipeline):
         return custom_tasks
 
     @staticmethod
-    def run(self, specs) -> None:
+    def run(specs: PipelineBaseSpecHolder) -> None:
         """
         Runs a Kubeflow pipeline
 
@@ -56,15 +57,15 @@ class KubeFlowServerPipeline(Pipeline):
         """
         from kfp import Client
 
-        storage_root = self.specs.pipeline_metadata.storage_root
-        filename = self.specs.pipeline_metadata.filename
+        storage_root = specs.pipeline_metadata.storage_root
+        filename = specs.pipeline_metadata.filename
 
         client = Client(host=settings.pipeline_host_uri)
         client.create_run_from_pipeline_package(
             pipeline_file=f"{storage_root}/{filename}",
-            run_name=self.specs.project_name,
+            run_name=specs.project_name,
             pipeline_root=storage_root,
-            enable_caching=self.specs.cache,
+            enable_caching=specs.cache,
         )
 
         stdout_msg("Pipeline Submitted!")
@@ -130,8 +131,7 @@ class KubeFlowServerPipeline(Pipeline):
         # need to return params because they're used in the 'run' staticmethod
         return PipelineJob(job=self.specs, code_info=code_info)
 
-    @staticmethod
-    def schedule(pipeline_job: PipelineJob):
+    def schedule(self):
         """
         Schedules a pipelines.
 
@@ -143,8 +143,17 @@ class KubeFlowServerPipeline(Pipeline):
         """
         logger.info(
             "Scheduling is not currently supported for kubeflow pipelines %s",
-            pipeline_job.code_info.dict(),
         )
+
+    @staticmethod
+    def write_pipeline_file(pipeline_definition: Dict[Any, Any], filename: str) -> str:
+        """
+        Runs a pipeline.
+
+        Args:
+            pipeline_job (PipelineJob): Pipeline job to run
+        """
+        raise NotImplementedError
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
