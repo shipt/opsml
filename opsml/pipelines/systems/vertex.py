@@ -53,7 +53,7 @@ class VertexPipeline(KubeFlowPipeline):
 
         stdout_msg("Pipeline Submitted!")
 
-    def upload_pipeline_to_gcs(compiled_pipeline_path: str, destination_path: str) -> str:
+    def upload_pipeline_to_gcs(self, compiled_pipeline_path: str, destination_path: str) -> str:
         """
         Uploads vertex pipeline to cloud storage (gcs)
 
@@ -113,9 +113,9 @@ class VertexPipeline(KubeFlowPipeline):
 
         """
 
-        destination_path = f"{self.specs.pipeline_metadata.storage_root}/{self.specs.pipeline_metadata.filepath}"
+        destination_path = f"{self.specs.pipeline_metadata.storage_root}/{self.specs.pipeline_metadata.filename}"
         pipeline_uri = self.upload_pipeline_to_gcs(
-            compiled_pipeline_path=self.specs.pipeline_metadata.filepath,
+            compiled_pipeline_path=self.specs.pipeline_metadata.filename,
             destination_path=destination_path,
         )
 

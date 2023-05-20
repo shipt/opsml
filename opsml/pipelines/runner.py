@@ -99,7 +99,10 @@ class PipelineRunner(PipelineRunnerBase):
     def _submit_pipeline_job_to_api(self):
         settings.request_client.post_request(
             route=ApiRoutes.SUBMIT_PIPELINE,
-            json={"specs": self.specs, "tasks": self.tasks},
+            json={
+                "specs": self.specs,
+                "tasks": self.tasks,
+            },
         )
 
     def _build_and_run(self, schedule: bool):

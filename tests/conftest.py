@@ -128,7 +128,7 @@ class Bucket(BaseModel):
         return [Blob()]
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def gcp_cred_path():
     return os.path.join(os.path.dirname(__file__), "assets/fake_gcp_creds.json")
 
@@ -137,7 +137,7 @@ def save_path():
     return f"blob/{uuid.uuid4().hex}"
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def mock_gcp_vars(gcp_cred_path):
     creds, _ = load_credentials_from_file(gcp_cred_path)
     mock_vars = {
@@ -166,7 +166,7 @@ def mock_gcp_creds(mock_gcp_vars):
         yield mock_gcp_creds
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def gcp_storage_client(mock_gcp_vars):
     gcs_settings = GcsStorageClientSettings(
         storage_type="gcs",
@@ -270,17 +270,6 @@ def mock_pyarrow_parquet_dataset(mock_pathlib, test_df, test_arrow_table):
 
 @pytest.fixture(scope="module")
 def test_app() -> Iterator[TestClient]:
-    cleanup()
-    from opsml.app.main import OpsmlApp
-
-    opsml_app = OpsmlApp(run_mlflow=True)
-    with TestClient(opsml_app.get_app()) as tc:
-        yield tc
-    cleanup()
-
-
-@pytest.fixture(scope="module")
-def test_app_gcp_settings() -> Iterator[TestClient]:
     cleanup()
     from opsml.app.main import OpsmlApp
 
@@ -1031,7 +1020,7 @@ def mock_packager():
 
 
 @pytest.fixture(scope="module")
-def mock_gcp_storage_settings():
+def mock_gcp_storage_settings(gcp_storage_client):
     from opsml.registry.sql.settings import settings
 
     settings.storage_settings = GcsStorageClientSettings(

@@ -406,6 +406,6 @@
     "sdkVersion": "kfp-1.8.21"
   },
   "runtimeConfig": {
-    "gcsOutputDirectory": "/home/steven_forrester/mlruns/opsml-test/pipeline/20230519151327"
+    "gcsOutputDirectory": "test/opsml-test/pipeline/20230520174319"
   }
 }

@@ -81,3 +81,19 @@ def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_g
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
     runner.run()
+
+
+def test_pipeline_runner_vertex_app(
+    test_app,
+    mock_gcp_storage_settings,
+    mock_packager,
+    mock_gcp_pipelinejob,
+    mock_gcp_scheduler,
+):
+    os.environ["TEST_ENV_VAR"] = "test"
+    runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
+
+    assert len(runner.tasks) == 2
+    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
+
+    runner.run()
