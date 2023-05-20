@@ -12,11 +12,12 @@ PATH_PREFIX = "opsml"
 class ApiRoutes:
     CHECK_UID = "check_uid"
     VERSION = "version"
-    LIST = "list"
+    LIST_CARDS = "list_cards"
     SETTINGS = "settings"
-    CREATE = "create"
-    UPDATE = "update"
+    CREATE_CARD = "create_card"
+    UPDATE_CARD = "update_card"
     UPLOAD = "upload"
+    DOWNLOAD_MODEL_METADATA = "download_model_metadata"
     DOWNLOAD_FILE = "download_file"
     LIST_FILES = "list_files"
     SUBMIT_PIPELINE = "submit_pipeline"
@@ -75,6 +76,7 @@ class ApiClient:
         files: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        result = ""
         with self.client.stream(
             method="POST",
             url=f"{self._base_url}/{route}",
@@ -83,7 +85,7 @@ class ApiClient:
             json=json,
         ) as response:
             for data in response.iter_bytes():
-                result = data.decode("utf-8")
+                result += data.decode("utf-8")
 
         response_result = cast(Dict[str, Any], py_json.loads(result))
 
@@ -92,7 +94,7 @@ class ApiClient:
 
         raise ValueError(
             f"""
-            Failed to to make server call for post request Url: {ApiRoutes.UPLOAD}.
+            Failed to to make server call for post request Url: {route}.
             {response_result.get("detail")}
             """
         )
@@ -102,15 +104,17 @@ class ApiClient:
         self,
         route: str,
         local_dir: str,
-        read_dir: str,
         filename: str,
+        read_dir: str,
     ) -> Dict[str, Any]:
         Path(local_dir).mkdir(parents=True, exist_ok=True)  # for subdirs that may be in path
+
+        read_path = os.path.join(read_dir, filename)
         with open(os.path.join(local_dir, filename), "wb") as local_file:
             with self.client.stream(
                 method="POST",
                 url=f"{self._base_url}/{route}",
-                json={"read_path": os.path.join(read_dir, filename)},
+                json={"read_path": read_path},
             ) as response:
                 for data in response.iter_bytes():
                     local_file.write(data)
