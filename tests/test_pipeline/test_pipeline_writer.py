@@ -1,10 +1,22 @@
-from opsml.pipelines.runner import PipelineRunner
+from opsml.pipelines import PipelineRunner, PipelineSpec
+
 from opsml.pipelines.types import Task
 
 
-def _test_decorator_task(mock_pipeline_task: Task, sklearn_pipeline):
+def test_decorator_task(mock_pipeline_task: Task, sklearn_pipeline):
     model, data = sklearn_pipeline
-    runner = PipelineRunner()
+
+    spec = PipelineSpec(
+        project_name="opsml-test",
+        cron="0 5 * * *",
+        owner="test_owner",
+        team="team",
+        pipeline_system="vertex",
+        user_email="test@shipt.com",
+        container_registry="test",
+    )
+
+    runner = PipelineRunner(pipeline_spec=spec)
 
     @runner.ml_task(flavor=mock_pipeline_task.flavor)
     def test_data():

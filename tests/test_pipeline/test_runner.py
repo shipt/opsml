@@ -31,7 +31,7 @@ def test_add_task(mock_pipeline_task: Task):
         )
 
 
-def _test_decorator_task(
+def test_decorator_task(
     mock_pipeline_task: Task,
     mock_sql_pipeline_task: Task,
 ):
@@ -65,7 +65,7 @@ def _test_decorator_task(
     assert len(runner.tasks) == 3
 
 
-def _test_config_load():
+def test_config_load():
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunnerBase(spec_filename="pipeline.yaml")
 
@@ -73,23 +73,7 @@ def _test_config_load():
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
-def _test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
-    os.environ["TEST_ENV_VAR"] = "test"
-    runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
-
-    assert len(runner.tasks) == 2
-    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
-
-    runner.run()
-
-
-def _test_pipeline_runner_vertex_app(
-    test_app,
-    mock_gcp_storage_settings,
-    mock_packager,
-    mock_gcp_pipelinejob,
-    mock_gcp_scheduler,
-):
+def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
 

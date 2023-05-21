@@ -1,13 +1,14 @@
 
-project_name: opsml-test
-cron: 0 5 * * *
-owner: test_owner
-team: mlops
-pipeline_system: vertex
-user_email: test@shipt.com
-container_registry: "test"
 
 pipeline:
+  args:
+    project_name: opsml-test
+    cron: 0 5 * * *
+    owner: test_owner
+    team: mlops
+    pipeline_system: vertex
+    user_email: test@shipt.com
+    container_registry: "test"
   tasks:
     get_data:
       entry_point: "get_data.sql"

@@ -32,7 +32,7 @@ class PipelineRunnerBase:
         self.specs = PipelineSpecCreator(spec_filename=spec_filename, spec=pipeline_spec).specs
 
         # for declarative pipelines in spec
-        if self.specs.pipeline.tasks is not None:
+        if self.specs.pipeline is not None:
             self._extract_tasks()
             self._decorated = False
 

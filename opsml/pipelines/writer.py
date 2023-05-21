@@ -3,7 +3,7 @@ import glob
 import os
 import textwrap
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from black import FileMode, WriteBack, format_file_in_place
 from opsml.helpers.utils import FindPath, clean_string
@@ -30,6 +30,18 @@ INCLUDE_VARS = {
     "retry",
     "memory",
     "cpu",
+}
+
+BASE_SPEC_ARGS = {
+    "project_name",
+    "owner",
+    "user_email",
+    "team",
+    "cache",
+    "cron",
+    "additional_dir",
+    "pipelinecard_uid",
+    "pipeline_system",
 }
 
 PIPELINE_TEMPLATE_FILE = "template.txt"
@@ -72,7 +84,7 @@ class PipelineDirCreator:
 
 class PipelineWriter:
     def __init__(self, pipeline_metadata: PipelineWriterMetadata):
-        self.pipeline_metadata = pipeline_metadata
+        self.writer_metadata = pipeline_metadata
         self.template_path = FindPath.find_filepath(name=PIPELINE_TEMPLATE_FILE, path=_MODULE_PATH)
         self.pipeline_dir = clean_string(f"{pipeline_metadata.project}-{pipeline_metadata.run_id}")
         self.formatter = BlackFormatter()
@@ -110,9 +122,8 @@ class PipelineWriter:
             pipeline_path:
                 Path to pipeline directory
         """
-        additional_dir = self.pipeline_metadata.specs.get("additional_dir")
+        additional_dir = self.writer_metadata.specs.get("additional_dir")
         if additional_dir is not None:
-
             Copier.copy_dir_to_path(
                 dir_name=additional_dir,
                 new_path=self.pipeline_path,
@@ -131,23 +142,31 @@ class PipelineWriter:
         task_args = task.dict(include=INCLUDE_VARS)
         return {key: value for key, value in task_args.items() if value is not None}
 
-    def _set_pipeline_env_vars(self) -> None:
-
-        env_vars = self.pipeline_metadata.specs.get("env_vars")
+    def _get_pipeline_env_vars(self) -> Dict[str, Union[str, int, float]]:
+        env_vars = self.writer_metadata.specs.env_vars
         if bool(env_vars):
-            self.pipeline_metadata.specs["pipeline"]["env_vars"] = env_vars
-            self.pipeline_metadata.specs.pop("env_vars")
+            return env_vars
+
+    def _get_additional_spec_args(self) -> Dict[str, Union[str, int, float]]:
+        base_args = self.writer_metadata.specs.dict(include=BASE_SPEC_ARGS)
+
+        # get path metadata
+        base_args["pipeline_metadata"] = self.writer_metadata.specs.pipeline_metadatda.dict()
+
+        return base_args
 
     def _write_pipeline_specification(self):
+        specs = {}
 
-        # add pipeline tasks
-        pipeline_tasks = {task.name: self._get_task_args(task) for task in self.pipeline_metadata.pipeline_tasks}
-        self.pipeline_metadata.specs["pipeline"] = {"tasks": pipeline_tasks}
-        self._set_pipeline_env_vars()
+        # gather specification args
+        pipeline_tasks = {task.name: self._get_task_args(task) for task in self.writer_metadata.pipeline_tasks}
+        specs["pipeline"] = {"tasks": pipeline_tasks}
+        specs["pipeline"]["env_vars"] = self._get_pipeline_env_vars()
+        specs["pipeline"]["args"] = self._get_additional_spec_args()
 
         # write config yaml
         YamlWriter.dict_to_yaml(
-            dict_=self.pipeline_metadata.specs,
+            dict_=specs,
             filename=SpecDefaults.SPEC_FILENAME,
             path=self.pipeline_path,
         )
@@ -165,7 +184,7 @@ class PipelineWriter:
 
     def _write_pipeline_tasks(self):
         task_list = []
-        for task in self.pipeline_metadata.pipeline_tasks:
+        for task in self.writer_metadata.pipeline_tasks:
             self._write_pipeline_task(task=task)
             task_list.append(task.name)
 

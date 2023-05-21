@@ -5,3 +5,5 @@
 
 # for easier access to settings class
 from opsml.registry.sql.settings import settings
+from opsml.pipelines.runner import PipelineRunner
+from opsml.pipelines.spec import PipelineSpec
