@@ -7,10 +7,7 @@ from opsml.pipelines import settings
 from opsml.pipelines.base_runner import PipelineRunnerBase
 from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.package import PipelinePackager
-from opsml.pipelines.types import (
-    PipelineJob,
-    PipelineHelpers,
-)
+from opsml.pipelines.types import PipelineJob, PipelineHelpers, PipelineSystem
 
 from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
 from opsml.pipelines.spec import PipelineSpec, PipelineWriterMetadata
@@ -60,7 +57,13 @@ class PipelineRunner(PipelineRunnerBase):
 
     @property
     def task_dict(self) -> List[Dict[str, Any]]:
-        return [task.dict() for task in self.tasks]
+        return [task.dict(exclude={"func"}) for task in self.tasks]
+
+    @property
+    def is_proxy(self) -> bool:
+        if self.specs.is_proxy and settings.request_client is not None:
+            return True
+        return False
 
     def _set_pipeline_helpers(self, requirements: Optional[str]) -> PipelineHelpers:
         """
@@ -110,7 +113,7 @@ class PipelineRunner(PipelineRunnerBase):
         logger.info(response.json().get("response"))
 
     def _build_and_run(self, schedule: bool):
-        if settings.request_client is not None:
+        if self.is_proxy and self.specs.pipeline_system != PipelineSystem.LOCAL:
             return self._submit_pipeline_job_to_api()
 
         # Get pipeline system
@@ -125,7 +128,6 @@ class PipelineRunner(PipelineRunnerBase):
         # schedule
         if schedule:
             pipeline.schedule()
-
         pipeline.delete_files()
 
     def run(self, schedule: bool = False) -> PipelineJob:

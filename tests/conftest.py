@@ -977,7 +977,7 @@ def test_fastapi_client(fastapi_model_app):
 ######################################
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_pipeline_task():
     yield Task(
         name="test_task",
@@ -987,7 +987,7 @@ def mock_pipeline_task():
     cleanup()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_sql_pipeline_task():
     return Task(
         name="sql_task",
@@ -1010,30 +1010,18 @@ def mock_packager():
         yield mock_package_uploader
 
 
-@pytest.fixture(scope="module")
-def mock_gcp_storage_settings(mock_gcp_vars):
-    # mocking with pydantic models is funky/doesnt work as expected
-    # This mock is for pipeline tests
-    # original settings are copied, new setting with gcp settings are added and yielded
-    # after test is complete, original settings are retained
+@pytest.fixture(scope="function")
+def mock_local_storage_with_gcs(mock_gcp_vars):
+    from opsml.registry.storage.storage_system import GCSFSStorageClient
 
-    from opsml.registry.sql.settings import settings
-
-    os.environ["OPSML_STORAGE_URI"] = "gs://test"
-    original_storage_settings = settings.storage_settings
-
-    settings.set_storage(
-        storage_settings=GcsStorageClientSettings(
-            storage_uri="gs://test",
-            credentials=mock_gcp_vars["gcp_creds"],
-            gcp_project=mock_gcp_vars["gcp_project"],
-        )
-    )
-
-    yield settings
-
-    os.environ["OPSML_STORAGE_URI"] = STORAGE_PATH
-    settings.set_storage(original_storage_settings)
+    with patch(
+        "opsml.registry.storage.storage_system.LocalStorageClient",
+        GCSFSStorageClient,
+    ) as mock_local_fs:
+        with patch(
+            "opsml.registry.storage.types.StorageClientSettings", GcsStorageClientSettings
+        ) as mock_storage_settings:
+            yield mock_local_fs, mock_storage_settings
 
 
 @pytest.fixture(scope="module")

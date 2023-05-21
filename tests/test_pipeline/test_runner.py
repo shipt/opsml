@@ -1,5 +1,5 @@
 from opsml.pipelines.base_runner import Task, PipelineRunnerBase
-from opsml.pipelines.runner import PipelineRunner
+from opsml.pipelines.runner import PipelineRunner, PipelineSpec
 import os
 import pytest
 
@@ -73,11 +73,45 @@ def test_config_load():
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
-def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
+def test_pipeline_runner_local_spec():
+    """Tests local pipeline run from pipeline built with decorators"""
+
+    spec = PipelineSpec(
+        project_name="opsml-test",
+        cron="0 5 * * *",
+        owner="test_owner",
+        team="team",
+        pipeline_system="local",
+        user_email="test@shipt.com",
+        container_registry="test",
+    )
+
+    runner = PipelineRunner(pipeline_spec=spec)
+    runner.specs.source_file = "local-spec.yaml"
+    runner.specs.is_proxy = False
+
+    @runner.ml_task(flavor="sklearn")
+    def test_task():
+        print("test_1")
+
+    @runner.ml_task(
+        flavor="sklearn",
+        upstream_tasks=["test_task"],
+    )
+    def test_task2():
+        print("test_2")
+
+    runner.run()
+
+
+def test_pipeline_runner_local_with_spec():
+    """Runs local test on pipeline that is already built to run on vertex"""
+
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
+    runner.specs.is_proxy = False
 
     assert len(runner.tasks) == 2
-    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
+    runner.specs.pipeline_system = "local"
 
     runner.run()

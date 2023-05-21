@@ -42,7 +42,7 @@ class Pipeline:
     def env_vars(self) -> Dict[str, Any]:
         return self.specs.pipeline.env_vars
 
-    def build(self) -> PipelineJob:
+    def build(self) -> None:
         """
         Builds a pipeline.
 

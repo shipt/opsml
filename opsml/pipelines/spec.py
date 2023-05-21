@@ -143,6 +143,7 @@ class PipelineBaseSpecHolder(BaseModel):
     code_uri: Optional[str] = None
     source_dir: Optional[str] = None
     pipelinecard_uid: str = "NO_ID"
+    pipeline_system: str = PipelineSystem.LOCAL
     source_file: str = SpecDefaults.SPEC_FILENAME
     path: str = os.getcwd()
     requirements: Optional[str] = None
@@ -227,13 +228,16 @@ class PipelineSpecCreator:
     @staticmethod
     def get_pipeline_spec(specs: Dict[str, Any]) -> PipelineBaseSpecHolder:
         pipeline_spec = next(
-            pipeline_spec
-            for pipeline_spec in PipelineBaseSpecHolder.__subclasses__()
-            if pipeline_spec.validate(
-                pipeline_system=specs.get(
-                    "pipeline_system",
+            (
+                pipeline_spec
+                for pipeline_spec in PipelineBaseSpecHolder.__subclasses__()
+                if pipeline_spec.validate(
+                    pipeline_system=specs.get(
+                        "pipeline_system",
+                    )
                 )
-            )
+            ),
+            PipelineBaseSpecHolder,
         )
         return pipeline_spec(**specs)
 

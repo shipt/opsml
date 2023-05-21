@@ -12,7 +12,7 @@ from opsml.helpers.utils import FindPath
 from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
-from opsml.pipelines.types import CodeInfo, INCLUDE_ARGS
+from opsml.pipelines.types import CodeInfo, INCLUDE_ARGS, PipelineSystem
 from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecHolder, PipelineMetadata
 from opsml.pipelines.writer import PipelineWriter
 
@@ -174,16 +174,32 @@ class PipelinePackager:
 
         return code_info
 
-    def package_local(self, writer: PipelineWriter):
-        run_id = self.specs.pipeline_metadata.run_id
-        Path(run_id).mkdir(parents=True, exist_ok=True)
-        self.specs.path = writer.write_pipeline(tmp_dir=run_id)
+    def package_local(self, writer: PipelineWriter) -> CodeInfo:
+        """
+        Packages a pipeline to run locally
 
-        code_info = CodeInfo(code_uri=self.specs.path, source_dir=run_id)
+        Args:
+            writer:
+                `PipelineWriter`
+
+        """
+
+        if self.specs.decorated:
+            self.specs.path = writer.write_pipeline()
+
+        spec_dirpath = self._get_pipeline_spec_path_info()
+
+        code_info = CodeInfo(
+            code_uri=spec_dirpath,
+            source_dir=spec_dirpath.split("/")[-1],
+        )
+
+        setattr(self.specs, "code_uri", spec_dirpath)
+        setattr(self.specs, "source_dir", spec_dirpath.split("/")[-1])
 
         return code_info
 
-    def package_code(self, writer: PipelineWriter):
+    def package_code(self, writer: PipelineWriter) -> CodeInfo:
         """
         Packages and uploads pipeline code. If the pipeline is created using decorators,
         a temp directory is created and the pipeline is written to it prior to compression and upload.
@@ -193,14 +209,17 @@ class PipelinePackager:
                 `PipelineWriter`
         """
 
+        if self.specs.pipeline_system == PipelineSystem.LOCAL:
+            return self.package_local(writer=writer)
+
         if self.specs.decorated:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 self.specs.path = writer.write_pipeline(tmp_dir=tmp_dir)
-                spec_dir_path = self._get_pipeline_spec_path_info()
-                return self._package_and_upload(spec_dirpath=spec_dir_path)
+                spec_dirpath = self._get_pipeline_spec_path_info()
+                return self._package_and_upload(spec_dirpath=spec_dirpath)
 
-        spec_dir_path = self._get_pipeline_spec_path_info()
-        return self._package_and_upload(spec_dirpath=spec_dir_path)
+        spec_dirpath = self._get_pipeline_spec_path_info()
+        return self._package_and_upload(spec_dirpath=spec_dirpath)
 
     def _package_and_upload(self, spec_dirpath: str):
         code_info = self.package_and_upload_pipeline(

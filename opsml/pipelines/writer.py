@@ -179,7 +179,7 @@ class PipelineWriter:
         # write config yaml
         YamlWriter.dict_to_yaml(
             dict_=specs,
-            filename=SpecDefaults.SPEC_FILENAME,
+            filename=self.writer_metadata.specs.source_file,
             path=self.pipeline_paths.base_dir_path,
         )
 

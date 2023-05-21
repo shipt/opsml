@@ -1,4 +1,4 @@
-from typing import List, Optional, Callable, Any, Union
+from typing import List, Optional, Callable, Any, Union, Dict
 from opsml.pipelines.types import Task
 from opsml.pipelines.spec import PipelineSpecCreator, PipelineSpec
 from opsml.helpers.logging import ArtifactLogger
@@ -27,7 +27,7 @@ class PipelineRunnerBase:
 
         """
 
-        self.tasks: List[Task] = []  # list of Tasks
+        self.tasks: List[Task] = []  # dictionary of tasks
         self._decorated = True
         self.specs = PipelineSpecCreator(spec_filename=spec_filename, spec=pipeline_spec).specs
 

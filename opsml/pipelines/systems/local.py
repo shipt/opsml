@@ -1,12 +1,12 @@
 from graphlib import TopologicalSorter
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
 from opsml.helpers import utils
 from opsml.pipelines.utils import stdout_msg
-
+from opsml.pipelines.spec import PipelineBaseSpecHolder
 from opsml.pipelines.types import Task, PipelineJob, PipelineSystem, CodeInfo
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -37,47 +37,25 @@ def _execute_subprocess(command: str) -> None:
 
 
 class LocalPipeline(Pipeline):
-    def package_code(self) -> CodeInfo:
-        """Packages code for a local pipeline run"""
-
-        code_info = self.helpers.packager.package_local(
-            params=self.params,
-            writer=self.helpers.writer,
-        )
-
-        for name, value in code_info:
-            setattr(self.params, name, value)
-
-        return code_info
-
-    @staticmethod
-    def get_run_order(resources: Dict[str, Task]) -> List[str]:
+    @property
+    def run_order(self) -> List[str]:
+        """Parses tasks upstream dependencies and determines run"""
         relationships = {}
-        for _, args in resources.items():
-            relationships[args.entry_point] = {
-                resources[parent].entry_point for parent in args.depends_on  # type: ignore
+        for current_task in self.tasks:
+            relationships[current_task.entry_point] = {
+                task.entry_point for task in self.tasks if task.name in current_task.upstream_tasks
             }
 
         sorter = TopologicalSorter(relationships)
         return list(sorter.static_order())
 
-    @staticmethod
-    def schedule(pipeline_job: PipelineJob):
+    def schedule(self):
         """
         Schedules a pipelines.
-
-        Args:
-            pipeline_params:
-                Pydantic class of pipeline params
-            code_info:
-                Pydantic class containing package metadata
         """
-        logger.info(
-            "Scheduling is not currently supported for local pipelines %s",
-            pipeline_job.code_info.dict(),
-        )
+        logger.info("Scheduling is not supported for local pipelines")
 
-    def build(self) -> PipelineJob:
+    def build(self) -> None:
         """
         Builds a LocalPipeline
 
@@ -89,40 +67,23 @@ class LocalPipeline(Pipeline):
             `PipelineJobModel`
 
         """
-        if self.params.decorated:
-            code_info = self.package_code()
-            job: Dict[str, Union[str, List[str]]] = {}
-            job["run_order"] = self._get_run_order(resources=self.config.resources)
-            job["pipelinecard_uid"] = self.params.pipelinecard_uid
-            job["dir_path"] = self.params.code_uri
-            return PipelineJob(job=job, code_info=code_info)
+        return None
 
-        raise ValueError("""Local mode is only supported for decoraged pipelines at the moment""")
-
-    @staticmethod
-    def run(pipeline_job: PipelineJob) -> None:
+    def run(self) -> None:
         """
         Runs a Local Pipeline
-
-        Args:
-            pipeline_job:
-                Vertex pipeline job
-
         """
 
-        pipelinecard_uid = pipeline_job.job["pipelinecard_uid"]
-        tasks = pipeline_job.job["run_order"]
-        dir_path = pipeline_job.job["dir_path"]
+        pipelinecard_uid = self.specs.pipelinecard_uid
+        tasks = self.run_order
+        dir_path = self.specs.code_uri
 
         # running tasks sequentially
         for task in tasks:
             file_path = utils.FindPath.find_filepath(name=task, path=dir_path)
             command = f"export PIPELINEcard_uid={pipelinecard_uid}; " f"poetry run python {file_path};"
             _execute_subprocess(command=command)
-
         stdout_msg("Local pipeline completed successfully!")
-
-        Pipeline.delete_files()
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
