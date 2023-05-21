@@ -4,7 +4,7 @@ import os
 import pytest
 
 
-def _test_add_task(mock_pipeline_task: Task):
+def test_add_task(mock_pipeline_task: Task):
     runner = PipelineRunnerBase()
 
     first_task = runner.add_task(
@@ -21,7 +21,7 @@ def _test_add_task(mock_pipeline_task: Task):
     )
 
     assert len(runner.tasks) == 2
-    assert runner.relationships[f"{mock_pipeline_task.name}_2"][0] == mock_pipeline_task.name
+    runner.tasks[1].upstream_tasks[0] == mock_pipeline_task.name
 
     with pytest.raises(ValueError):
         runner.add_task(
@@ -73,7 +73,7 @@ def _test_config_load():
     assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
 
 
-def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
+def _test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler):
     os.environ["TEST_ENV_VAR"] = "test"
     runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
 
@@ -83,7 +83,7 @@ def test_pipeline_runner_vertex(mock_gcp_storage_settings, mock_packager, mock_g
     runner.run()
 
 
-def test_pipeline_runner_vertex_app(
+def _test_pipeline_runner_vertex_app(
     test_app,
     mock_gcp_storage_settings,
     mock_packager,

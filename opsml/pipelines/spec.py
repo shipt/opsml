@@ -24,8 +24,8 @@ class SpecDefaults(str, Enum):
 
 
 class PipelineTasks(BaseModel):
-    tasks: Dict[str, Dict[str, Any]]
-    env_vars: Dict[str, Any]
+    tasks: Optional[Dict[str, Dict[str, Any]]] = None
+    env_vars: Optional[Dict[str, Any]] = None
 
 
 class PipelineArgs(BaseModel):

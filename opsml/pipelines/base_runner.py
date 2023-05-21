@@ -28,12 +28,11 @@ class PipelineRunnerBase:
         """
 
         self.tasks: List[Task] = []  # list of Tasks
-        self.relationships = {}  # dictionary of child (key) parent(list values)
         self._decorated = True
         self.specs = PipelineSpecCreator(spec_filename=spec_filename, spec=pipeline_spec).specs
 
         # for declarative pipelines in spec
-        if self.specs.pipeline is not None:
+        if self.specs.pipeline.tasks is not None:
             self._extract_tasks()
             self._decorated = False
 
@@ -81,7 +80,7 @@ class PipelineRunnerBase:
         gpu_type: Optional[str] = None,
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
-        upstream_tasks: Optional[List[Union[Task, str]]] = None,
+        upstream_tasks: List[Optional[Union[Task, str]]] = [],
         func: Optional[Callable[[Any], Any]] = None,
     ) -> Task:
         """

@@ -166,18 +166,6 @@ def mock_gcp_creds(mock_gcp_vars):
         yield mock_gcp_creds
 
 
-@pytest.fixture(scope="module")
-def gcp_storage_client(mock_gcp_vars):
-    gcs_settings = GcsStorageClientSettings(
-        storage_type="gcs",
-        storage_uri="gs://test",
-        credentials=mock_gcp_vars["gcp_creds"],
-        gcp_project=mock_gcp_vars["gcp_project"],
-    )
-    storage_client = StorageClientGetter.get_storage_client(storage_settings=gcs_settings)
-    return storage_client
-
-
 @pytest.fixture(scope="function")
 def local_storage_client():
     storage_client = StorageClientGetter.get_storage_client(storage_settings=StorageClientSettings())
@@ -211,6 +199,18 @@ def mock_gcp_scheduler():
         create_job=MagicMock(return_value="created"),
     ) as mocked_scheduler:
         yield mocked_scheduler
+
+
+@pytest.fixture(scope="module")
+def gcp_storage_client(mock_gcp_vars):
+    gcs_settings = GcsStorageClientSettings(
+        storage_type="gcs",
+        storage_uri="gs://test",
+        credentials=mock_gcp_vars["gcp_creds"],
+        gcp_project=mock_gcp_vars["gcp_project"],
+    )
+    storage_client = StorageClientGetter.get_storage_client(storage_settings=gcs_settings)
+    return storage_client
 
 
 @pytest.fixture(scope="function")
@@ -488,32 +488,32 @@ def mock_gcs_storage_response():
         yield mock_requests
 
 
-@pytest.fixture(scope="function")
-def _mock_gcp_scheduler():
-    class ScheduleClient:
-        def common_location_path(self, project: str, location: str):
-            return f"{project}-{location}"
-
-        def list_jobs(self, parent: str):
-            return [Blob(name="test")]
-
-        def delete_job(self, job_name: str):
-            return True
-
-        def create_job(self, parent: str, job: str):
-            return "test_job"
-
-    class MockScheduler(GCPMLScheduler):
-        def __init__(self):
-            self.schedule_client = ScheduleClient()
-            self.oidc_token = "test"
-            self.parent_path = "test"
-
-        def _create_job_class(self, job: dict):
-            return "job"
-
-    with patch("opsml.helpers.gcp_utils.GCPMLScheduler", MockScheduler) as mock_scheduler:
-        yield mock_scheduler
+# @pytest.fixture(scope="function")
+# def _mock_gcp_scheduler():
+#    class ScheduleClient:
+#        def common_location_path(self, project: str, location: str):
+#            return f"{project}-{location}"
+#
+#        def list_jobs(self, parent: str):
+#            return [Blob(name="test")]
+#
+#        def delete_job(self, job_name: str):
+#            return True
+#
+#        def create_job(self, parent: str, job: str):
+#            return "test_job"
+#
+#    class MockScheduler(GCPMLScheduler):
+#        def __init__(self):
+#            self.schedule_client = ScheduleClient()
+#            self.oidc_token = "test"
+#            self.parent_path = "test"
+#
+#        def _create_job_class(self, job: dict):
+#            return "job"
+#
+#    with patch("opsml.helpers.gcp_utils.GCPMLScheduler", MockScheduler) as mock_scheduler:
+#        yield mock_scheduler
 
 
 @pytest.fixture(scope="function")
@@ -1012,17 +1012,28 @@ def mock_packager():
 
 @pytest.fixture(scope="module")
 def mock_gcp_storage_settings(mock_gcp_vars):
+    # mocking with pydantic models is funky/doesnt work as expected
+    # This mock is for pipeline tests
+    # original settings are copied, new setting with gcp settings are added and yielded
+    # after test is complete, original settings are retained
+
     from opsml.registry.sql.settings import settings
+
+    os.environ["OPSML_STORAGE_URI"] = "gs://test"
+    original_storage_settings = settings.storage_settings
 
     settings.set_storage(
         storage_settings=GcsStorageClientSettings(
-            storage_uri="test",
+            storage_uri="gs://test",
             credentials=mock_gcp_vars["gcp_creds"],
             gcp_project=mock_gcp_vars["gcp_project"],
         )
     )
 
     yield settings
+
+    os.environ["OPSML_STORAGE_URI"] = STORAGE_PATH
+    settings.set_storage(original_storage_settings)
 
 
 @pytest.fixture(scope="module")

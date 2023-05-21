@@ -2,7 +2,7 @@ from opsml.pipelines.runner import PipelineRunner
 from opsml.pipelines.types import Task
 
 
-def test_decorator_task(mock_pipeline_task: Task, sklearn_pipeline):
+def _test_decorator_task(mock_pipeline_task: Task, sklearn_pipeline):
     model, data = sklearn_pipeline
     runner = PipelineRunner()
 

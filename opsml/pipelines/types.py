@@ -96,11 +96,34 @@ class Task(BaseModel):
 
     retry: int = Field(0, description="Number of retries in case of task failure")
     decorated: bool = Field(False, description="Whether task refers to decorated function")
-    upstream_tasks: List[Optional[str]] = Field(None, description="List of upstream tasks")
+    upstream_tasks: List[Optional[str]] = Field([], description="List of upstream tasks")
     func: Optional[Callable[[Any], Any]] = Field(None, description="Decorated function")
 
     class Config:
         allow_mutation = True
+
+    @validator("upstream_tasks", allow_reuse=True, pre=True)
+    def set_upstream_tasks(cls, upstream_tasks):
+        """
+        Sets upstream and downstream tasks for pipelines
+
+        Args:
+            downstream_task:
+                Name of downstream task
+            upstream_tasks:
+                List of upstream tasks
+
+        """
+
+        tasks = []
+        if bool(upstream_tasks):
+            for upstream_task in upstream_tasks:
+                if isinstance(upstream_task, Task):
+                    upstream_name = upstream_task.name
+                else:
+                    upstream_name = upstream_task
+                tasks.append(upstream_name)
+        return tasks
 
     @validator("entry_point", allow_reuse=True)
     def entry_point_valid(cls, entry_point, values):  # pylint: disable=no-self-argument

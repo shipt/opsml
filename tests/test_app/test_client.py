@@ -452,8 +452,8 @@ def test_download_model_failure(test_app):
 
 
 def test_submit_pipeline(
-    test_app,
     mock_gcp_storage_settings,
+    test_app,
     mock_packager,
     mock_gcp_pipelinejob,
     mock_gcp_scheduler,
