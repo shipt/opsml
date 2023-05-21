@@ -469,5 +469,4 @@ def test_submit_pipeline(
         },
     )
 
-    print(response)
-    a
+    assert response.status_code == 200

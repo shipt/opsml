@@ -16,6 +16,9 @@ from opsml.pipelines.types import (
 from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
 from opsml.pipelines.spec import PipelineSpec
 from opsml.pipelines.writer import PipelineWriter
+from opsml.helpers.logging import ArtifactLogger
+
+logger = ArtifactLogger.get_logger(__name__)
 
 
 @dataclass
@@ -97,13 +100,15 @@ class PipelineRunner(PipelineRunnerBase):
         return None
 
     def _submit_pipeline_job_to_api(self):
-        settings.request_client.post_request(
+        response = settings.request_client.post_request(
             route=ApiRoutes.SUBMIT_PIPELINE,
             json={
-                "specs": self.specs,
-                "tasks": self.tasks,
+                "specs": self.specs.dict(),
+                "tasks": self.task_dict,
             },
         )
+
+        logger.info(response.json().get("response"))
 
     def _build_and_run(self, schedule: bool):
         if settings.request_client is not None:

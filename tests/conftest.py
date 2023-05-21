@@ -139,6 +139,7 @@ def save_path():
 @pytest.fixture(scope="module")
 def mock_gcp_vars(gcp_cred_path):
     creds, _ = load_credentials_from_file(gcp_cred_path)
+
     mock_vars = {
         "gcp_project": "test",
         "gcs_bucket": "test",
@@ -275,7 +276,7 @@ def test_app() -> Iterator[TestClient]:
     opsml_app = OpsmlApp(run_mlflow=True)
     with TestClient(opsml_app.get_app()) as tc:
         yield tc
-    # cleanup()
+    cleanup()
 
 
 def mock_registries(test_client: TestClient) -> dict[str, ClientCardRegistry]:
@@ -1010,12 +1011,15 @@ def mock_packager():
 
 
 @pytest.fixture(scope="module")
-def mock_gcp_storage_settings(gcp_storage_client):
+def mock_gcp_storage_settings(mock_gcp_vars):
     from opsml.registry.sql.settings import settings
 
-    settings.storage_settings = GcsStorageClientSettings(
-        storage_uri="test",
-        gcp_project="test_project",
+    settings.set_storage(
+        storage_settings=GcsStorageClientSettings(
+            storage_uri="test",
+            credentials=mock_gcp_vars["gcp_creds"],
+            gcp_project=mock_gcp_vars["gcp_project"],
+        )
     )
 
     yield settings

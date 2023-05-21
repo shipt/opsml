@@ -25,11 +25,12 @@ def test_find_dir_path():
 
 
 def test_find_src_dir():
-    src_dir, src_path = utils.FindPath.find_source_dir(
+    src_path = utils.FindPath.find_source_dir(
         os.getcwd(),
         "anchor.py",
     )
-    assert src_dir == "assets"
+
+    assert "assets" in src_path
 
 
 def test_gcs_storage_client_integration(mock_gcs):
@@ -73,13 +74,15 @@ def test_gcs_storage_client_integration(mock_gcs):
     )
 
 
-def test_gcp_scheduler_integration(mock_gcp_scheduler):
+def test_gcp_scheduler_integration(mock_gcp_scheduler, mock_gcp_vars):
     payload = {
         "name": "test",
         "team": "test",
         "user_email": "test",
     }
-    scheduler = gcp_utils.GCPMLScheduler()
+    scheduler = gcp_utils.GCPMLScheduler(
+        gcp_credentials=mock_gcp_vars["gcp_creds"],
+    )
     scheduler.submit_schedule(
         payload=payload,
         job_name="test",
@@ -91,7 +94,6 @@ def test_gcp_scheduler_integration(mock_gcp_scheduler):
 
 
 def test_gcp_creds(gcp_cred_path: str):
-
     with open(gcp_cred_path) as creds:
         creds = json.load(creds)
 
@@ -103,7 +105,6 @@ def test_gcp_creds(gcp_cred_path: str):
 
 
 def test_gcp_default_creds(gcp_cred_path: str):
-
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_cred_path
 
     creds, project = gcp_utils.GcpCredsSetter().get_base64_creds()

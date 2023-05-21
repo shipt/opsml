@@ -395,3 +395,5 @@ def submit_pipeline(
         pipeline.schedule()
 
     pipeline.delete_files()
+
+    return PipelineResponse(response="Pipeline Submitted!")

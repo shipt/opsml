@@ -150,6 +150,7 @@ class FindPath:
             source dir and dir path
         """
         paths = glob.glob(f"{path}/**/{spec_file}", recursive=True)
+
         if len(paths) <= 1:
             source_path = "/".join(paths[0].split("/")[:-1])
             # source_dir = paths[0].split("/")[:-1][-1]
