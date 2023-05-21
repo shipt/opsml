@@ -16,7 +16,10 @@ def test_decorator_task(mock_pipeline_task: Task, sklearn_pipeline):
         container_registry="test",
     )
 
-    runner = PipelineRunner(pipeline_spec=spec)
+    runner = PipelineRunner(
+        pipeline_spec=spec,
+        requirements="example_requirements.txt",
+    )
 
     @runner.ml_task(flavor=mock_pipeline_task.flavor)
     def test_data():

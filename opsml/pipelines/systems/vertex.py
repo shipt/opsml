@@ -88,10 +88,7 @@ class VertexPipeline(KubeFlowPipeline):
         if self.specs.cron is not None:
             job_name = f"{payload.get('display_name')}-ml-model"
 
-            schedule_client = GCPClient.get_service(
-                "scheduler",
-                gcp_credentials=settings.storage_settings.credentials,
-            )
+            schedule_client = GCPClient.get_service("scheduler", gcp_credentials=settings.storage_settings.credentials)
 
             schedule_client.submit_schedule(
                 payload=payload,

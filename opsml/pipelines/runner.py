@@ -75,8 +75,8 @@ class PipelineRunner(PipelineRunnerBase):
 
         """
         packager = PipelinePackager(specs=self.specs, requirements_file=requirements)
-        # writer is used for decorator-style pipelines
 
+        # writer is used for decorator-style pipelines
         pipe_meta = PipelineWriterMetadata(
             run_id=self.specs.pipeline_metadata.run_id,
             project=self.specs.project_name,

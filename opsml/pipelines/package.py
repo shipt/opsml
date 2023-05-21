@@ -12,92 +12,11 @@ from opsml.helpers.utils import FindPath
 from opsml.helpers import exceptions
 
 # from opsml.pipelines.decorator import create_pipeline_card
-from opsml.pipelines.types import RequirementPath, CodeInfo, INCLUDE_ARGS
+from opsml.pipelines.types import CodeInfo, INCLUDE_ARGS
 from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecHolder, PipelineMetadata
 from opsml.pipelines.writer import PipelineWriter
 
 logger = ArtifactLogger.get_logger(__name__)
-
-REQUIREMENTS_FILE = "requirements.txt"
-PYPROJECT_FILE = "pyproject.toml"
-
-
-class RequirementsCopier:
-    def __init__(
-        self,
-        requirements_file: str,
-        spec_filepath: str,
-    ):
-        self.requirements = requirements_file
-        self.spec_filepath = spec_filepath
-
-    def copy_req_to_src(self) -> RequirementPath:
-        """
-        Finds a given requirements file (requirements.txt or poetry.lock
-        and copies it to the dir path. Needed for installing packages when
-        running container.
-
-
-        Args:
-            requirements:
-                String indicating requirements file. Options are "requirements.txt" and "poetry.lock".
-
-        """
-        try:
-            req_path = FindPath.find_filepath(self.requirements)
-        except IndexError as error:
-            raise exceptions.NoRequirements(
-                f"""No requirement file found. Please make sure the requirements file is in the
-                current working directory, {error}"""
-            )
-        except ValueError as error:
-            raise exceptions.MoreThanOnePath(
-                f"""More than one requirements file found.
-            Try either renaming the requirements file or removing others from
-            your path. {error}
-            """
-            )
-
-        self._check_requirements(req_path=req_path)
-        shutil.copy(req_path, self.spec_filepath)
-
-        if ".txt" in self.requirements:
-            moved_req_path = self._rename_requirements_file()
-
-        if "poetry" in self.requirements:
-            moved_req_path = self._copy_pyproject_toml(str(req_path))
-
-        return RequirementPath(
-            req_path=moved_req_path,
-            toml_path=f"{self.spec_filepath}/{PYPROJECT_FILE}",
-        )
-
-    def _check_requirements(self, req_path: str):
-        with open(req_path, "r", encoding="utf-8") as filepath:
-            lines = filepath.readlines()
-            for line in lines:
-                if line.find("pyshipt") != -1:
-                    raise ValueError(
-                        """Found pyshipt libraries in requirements file. Internal libraries are not
-                        currently supported in Vertex due to networking issues. Docker environments
-                        already have latest versions of pyshipt-logging and pyshipt-sql."""
-                    )
-
-    def _rename_requirements_file(self) -> str:
-        os.rename(
-            f"{self.spec_filepath}/{self.requirements}",
-            f"{self.spec_filepath}/{REQUIREMENTS_FILE}",
-        )
-        return f"{self.spec_filepath}/{REQUIREMENTS_FILE}"
-
-    def _copy_pyproject_toml(self, req_path: str) -> str:
-        path_split = req_path.split("/")
-        req_file = path_split[-1]
-        base_path = "/".join(path_split[:-1])
-        toml_path = f"{base_path}/{PYPROJECT_FILE}"
-        shutil.copy(toml_path, self.spec_filepath)
-
-        return f"{self.spec_filepath}/{req_file}"
 
 
 class PipelineCompressor:
@@ -190,13 +109,6 @@ class PipelinePackager:
 
     def package_pipeline(self, spec_writer: YamlWriter, spec_dirpath: str):
         spec_writer.write_file()
-
-        if self.requirements is not None:
-            self.req_path = RequirementsCopier(
-                requirements_file=self.requirements,
-                spec_dirpath=spec_dirpath,
-            ).copy_req_to_src()
-
         PipelineCompressor.tar_compress_code(dir_path=spec_dirpath)
 
     def _delete_copied_req(self):

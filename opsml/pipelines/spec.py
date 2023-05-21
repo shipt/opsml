@@ -145,6 +145,7 @@ class PipelineBaseSpecHolder(BaseModel):
     pipelinecard_uid: str = "NO_ID"
     source_file: str = SpecDefaults.SPEC_FILENAME
     path: str = os.getcwd()
+    requirements: Optional[str] = None
 
     # pipeline spec
     pipeline: Optional[PipelineTasks] = None

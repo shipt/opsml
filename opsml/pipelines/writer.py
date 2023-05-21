@@ -10,10 +10,11 @@ from opsml.helpers.utils import FindPath, clean_string
 
 
 from opsml.pipelines.utils import YamlWriter, Copier
-from opsml.pipelines.types import Task
+from opsml.pipelines.types import Task, RequirementPath
 from opsml.pipelines.writer_utils import FuncMetaCreator, PyWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
 from opsml.pipelines.spec import SpecDefaults, PipelineWriterMetadata
+from opsml.pipelines.package import RequirementsCopier
 
 _MODULE_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -45,6 +46,9 @@ BASE_SPEC_ARGS = {
 }
 
 PIPELINE_TEMPLATE_FILE = "template.txt"
+REQUIREMENTS_FILE = "requirements.txt"
+PYPROJECT_FILE = "pyproject.toml"
+
 
 text_wrapper = textwrap.TextWrapper(
     initial_indent="\t",
@@ -171,12 +175,22 @@ class PipelineWriter:
             path=self.pipeline_path,
         )
 
+    def _add_requirements(self) -> None:
+        """Adds requirement file to pipeline directory"""
+
+        if self.specs.requirements is not None:
+            self.req_path = RequirementsCopier(
+                requirements_file=self.requirements,
+                spec_dirpath=self.pipeline_path,
+            ).copy_req_to_src()
+
     def write_pipeline(self, tmp_dir: Optional[str] = None) -> str:
         """Writes pipeline from files and task funcs"""
 
         self._create_pipeline_dir(pipeline_dir=tmp_dir or self.pipeline_dir)
         self._write_pipeline_tasks()
         self._add_additional_dir()
+        self._add_requirements()
         self._write_pipeline_specification()
 
         # modify params
