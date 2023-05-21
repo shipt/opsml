@@ -199,14 +199,6 @@ class PipelineJob:
     code_info: CodeInfo
 
 
-@dataclass
-class PipelineWriterMetadata:
-    run_id: str
-    project: str
-    pipeline_tasks: List[Task]
-    specs: Dict[str, Any]
-
-
 class MachineSpec(BaseModel):
     """Model for creating kubeflow machine spec"""
 

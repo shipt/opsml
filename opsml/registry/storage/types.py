@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Generator, List, Optional, Protocol, Tuple, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from opsml.helpers.request_helpers import ApiClient
+from opsml.helpers.types import OpsmlPipelineVars
 
 FilePath = Union[List[str], str]
 
@@ -34,6 +35,7 @@ class GcsStorageClientSettings(StorageClientSettings):
     storage_type: str = "gcs"
     credentials: Optional[Any] = None
     gcp_project: Optional[str] = None
+    gcp_region: Optional[str] = Field(None, env=OpsmlPipelineVars.GCP_REGION)
 
 
 class ApiStorageClientSettings(StorageClientSettings):

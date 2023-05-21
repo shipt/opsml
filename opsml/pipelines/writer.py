@@ -10,10 +10,10 @@ from opsml.helpers.utils import FindPath, clean_string
 
 
 from opsml.pipelines.utils import YamlWriter, Copier
-from opsml.pipelines.types import PipelineWriterMetadata, Task
+from opsml.pipelines.types import Task
 from opsml.pipelines.writer_utils import FuncMetaCreator, PyWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
-from opsml.pipelines.spec import SpecDefaults
+from opsml.pipelines.spec import SpecDefaults, PipelineWriterMetadata
 
 _MODULE_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -122,7 +122,7 @@ class PipelineWriter:
             pipeline_path:
                 Path to pipeline directory
         """
-        additional_dir = self.writer_metadata.specs.get("additional_dir")
+        additional_dir = self.writer_metadata.specs.additional_dir
         if additional_dir is not None:
             Copier.copy_dir_to_path(
                 dir_name=additional_dir,
@@ -151,7 +151,7 @@ class PipelineWriter:
         base_args = self.writer_metadata.specs.dict(include=BASE_SPEC_ARGS)
 
         # get path metadata
-        base_args["pipeline_metadata"] = self.writer_metadata.specs.pipeline_metadatda.dict()
+        base_args["pipeline_metadata"] = self.writer_metadata.specs.pipeline_metadata.dict()
 
         return base_args
 

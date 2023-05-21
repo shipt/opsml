@@ -4,7 +4,7 @@ from enum import Enum
 from datetime import datetime
 
 from typing import Any, Dict, Optional, Union, List
-import yaml
+from dataclasses import dataclass
 from pydantic import BaseModel, validator, Field, Extra, root_validator
 
 from opsml.helpers.utils import clean_string
@@ -294,3 +294,11 @@ class PipelineSpecCreator:
             pipeline.pop("args")
 
         return spec
+
+
+@dataclass
+class PipelineWriterMetadata:
+    run_id: str
+    project: str
+    pipeline_tasks: List[Task]
+    specs: PipelineBaseSpecHolder

@@ -31,15 +31,18 @@ class VertexPipeline(KubeFlowPipeline):
         """
         import google.cloud.aiplatform as aip
 
+        gcp_project = self.specs.gcp_project or settings.storage_settings.gcp_project
+        gcp_region = self.specs.gcp_region or settings.storage_settings.gcp_region
+
         aip.init(
-            project=settings.storage_settings.gcp_project,
+            project=gcp_project,
             staging_bucket=settings.storage_settings.storage_uri,
             credentials=settings.storage_settings.credentials,
-            location=self.specs.gcp_region,
+            location=gcp_region,
         )
 
         pipeline_job = aip.PipelineJob(
-            display_name=self.specs.project_name,
+            display_name=gcp_project,
             template_path=self.specs.pipeline_metadata.filename,
             job_id=self.specs.pipeline_metadata.job_id,
             pipeline_root=self.specs.pipeline_metadata.storage_root,
@@ -79,6 +82,8 @@ class VertexPipeline(KubeFlowPipeline):
         from opsml.helpers.gcp_utils import GCPClient
 
         self.specs = cast(VertexSpecHolder, self.specs)
+        gcp_project = str(self.specs.gcp_project or settings.storage_settings.gcp_project)
+        gcp_region = str(self.specs.gcp_region or settings.storage_settings.gcp_region)
 
         if self.specs.cron is not None:
             job_name = f"{payload.get('display_name')}-ml-model"
@@ -93,8 +98,8 @@ class VertexPipeline(KubeFlowPipeline):
                 job_name=job_name,
                 schedule=self.specs.cron,
                 scheduler_uri=settings.scheduler_uri,
-                gcp_project=str(self.specs.gcp_project),
-                gcp_region=str(self.specs.gcp_region),
+                gcp_project=gcp_project,
+                gcp_region=gcp_region,
             )
 
         else:

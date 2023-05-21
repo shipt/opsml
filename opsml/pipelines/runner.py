@@ -8,13 +8,12 @@ from opsml.pipelines.base_runner import PipelineRunnerBase
 from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.package import PipelinePackager
 from opsml.pipelines.types import (
-    PipelineWriterMetadata,
     PipelineJob,
     PipelineHelpers,
 )
 
 from opsml.pipelines.systems.pipeline_getter import get_pipeline_system, Pipeline
-from opsml.pipelines.spec import PipelineSpec
+from opsml.pipelines.spec import PipelineSpec, PipelineWriterMetadata
 from opsml.pipelines.writer import PipelineWriter
 from opsml.helpers.logging import ArtifactLogger
 
