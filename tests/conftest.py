@@ -984,7 +984,7 @@ def mock_pipeline_task():
         entry_point="test_task.py",
         flavor="sklearn",
     )
-    # cleanup()
+    cleanup()
 
 
 @pytest.fixture(scope="module")

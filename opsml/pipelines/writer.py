@@ -4,17 +4,17 @@ import os
 import textwrap
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
+from dataclasses import dataclass
 from black import FileMode, WriteBack, format_file_in_place
 from opsml.helpers.utils import FindPath, clean_string
 
 
 from opsml.pipelines.utils import YamlWriter, Copier
-from opsml.pipelines.types import Task, RequirementPath
+from opsml.pipelines.types import Task
 from opsml.pipelines.writer_utils import FuncMetaCreator, PyWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
 from opsml.pipelines.spec import SpecDefaults, PipelineWriterMetadata
-from opsml.pipelines.package import RequirementsCopier
+from opsml.pipelines.utils import RequirementsCopier
 
 _MODULE_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -46,9 +46,6 @@ BASE_SPEC_ARGS = {
 }
 
 PIPELINE_TEMPLATE_FILE = "template.txt"
-REQUIREMENTS_FILE = "requirements.txt"
-PYPROJECT_FILE = "pyproject.toml"
-
 
 text_wrapper = textwrap.TextWrapper(
     initial_indent="\t",
@@ -63,9 +60,16 @@ class BlackFormatter:
         self.write_back = WriteBack(True)
 
 
+@dataclass
+class PipelinePaths:
+    base_dir_path: str
+    pipeline_path: str
+
+
 class PipelineDirCreator:
     def __init__(self, pipeline_dir: str):
-        self.pipeline_dir = pipeline_dir
+        self.pipeline_base_dir = pipeline_dir
+        self.pipeline_dir = f"{self.pipeline_base_dir}/pipeline"
 
     def create_base_files(self):
         """Creates init files and initial pipeline runner file"""
@@ -77,13 +81,17 @@ class PipelineDirCreator:
         ) as new_file:
             pass
 
-    def create_starter_dir(self) -> str:
+    def create_starter_dir(self) -> PipelinePaths:
         # create dir
-        Path(self.pipeline_dir).mkdir(exist_ok=True)
-        pipeline_path = glob.glob(pathname=f"{self.pipeline_dir}", recursive=True)[0]
+        Path(self.pipeline_dir).mkdir(parents=True, exist_ok=True)
+        base_pipeline_path = glob.glob(pathname=self.pipeline_base_dir, recursive=True)[0]
+        pipeline_dir_path = glob.glob(pathname=self.pipeline_dir, recursive=True)[0]
         self.create_base_files()
 
-        return pipeline_path
+        return PipelinePaths(
+            base_dir_path=base_pipeline_path,
+            pipeline_path=pipeline_dir_path,
+        )
 
 
 class PipelineWriter:
@@ -92,17 +100,17 @@ class PipelineWriter:
         self.template_path = FindPath.find_filepath(name=PIPELINE_TEMPLATE_FILE, path=_MODULE_PATH)
         self.pipeline_dir = clean_string(f"{pipeline_metadata.project}-{pipeline_metadata.run_id}")
         self.formatter = BlackFormatter()
-        self._pipeline_path = None
+        self._pipeline_paths: Optional[PipelinePaths] = None
 
     @property
-    def pipeline_path(self) -> str:
-        if self._pipeline_path is not None:
-            return self._pipeline_path
-        raise ValueError("No pipeline path exists")
+    def pipeline_paths(self) -> PipelinePaths:
+        if self._pipeline_paths is not None:
+            return self._pipeline_paths
+        raise ValueError("No pipeline paths exists")
 
-    @pipeline_path.setter
-    def pipeline_path(self, path: str) -> None:
-        self._pipeline_path = path
+    @pipeline_paths.setter
+    def pipeline_paths(self, path: PipelinePaths) -> None:
+        self._pipeline_paths = path
 
     def _create_pipeline_dir(self, pipeline_dir: str):
         """
@@ -116,7 +124,7 @@ class PipelineWriter:
 
         # create initial dir
         pipeline_creator = PipelineDirCreator(pipeline_dir=pipeline_dir)
-        self.pipeline_path = pipeline_creator.create_starter_dir()
+        self.pipeline_paths = pipeline_creator.create_starter_dir()
 
     def _add_additional_dir(self) -> None:
         """
@@ -130,7 +138,7 @@ class PipelineWriter:
         if additional_dir is not None:
             Copier.copy_dir_to_path(
                 dir_name=additional_dir,
-                new_path=self.pipeline_path,
+                new_path=self.pipeline_paths.base_dir_path,
             )
 
     def _get_task_args(self, task: Task) -> Dict[str, Any]:
@@ -172,16 +180,16 @@ class PipelineWriter:
         YamlWriter.dict_to_yaml(
             dict_=specs,
             filename=SpecDefaults.SPEC_FILENAME,
-            path=self.pipeline_path,
+            path=self.pipeline_paths.base_dir_path,
         )
 
     def _add_requirements(self) -> None:
         """Adds requirement file to pipeline directory"""
 
-        if self.specs.requirements is not None:
+        if self.writer_metadata.specs.requirements is not None:
             self.req_path = RequirementsCopier(
-                requirements_file=self.requirements,
-                spec_dirpath=self.pipeline_path,
+                requirements_file=self.writer_metadata.specs.requirements,
+                spec_filepath=self.pipeline_paths.base_dir_path,
             ).copy_req_to_src()
 
     def write_pipeline(self, tmp_dir: Optional[str] = None) -> str:
@@ -194,7 +202,7 @@ class PipelineWriter:
         self._write_pipeline_specification()
 
         # modify params
-        return self.pipeline_path
+        return self.pipeline_paths.base_dir_path
 
     def _write_pipeline_tasks(self):
         task_list = []
@@ -215,7 +223,7 @@ class PipelineWriter:
 
     def _write_file(self, entry_point: str, func_meta: FuncMetadata) -> None:
         PyWriter(
-            pipeline_path=self.pipeline_path,
+            pipeline_path=self.pipeline_paths.pipeline_path,
             template_path=self.template_path,
             func_meta=func_meta,
         ).write_file(entry_point=entry_point)
@@ -224,7 +232,7 @@ class PipelineWriter:
         self.format_code(entry_point)
 
     def format_code(self, filename: str):
-        src = Path(f"{self.pipeline_path}/{filename}")
+        src = Path(f"{self.pipeline_paths.pipeline_path}/{filename}")
         format_file_in_place(
             src=src,
             fast=True,

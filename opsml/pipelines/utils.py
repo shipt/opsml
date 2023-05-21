@@ -11,10 +11,13 @@ import yaml
 from pathlib import Path
 
 from opsml.helpers.utils import FindPath
-
+from opsml.helpers import exceptions
+from opsml.pipelines.types import RequirementPath
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 PIPELINE_SPEC_FILENAME = "pipeline-spec.yaml"
+REQUIREMENTS_FILE = "requirements.txt"
+PYPROJECT_FILE = "pyproject.toml"
 
 
 def echo(*args, **kwargs):

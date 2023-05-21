@@ -85,12 +85,7 @@ class PipelineCodeUploader:
 
 
 class PipelinePackager:
-    def __init__(
-        self,
-        specs: PipelineBaseSpecHolder,
-        requirements_file: Optional[str],
-        req_path: Optional[RequirementPath] = None,
-    ):
+    def __init__(self, specs: PipelineBaseSpecHolder, requirements_file: Optional[str]):
         """
         Helper class for packaging pipeline code
 
@@ -105,7 +100,6 @@ class PipelinePackager:
         """
         self.requirements = requirements_file
         self.specs = specs
-        self.req_path = req_path
 
     def package_pipeline(self, spec_writer: YamlWriter, spec_dirpath: str):
         spec_writer.write_file()
