@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 from typing import Any, Dict, List, Optional
 
 from opsml.helpers.logging import ArtifactLogger
@@ -132,16 +133,6 @@ class KubeFlowPipeline(Pipeline):
         logger.info(
             "Scheduling is not currently supported for kubeflow pipelines %s",
         )
-
-    @staticmethod
-    def write_pipeline_file(pipeline_definition: Dict[Any, Any], filename: str) -> str:
-        """
-        Runs a pipeline.
-
-        Args:
-            pipeline_job (PipelineJob): Pipeline job to run
-        """
-        raise NotImplementedError
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:

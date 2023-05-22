@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 """Module for importing custom ops"""
 
 from opsml.pipelines.types import PipelineSystem

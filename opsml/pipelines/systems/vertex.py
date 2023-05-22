@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 from typing import Any, Dict, cast
 
 from opsml.helpers.logging import ArtifactLogger

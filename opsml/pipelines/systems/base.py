@@ -89,11 +89,3 @@ class Pipeline:
                 os.remove(path)
             except Exception as error:  # pylint: disable=broad-except,unused-variable # noqa
                 pass
-
-    def _package_code(self) -> CodeInfo:
-        if self.tasks.decorated:
-            code_info = self._create_temp_package()
-
-        self._add_code_info_to_params(code_info=code_info)
-
-        return code_info
