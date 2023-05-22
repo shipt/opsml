@@ -1,19 +1,17 @@
 """Code for building Tasks and Pipelines"""
 import os
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union, Dict, Any, Protocol
-import tempfile
-from opsml.registry.sql.settings import settings
-from opsml.helpers.utils import FindPath
+from typing import Any, Dict, List, Protocol, Union
+
 from opsml.helpers.logging import ArtifactLogger
-
+from opsml.helpers.utils import FindPath
+from opsml.pipelines.spec import PipelineBaseSpecHolder, SpecDefaults
 from opsml.pipelines.systems.task_builder import get_task_builder
-from opsml.pipelines.types import CodeInfo
-from opsml.pipelines.spec import SpecDefaults, PipelineBaseSpecHolder
-from opsml.pipelines.types import PipelineJob, PipelineSystem, Task
-
+from opsml.pipelines.types import CodeInfo, PipelineJob, PipelineSystem, Task
+from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
 

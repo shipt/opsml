@@ -2,9 +2,13 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, validator
 
-from opsml.registry.sql.registry_base import VersionType
-from opsml.pipelines.spec import PipelineBaseSpecHolder, PipelineSpecCreator, VertexSpecHolder
+from opsml.pipelines.spec import (
+    PipelineBaseSpecHolder,
+    PipelineSpecCreator,
+    VertexSpecHolder,
+)
 from opsml.pipelines.types import Task
+from opsml.registry.sql.registry_base import VersionType
 
 
 class StorageUri(BaseModel):

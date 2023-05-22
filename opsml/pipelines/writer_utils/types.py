@@ -1,9 +1,10 @@
 """Module for pipeline data models"""
 
 import re
-from enum import Enum
-from typing import Optional, List
 from dataclasses import dataclass
+from enum import Enum
+from typing import List, Optional
+
 from opsml.registry.cards.types import CardType
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")

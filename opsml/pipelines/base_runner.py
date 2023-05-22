@@ -1,8 +1,8 @@
-from typing import List, Optional, Callable, Any, Union, Dict
-from opsml.pipelines.types import Task
-from opsml.pipelines.spec import PipelineSpecCreator, PipelineSpec
-from opsml.helpers.logging import ArtifactLogger
+from typing import Any, Callable, Dict, List, Optional, Union
 
+from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.spec import PipelineSpec, PipelineSpecCreator
+from opsml.pipelines.types import Task
 
 logger = ArtifactLogger.get_logger(__name__)
 

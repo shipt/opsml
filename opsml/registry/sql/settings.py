@@ -7,7 +7,7 @@ from pydantic import BaseSettings, Field, root_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import ApiClient, api_routes
-from opsml.helpers.types import OpsmlAuth, OpsmlUri, OpsmlPipelineVars
+from opsml.helpers.types import OpsmlAuth, OpsmlPipelineVars, OpsmlUri
 from opsml.registry.sql.connectors import BaseSQLConnection, SQLConnector
 from opsml.registry.storage.storage_system import (
     StorageClientGetter,

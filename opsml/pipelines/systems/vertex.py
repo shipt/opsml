@@ -1,21 +1,33 @@
-from typing import Dict, List, Any, cast
 import json
+from typing import Any, Dict, List, cast
+
 from opsml.helpers.logging import ArtifactLogger
-from opsml.pipelines.spec import VertexPipelineSpecs
+from opsml.pipelines.spec import VertexPipelineSpecs, VertexSpecHolder
 from opsml.pipelines.systems.kubeflow import KubeFlowPipeline
+from opsml.pipelines.types import PipelineJob, PipelineParams, PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
-from opsml.pipelines.spec import VertexSpecHolder
-from opsml.pipelines.types import (
-    PipelineJob,
-    PipelineSystem,
-    PipelineParams,
-)
 
 logger = ArtifactLogger.get_logger(__name__)
 
 
 class VertexPipeline(KubeFlowPipeline):
+    @property
+    def gcp_project(self) -> str:
+        return self.specs.gcp_project or settings.storage_settings.gcp_project
+
+    @property
+    def gcp_region(self) -> str:
+        return "us-central1"
+
+    @property
+    def credentials(self) -> Any:
+        return settings.storage_settings.credentials
+
+    @property
+    def storage_uri(self) -> str:
+        return settings.storage_settings.storage_uri
+
     def run(self) -> None:
         """
         Runs a Vertex pipeline
@@ -31,18 +43,15 @@ class VertexPipeline(KubeFlowPipeline):
         """
         import google.cloud.aiplatform as aip
 
-        gcp_project = self.specs.gcp_project or settings.storage_settings.gcp_project
-        gcp_region = self.specs.gcp_region or settings.storage_settings.gcp_region
-
         aip.init(
-            project=gcp_project,
-            staging_bucket=settings.storage_settings.storage_uri,
-            credentials=settings.storage_settings.credentials,
-            location=gcp_region,
+            project=self.gcp_project,
+            staging_bucket=self.storage_uri,
+            credentials=self.credentials,
+            location=self.gcp_region,
         )
 
         pipeline_job = aip.PipelineJob(
-            display_name=gcp_project,
+            display_name=self.gcp_project,
             template_path=self.specs.pipeline_metadata.filename,
             job_id=self.specs.pipeline_metadata.job_id,
             pipeline_root=self.specs.pipeline_metadata.storage_root,
@@ -136,4 +145,4 @@ class VertexPipeline(KubeFlowPipeline):
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
-        return pipeline_system == PipelineSystem.VERTEX and is_proxy == False
+        return pipeline_system == PipelineSystem.VERTEX

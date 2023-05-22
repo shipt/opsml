@@ -1,13 +1,12 @@
 """Module for pipeline data models"""
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Protocol
+
 from pydantic import BaseModel, Extra, Field, validator
 
-
-from opsml.helpers.logging import ArtifactLogger
-
 from opsml.helpers import exceptions
+from opsml.helpers.logging import ArtifactLogger
 
 logger = ArtifactLogger.get_logger(__name__)
 

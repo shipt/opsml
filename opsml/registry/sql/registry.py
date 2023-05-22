@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
 import os
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
+
 import pandas as pd
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 

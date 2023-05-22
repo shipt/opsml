@@ -1,17 +1,17 @@
 import os
 import re
-from enum import Enum
-from datetime import datetime
-
-from typing import Any, Dict, Optional, Union, List
 from dataclasses import dataclass
-from pydantic import BaseModel, validator, Field, Extra, root_validator
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
+from pydantic import BaseModel, Extra, Field, root_validator, validator
+
+from opsml.helpers.types import OpsmlPipelineVars
 from opsml.helpers.utils import clean_string
 from opsml.pipelines import settings
-from opsml.pipelines.utils import SpecLoader
 from opsml.pipelines.types import PipelineSystem, Task
-from opsml.helpers.types import OpsmlPipelineVars
+from opsml.pipelines.utils import SpecLoader
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 

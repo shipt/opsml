@@ -279,6 +279,46 @@ def test_app() -> Iterator[TestClient]:
     cleanup()
 
 
+@pytest.fixture(scope="function")
+def test_gcp_app() -> Iterator[TestClient]:
+    cleanup()
+    from opsml.app.main import OpsmlApp
+
+    from opsml.pipelines.systems.vertex import VertexPipeline
+
+    class MockVertexPipeline(VertexPipeline):
+        @property
+        def gcp_project(self) -> str:
+            return mock_gcp_vars["gcp_project"]
+
+        @property
+        def gcp_region(self) -> str:
+            return "us-central1"
+
+        @property
+        def credentials(self) -> Any:
+            return mock_gcp_vars["gcp_creds"]
+
+        @property
+        def storage_uri(self) -> str:
+            return "gs://test"
+
+        def run(self) -> None:
+            pass
+
+        def schedule(self) -> None:
+            pass
+
+    with patch(
+        "opsml.pipelines.systems.vertex.VertexPipeline",
+        MockVertexPipeline,
+    ) as mock_vertex_pipeline:
+        opsml_app = OpsmlApp(run_mlflow=True)
+        with TestClient(opsml_app.get_app()) as tc:
+            yield tc
+    cleanup()
+
+
 def mock_registries(test_client: TestClient) -> dict[str, ClientCardRegistry]:
     def callable_api():
         return test_client
@@ -996,7 +1036,7 @@ def mock_sql_pipeline_task():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_packager():
     with patch.multiple(
         "opsml.pipelines.package.PipelinePackager",
@@ -1011,26 +1051,40 @@ def mock_packager():
 
 
 @pytest.fixture(scope="function")
-def mock_local_storage_with_gcs(mock_gcp_vars):
-    from opsml.registry.storage.storage_system import GCSFSStorageClient
-
-    with patch(
-        "opsml.registry.storage.storage_system.LocalStorageClient",
-        GCSFSStorageClient,
-    ) as mock_local_fs:
-        with patch(
-            "opsml.registry.storage.types.StorageClientSettings", GcsStorageClientSettings
-        ) as mock_storage_settings:
-            yield mock_local_fs, mock_storage_settings
-
-
-@pytest.fixture(scope="module")
 def mock_gcp_pipelinejob():
     with patch.multiple(
         "google.cloud.aiplatform.PipelineJob",
         submit=MagicMock(return_value=None),
     ) as mock_gcp_pipelinejob:
         yield mock_gcp_pipelinejob
+
+
+@pytest.fixture(scope="function")
+def mock_vertex_pipeline(mock_gcp_vars):
+    from opsml.pipelines.systems.vertex import VertexPipeline
+
+    class MockVertexPipeline(VertexPipeline):
+        @property
+        def gcp_project(self) -> str:
+            return mock_gcp_vars["gcp_project"]
+
+        @property
+        def gcp_region(self) -> str:
+            return "us-central1"
+
+        @property
+        def credentials(self) -> Any:
+            return mock_gcp_vars["gcp_creds"]
+
+        @property
+        def storage_uri(self) -> str:
+            return "gs://test"
+
+    with patch(
+        "opsml.pipelines.systems.vertex.VertexPipeline",
+        MockVertexPipeline,
+    ) as mock_vertex_pipeline:
+        yield mock_vertex_pipeline
 
 
 ##### Sklearn estimators for onnx

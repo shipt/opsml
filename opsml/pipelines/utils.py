@@ -1,17 +1,18 @@
 """Module pipeline utils"""
 
-from time import gmtime, strftime
-from typing import Dict, Optional, Union, Any
 import glob
-import shutil
 import os
-import click
 import re
-import yaml
+import shutil
 from pathlib import Path
+from time import gmtime, strftime
+from typing import Any, Dict, Optional, Union
 
-from opsml.helpers.utils import FindPath
+import click
+import yaml
+
 from opsml.helpers import exceptions
+from opsml.helpers.utils import FindPath
 from opsml.pipelines.types import RequirementPath
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")

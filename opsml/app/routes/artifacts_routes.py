@@ -19,6 +19,8 @@ from opsml.app.routes.models import (
     ListFileResponse,
     ListRequest,
     ListResponse,
+    PipelineResponse,
+    PipelineSubmitRequest,
     StorageSettingsResponse,
     UidExistsRequest,
     UidExistsResponse,
@@ -26,8 +28,6 @@ from opsml.app.routes.models import (
     UpdateCardResponse,
     VersionRequest,
     VersionResponse,
-    PipelineSubmitRequest,
-    PipelineResponse,
 )
 from opsml.app.routes.utils import (
     MODEL_METADATA_FILE,
@@ -37,10 +37,10 @@ from opsml.app.routes.utils import (
     replace_proxy_root,
 )
 from opsml.helpers.logging import ArtifactLogger
+from opsml.pipelines.systems.base import Pipeline
+from opsml.pipelines.systems.pipeline_getter import get_pipeline_system
 from opsml.registry import CardRegistry
 from opsml.registry.storage.storage_system import StorageSystem
-from opsml.pipelines.systems.pipeline_getter import get_pipeline_system
-from opsml.pipelines.systems.base import Pipeline
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -386,7 +386,6 @@ def submit_pipeline(
         specs=payload.specs,
         tasks=payload.tasks,
     )
-
     pipeline.build()
     pipeline.run()
 

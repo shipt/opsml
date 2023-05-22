@@ -1,14 +1,10 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
+from opsml.pipelines.types import CustomTrainingOp, PipelineJob, PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
-from opsml.pipelines.types import (
-    PipelineJob,
-    PipelineSystem,
-    CustomTrainingOp,
-)
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -149,4 +145,4 @@ class KubeFlowPipeline(Pipeline):
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
-        return pipeline_system == PipelineSystem.KUBEFLOW and is_proxy == False
+        return pipeline_system == PipelineSystem.KUBEFLOW

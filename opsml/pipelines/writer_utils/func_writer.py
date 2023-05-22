@@ -1,6 +1,6 @@
 import textwrap
 from pathlib import Path
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
 from opsml.pipelines.utils import Copier, TemplateWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata

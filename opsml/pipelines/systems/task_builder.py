@@ -2,13 +2,17 @@
 
 from typing import Any, Dict, List, Optional
 
-
 from opsml.helpers.logging import ArtifactLogger
-
 from opsml.pipelines.container_op import get_op_builder
-from opsml.pipelines.systems.images import ContainerImageRegistry
 from opsml.pipelines.spec import PipelineBaseSpecHolder, VertexSpecHolder
-from opsml.pipelines.types import MachineSpec, MachineType, PipelineSystem, ContainerOpInputs, Task
+from opsml.pipelines.systems.images import ContainerImageRegistry
+from opsml.pipelines.types import (
+    ContainerOpInputs,
+    MachineSpec,
+    MachineType,
+    PipelineSystem,
+    Task,
+)
 
 logger = ArtifactLogger.get_logger(__name__)
 

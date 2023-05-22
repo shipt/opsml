@@ -1,13 +1,12 @@
 from graphlib import TopologicalSorter
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 
-
-from opsml.helpers.logging import ArtifactLogger
-from opsml.pipelines.systems.base import Pipeline
 from opsml.helpers import utils
-from opsml.pipelines.utils import stdout_msg
+from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import PipelineBaseSpecHolder
-from opsml.pipelines.types import Task, PipelineJob, PipelineSystem, CodeInfo
+from opsml.pipelines.systems.base import Pipeline
+from opsml.pipelines.types import CodeInfo, PipelineJob, PipelineSystem, Task
+from opsml.pipelines.utils import stdout_msg
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -87,4 +86,4 @@ class LocalPipeline(Pipeline):
 
     @staticmethod
     def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
-        return pipeline_system == PipelineSystem.LOCAL and is_proxy == False
+        return pipeline_system == PipelineSystem.LOCAL

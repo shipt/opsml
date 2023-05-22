@@ -1,7 +1,7 @@
 import os
-from typing import Any, Dict, List, Optional, Tuple, Union
 import tempfile
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
     from kfp.v2.components import load_component_from_file
@@ -11,8 +11,7 @@ except ImportError:
 import yaml
 from kubernetes.client.models import V1EnvVar
 
-from opsml.pipelines.types import MachineSpec, ContainerOpInputs
-
+from opsml.pipelines.types import ContainerOpInputs, MachineSpec
 
 CUSTOM_OP_PATH = os.path.join(os.path.dirname(__file__), "custom_component.yaml")
 VertexTrainingOp = load_component_from_file(os.path.join(os.path.dirname(__file__), "vertex_component.yaml"))
