@@ -56,7 +56,7 @@ class PipelineRunner(PipelineRunnerBase):
         self._helpers = self._set_pipeline_helpers(requirements=requirements)
 
         # Get pipeline system
-        self._pipeline: Pipeline = get_pipeline_system(specs=self.specs, tasks=self.tasks)
+        self._pipeline = get_pipeline_system(specs=self.specs, tasks=self.tasks)
 
     @property
     def task_dict(self) -> List[Dict[str, Any]]:
@@ -80,7 +80,7 @@ class PipelineRunner(PipelineRunnerBase):
             `PipelineHelpers`
 
         """
-        packager = PipelinePackager(specs=self.specs, requirements_file=requirements)
+        packager = PipelinePackager(specs=self.specs)
 
         # writer is used for decorator-style pipelines
         pipe_meta = PipelineWriterMetadata(
@@ -125,9 +125,9 @@ class PipelineRunner(PipelineRunnerBase):
         # schedule
         if schedule:
             self._pipeline.schedule()
-        self._pipeline.delete_files()
+        return self._pipeline.delete_files()
 
-    def run(self, schedule: bool = False) -> PipelineJob:
+    def run(self, schedule: bool = False) -> None:
         """
         Will run the machine learning pipeline.
 

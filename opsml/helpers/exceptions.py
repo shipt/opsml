@@ -39,3 +39,15 @@ class NotofTypeDataFrame(ValueError):
 
 class LengthMismatch(ValueError):
     """Non-matching length"""
+
+
+class InvalidComputeResource(ValueError):
+    """Invalid compute resource"""
+
+
+class PipelineSystemNotFound(ValueError):
+    """Pipeline system not found"""
+
+
+class NoRequirements(ValueError):
+    """No requirement file found"""

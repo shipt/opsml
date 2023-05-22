@@ -123,7 +123,7 @@ class PipelineSubmitRequest(BaseModel):
         arbitrary_types_allowed = True
 
     @validator("specs", pre=True)
-    def get_spec(cls, specs) -> PipelineBaseSpecHolder:  # pylint: Disable=no-self-argument
+    def get_spec(cls, specs) -> PipelineBaseSpecHolder:  # pylint: disable=no-self-argument
         specs = PipelineSpecCreator.get_pipeline_spec(specs=specs)
         return specs
 

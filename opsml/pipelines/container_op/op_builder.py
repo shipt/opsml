@@ -98,11 +98,11 @@ class VertexOpBuilder:
     def __init__(
         self,
         op_inputs: ContainerOpInputs,
-        gcp_project_id: str,
         env_vars: List[Dict[str, str]],
         network: Optional[str] = None,
         reserved_ip_ranges: Optional[List[str]] = None,
         service_account: Optional[str] = None,
+        gcp_project_id: Optional[str] = None,
     ):
         self.machine_spec = self.set_machine_specs(spec=op_inputs.machine_spec)
         command, args = self.create_container_command(op_inputs=op_inputs)
@@ -114,19 +114,25 @@ class VertexOpBuilder:
             args=args,
         )
 
-        self._additional_task_args = {
+        self._additional_task_args: Dict[str, Any] = {
             "service_account": service_account,
             "network": network,
             "reserved_ip_ranges": reserved_ip_ranges,
         }
         self.op_inputs = op_inputs
-        self.gcp_project_id = gcp_project_id
+        self._gcp_project = gcp_project_id
+
+    @property
+    def gcp_project(self) -> str:
+        if self._gcp_project is not None:
+            return self._gcp_project
+        raise ValueError("GCP Project is not set")
 
     @property
     def additional_task_args(self) -> Dict[str, str]:
         """Remove all None value args from task args. Vertex does not support NoneType"""
 
-        args = {}
+        args: Dict[str, str] = {}
         for key, value in self._additional_task_args.items():
             if value is not None:
                 args[key] = value
@@ -174,7 +180,7 @@ class VertexOpBuilder:
         """Builds a custom Vertex training op"""
 
         custom_op = VertexTrainingOp(
-            project=self.gcp_project_id,
+            project=self.gcp_project,
             display_name=self.op_inputs.name,
             worker_pool_specs=[
                 {

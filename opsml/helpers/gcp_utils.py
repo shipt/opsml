@@ -357,7 +357,7 @@ class GCPClient:
     def get_service(
         service_name: str,
         gcp_credentials: Optional[Credentials] = None,
-    ) -> ClientTypes:
+    ) -> Any:
         service = next(
             service
             for service in GCPService.__subclasses__()
@@ -365,7 +365,7 @@ class GCPClient:
                 service_name=service_name,
             )
         )
-        return cast(ClientTypes, service(gcp_credentials=gcp_credentials))
+        return service(gcp_credentials=gcp_credentials)
 
 
 class GcpCredsSetter:

@@ -70,7 +70,7 @@ class SpecLoader:
 
         return FindPath.find_filepath(path=dir_path, name=self.filename)
 
-    def _open_spec(self, spec_path: str):
+    def _open_spec(self, spec_path: str) -> Dict[str, Any]:
         """
         Loads a pipeline spec from path
 
@@ -110,7 +110,7 @@ class SpecLoader:
 
         return spec
 
-    def load(self) -> Dict[Union[str, int], Any]:
+    def load(self) -> Dict[str, Any]:
         """
         Loads a specification file and all associated environment variables
 
@@ -141,7 +141,7 @@ class FileWriter:
 class TemplateWriter(FileWriter):
     def __init__(
         self,
-        template_mapping: Dict[str, str],
+        template_mapping: Dict[str, Any],
         template_path: Union[str, Path],
         file_path: str,
         filename: str,
@@ -343,7 +343,7 @@ class RequirementsCopier:
 
         """
         try:
-            req_path = FindPath.find_filepath(self.requirements)
+            req_path = str(FindPath.find_filepath(self.requirements))
         except IndexError as error:
             raise exceptions.NoRequirements(
                 f"""No requirement file found. Please make sure the requirements file is in the

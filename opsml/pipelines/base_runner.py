@@ -36,9 +36,8 @@ class PipelineRunnerBase:
             self._extract_tasks()
             self._decorated = False
 
-        self.requirements = requirements
         self.specs.decorated = self.is_decorated
-        self.specs.requirements = self.requirements
+        self.specs.requirements = requirements
 
     @property
     def is_decorated(self) -> bool:
@@ -129,10 +128,10 @@ class PipelineRunnerBase:
         number_instances: int = 1,
         flavor: Optional[str] = None,
         gpu_type: Optional[str] = None,
-        gpu_count: Optional[int] = None,
+        gpu_count: int = 0,
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
-        upstream_tasks: Optional[List[Task]] = None,
+        upstream_tasks: Optional[List[Optional[Union[Task, str]]]] = None,
     ) -> None:
         """
         Decorator for building machine learning pipeline asks out of a python function.
@@ -176,5 +175,3 @@ class PipelineRunnerBase:
                 func=func,
                 upstream_tasks=upstream_tasks,
             )
-
-        return task

@@ -275,12 +275,15 @@ class SQLRegistryBase:
         version: Optional[str] = None,
         uid: Optional[str] = None,
     ) -> ArtifactCard:
-        cleaned_name = clean_string(name)
-        cleaned_team = clean_string(team)
+        if name is not None:
+            name = clean_string(name)
+
+        if team is not None:
+            team = clean_string(team)
 
         record = self.list_cards(
-            name=cleaned_name,
-            team=cleaned_team,
+            name=name,
+            team=team,
             version=version,
             uid=uid,
             limit=1,
@@ -442,13 +445,16 @@ class ServerRegistry(SQLRegistryBase):
             Dictionary of records
         """
 
-        cleaned_name = clean_string(name)
-        cleaned_team = clean_string(team)
+        if name is not None:
+            name = clean_string(name)
+
+        if team is not None:
+            team = clean_string(team)
 
         query = query_creator.record_from_table_query(
             table=self._table,
-            name=cleaned_name,
-            team=cleaned_team,
+            name=name,
+            team=team,
             version=version,
             uid=uid,
         )

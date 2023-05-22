@@ -1,7 +1,7 @@
 import os
 import tarfile
 import tempfile
-from typing import Optional, cast
+from typing import cast
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import ApiClient, ApiRoutes
@@ -83,44 +83,25 @@ class PipelineCodeUploader:
 
 
 class PipelinePackager:
-    def __init__(self, specs: PipelineBaseSpecHolder, requirements_file: Optional[str]):
+    def __init__(self, specs: PipelineBaseSpecHolder):
         """
         Helper class for packaging pipeline code
 
         Args:
             spec:
                 Pipeline specification dictionary
-            requirements_file:
-                Name of requirements file
-            req_path:
-                Requirements file path
+
 
         """
-        self.requirements = requirements_file
         self.specs = specs
 
     def package_pipeline(self, spec_writer: YamlWriter, spec_dirpath: str):
         spec_writer.write_file()
         PipelineCompressor.tar_compress_code(dir_path=spec_dirpath)
 
-    def _delete_copied_req(self):
-        try:
-            os.remove(self.req_path.req_path)
-        except OSError as error:
-            logger.error("Failed to remove copied requirements file: %s", error)
-
-        if "poetry" in self.requirements:
-            try:
-                os.remove(self.req_path.toml_path)
-            except OSError as error:
-                logger.error("Failed to remove toml file: %s", error)
-
     def clean_up(self, writer: YamlWriter):
         # revert original spec file
         writer.revert_temp_to_orig()
-
-        if self.requirements is not None:
-            self._delete_copied_req()
 
     def upload_pipeline(
         self,
@@ -189,11 +170,11 @@ class PipelinePackager:
 
         code_info = CodeInfo(
             code_uri=spec_dirpath,
-            source_dir=spec_dirpath.split("/")[-1],
+            source_dir=spec_dirpath.rsplit("/", maxsplit=1)[-1],
         )
 
         setattr(self.specs, "code_uri", spec_dirpath)
-        setattr(self.specs, "source_dir", spec_dirpath.split("/")[-1])
+        setattr(self.specs, "source_dir", spec_dirpath.rsplit("/", maxsplit=1)[-1])
 
         return code_info
 
@@ -248,7 +229,7 @@ class PipelinePackager:
 
             return FindPath.find_source_dir(
                 path=dir_path,
-                runner_file=self.specs.source_file,
+                spec_file=self.specs.source_file,
             )
 
         return FindPath.find_source_dir(

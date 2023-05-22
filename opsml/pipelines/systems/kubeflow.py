@@ -1,5 +1,5 @@
 # pylint: disable=import-outside-toplevel
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
@@ -15,7 +15,7 @@ class KubeFlowPipeline(Pipeline):
         self,
         task_name: str,
         custom_tasks: Dict[str, CustomTrainingOp],
-        upstream_tasks: List[Optional[str]],
+        upstream_tasks: List[str],
     ):
         """
         Sets dependencies for a task
@@ -72,7 +72,6 @@ class KubeFlowPipeline(Pipeline):
             custom_tasks[task.name] = self._task_builder.build(
                 task_args=task,
                 env_vars=self.env_vars,
-                specs=self.specs,
             )
 
         return custom_tasks
@@ -80,10 +79,10 @@ class KubeFlowPipeline(Pipeline):
     def _set_task_dependencies(self, custom_tasks: Dict[str, Any]) -> Dict[str, Any]:
         # set dependencies
         for task in self.tasks:
-            if task.upstream_tasks is not None:
+            if bool(task.upstream_tasks):
                 custom_tasks = self._set_dependencies(
                     task_name=task.name,
-                    upstream_tasks=task.upstream_tasks,
+                    upstream_tasks=cast(List[str], task.upstream_tasks),
                     custom_tasks=custom_tasks,
                 )
 

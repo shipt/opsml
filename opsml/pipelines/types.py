@@ -1,3 +1,4 @@
+# pylint: disable=no-self-argument
 """Module for pipeline data models"""
 from dataclasses import dataclass
 from enum import Enum
@@ -121,18 +122,18 @@ class Task(BaseModel):
         return tasks
 
     @validator("entry_point", allow_reuse=True)
-    def entry_point_valid(cls, entry_point, values):  # pylint: disable=no-self-argument
+    def entry_point_valid(cls, entry_point, values):
         """entry_point validator"""
 
         if entry_point is None:
-            raise exceptions.MissingTripKwarg(
+            raise exceptions.MissingKwarg(
                 f"""No entry point was provided for {values["name"]}. Please check trip_runner.py
                 """
             )
         return entry_point
 
     @validator("gpu_type", allow_reuse=True)
-    def gpu_type_valid(cls, gpu_type, values):  # pylint: disable=no-self-argument
+    def gpu_type_valid(cls, gpu_type, values):
         """gpu_type validator"""
 
         if gpu_type is not None:
@@ -156,7 +157,7 @@ class Task(BaseModel):
         return gpu_type
 
     @validator("flavor", allow_reuse=True)
-    def flavor_custom_image_assigned(cls, flavor, values):  # pylint: disable=no-self-argument
+    def flavor_custom_image_assigned(cls, flavor, values):
         """Checks flavor and custom image"""
 
         if not any(bool(arg) for arg in [flavor, values.get("custom_image")]):
@@ -165,7 +166,7 @@ class Task(BaseModel):
         return flavor
 
     @validator("func", allow_reuse=True)
-    def decorated(cls, func, values):  # pylint: disable=no-self-argument
+    def check_decorated(cls, func, values):
         """Checks if func is assigned"""
 
         if func is not None:
@@ -244,8 +245,3 @@ class PipelinePlanner(Protocol):
 
 class PipelineWriter(Protocol):
     ...
-
-
-class PipelinePackager(Protocol):
-    def package_and_upload_pipeline(spec_dirpath: str, spec_filename: str) -> CodeInfo:
-        ...

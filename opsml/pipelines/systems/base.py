@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import PipelineBaseSpecHolder, SpecDefaults
 from opsml.pipelines.systems.task_builder import get_task_builder
-from opsml.pipelines.types import CodeInfo, PipelineSystem, Task
+from opsml.pipelines.types import PipelineSystem, Task
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -34,7 +34,7 @@ class Pipeline:
 
     @property
     def env_vars(self) -> Dict[str, Any]:
-        return self.specs.pipeline.env_vars
+        return self.specs.env_vars
 
     def build(self) -> None:
         """

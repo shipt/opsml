@@ -1,3 +1,4 @@
+# pylint: disable=no-self-argument
 import os
 import re
 from dataclasses import dataclass
@@ -25,7 +26,6 @@ class SpecDefaults(str, Enum):
 
 class PipelineTasks(BaseModel):
     tasks: Optional[Dict[str, Dict[str, Any]]] = None
-    env_vars: Optional[Dict[str, Any]] = None
 
 
 class PipelineArgs(BaseModel):
@@ -111,9 +111,7 @@ class VertexPipelineSpecs(PipelineSpec):
 
     service_account: Optional[str] = Field(None, description="Service account to use when custom task")
     network: Optional[str] = Field(None, description="VPC network to use when running vertex pipeline")
-    reserved_ip_ranges: Optional[List[str]] = (
-        Field([], description="Allocated IP range name to use when running vertex pipeline"),
-    )
+    reserved_ip_ranges: Optional[List[str]] = Field(None, description="IP range to use")
     gcp_region = Field("us-central1", description="gcp region to use when running pipelines")
     gcp_project: Optional[str] = Field(None, description="gcp project associated with vertex pipeline")
 
@@ -132,6 +130,8 @@ class PipelineBaseSpecHolder(BaseModel):
     user_email: str
     team: str
     pipeline_metadata: PipelineMetadata
+    container_registry: str
+    env_vars: Dict[str, Any]
     cache: Optional[bool] = False
 
     # defaults
@@ -170,10 +170,15 @@ class PipelineBaseSpecHolder(BaseModel):
     def set_pipeline_vars(cls, values):
         # set env vars with tasks
         if bool(values.get("env_vars")):
-            values["pipeline"]["env_vars"] = values.get("env_vars")
-            values.pop("env_vars")
+            env_vars = values.get("env_vars")
+        else:
+            env_vars = {}
 
-        return values
+        env_vars["project_name"] = values["project_name"]
+        env_vars["team"] = values["team"]
+        env_vars["owner"] = values["owner"]
+
+        return env_vars
 
     @staticmethod
     def validate(pipeline_system: str):
@@ -219,7 +224,7 @@ class PipelineSpecCreator:
         pipeline_metadata = self.create_pipeline_metadata()
         specs = {
             **self.pipe_spec,
-            **pipeline_metadata,
+            **{"pipeline_metadata": pipeline_metadata},
             **{"source_file": self.spec_filename},
         }
 
@@ -227,21 +232,18 @@ class PipelineSpecCreator:
 
     @staticmethod
     def get_pipeline_spec(specs: Dict[str, Any]) -> PipelineBaseSpecHolder:
+        pipeline_system = str(specs.get("pipeline_system"))
         pipeline_spec = next(
             (
                 pipeline_spec
                 for pipeline_spec in PipelineBaseSpecHolder.__subclasses__()
-                if pipeline_spec.validate(
-                    pipeline_system=specs.get(
-                        "pipeline_system",
-                    )
-                )
+                if pipeline_spec.validate(pipeline_system=pipeline_system)
             ),
             PipelineBaseSpecHolder,
         )
         return pipeline_spec(**specs)
 
-    def create_pipeline_metadata(self) -> Dict[str, str]:
+    def create_pipeline_metadata(self) -> PipelineMetadata:
         """Sets pipeline path parameters that are used when building pipeline systems"""
 
         # suffix = "yaml" if self.pipe_spec.get("pipeline_system") != PipelineSystem.KUBEFLOW else "json"
@@ -260,7 +262,7 @@ class PipelineSpecCreator:
             run_id=run_id,
         )
 
-        return {"pipeline_metadata": metadata}
+        return metadata
 
     def set_pipeline_tasks(self, loaded_spec: Dict[str, Any]):
         tasks = loaded_spec.get("pipeline")
@@ -293,10 +295,13 @@ class PipelineSpecCreator:
         # yaml specs define pipeline args under pipeline
         # Spec class expect all args to be key, value pairs
         pipeline = spec.get("pipeline")
-        if pipeline.get("args") is not None:
-            for key, value in spec["pipeline"]["args"].items():
-                spec[key] = value
-            pipeline.pop("args")
+        if pipeline is not None:
+            args = pipeline.get("args")
+            if args is not None:
+                for key, value in args.items():
+                    spec[key] = value
+
+                pipeline.pop("args")
 
         return spec
 

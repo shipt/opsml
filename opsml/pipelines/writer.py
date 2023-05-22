@@ -4,7 +4,7 @@ import os
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, cast, Callable
 
 from black import FileMode, WriteBack, format_file_in_place
 
@@ -78,7 +78,7 @@ class PipelineDirCreator:
             mode="w",
             encoding="utf-8",
         ) as new_file:
-            pass
+            new_file  # pylint: disable=pointless-statement
 
     def create_starter_dir(self) -> PipelinePaths:
         # create dir
@@ -177,7 +177,7 @@ class PipelineWriter:
         # set env vars
         env_vars = self._get_pipeline_env_vars()
         if env_vars is not None:
-            specs["pipeline"]["env_vars"]
+            specs["pipeline"]["env_vars"] = env_vars
 
         specs["pipeline"]["args"] = self._get_additional_spec_args()
 
@@ -192,7 +192,7 @@ class PipelineWriter:
         """Adds requirement file to pipeline directory"""
 
         if self.writer_metadata.specs.requirements is not None:
-            self.req_path = RequirementsCopier(
+            RequirementsCopier(
                 requirements_file=self.writer_metadata.specs.requirements,
                 spec_filepath=self.pipeline_paths.base_dir_path,
             ).copy_req_to_src()
@@ -217,7 +217,7 @@ class PipelineWriter:
 
     def _write_pipeline_task(self, task: Task):
         func_metadata = FuncMetaCreator(
-            function=task.func,
+            function=cast(Callable[[Any], Any], task.func),
             name=task.name,
         ).parse()
 

@@ -1,11 +1,12 @@
 # pylint: disable=import-outside-toplevel
-from typing import Any, Dict, cast
+from typing import Any, Dict, cast, List
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.pipelines.spec import VertexSpecHolder
+from opsml.pipelines.spec import VertexSpecHolder, PipelineBaseSpecHolder
 from opsml.pipelines.systems.kubeflow import KubeFlowPipeline
-from opsml.pipelines.types import PipelineSystem
+from opsml.pipelines.types import PipelineSystem, Task
 from opsml.pipelines.utils import stdout_msg
+from opsml.registry.storage.types import GcsStorageClientSettings
 from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -13,20 +14,40 @@ logger = ArtifactLogger.get_logger(__name__)
 
 class VertexPipeline(KubeFlowPipeline):
     @property
+    def vertex_specs(self) -> VertexSpecHolder:
+        return cast(VertexSpecHolder, self.specs)
+
+    @property
+    def storage_settings(self) -> GcsStorageClientSettings:
+        return cast(GcsStorageClientSettings, settings.storage_settings)
+
+    @property
     def gcp_project(self) -> str:
-        return self.specs.gcp_project or settings.storage_settings.gcp_project
+        gcp_project = self.vertex_specs.gcp_project or self.storage_settings.gcp_project
+        if gcp_project is not None:
+            return gcp_project
+        raise ValueError("No GCP project")
 
     @property
     def gcp_region(self) -> str:
-        return "us-central1"
+        region = self.vertex_specs.gcp_region or self.storage_settings.gcp_region
+        if region is not None:
+            return region
+        raise ValueError("No GCP region")
 
     @property
     def credentials(self) -> Any:
-        return settings.storage_settings.credentials
+        return self.storage_settings.credentials
 
     @property
     def storage_uri(self) -> str:
-        return settings.storage_settings.storage_uri
+        return self.storage_settings.storage_uri
+
+    @property
+    def scheduler_uri(self) -> str:
+        if settings.scheduler_uri is not None:
+            return settings.scheduler_uri
+        raise ValueError("No Scheduler URI provided")
 
     def run(self) -> None:
         """
@@ -59,8 +80,8 @@ class VertexPipeline(KubeFlowPipeline):
         )
 
         pipeline_job.submit(
-            service_account=self.specs.service_account,
-            network=self.specs.network,
+            service_account=self.vertex_specs.service_account,
+            network=self.vertex_specs.network,
         )
 
         stdout_msg("Pipeline Submitted!")
@@ -87,25 +108,21 @@ class VertexPipeline(KubeFlowPipeline):
 
         return pipeline_uri
 
-    def _submit_schedule_from_payload(self, payload: Dict[str, str]):
-        from opsml.helpers.gcp_utils import GCPClient
-
-        self.specs = cast(VertexSpecHolder, self.specs)
-        gcp_project = str(self.specs.gcp_project or settings.storage_settings.gcp_project)
-        gcp_region = str(self.specs.gcp_region or settings.storage_settings.gcp_region)
+    def _submit_schedule_from_payload(self, payload: Dict[str, Any]):
+        from opsml.helpers.gcp_utils import GCPClient, GCPMLScheduler
 
         if self.specs.cron is not None:
             job_name = f"{payload.get('display_name')}-ml-model"
 
-            schedule_client = GCPClient.get_service("scheduler", gcp_credentials=settings.storage_settings.credentials)
+            schedule_client: GCPMLScheduler = GCPClient.get_service("scheduler", gcp_credentials=self.credentials)
 
             schedule_client.submit_schedule(
                 payload=payload,
                 job_name=job_name,
                 schedule=self.specs.cron,
-                scheduler_uri=settings.scheduler_uri,
-                gcp_project=gcp_project,
-                gcp_region=gcp_region,
+                scheduler_uri=self.scheduler_uri,
+                gcp_project=self.gcp_project,
+                gcp_region=self.gcp_region,
             )
 
         else:

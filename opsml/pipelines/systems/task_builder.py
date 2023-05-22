@@ -2,7 +2,7 @@
 
 """Code for building Tasks and Pipelines"""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union, cast
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.container_op import get_op_builder
@@ -18,12 +18,14 @@ from opsml.pipelines.types import (
 
 logger = ArtifactLogger.get_logger(__name__)
 
+SpecHolder = Union[VertexSpecHolder, PipelineBaseSpecHolder]
+
 
 class TaskBuilder:
     def __init__(
         self,
         specs: PipelineBaseSpecHolder,
-        pipeline_system: PipelineSystem,
+        pipeline_system: str,
     ):
         """
         Base builder class
@@ -36,6 +38,7 @@ class TaskBuilder:
         """
         self.image_client = ContainerImageRegistry(container_registry=specs.container_registry)
         self.op_builder = get_op_builder(pipeline_system=pipeline_system)
+        self.specs = specs
 
     def get_task_image(self, task_args: Task) -> str:
         if task_args.custom_image is None:
@@ -56,7 +59,7 @@ class TaskBuilder:
 
     def get_op_inputs(
         self,
-        specs: PipelineBaseSpecHolder,
+        specs: SpecHolder,
         entry_point: str,
         name: str,
         image: str,
@@ -95,31 +98,33 @@ class TaskBuilder:
             retry=retry,
         )
 
-    def build(
-        self,
-        task_args: Task,
-        env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecHolder,
-    ):
+    def build(self, task_args: Task, env_vars: Dict[str, Any]) -> Any:
         raise NotImplementedError
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         raise NotImplementedError
 
 
-# pass everything
 class LocalTaskBuilder(TaskBuilder):
-    def build(
-        self,
-        task_args: Task,
-        env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecHolder,
-    ):
+    def __init__(self, specs: SpecHolder, pipeline_system: PipelineSystem):
+        """
+        Base builder class
+
+        Args:
+            params:
+                Pipeline params class
+            pipeline_system:
+                Pipeline system
+        """
+        super().__init__(specs=specs, pipeline_system=pipeline_system)
+        self.specs = cast(PipelineBaseSpecHolder, self.specs)
+
+    def build(self, task_args: Task, env_vars: Dict[str, Any]) -> Any:
         pass
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         return pipeline_system == PipelineSystem.LOCAL
 
 
@@ -130,12 +135,7 @@ class VertexTaskBuilder(TaskBuilder):
             env_vars_list.append({"name": key.upper(), "value": str(value)})
         return env_vars_list
 
-    def build(
-        self,
-        task_args: Task,
-        env_vars: Dict[str, Any],
-        specs: VertexSpecHolder,
-    ) -> Any:
+    def build(self, task_args: Task, env_vars: Dict[str, Any]) -> Any:
         """Builds a Vertex task
         Args:
             Task_args (Task): Pydantic model of task args
@@ -143,7 +143,7 @@ class VertexTaskBuilder(TaskBuilder):
         Returns:
             Vertex custom training job
         """
-
+        self.specs = cast(VertexSpecHolder, self.specs)
         image_uri = self.get_task_image(task_args=task_args)
 
         machine_spec = self.set_machine_type(
@@ -158,7 +158,7 @@ class VertexTaskBuilder(TaskBuilder):
         env_vars_list = self.set_env_vars(env_vars=env_vars)
 
         op_inputs = self.get_op_inputs(
-            specs=specs,
+            specs=self.specs,
             entry_point=task_args.entry_point,
             name=task_args.name,
             image=image_uri,
@@ -168,17 +168,17 @@ class VertexTaskBuilder(TaskBuilder):
 
         op_builder = self.op_builder(
             op_inputs=op_inputs,
-            network=specs.network,
-            reserved_ip_ranges=specs.reserved_ip_ranges,
-            service_account=specs.service_account,
-            gcp_project_id=specs.gcp_project,
+            network=self.specs.network,
+            reserved_ip_ranges=self.specs.reserved_ip_ranges,
+            service_account=self.specs.service_account,
+            gcp_project_id=self.specs.gcp_project,
             env_vars=env_vars_list,
         )
 
         return op_builder.buil_op()
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         return pipeline_system == PipelineSystem.VERTEX
 
 
@@ -212,12 +212,7 @@ class KubeflowTaskBuilder(TaskBuilder):
             return self.image_client.get_image_uri(str(task_args.flavor))
         return task_args.custom_image
 
-    def build(
-        self,
-        task_args: Task,
-        env_vars: Dict[str, Any],
-        specs: PipelineBaseSpecHolder,
-    ) -> Any:
+    def build(self, task_args: Task, env_vars: Dict[str, Any]) -> Any:
         """Builds a KubeFlow task
 
         Args:
@@ -246,7 +241,7 @@ class KubeflowTaskBuilder(TaskBuilder):
         container_env_vars = self.set_env_vars(env_vars=env_vars)
 
         op_inputs = self.get_op_inputs(
-            specs=specs,
+            specs=self.specs,
             entry_point=task_args.entry_point,
             name=task_args.name,
             image=image_uri,
@@ -262,14 +257,11 @@ class KubeflowTaskBuilder(TaskBuilder):
         return custom_job_task.build_task()
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         return pipeline_system == PipelineSystem.KUBEFLOW
 
 
-def get_task_builder(
-    specs: PipelineBaseSpecHolder,
-    pipeline_system: PipelineSystem,
-) -> TaskBuilder:
+def get_task_builder(specs: SpecHolder, pipeline_system: str) -> TaskBuilder:
     """
     Gets task builder based on provided pipeline system
 

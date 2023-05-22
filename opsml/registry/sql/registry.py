@@ -281,12 +281,15 @@ class CardRegistry:
             card:
                 `ArtifactCard`
         """
-        pipeline_uid = os.getenv("PIPELINECARD_UID").strip()
 
+        pipeline_uid = os.getenv("PIPELINECARD_UID")
         if pipeline_uid is not None:
+            pipeline_uid = pipeline_uid.strip()
+
+        if pipeline_uid is not None and card.uid is not None:
             pipeline_registry = self._set_registry("pipeline")
-            pipeline_card: PipelineCard = pipeline_registry.load_card(uid=pipeline_uid)
-            pipeline_card.add_card_uid(uid=card.uid, card_type=card.card_type)
+            pipeline_card = pipeline_registry.load_card(uid=pipeline_uid)
+            pipeline_card.add_card_uid(uid=card.uid, card_type=card.card_type)  # type:ignore
             self.update_card(pipeline_card)
             return None
 

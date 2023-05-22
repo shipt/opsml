@@ -30,15 +30,13 @@ def experimental_feature(func):
     return wrapper
 
 
-def clean_string(name: Optional[str] = None) -> Optional[str]:
-    if name is not None:
-        _name = name.strip()
-        _name = _name.lower()
-        _name = re.sub("[" + REMOVE_CHARS + "]", "", _name)
-        _name = _name.replace("_", "-")
+def clean_string(name: str) -> str:
+    _name = name.strip()
+    _name = _name.lower()
+    _name = re.sub("[" + REMOVE_CHARS + "]", "", _name)
+    _name = _name.replace("_", "-")
 
-        return _name
-    return None
+    return _name
 
 
 class TypeChecker:
@@ -94,8 +92,8 @@ class FindPath:
     @staticmethod
     def find_dirpath(
         dir_name: str,
-        path: str,
         anchor_file: str,
+        path: str = os.getcwd(),
     ):
         """Finds the dir path of a given file.
 

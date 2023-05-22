@@ -132,7 +132,7 @@ class FuncCardParser(Parser):
 class FuncMetaCreator:
     def __init__(
         self,
-        function: Callable[..., Any],
+        function: Callable[[Any], Any],
         name: str,
     ):
         self.func_name = name
@@ -152,13 +152,13 @@ class FuncMetaCreator:
     def parse(self) -> FuncMetadata:
         definition = self._parse_type(parse_type="definition")
         body = self._parse_type(parse_type="body")
-        cards = self._parse_type(parse_type="card")
+        saved_cards = self._parse_type(parse_type="card")
 
         return FuncMetadata(
             name=self.func_name,
-            assigned_cards=cards.cards_to_save,
-            text=body.func_body,
-            definition=definition.func_def,
+            assigned_cards=saved_cards.cards,
+            text=body.body_text,
+            definition=definition.signature_text,
         )
 
     def _parse_type(self, parse_type: str) -> ParserOutput:
