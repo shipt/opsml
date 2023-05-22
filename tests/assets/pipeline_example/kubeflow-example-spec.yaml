@@ -1,0 +1,26 @@
+pipeline:
+  args:
+    project_name: opsml-test
+    owner: test_owner
+    user_email: test@shipt.com
+    team: mlops
+    cron: 0 5 * * *
+    gcp_project: shipt-ds-stg-spms
+    gcp_region: us-central1
+    pipeline_system: kubeflow
+    container_registry: test
+  tasks:
+    get_data:
+      entry_point: get_data.py
+      flavor: sklearn
+      memory: 10
+      cpu: 3
+    train_model:
+      entry_point: train_model.py
+      flavor: sklearn
+      memory: 10
+      cpu: 3
+      upstream_tasks:
+      - get_data
+  env_vars:
+    test_env_var: test

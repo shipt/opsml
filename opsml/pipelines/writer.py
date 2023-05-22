@@ -4,12 +4,12 @@ import os
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 
 from black import FileMode, WriteBack, format_file_in_place
 
 from opsml.helpers.utils import FindPath, clean_string
-from opsml.pipelines.spec import PipelineWriterMetadata, SpecDefaults
+from opsml.pipelines.spec import PipelineWriterMetadata
 from opsml.pipelines.types import Task
 from opsml.pipelines.utils import Copier, RequirementsCopier, YamlWriter
 from opsml.pipelines.writer_utils import FuncMetaCreator, PyWriter
@@ -153,10 +153,11 @@ class PipelineWriter:
         task_args = task.dict(include=INCLUDE_VARS)
         return {key: value for key, value in task_args.items() if value is not None}
 
-    def _get_pipeline_env_vars(self) -> Dict[str, Union[str, int, float]]:
+    def _get_pipeline_env_vars(self) -> Optional[Dict[str, Union[str, int, float]]]:
         env_vars = self.writer_metadata.specs.env_vars
         if bool(env_vars):
             return env_vars
+        return None
 
     def _get_additional_spec_args(self) -> Dict[str, Union[str, int, float]]:
         base_args = self.writer_metadata.specs.dict(include=BASE_SPEC_ARGS)
@@ -172,7 +173,12 @@ class PipelineWriter:
         # gather specification args
         pipeline_tasks = {task.name: self._get_task_args(task) for task in self.writer_metadata.pipeline_tasks}
         specs["pipeline"] = {"tasks": pipeline_tasks}
-        specs["pipeline"]["env_vars"] = self._get_pipeline_env_vars()
+
+        # set env vars
+        env_vars = self._get_pipeline_env_vars()
+        if env_vars is not None:
+            specs["pipeline"]["env_vars"]
+
         specs["pipeline"]["args"] = self._get_additional_spec_args()
 
         # write config yaml

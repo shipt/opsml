@@ -1,11 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
 from opsml.pipelines.spec import (
     PipelineBaseSpecHolder,
     PipelineSpecCreator,
-    VertexSpecHolder,
 )
 from opsml.pipelines.types import Task
 from opsml.registry.sql.registry_base import VersionType
@@ -124,7 +123,7 @@ class PipelineSubmitRequest(BaseModel):
         arbitrary_types_allowed = True
 
     @validator("specs", pre=True)
-    def get_spec(cls, specs) -> PipelineBaseSpecHolder:
+    def get_spec(cls, specs) -> PipelineBaseSpecHolder:  # pylint: Disable=no-self-argument
         specs = PipelineSpecCreator.get_pipeline_spec(specs=specs)
         return specs
 

@@ -3,20 +3,20 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, Field, root_validator, validator
 
 from opsml.helpers.types import OpsmlPipelineVars
 from opsml.helpers.utils import clean_string
-from opsml.pipelines import settings
 from opsml.pipelines.types import PipelineSystem, Task
 from opsml.pipelines.utils import SpecLoader
+from opsml.registry.sql.settings import settings
 
 env_pattern = re.compile(r".*?\${(.*?)}.*?")
 
 
-##### Spec types
+# Spec types
 class SpecDefaults(str, Enum):
     COMPRESSED_FILENAME = "archive.tar.gz"
     SPEC_FILENAME = "pipeline-spec.yaml"
@@ -46,7 +46,7 @@ class PipelineMetadata(BaseModel):
     run_id: str
 
 
-#### Classes for decorators specs
+# Classes for decorators specs
 class PipelineSpec(BaseModel):
     project_name: str = Field(..., description="ML Project name")
     cron: Optional[str] = Field(None, description="CRON schedule")
@@ -244,11 +244,11 @@ class PipelineSpecCreator:
     def create_pipeline_metadata(self) -> Dict[str, str]:
         """Sets pipeline path parameters that are used when building pipeline systems"""
 
-        suffix = "yaml" if self.pipe_spec.get("pipeline_system") == PipelineSystem.KUBEFLOW else "json"
-
+        # suffix = "yaml" if self.pipe_spec.get("pipeline_system") != PipelineSystem.KUBEFLOW else "json"
+        file_ext = "json"
         run_id = str(datetime.now().strftime("%Y%m%d%H%M%S"))
         project_name = self.pipe_spec.get("project_name")
-        pipe_filename = f"{project_name}-{run_id}-pipeline.{suffix}"
+        pipe_filename = f"{project_name}-{run_id}-pipeline.{file_ext}"
         pipe_storage_path = f"{project_name}/pipeline"
         pipe_storage_root = f"{settings.storage_settings.storage_uri}/{pipe_storage_path}/{run_id}"
 

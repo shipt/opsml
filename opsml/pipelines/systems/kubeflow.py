@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.systems.base import Pipeline
-from opsml.pipelines.types import CustomTrainingOp, PipelineJob, PipelineSystem
+from opsml.pipelines.types import CustomTrainingOp, PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 from opsml.registry.sql.settings import settings
 

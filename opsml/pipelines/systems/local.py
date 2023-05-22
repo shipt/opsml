@@ -1,11 +1,10 @@
 from graphlib import TopologicalSorter
-from typing import Dict, List, Optional, Union
+from typing import List
 
 from opsml.helpers import utils
 from opsml.helpers.logging import ArtifactLogger
-from opsml.pipelines.spec import PipelineBaseSpecHolder
 from opsml.pipelines.systems.base import Pipeline
-from opsml.pipelines.types import CodeInfo, PipelineJob, PipelineSystem, Task
+from opsml.pipelines.types import PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 
 logger = ArtifactLogger.get_logger(__name__)

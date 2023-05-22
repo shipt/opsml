@@ -136,7 +136,7 @@ def save_path():
     return f"blob/{uuid.uuid4().hex}"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_gcp_vars(gcp_cred_path):
     creds, _ = load_credentials_from_file(gcp_cred_path)
 
@@ -183,7 +183,7 @@ def mock_gcsfs():
         yield mocked_gcsfs
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_gcp_scheduler():
     class Job:
         def __init__(self):
@@ -201,7 +201,7 @@ def mock_gcp_scheduler():
         yield mocked_scheduler
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def gcp_storage_client(mock_gcp_vars):
     gcs_settings = GcsStorageClientSettings(
         storage_type="gcs",
@@ -276,46 +276,6 @@ def test_app() -> Iterator[TestClient]:
     opsml_app = OpsmlApp(run_mlflow=True)
     with TestClient(opsml_app.get_app()) as tc:
         yield tc
-    cleanup()
-
-
-@pytest.fixture(scope="function")
-def test_gcp_app() -> Iterator[TestClient]:
-    cleanup()
-    from opsml.app.main import OpsmlApp
-
-    from opsml.pipelines.systems.vertex import VertexPipeline
-
-    class MockVertexPipeline(VertexPipeline):
-        @property
-        def gcp_project(self) -> str:
-            return mock_gcp_vars["gcp_project"]
-
-        @property
-        def gcp_region(self) -> str:
-            return "us-central1"
-
-        @property
-        def credentials(self) -> Any:
-            return mock_gcp_vars["gcp_creds"]
-
-        @property
-        def storage_uri(self) -> str:
-            return "gs://test"
-
-        def run(self) -> None:
-            pass
-
-        def schedule(self) -> None:
-            pass
-
-    with patch(
-        "opsml.pipelines.systems.vertex.VertexPipeline",
-        MockVertexPipeline,
-    ) as mock_vertex_pipeline:
-        opsml_app = OpsmlApp(run_mlflow=True)
-        with TestClient(opsml_app.get_app()) as tc:
-            yield tc
     cleanup()
 
 
@@ -716,7 +676,7 @@ def stacking_regressor(regression_data):
     return reg, X
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def sklearn_pipeline() -> tuple[Pipeline, pd.DataFrame]:
     data = pd.DataFrame(
         [
@@ -742,7 +702,7 @@ def sklearn_pipeline() -> tuple[Pipeline, pd.DataFrame]:
     return pipe, train_data
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def sklearn_pipeline_advanced() -> tuple[Pipeline, pd.DataFrame]:
     X, y = fetch_openml("titanic", version=1, as_frame=True, return_X_y=True, parser="pandas")
 
@@ -1051,6 +1011,27 @@ def mock_packager():
 
 
 @pytest.fixture(scope="function")
+def mock_kubeflow_client():
+    from kfp import Client
+
+    class MockKubeflowClient(Client):
+        def __init__(self, host: str = "test"):
+            pass
+
+        def create_run_from_pipeline_package(
+            self,
+            pipeline_file: str,
+            run_name: str,
+            pipeline_root: str,
+            enable_caching: bool,
+        ):
+            pass
+
+    with patch("kfp.Client", MockKubeflowClient) as mock_kubeflow_client:
+        yield mock_kubeflow_client
+
+
+@pytest.fixture(scope="function")
 def mock_gcp_pipelinejob():
     with patch.multiple(
         "google.cloud.aiplatform.PipelineJob",
@@ -1060,31 +1041,12 @@ def mock_gcp_pipelinejob():
 
 
 @pytest.fixture(scope="function")
-def mock_vertex_pipeline(mock_gcp_vars):
-    from opsml.pipelines.systems.vertex import VertexPipeline
-
-    class MockVertexPipeline(VertexPipeline):
-        @property
-        def gcp_project(self) -> str:
-            return mock_gcp_vars["gcp_project"]
-
-        @property
-        def gcp_region(self) -> str:
-            return "us-central1"
-
-        @property
-        def credentials(self) -> Any:
-            return mock_gcp_vars["gcp_creds"]
-
-        @property
-        def storage_uri(self) -> str:
-            return "gs://test"
-
-    with patch(
-        "opsml.pipelines.systems.vertex.VertexPipeline",
-        MockVertexPipeline,
-    ) as mock_vertex_pipeline:
-        yield mock_vertex_pipeline
+def mock_gcp_pipeline(
+    mock_gcp_pipelinejob,
+    mock_packager,
+    mock_gcp_scheduler,
+):
+    yield mock_gcp_pipelinejob, mock_packager, mock_gcp_scheduler
 
 
 ##### Sklearn estimators for onnx

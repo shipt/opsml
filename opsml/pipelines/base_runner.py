@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import PipelineSpec, PipelineSpecCreator
@@ -81,7 +81,7 @@ class PipelineRunnerBase:
         gpu_type: Optional[str] = None,
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
-        upstream_tasks: List[Optional[Union[Task, str]]] = [],
+        upstream_tasks: Optional[List[Optional[Union[Task, str]]]] = None,
         func: Optional[Callable[[Any], Any]] = None,
     ) -> Task:
         """

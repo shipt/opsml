@@ -232,7 +232,11 @@ class KubeflowTaskBuilder(TaskBuilder):
         image_uri = self.get_task_image(task_args=task_args)
 
         machine_spec = self.set_machine_type(
-            machine_type=task_args.machine_type,
+            machine_type=MachineType(
+                memory=task_args.memory,
+                cpu=task_args.cpu,
+                machine_type=task_args.machine_type,
+            ),
             gpu_count=task_args.gpu_count,
             gpu_type=task_args.gpu_type,
         )

@@ -20,7 +20,6 @@ inputs:
 - {name: source_dir, type: String}
 - {name: entry_point, type: String}
 - {name: pipelinecard_uid, type: String}
-- {name: seed, type: String}
 implementation:
   container:
     image: {image}

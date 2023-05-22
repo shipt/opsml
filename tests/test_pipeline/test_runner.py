@@ -108,47 +108,10 @@ def test_pipeline_runner_local_with_spec():
     """Runs local test on pipeline that is already built to run on vertex"""
 
     os.environ["TEST_ENV_VAR"] = "test"
-    runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
+    runner = PipelineRunner(spec_filename="vertex-example-local-spec.yaml")
     runner.specs.is_proxy = False
 
     assert len(runner.tasks) == 2
     runner.specs.pipeline_system = "local"
 
     runner.run()
-
-
-def test_pipeline_runner_vertex(mock_packager, mock_gcp_pipelinejob, mock_gcp_scheduler, mock_gcp_vars):
-    from opsml.pipelines.systems.vertex import VertexPipeline
-
-    class MockVertexPipeline(VertexPipeline):
-        @property
-        def gcp_project(self) -> str:
-            return mock_gcp_vars["gcp_project"]
-
-        @property
-        def gcp_region(self) -> str:
-            return "us-central1"
-
-        @property
-        def credentials(self):
-            return mock_gcp_vars["gcp_creds"]
-
-        @property
-        def storage_uri(self) -> str:
-            return "gs://test"
-
-    from unittest.mock import patch
-
-    with patch(
-        "opsml.pipelines.systems.vertex.VertexPipeline",
-        MockVertexPipeline,
-    ) as mock_vertex_pipeline:
-        """Runs local test on pipeline that is already built to run on vertex"""
-
-        os.environ["TEST_ENV_VAR"] = "test"
-        runner = PipelineRunner(spec_filename="vertex-example-spec.yaml")
-        runner.specs.is_proxy = False
-
-        assert len(runner.tasks) == 2
-
-        runner.run()

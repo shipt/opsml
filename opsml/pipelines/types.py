@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Protocol
 
-from pydantic import BaseModel, Extra, Field, validator
+from pydantic import BaseModel, Field, validator
 
 from opsml.helpers import exceptions
 from opsml.helpers.logging import ArtifactLogger
@@ -12,10 +12,6 @@ logger = ArtifactLogger.get_logger(__name__)
 
 
 class CustomTrainingOp(Protocol):
-    ...
-
-
-class PipelineParams(Protocol):
     ...
 
 
@@ -253,14 +249,3 @@ class PipelineWriter(Protocol):
 class PipelinePackager(Protocol):
     def package_and_upload_pipeline(spec_dirpath: str, spec_filename: str) -> CodeInfo:
         ...
-
-
-@dataclass
-class PipelineHelpers:
-    """
-    Pipeline helper class
-    """
-
-    planner: PipelinePlanner
-    writer: PipelineWriter
-    packager: PipelinePackager

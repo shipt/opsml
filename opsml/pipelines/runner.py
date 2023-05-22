@@ -5,14 +5,14 @@ from typing import Any, Dict, List, Optional
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import ApiRoutes
-from opsml.pipelines import settings
 from opsml.pipelines.base_runner import PipelineRunnerBase
 from opsml.pipelines.package import PipelinePackager
 from opsml.pipelines.spec import PipelineSpec, PipelineWriterMetadata
 from opsml.pipelines.systems.pipeline_getter import Pipeline, get_pipeline_system
-from opsml.pipelines.types import PipelineHelpers, PipelineJob, PipelineSystem
+from opsml.pipelines.types import PipelineJob, PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.writer import PipelineWriter
+from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -53,7 +53,10 @@ class PipelineRunner(PipelineRunnerBase):
         )
 
         # gather helpers
-        self.helpers = self._set_pipeline_helpers(requirements=requirements)
+        self._helpers = self._set_pipeline_helpers(requirements=requirements)
+
+        # Get pipeline system
+        self._pipeline: Pipeline = get_pipeline_system(specs=self.specs, tasks=self.tasks)
 
     @property
     def task_dict(self) -> List[Dict[str, Any]]:
@@ -98,7 +101,7 @@ class PipelineRunner(PipelineRunnerBase):
         """
 
         if self.is_decorated:
-            return self.helpers.writer.write_pipeline()
+            return self._helpers.writer.write_pipeline()
         return None
 
     def _submit_pipeline_job_to_api(self):
@@ -116,19 +119,13 @@ class PipelineRunner(PipelineRunnerBase):
         if self.is_proxy and self.specs.pipeline_system != PipelineSystem.LOCAL:
             return self._submit_pipeline_job_to_api()
 
-        # Get pipeline system
-        pipeline: Pipeline = get_pipeline_system(
-            specs=self.specs,
-            tasks=self.tasks,
-        )
-
-        pipeline.build()
-        pipeline.run()
+        self._pipeline.build()
+        self._pipeline.run()
 
         # schedule
         if schedule:
-            pipeline.schedule()
-        pipeline.delete_files()
+            self._pipeline.schedule()
+        self._pipeline.delete_files()
 
     def run(self, schedule: bool = False) -> PipelineJob:
         """
@@ -146,5 +143,5 @@ class PipelineRunner(PipelineRunnerBase):
 
         stdout_msg("Building pipeline")
 
-        self.helpers.packager.package_code(writer=self.helpers.writer)
+        self._helpers.packager.package_code(writer=self._helpers.writer)
         self._build_and_run(schedule=schedule)

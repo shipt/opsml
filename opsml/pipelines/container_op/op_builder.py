@@ -1,6 +1,5 @@
 import os
 import tempfile
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
@@ -13,7 +12,7 @@ from kubernetes.client.models import V1EnvVar
 
 from opsml.pipelines.types import ContainerOpInputs, MachineSpec
 
-CUSTOM_OP_PATH = os.path.join(os.path.dirname(__file__), "custom_component.yaml")
+CUSTOM_OP_PATH = os.path.join(os.path.dirname(__file__), "kubeflow_component.yaml")
 VertexTrainingOp = load_component_from_file(os.path.join(os.path.dirname(__file__), "vertex_component.yaml"))
 
 
@@ -86,7 +85,7 @@ class KubeflowOpBuilder:
         self._container_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
         self._container_op.set_caching_options(False)
 
-    def build_op(self):
+    def build_task(self):
         self._set_machine_config()
         self._add_env_vars()
         self._no_cache()

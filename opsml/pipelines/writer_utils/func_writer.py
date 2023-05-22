@@ -2,7 +2,7 @@ import textwrap
 from pathlib import Path
 from typing import Dict, List, Union
 
-from opsml.pipelines.utils import Copier, TemplateWriter
+from opsml.pipelines.utils import TemplateWriter
 from opsml.pipelines.writer_utils.types import FuncMetadata
 
 
@@ -23,7 +23,6 @@ class FuncWriter:
 
 class PyWriter(FuncWriter):
     def _get_card_saver_text(self, assigned_cards: List[str]) -> str:
-
         text = ""
         for card in assigned_cards:
             text = text + f"registry = CardRegistries.getattr({card}.card_type) \n"
@@ -32,7 +31,6 @@ class PyWriter(FuncWriter):
         return textwrap.indent(text, prefix="\t")
 
     def _creat_template(self) -> Dict[str, str]:
-
         return {
             "code": textwrap.indent(self.func_meta.text, prefix="\t"),
             "assigned_cards": self.func_meta.assigned_cards,
@@ -40,7 +38,6 @@ class PyWriter(FuncWriter):
         }
 
     def write_file(self, entry_point: str) -> None:
-
         # get template mapping
         template_mapping = self._creat_template()
 
