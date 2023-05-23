@@ -73,7 +73,7 @@ def test_config_load():
     assert runner.specs.env_vars["test_env_var"] == "test"
 
 
-def test_pipeline_runner_local_spec():
+def test_pipeline_runner_local_spec(db_registries):
     """Tests local pipeline run from pipeline built with decorators"""
 
     spec = PipelineSpec(
@@ -104,7 +104,7 @@ def test_pipeline_runner_local_spec():
     runner.run()
 
 
-def test_pipeline_runner_local_with_spec():
+def test_pipeline_runner_local_with_spec(db_registries):
     """Runs local test on pipeline that is already built to run on vertex"""
 
     os.environ["TEST_ENV_VAR"] = "test"

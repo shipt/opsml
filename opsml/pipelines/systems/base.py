@@ -2,12 +2,14 @@
 import os
 import shutil
 from pathlib import Path
+from functools import cached_property
 from typing import Any, Dict, List, Union
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import PipelineBaseSpecHolder, SpecDefaults
 from opsml.pipelines.systems.task_builder import get_task_builder
 from opsml.pipelines.types import PipelineSystem, Task
+from opsml.registry import PipelineCard, CardRegistry
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -35,6 +37,20 @@ class Pipeline:
     @property
     def env_vars(self) -> Dict[str, Any]:
         return self.specs.env_vars
+
+    @cached_property
+    def pipelinecard_card(self) -> PipelineCard:
+        pipeline_card = PipelineCard(
+            name=self.specs.project_name,
+            team=self.specs.team,
+            user_email=self.specs.user_email,
+            pipeline_code_uri=self.specs.code_uri,
+        )
+        registry = CardRegistry(registry_name="pipeline")
+        registry.register_card(card=pipeline_card)
+        self.specs.pipelinecard_uid = str(pipeline_card.uid)
+
+        return pipeline_card
 
     def build(self) -> None:
         """
@@ -69,7 +85,7 @@ class Pipeline:
         raise NotImplementedError
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
+    def validate(pipeline_system: PipelineSystem) -> bool:
         raise NotImplementedError
 
     def delete_files(self) -> None:

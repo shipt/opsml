@@ -15,10 +15,7 @@ def get_pipeline_system(specs: PipelineBaseSpecHolder, tasks: List[Task]) -> Pip
         (
             pipeline_subclass
             for pipeline_subclass in all_subclasses(Pipeline)
-            if pipeline_subclass.validate(
-                pipeline_system=specs.pipeline_system,
-                is_proxy=specs.is_proxy,
-            )
+            if pipeline_subclass.validate(pipeline_system=specs.pipeline_system)
         ),
     )
     if pipeline_system is None:

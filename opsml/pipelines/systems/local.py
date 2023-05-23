@@ -72,7 +72,7 @@ class LocalPipeline(Pipeline):
         Runs a Local Pipeline
         """
 
-        pipelinecard_uid = self.specs.pipelinecard_uid
+        pipelinecard_uid = self.pipelinecard_card.uid
         tasks = self.run_order
         dir_path = self.specs.code_uri
 
@@ -84,5 +84,5 @@ class LocalPipeline(Pipeline):
         stdout_msg("Local pipeline completed successfully!")
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
+    def validate(pipeline_system: PipelineSystem) -> bool:
         return pipeline_system == PipelineSystem.LOCAL

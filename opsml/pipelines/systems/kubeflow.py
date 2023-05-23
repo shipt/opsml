@@ -134,5 +134,5 @@ class KubeFlowPipeline(Pipeline):
         )
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem, is_proxy: bool) -> bool:
+    def validate(pipeline_system: PipelineSystem) -> bool:
         return pipeline_system == PipelineSystem.KUBEFLOW
