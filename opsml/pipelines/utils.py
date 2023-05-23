@@ -314,6 +314,7 @@ class Copier:
     @staticmethod
     def copy_dir_to_path(dir_name: str, new_path: str):
         dir_path = glob.glob(pathname=f"{os.getcwd()}/**/{dir_name}", recursive=True)[0]
+
         shutil.copytree(
             src=dir_path,
             dst=f"{new_path}/{dir_name}",

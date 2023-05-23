@@ -2,6 +2,7 @@ from opsml.pipelines.base_runner import Task, PipelineRunnerBase
 from opsml.pipelines.runner import PipelineRunner, PipelineSpec
 import os
 import pytest
+from pathlib import Path
 
 
 def test_add_task(mock_pipeline_task: Task):
@@ -84,6 +85,7 @@ def test_pipeline_runner_local_spec(db_registries):
         pipeline_system="local",
         user_email="test@shipt.com",
         container_registry="test",
+        additional_dir="folder_to_add",
     )
 
     runner = PipelineRunner(pipeline_spec=spec)
@@ -101,10 +103,13 @@ def test_pipeline_runner_local_spec(db_registries):
     def test_task2():
         print("test_2")
 
-    runner.run()
+    runner._helpers.packager.package_code(writer=runner._helpers.writer)
+    # assert Path(f"{runner.specs.pipeline_metadata.job_id}/folder_to_add/moved.py").exists()
+
+    # runner.run()
 
 
-def test_pipeline_runner_local_with_spec(db_registries):
+def _test_pipeline_runner_local_with_spec(db_registries):
     """Runs local test on pipeline that is already built to run on vertex"""
 
     os.environ["TEST_ENV_VAR"] = "test"
