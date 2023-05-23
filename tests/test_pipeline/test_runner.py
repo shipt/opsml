@@ -104,9 +104,11 @@ def test_pipeline_runner_local_spec(db_registries):
         print("test_2")
 
     runner._helpers.packager.package_code(writer=runner._helpers.writer)
-    # assert Path(f"{runner.specs.pipeline_metadata.job_id}/folder_to_add/moved.py").exists()
 
-    # runner.run()
+    assert Path(f"{runner.specs.pipeline_metadata.job_id}/folder_to_add/moved.py").exists()
+    runner._pipeline.delete_files()
+
+    runner.run()
 
 
 def _test_pipeline_runner_local_with_spec(db_registries):

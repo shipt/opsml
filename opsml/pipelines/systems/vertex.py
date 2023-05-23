@@ -161,5 +161,5 @@ class VertexPipeline(KubeFlowPipeline):
         self._submit_schedule_from_payload(payload=payload)
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         return pipeline_system == PipelineSystem.VERTEX

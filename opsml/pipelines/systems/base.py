@@ -1,15 +1,15 @@
 """Code for building Tasks and Pipelines"""
 import os
 import shutil
-from pathlib import Path
 from functools import cached_property
+from pathlib import Path
 from typing import Any, Dict, List, Union
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.pipelines.spec import PipelineBaseSpecHolder, SpecDefaults
 from opsml.pipelines.systems.task_builder import get_task_builder
-from opsml.pipelines.types import PipelineSystem, Task
-from opsml.registry import PipelineCard, CardRegistry
+from opsml.pipelines.types import Task
+from opsml.registry import CardRegistry, PipelineCard
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -85,7 +85,7 @@ class Pipeline:
         raise NotImplementedError
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         raise NotImplementedError
 
     def delete_files(self) -> None:

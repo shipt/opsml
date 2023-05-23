@@ -445,7 +445,7 @@ def db_registries():
         "pipeline": pipeline_registry,
     }
 
-    # cleanup()
+    cleanup()
 
 
 @pytest.fixture(scope="function")

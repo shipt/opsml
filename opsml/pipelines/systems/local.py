@@ -84,5 +84,5 @@ class LocalPipeline(Pipeline):
         stdout_msg("Local pipeline completed successfully!")
 
     @staticmethod
-    def validate(pipeline_system: PipelineSystem) -> bool:
+    def validate(pipeline_system: str) -> bool:
         return pipeline_system == PipelineSystem.LOCAL
