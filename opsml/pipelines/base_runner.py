@@ -132,7 +132,7 @@ class PipelineRunnerBase:
         custom_image: Optional[str] = None,
         machine_type: Optional[str] = None,
         upstream_tasks: Optional[List[Optional[Union[Task, str]]]] = None,
-    ) -> None:
+    ):
         """
         Decorator for building machine learning pipeline asks out of a python function.
 
@@ -175,3 +175,5 @@ class PipelineRunnerBase:
                 func=func,
                 upstream_tasks=upstream_tasks,
             )
+
+        return task

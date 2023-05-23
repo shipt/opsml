@@ -70,7 +70,7 @@ def test_config_load():
     runner = PipelineRunnerBase(spec_filename="pipeline.yaml")
 
     assert len(runner.tasks) == 3
-    assert runner.specs.pipeline.env_vars["test_env_var"] == "test"
+    assert runner.specs.env_vars["test_env_var"] == "test"
 
 
 def test_pipeline_runner_local_spec():

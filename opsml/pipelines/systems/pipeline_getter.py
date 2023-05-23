@@ -1,4 +1,4 @@
-from typing import List, Type, cast
+from typing import List, cast
 
 from opsml.helpers import exceptions
 from opsml.helpers.logging import ArtifactLogger
@@ -22,6 +22,6 @@ def get_pipeline_system(specs: PipelineBaseSpecHolder, tasks: List[Task]) -> Pip
         ),
     )
     if pipeline_system is None:
-        raise exceptions.PipelineSystemNotFound
+        raise exceptions.PipelineSystemNotFound(f"Pipeline System {specs.pipeline_system} not found")
 
     return cast(Pipeline, pipeline_system(specs=specs, tasks=tasks))

@@ -178,7 +178,9 @@ class PipelineBaseSpecHolder(BaseModel):
         env_vars["team"] = values["team"]
         env_vars["owner"] = values["owner"]
 
-        return env_vars
+        values["env_vars"] = env_vars
+
+        return values
 
     @staticmethod
     def validate(pipeline_system: str):
@@ -300,8 +302,13 @@ class PipelineSpecCreator:
             if args is not None:
                 for key, value in args.items():
                     spec[key] = value
-
                 pipeline.pop("args")
+
+            env_vars = pipeline.get("env_vars")
+            if env_vars is not None:
+                spec["env_vars"] = env_vars
+
+                pipeline.pop("env_vars")
 
         return spec
 

@@ -4,7 +4,7 @@ import os
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, cast, Callable
+from typing import Any, Callable, Dict, Optional, Union, cast
 
 from black import FileMode, WriteBack, format_file_in_place
 

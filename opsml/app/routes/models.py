@@ -2,10 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
-from opsml.pipelines.spec import (
-    PipelineBaseSpecHolder,
-    PipelineSpecCreator,
-)
+from opsml.pipelines.spec import PipelineBaseSpecHolder, PipelineSpecCreator
 from opsml.pipelines.types import Task
 from opsml.registry.sql.registry_base import VersionType
 

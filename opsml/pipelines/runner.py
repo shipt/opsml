@@ -8,8 +8,8 @@ from opsml.helpers.request_helpers import ApiRoutes
 from opsml.pipelines.base_runner import PipelineRunnerBase
 from opsml.pipelines.package import PipelinePackager
 from opsml.pipelines.spec import PipelineSpec, PipelineWriterMetadata
-from opsml.pipelines.systems.pipeline_getter import Pipeline, get_pipeline_system
-from opsml.pipelines.types import PipelineJob, PipelineSystem
+from opsml.pipelines.systems.pipeline_getter import get_pipeline_system
+from opsml.pipelines.types import PipelineSystem
 from opsml.pipelines.utils import stdout_msg
 from opsml.pipelines.writer import PipelineWriter
 from opsml.registry.sql.settings import settings
