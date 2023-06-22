@@ -1,0 +1,52 @@
+data:
+  understanding:
+    - question: "What data are processed by the application?"
+      purpose: "Learn more about the input data and output data of the application"
+
+    - question: "What are the data sources?"
+      purpose: "- Learn more about 
+                --- what sources the product owner and project leader approved and data scientist uses,
+                --- whether data is up-to-date or not,
+                --- what level of reliability both data source and data have,
+                --- what the consideration for the data source is or if the data source has a mandatory duty to make information available"
+
+    - question: "How do you assess data quality?"
+      purpose: "- Learn more about 
+                --- who checks data quality (product owner, data supplier, third parties, automated test system),
+                --- if it is a continuous or a one-off quality assurance process,
+                --- what data aspects are key to data quality and why,
+                --- how data quality is reviewed, and
+                --- what quality criteria have been defined and measured."
+
+    - question: "What data quality is needed for the application to meet the objectives and requirements set?"
+      purpose: "- Learn more about 
+                --- how data quality impacts on the application,
+                --- how data quality is measured during operation, and
+                --- how the application’s performance varies in line with the quality indicators selected."
+
+    - question: "What data quality thresholds have you selected and why?"
+      purpose: "- Learn more about,
+                --- if threshold values have been defined for the data quality and
+                --- for what technical and other reasons these threshold values have been chosen?
+                - The team should be able to explain what happens when a value is above or below the threshold."
+
+    - question: "How is the semantic of the data model documented?"
+      purpose: "- Learn more about whether or not semantics and syntax have been defined for all data
+                - e.g. whether the team knows abbreviated jargon"
+
+    - question: "Does the application draw on/use/generate any data that are subject to security requirements (e.g. according to GDPR)? Please specify."
+      purpose: "- Learn more about whether the application is subject to GDPR and what is the reason given by the data scientist to use such data. "
+
+  preparation:
+    - question: ""
+      purpose: ""
+
+    - question: ""
+      purpose: ""
+
+model:
+  - question: ""
+    purpose: ""
+
+  - question: ""
+    purpose: ""
