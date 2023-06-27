@@ -1,52 +1,763 @@
-data:
-  understanding:
-    - question: "What data are processed by the application?"
-      purpose: "Learn more about the input data and output data of the application"
+1. business understanding:
+  - purpose:
+      "\n- Identify the purposes for which the product owner intends to use the\
+      \ AI application \n- Identify the quality of target/goal definition and the assessment\
+      \ against SMART criteria by the product owner."
+    question: What business objectives does the product owner pursue?
+    response: 
+  - purpose: "
 
-    - question: "What are the data sources?"
-      purpose: "- Learn more about 
-                --- what sources the product owner and project leader approved and data scientist uses,
-                --- whether data is up-to-date or not,
-                --- what level of reliability both data source and data have,
-                --- what the consideration for the data source is or if the data source has a mandatory duty to make information available"
+      - Identify to what extent business requirements have been derived from the objectives
+      set.
 
-    - question: "How do you assess data quality?"
-      purpose: "- Learn more about 
-                --- who checks data quality (product owner, data supplier, third parties, automated test system),
-                --- if it is a continuous or a one-off quality assurance process,
-                --- what data aspects are key to data quality and why,
-                --- how data quality is reviewed, and
-                --- what quality criteria have been defined and measured."
+      - Such requirements may include:
 
-    - question: "What data quality is needed for the application to meet the objectives and requirements set?"
-      purpose: "- Learn more about 
-                --- how data quality impacts on the application,
-                --- how data quality is measured during operation, and
-                --- how the application’s performance varies in line with the quality indicators selected."
+      --- development costs
 
-    - question: "What data quality thresholds have you selected and why?"
-      purpose: "- Learn more about,
-                --- if threshold values have been defined for the data quality and
-                --- for what technical and other reasons these threshold values have been chosen?
-                - The team should be able to explain what happens when a value is above or below the threshold."
+      --- operational costs
 
-    - question: "How is the semantic of the data model documented?"
-      purpose: "- Learn more about whether or not semantics and syntax have been defined for all data
-                - e.g. whether the team knows abbreviated jargon"
+      --- staffing needs for operation and use
 
-    - question: "Does the application draw on/use/generate any data that are subject to security requirements (e.g. according to GDPR)? Please specify."
-      purpose: "- Learn more about whether the application is subject to GDPR and what is the reason given by the data scientist to use such data. "
+      -- savings sought
 
-  preparation:
-    - question: ""
-      purpose: ""
+      "
+    question: What business requirements has the product owner defined for the application?
+    response: 
+  - purpose: "
 
-    - question: ""
-      purpose: ""
+      - Usually it is impossible for the product owner to enhance all kpis at the same
+      time. Therefore the product owner should specify the reason for selecting a specific
+      kpi and the way of measuring any change. If it is impossible to directly measure
+      a kpi, the product owner should specify any indicator used to indirectly assess
+      whether the kpi is within a pre-set target corridor.
 
-model:
-  - question: ""
-    purpose: ""
+      - Identify how the product owner seeks to track and measure the changes against
+      the business targets of the application."
+    question: What KPIs does the product owner intend to enhance by means of the application?
+    response: 
+  - purpose:
+      "- Identify which processes are affected by the application, how critical
+      those processes are, how they are related and what significance the application
+      has for these processes."
+    question: "In what business processes shall the application be used? "
+    response: 
+  - purpose:
+      "- Identify the driver for the decision to develop the application. State
+      the occurrence of a statutory mandate (Ex: Prop 22), cost increases, new types
+      of fraud, etc."
+    question: "What situation has been the driver for introducing the application? "
+    response: 
+  - purpose:
+      "\n- Identify if the product owner is capable to run the system efficiently\
+      \ and to achieve the desired benefits (adequate level of staffing and funds).\n\
+      - Aspects for study may include \n--- whether the product owner has suitable staff\
+      \ for development, operation and use of the application,\n--- whether the product\
+      \ owner has put into place an adequate technical and organisational infrastructure,\n\
+      --- whether the users are supported by qualified helpdesk staff, and\n--- whether\
+      \ the application has been embedded in a quality assurance environment, and/or\
+      \ internal controlling.\n"
+    question:
+      "What framework conditions has the product owner put into place to ensure
+      efficient use of the application? "
+    response: 
+  - purpose:
+      "\n- Identify the relationship between cost and the targeted savings. \n\
+      - Identify if there is a reasonable monetary benefit "
+    question: What monetary benefits are sought in using the application?
+    response: 
+  - purpose: "
 
-  - question: ""
-    purpose: ""
+      - Identifying any benefits generated by the application beyond financial savings
+      or additional revenue.
+
+      - It is important to identify if the product owner can actually measure and quantify
+      the benefit made. In particular, the product owner shall state if the benefit
+      generated can in fact be attributed to the application.
+
+      "
+    question: What qualifiable and strategic benefits are sought in using the system?
+    response: 
+  - purpose:
+      "- Identify if the efficiency appraisal template for AI projects or another
+      recognised method has been used and if the method requirements have been complied
+      with."
+    question: How has the value for money of the system been documented?
+    response: 
+  - purpose: "
+
+      - Risk analyses are critical to accomplishing the objectives, to efficiency appraisal,
+      project run, and use of the application.
+
+      - Identify if the product owner has carried out a risk analysis, what risks the
+      product owner seeks to counter and which risks the product owner has decided to
+      shoulder.
+
+      - Identify whether the risks are set off by the benefits associated with the use
+      of the application and if the tolerable risk burden is in accordance with applicable
+      regulations and rules."
+    question:
+      "Which of the following components have been studied in a risk analysis\
+      \ and what have the results been?\n- the application\n- data preparation and \n\
+      - the processes mapped by the application\n"
+    response: 
+2. data understanding:
+  - purpose: "
+
+      - Learn more about the input data and output data of the application.
+
+      "
+    question: What data are processed by the application?
+    response:
+      "The model created is to predict a drive time estimate for a time bounded\
+      \ delivery. Inputs provided include \n1. order features such as number of items,\
+      \ order type etc\n2. demographic data such as google's estimate of drivetime from\
+      \ store to delivery location\n3. chronological features such as time of day, day\
+      \ of week\n4. feature identifying type of delivery location includes apartment\
+      \ and floor flag for each delivery address, these features were built using PII\
+      \ address information of customers\n5. historical trends to capture seasonality\
+      \ in data such as avg time to deliver order in a particular zip code, store location\
+      \ etc\n\nadditional information about the features can be accessed - https://docs.google.com/spreadsheets/d/1v8JhgZFJYOMgAmG1wYd1UNRYnQiHtPJa0QqzwoQ6xks/edit?usp=sharing"
+  - purpose:
+      "\n- Learn more about \n--- what sources the product owner and project\
+      \ leader approved and data scientist uses,\n--- whether data is up-to-date or\
+      \ not,\n--- what level of reliability both data source and data have,\n--- what\
+      \ the consideration for the data source is or if the data source has a mandatory\
+      \ duty to make information available, and\n\n"
+    question: What are the data sources?
+    response:
+      "For data used in training the model we used 3 primary data sources\n\n\
+      1. Order stats - this is a company wide used data source which includes relevant\
+      \ historical information for all completed orders in Shipt, we do not have control\
+      \ over this data source\n\n2. Flight plan Events - this table is primarily designed\
+      \ for flight plan team, it contains results for all models running currently in\
+      \ production along with the features being used, \nthis data source is created\
+      \ and monitored by Payments Engg team\n\n3. Holiday marker - this table was created\
+      \ manually by @priyanshu to identify public holidays observed in all states across\
+      \ US, \nthis table contains a flag marking the day of holiday and prior 2 days\
+      \ leading up to it, the table name is -DATA_SCIENCE_SANDBOX.HOLIDAY_MARKER, this\
+      \ table is static in nature, \nthe extract from this table as a csv has been uploaded\
+      \ which is referenced in real time by the model in production. \nThis ensures\
+      \ any further changes to this table are not reflected directly in production."
+  - purpose:
+      "\n- Learn more about\n--- the reason for selecting the particular data\
+      \  \n--- alternative data sources or data beyond those selected, and\n--- any\
+      \ dependencies on the data source and the data.\n"
+    question: What technical/operational criteria have guided data selection?
+    response:
+      "The data used for modelling purposes was derived based on discussions\
+      \ held with @kirsten @bart and @alex in early 2022, \nwe found it to have high\
+      \ significance in determining the true effort it would take for delivery. \n\n\
+      Alternartively we also were researching on using the order poundage iformation\
+      \ as it has a high significance, \nbut due to unreliablity of the current poundage\
+      \ information we decided to keep it outside the scope of model building exercise\
+      \ for the time being.\n\nthe dataset build relies heavily on correctness of all\
+      \ data in these table due to current lack on data governance I am not sure how\
+      \ to justify the correctness of data itself."
+  - purpose:
+      "\n- Learn more about \n--- who checks data quality (product owner, data\
+      \ supplier, third parties, automated test system),\n--- if it is a continuous\
+      \ or a one-off quality assurance process,\n--- what data aspects are key to data\
+      \ quality and why,\n--- how data quality is reviewed, and\n--- what quality criteria\
+      \ have been defined and measured.\n"
+    question: How do you assess data quality?
+    response:
+      "Quality assurance of dataset was code reviewed within our data science\
+      \ team once the queries for building the training dataset was finalized. \n\n\
+      We also utilized outlier techiniques to remove records which were statistically\
+      \ insignificant, methedology used was inter quantile range, \nit is widespread\
+      \ method to remove non representative data without bias - https://en.wikipedia.org/wiki/Interquartile_range\
+      \ \n\nFinal queries used to build out these dataset on github - https://github.com/shipt/shipt-data-analysis/tree/master/flight_plan_drive_time/sql/single"
+  - purpose:
+      "\n- Learn more about \n--- how data quality impacts on the application,\n\
+      --- how data quality is measured during operation, and\n--- how the application\u2019\
+      s performance varies in line with the quality indicators selected.\n"
+    question:
+      What data quality is needed for the application to meet the objectives
+      and requirements set?
+    response:
+      "The model itself relies heavily on data correctness which is true for\
+      \ any modelling technique used, without the good quality of data \nthe model results\
+      \ are unreliable given the same data is being used for company wide initiaties\
+      \ on multiple avenues we have relied on \nit's correctness.\n\nWe also did analysis\
+      \ on multiple splits of data post data creation for model use to validate its\
+      \ usecase."
+  - purpose: "
+
+      - Learn more about,
+
+      --- if threshold values have been defined for the data quality and
+
+      --- for what technical and other reasons these threshold values have been chosen?
+
+      - The team should be able to explain what happens when a value is above or below
+      the threshold."
+    question: What data quality thresholds have you selected and why?
+    response:
+      "For basic filtering we have filtered self bundled data since they have\
+      \ overlapping time stamps and do not represent true effort for an individual order,\n\
+      there are currently not enough tools available for us to decouple efforts taken\
+      \ for indivual order in a bundle setting wether it be self bundle or system.\n\
+      \nWe also filtered out orders having a google time estimate of more than 120 mins\
+      \ (2 hrs).\nAt the time shipt did not create and show single orders to drivers\
+      \ taking ore than 2 hrs of drive time, \nthis is ensure quality of google estimates\
+      \ and any data point lying beyond it was deemed not useful for modelling."
+  - purpose: "
+
+      - Learn more about whether or not semantics and syntax have been defined for all
+      data
+
+      - e.g. whether the team knows the abbreviated values i.e S&D, BOO etc"
+    question: How is the semantic of the data model documented?
+    response:
+      "We used Shipt wide semantics while creating our dataset including S&D,
+      System and self bundles
+
+      ti make the code easy to understand within our organization"
+  - purpose:
+      "- Learn more about whether the application is subject to GDPR and what
+      is the reason given by the data scientist to use such data. "
+    question:
+      Does the application draw on/use/generate any data that are subject to
+      security requirements (e.g. according to GDPR)? Please specify.
+    response: TBD
+  - purpose:
+      "- Learn more about technical, organisational and other steps taken by
+      the product owner/developer to ensure data security."
+    question: "How do you ensure data security? "
+    response:
+      "All the tables and model objects are stored behind Shipt's firewall,\
+      \ they are not publically available and ensures only people \ndeemed necessasry\
+      \ by shipt's internal policy to have access can view the dataset and model notebooks."
+3. data preparation:
+  - purpose:
+      "\n- Possible shortcomings include:\n--- lacking values, \n--- erroneous\
+      \ entries, \n--- inaccurate entries (transposed letters etc.),\n--- lacking datasets,\
+      \ \n--- obsolete entries, and\n--- inconsistent entries.\n"
+    question:
+      Please specify any shortcomings in data quality you noted in the input
+      data of the application.
+    response:
+      "The omitted datapoints as mentioned in the previous sections are only
+      by self bundles and google time estimates,
+
+      we did not systematically remove any data point or segment of data to ensure complete
+      coverage of model learning
+
+      "
+  - purpose:
+      "- Learn more about the steps the product owner/developer/operator takes
+      to address data quality shortcomings. Does the product owner/developer/operator
+      report data errors to data suppliers? Do they replace or ignore missing entries,
+      document data weaknesses to enable benchmarking against future data, etc.?"
+    question: To what extent and how (manually, automatically) do you modify input datasets?
+    response:
+      "The dataset created used input data in its original format wthout modifying\
+      \ it, we did employ aggregation techniques while \nbuilding some model features\
+      \ such as average time taken.\n\nWe are also inferring textual information from\
+      \ delivery addresses to create our features of apartment and unit flag, the code\
+      \ to transformation can be found here - \nhttps://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/01_feature_generator.ipynb\
+      \ \n "
+  - purpose:
+      "- Learn more about how data is processed, documented and tracked  during
+      operation."
+    question: How has data preparation been documented?
+    response:
+      "We used github as the versioning system for code which has detailed history
+      of changes introduced over time
+
+      the complete history of changes can be accessed by using history option over each
+      notebook/sql file in github repository,
+
+      which is secured by shipt's internal data access policy as well"
+  - purpose:
+      "- Learn more about \n--- criteria for benchmarking unprocessed and pre-processed\
+      \ data, and\n--- as to whether the quality of input data can be benchmarked similarly\
+      \ as output data.\n"
+    question:
+      In what way does your data preparation enhance the quality of datasets
+      and how do you measure this impact?
+    response:
+      "The processed data used in final dataset gives us information about the
+      seasonality and other features such as delivery to an apartment building,
+
+      which are not present directly, this used to ensure higher accuracy of the final
+      model and be a represetative model to correctly identify ture estimate of drive
+      time"
+  - purpose:
+      "- Learn more about any review of application response to diversely cleansed
+      data."
+    question:
+      How do you assess whether or not pre-processed/unprocessed data make a
+      difference for the run and results of the application?
+    response:
+      TBD, we cannot measure this as we have not build entire model with limited
+      unprocessed data
+  - purpose:
+      "- Learn more about how data preparation has been integrated in the development,
+      testing, validation, and operation process.
+
+      "
+    question: How is the data preparation mapped in the application?
+    response:
+      "The steps we used to create the data sources have been emulated in production,\
+      \ for example same python code is being used in real time address evaluation \n\
+      of wether the delivery address is an apatment or not. Other order features used\
+      \ such as order type, number of items are used as is in production \nwhich directly\
+      \ relates to incoming attributes of a new incoming order "
+  - purpose:
+      "- Learn more about what type of quality assurance has been put into place
+      for the purpose of data preparation, how quality assurance works, when it starts
+      working and how its work is documented."
+    question: What is the mechanism in place for monitoring the quality of data preparation?
+    response:
+      We don't have tools to measure offline data drift in tables created for
+      the modelling
+  - purpose:
+      "\n- Learn more about \n--- any risks posed by data preparation,\n--- any\
+      \ risks of the application and/or the dev environment that may also impact on\
+      \ data preparation, and\n--- any risks of the application and/or the dev environment\
+      \ that are to be mitigated by data preparation.\n"
+    question:
+      In what way does your data preparation process address any risks you detected
+      in the early stages of application developemnt.
+    response:
+      "The model relies heavily on the correctness of input data, to ensure
+      the inferred features are correct we did manual reviews over time periods of data
+      by aggregating them in silos and spot checks,
+
+      we also reviewed the code internally at multiple stages of model building to ensure
+      its correctness "
+  - purpose:
+      "- Learn more about how data management for the application is structured
+      and what applicable frameworks are in place."
+    question:
+      What framework conditions and responsibilities govern data management
+      in this application?
+    response: Not applicable
+  - purpose: "
+
+      - Learn more about what data management system is used and how data is stored,
+      e.g. in a
+
+      --- SQL database,
+
+      --- NoSQL database,
+
+      --- data warehouse, or
+
+      --- flat file.
+
+      "
+    question: "How do you manage the data? "
+    response:
+      "The data preparation was completd in python notebooks, this includes
+      creating and joining multiple aggregate information and parsing textual data.
+
+      the code for preparing data set can be found - https://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/01_feature_generator.ipynb"
+4. modelling:
+  - purpose:
+      "\nMethods may include but are not limited to: \nFrequent pattern mining:\
+      \ association mining, correlation mining\nClassification: decision trees, Bayes\
+      \ classification, rule-based classification, Bayesian belief networks, backpropagation,\
+      \ support vector machines, frequent patterns, lazy learners\nCluster analysis:\
+      \ partitioning methods, hierarchical methods, density-based methods, grid-based\
+      \ methods, probabilistic model-based clustering, graph and network clustering,\
+      \ clustering with constraints\nOutlier detection: outlier detection methods, statistical\
+      \ approaches, proximity-based approaches, clustering-based approaches, mining\
+      \ contextual and collective outliers"
+    question:
+      What data analysis methods have you selected and what are the selection
+      criteria?
+    response:
+      "Selection criteria for the dataset was defined by order attributes over
+      which we were planning to deloy the order(shop and deliver, delivery time bounded
+      order)
+
+
+      We also utilized Inter quantile range outlier technique on self reported time
+      estimates, to filter out the data which was errornous as they were not representative
+      sample
+
+
+      This technique is an unsupervised one so we do not used any labelled data for
+      filtering for patterns"
+  - purpose:
+      Collect information on the scope, contents and quality of the training
+      datasets.
+    question: What training datasets do you use?
+    response:
+      We utilized random sampling over an time based extract of the dataset
+      to determine the training and validation sets
+  - purpose:
+      Collect information on the training data generation and selection, on the
+      programmes used in the application, and any errors that may occur.
+    question: How have the training datasets been selected or generated?
+    response:
+      "We utilized python's inbuilt rand split funtion to divide the entire
+      training set into train and validation set with each order having 10% probability
+      to be present
+
+      in the validation set"
+  - purpose:
+      Collect information on training at operational stage, on whether the model
+      is stable after activation or  continuously refined with more training data. Key
+      information includes monitoring and quality assurance of continuous training.
+    question: How are the training datasets updated during the life cycle of the system?
+    response:
+      "We recreated the datasets multiple time adding new orders to ensure model\
+      \ training on new information over the period of 5 months \nduring out model building\
+      \ phase from Jan to May 2022"
+  - purpose:
+      Collect information about the scope, contents and quality of validation
+      datasets.
+    question: What validation datasets do you use?
+    response:
+      "Validation set was 10% of entire training dataset separated from datapoints\
+      \ over which model was getting build over to ensure we are \nobserving metrics\
+      \ over new data for fair comparision these datasets were created only once and\
+      \ then pushed for validation over multiple \ndifferent models to remove any unintentional\
+      \ bias intoduced."
+  - purpose:
+      Collect information on generating and selecting validation data, on the
+      programmes used by the application, and on any errors likely to occur.
+    question: How have the validation datasets been selected or generated?
+    response:
+      "The notebook for training multiple model used for model selcetion is\
+      \ present - \nhttps://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/05_model_selection.ipynb "
+  - purpose:
+      Collect information on the validation process at operational stage, on
+      whether the model is stable after activation or continuously refined as validation
+      proceeds. Key information includes monitoring and quality assurance of the validation
+      process.
+    question: How are the validation datasets updated during the life cycle of the system?
+    response:
+      They were kept the same as 10% random sampling from the training data
+      as the training data greew with time
+  - purpose: Collect information on the scope, contents and quality of test datasets.
+    question: What test datasets do you use?
+    response:
+      "Final testing for data was done on 4 weeks of latest data to ensure model
+      metrics are holding true with new information
+
+      this also ensured model lifecycle to be used for prolonged use in lieu of any
+      retraining plan"
+  - purpose:
+      Collect information on test data generation and selection, the programmes
+      used by the application and any errors likely to occur.
+    question: How have the test datasets been selected or generated?
+    response:
+      "test dataset was selected from last 4 weeks of the final dataset, which\
+      \ was already filtering for specific order types \nover which model was getting\
+      \ deployed in production and removing self bundles and outlier data"
+  - purpose:
+      Collect information on testing at operational stage, on whether the model
+      is stable after activation or  continuously refined as testing proceeds. Key information
+      includes monitoring and quality assurance of testing.
+    question: How are the test datasets updated during the life cycle of the application?
+    response:
+      "In a similar fashion of training data test data was for rolling 4 weeks\
+      \ while during the model buisling phase, this also ensured model lifecycle by\
+      \ \ncomparing results over time."
+  - purpose:
+      Collect information on how modelling, model validation and model testing
+      is documented.
+    question: How do you track modelling, training, validation and test runs?
+    response:
+      it is done in different verion of history in github notbooks as we pushed
+      new training set the older metrics were kept intact
+  - purpose:
+      Collect information on the type of risk analysis conducted for modelling
+      and for factors impacting on modelling
+    question: In what way has modelling addressed the risks you detected in the application?
+    response: TBD
+5. evaluation:
+  - purpose: "
+
+      - Learn more about
+
+      --- how model quality has been reviewed,
+
+      --- how the decisions/forecasts of the application have been tracked,
+
+      --- how the impact of individual criteria on decisions has been analysed,
+
+      --- any checks on whether criteria ignored might enhance decisions, and
+
+      --- any model fairness measurements."
+    question: What validation methods do you apply and what were the selection criteria?
+    response:
+      "We employed data validation at multiple splits to ensure that no systemic\
+      \ bias was being introduced,\na detailed analysis of this is present in this sheet\
+      \ - \nhttps://docs.google.com/spreadsheets/d/1v8JhgZFJYOMgAmG1wYd1UNRYnQiHtPJa0QqzwoQ6xks/edit?usp=sharing"
+  - purpose:
+      "\n- Learn more about\n--- how the results accomplished by the validation\
+      \ methods have been documented,\n--- how the results have been construed,\n---\
+      \ traceability of model response,\n--- the extent to which the model is sufficiently\
+      \ accurate, \n--- how potentially contradictory statements have been assessed,\n\
+      --- what empirical data has been used for construing the results, \n---  who reviewed\
+      \ the validation results, and\n--- how the validation results will be used for\
+      \ future validation exercises."
+    question:
+      What were the results of model validation and how have you evaluated these
+      results?
+    response:
+      "Model evaluation and selection was done on below metrics \n\nMAPE - Mean\
+      \ absolute percentage Error\nMAE - mean absolute error\nMPE - Mean Percentage\
+      \ Error\nMdAE - Median Absolute error\nR2\nME - Mean Error\n\nFinal metric chosen\
+      \ for model selection was MAPE, this is standard metric used to evaluate models,\
+      \ and is described in below article\nhttps://en.wikipedia.org/wiki/Mean_absolute_percentage_error\
+      \ \n\nThe entire code used for model evaluation is present - \nhttps://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/08_model_analysis.ipynb "
+  - purpose:
+      "- Learn more about any benchmarking of current methods/models for data
+      analysis against alternative methods/models and about the parameters used."
+    question:
+      Did you benchmark the performance of your model against any alternative
+      methods/models? Please specify.
+    response: "Yes, the benchmarks are present in this notebook -
+
+      https://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/05_model_selection.ipynb  "
+  - purpose:
+      "- Learn more about whether at the training, validation, testing and operational
+      stage, the application has deliberately been exposed to faulty or manipulated
+      data and what the result has been."
+    question: How does the application respond to faulty or manipulated datasets?
+    response:
+      "There are checks present in production to ensure a dummy value to be\
+      \ used in case the input values are missing/invalid\n\none key callout is for\
+      \ the google api drivetime estimate which was defaulted at 5 mins.\n\nThe placeholder\
+      \ values for this model can be found in the first leg and send leg feature tab\
+      \ - \nhttps://docs.google.com/spreadsheets/d/1v8JhgZFJYOMgAmG1wYd1UNRYnQiHtPJa0QqzwoQ6xks/edit?usp=sharing\
+      \  "
+  - purpose:
+      "- Learn more about \n--- whether the initial objectives and impacts set\
+      \ by the product owner have been accomplished\n--- how this has been measured\
+      \ and\n--- whether or not additional objectives and impacts have been achieved\
+      \ ."
+    question:
+      Have the objectives set been accomplished and has the application achieved
+      the intended purposes?
+    response:
+      "The objective of this model was to accurately determine the total delivery\
+      \ time estimate of the order, given stakeholder approval on the final metric performace\n\
+      the model has acheived its intended purpose and was deployed after a through dark\
+      \ mode testing in production where we evalueted the model output \nand overall\
+      \ metrics by running the model in dark mode and comparing the results to offline\
+      \ predictions"
+6. deployment and operation:
+  - purpose: "- Learn more about whether the model is static or dynamic."
+    question:
+      At what intervals is the model updated  (e.g. to reflect current training
+      data)?
+    response: 
+  - purpose:
+      "- Learn more about how the system architecture has been designed, how
+      the application has been embedded,
+
+      which interfaces to other system components exist, and how the application depends
+      on these other system components and their changes."
+    question: How is the application embedded in the surrounding system architecture?
+    response: 
+  - purpose:
+      "- Understand when and driven by what incidents and framework conditions,
+      users may operate the application as part of technical processes and whether such
+      processes differ on a case-by-case basis or whether the conditions governing the
+      application always remain the same."
+    question: "How is the application embedded in the product owner\u2019s process landscape?"
+    response: 
+  - purpose:
+      "- Understand how the user may influence the application or rely on its
+      results, how the user is informed about actions and results of the application
+      and what autonomy the application may have."
+    question: What are the major features of human-machine interaction of the application?
+    response: 
+  - purpose:
+      "- Understand the extent to which decision-makers are informed about decision
+      quality (or uncertainty) of the application."
+    question:
+      How are the key performance indicators of the application provided to
+      decision-makers?
+    response: 
+  - purpose:
+      "- Understand how and how often performance of the application is monitored
+      or reviewed."
+    question: How is application performance monitored during operation?
+    response: 
+  - purpose:
+      "- Understand how business processes depend on the functionality of the
+      application and what happens if the application needs to be bypassed because of
+      erroneous or poor performance (e.g. can staff still manage transactions by using
+      manual inspection or alternative techniques)?
+
+      - Understand if the application may easily be separated from the operating process
+      or if this means bringing the entire automated or manual processing to a halt.
+
+      "
+    question:
+      What alternative intervention processes are in place in case of faulty
+      or poor system performance?
+    response: 
+  - purpose:
+      "- Understand what application-related knowledge users need to possess
+      to appropriately assess the decisions made by the application.
+
+      - Understand that users may know nothing at all about the application and its
+      impact on the process.
+
+      "
+    question: What qualifications do users of the application need?
+    response: 
+  - purpose:
+      "- Understand what autonomy the application has (BITKOM model on decision-making
+      processes)."
+    question:
+      "How can users overrule decisions/proposals made by the application? What
+      autonomy do you grant to the application and do you think the level of autonomy
+      is appropriate? "
+    response: 
+  - purpose: "- Understand what decisions are submitted to the user and which are not."
+    question:
+      What criteria govern decisions/proposals of the application that are submitted
+      to the user?
+    response: 
+  - purpose:
+      "- Understand the laws and regulations the application is subject to.
+
+      - Obtain assessments on the application of the various parties involved. Possibly,
+      the Data Gov team holds a different view of the application than the project manager
+      or the DS ."
+    question:
+      To what extent do you consider the application to comply with applicable
+      laws and regulations?
+    response: 
+  - purpose:
+      -Understand if apart from purely statutory aspects, the application may
+      also affect ethical aspects.
+    question: What ethical concerns do you have about using the application?
+    response: 
+  - purpose:
+      "- Understand if the user considers the decisions/proposals of the application
+      to be fair and reasonable and if the user can even list individual criteria that
+      in his/her view underlie a decisions/proposal of the application."
+    question:
+      To what extent can you understand or track decisions/proposals made by
+      the application?
+    response: 
+  - purpose:
+      "- Understand if the user knows and is aware of the internal processes
+      underlying the application or if these ideas are mere presumptions."
+    question:
+      To what extent are you able to understand or track how the application
+      works?
+    response: 
+  - purpose:
+      "- Understand what possibilities of misuse exist and what steps have been
+      taken to address them."
+    question: How do you protect the application from misuse?
+    response: 
+  - purpose:
+      "- Understand what possibilities of misuse have been analysed more closely
+      and for what types of misuse knowledge is limited to a theoretical idea only. "
+    question: What potential types of misuse have you explored?
+    response: 
+  - purpose:
+      '- Understand if the "Security by Design" principle has been implemented
+      in developing the process or the embedded application.'
+    question:
+      What potential types of attacks on the application and on the embedded
+      processes have you explored and addressed at the planning stage?
+    response: 
+  - purpose:
+      "- Understand to what extent informed decisions have been made with regard
+      to residual risks, and specify any criteria used to decide whether a specific
+      residual risk is tolerable."
+    question: What residual risk still persists and needs to be catered for?
+    response: 
+  - purpose:
+      "- Understand if the IT environment may trigger incidents or manipulation
+      of the embedded process (e.g. a database on which the application relies for data
+      or for storing its decisions may be corrupted, i.e. occurrence of technical malfunction)."
+    question:
+      What factors impact on the reliability of the overall system in which
+      the application is embedded? How do these factors impact on the embedded application?
+    response: 
+  - purpose:
+      "- Understand if apart from the framework conditions defined by the application
+      itself, there are other variables that may impact on the reliability of the application
+      (e.g. user behaviour, flawed organisational procedures, computing power)."
+    question:
+      What factors impact on the reliability of the decisions/proposals of the
+      application?
+    response: 
+  - purpose:
+      "- Understand if an impact analysis tailored to the application has been
+      carried out. Understand any impacts specified and measured in the analysis."
+    question:
+      To what extent can you rule out any inequal treatment of individuals/facts
+      and figures/matters arising from using the application? How do you verify the
+      occurrence of any such incidents?
+    response: 
+  - purpose:
+      "- Understand if cost of energy consumption of the AI component is in line
+      with the benefit achieved.
+
+      - Understand if sustainability considerations have duly been taken into account
+      in running the application."
+    question:
+      To what extent have sustainability considerations been taken into account
+      such as energy efficiency of operating the AI components?
+    response: 
+7. misc:
+  - purpose:
+      "- Understand how demand and change management for developing the application/system
+      have been designed, what tools are used for this purpose, and how the product
+      owner has been involved."
+    question: Demand and change management
+    response: 
+  - purpose:
+      "- Understand how configuration management is structured, how the configuration
+      management database has been designed, how the database is updated and what items
+      it includes."
+    question: Configuration management
+    response: 
+  - purpose:
+      "- Understand how software development is structured, what design tools,
+      development tools, and libraries etc. are used."
+    question: Software development
+    response: 
+  - purpose:
+      "- Understand how quality assurance is structured, how tests and acceptance
+      are structured and how developer tests are designed."
+    question: Quality assurance
+    response: 
+  - purpose:
+      "- Understand how project management is structured, what approaches  and
+      methods have been selected."
+    question: Project management
+    response: 
+  - purpose:
+      "- Understand how application/system rollout is structured (e.g. pilot
+      users, gradual rollout, big bang) and what framework conditions have been put
+      into place or are still needed."
+    question: Rollout
+    response: 
+  - purpose:
+      "- Understand how staff, clients etc. have been prepared for application/system
+      rollout and how their understanding and readiness for change has been promoted."
+    question: Acceptance management
+    response: 
+  - purpose:
+      "- Understand how users, the operational units etc. can report malfunctions
+      and incidents."
+    question: Incident management
+    response: 
+  - purpose:
+      "- Understand if clients (e.g. citizens and private-sector businesses)
+      can address their complaints to a centralised body and how the procedure is structured."
+    question: Ombudsman - complaints office
+    response: 
+  - purpose:
+      "- Understand what changes in practices and procedures, human resources
+      and financial management are associated with rollout and how the organisation
+      or its staff have been prepared to face these changes."
+    question: Change management (staff, organisation)
+    response: 
