@@ -1,4 +1,4 @@
-1. business understanding:
+business understanding:
   - purpose:
       "\n- Identify the purposes for which the product owner intends to use the\
       \ AI application \n- Identify the quality of target/goal definition and the assessment\
@@ -100,7 +100,7 @@
       \ and what have the results been?\n- the application\n- data preparation and \n\
       - the processes mapped by the application\n"
     response: 
-2. data understanding:
+data understanding:
   - purpose: "
 
       - Learn more about the input data and output data of the application.
@@ -228,7 +228,7 @@
       "All the tables and model objects are stored behind Shipt's firewall,\
       \ they are not publically available and ensures only people \ndeemed necessasry\
       \ by shipt's internal policy to have access can view the dataset and model notebooks."
-3. data preparation:
+data preparation:
   - purpose:
       "\n- Possible shortcomings include:\n--- lacking values, \n--- erroneous\
       \ entries, \n--- inaccurate entries (transposed letters etc.),\n--- lacking datasets,\
@@ -354,7 +354,7 @@
       creating and joining multiple aggregate information and parsing textual data.
 
       the code for preparing data set can be found - https://github.com/shipt/shipt-data-analysis/blob/master/flight_plan_drive_time/Single/01_feature_generator.ipynb"
-4. modelling:
+modelling:
   - purpose:
       "\nMethods may include but are not limited to: \nFrequent pattern mining:\
       \ association mining, correlation mining\nClassification: decision trees, Bayes\
@@ -470,7 +470,7 @@
       and for factors impacting on modelling
     question: In what way has modelling addressed the risks you detected in the application?
     response: TBD
-5. evaluation:
+evaluation:
   - purpose: "
 
       - Learn more about
@@ -543,7 +543,7 @@
       \ mode testing in production where we evalueted the model output \nand overall\
       \ metrics by running the model in dark mode and comparing the results to offline\
       \ predictions"
-6. deployment and operation:
+deployment and operation:
   - purpose: "- Learn more about whether the model is static or dynamic."
     question:
       At what intervals is the model updated  (e.g. to reflect current training
@@ -706,7 +706,7 @@
       To what extent have sustainability considerations been taken into account
       such as energy efficiency of operating the AI components?
     response: 
-7. misc:
+misc:
   - purpose:
       "- Understand how demand and change management for developing the application/system
       have been designed, what tools are used for this purpose, and how the product
