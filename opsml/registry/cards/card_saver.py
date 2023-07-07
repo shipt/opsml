@@ -5,7 +5,7 @@ from functools import cached_property
 from typing import Dict, Optional, cast
 
 from opsml.model.types import ModelMetadata, OnnxAttr
-from opsml.registry.cards.cards import (
+from opsml.registry.cards import (
     ArtifactCard,
     DataCard,
     ModelCard,
