@@ -140,7 +140,7 @@ class RunCard(ArtifactCard):
                 Metric value
             timestamp:
                 Optional timestamp
-            ste:
+            step:
                 Optional step associated with name and value
         """
 
@@ -152,7 +152,7 @@ class RunCard(ArtifactCard):
         else:
             self.metrics[key] = [metric]
 
-    def log_metrics(self, metrics: Dict[str, Union[float, int]]) -> None:
+    def log_metrics(self, metrics: Dict[str, Union[float, int]], step: Optional[int] = None) -> None:
         """
         Log metrics to the existing RunCard metric dictionary
 
@@ -160,10 +160,12 @@ class RunCard(ArtifactCard):
             metrics:
                 Dictionary containing key (str) and value (float or int) pairs
                 to add to the current metric set
+            step:
+                Optional step associated with metrics
         """
 
         for key, value in metrics.items():
-            self.log_metric(key, value)
+            self.log_metric(key, value, step)
 
     def log_artifact(self, name: str, artifact: Any) -> None:
         """

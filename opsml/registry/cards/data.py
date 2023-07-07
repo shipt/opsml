@@ -219,12 +219,12 @@ class DataCard(ArtifactCard):
         exclude_attr = {"data"}
         return DataRegistryRecord(**self.dict(exclude=exclude_attr))
 
-    def add_info(self, info: Dict[str, Union[float, int, str]]):
+    def add_info(self, info: Dict[str, Union[float, int, str]]) -> None:
         """
         Adds metadata to the existing DataCard metadata dictionary
 
         Args:
-            Metadata:
+            info:
                 Dictionary containing name (str) and value (float, int, str) pairs
                 to add to the current metadata set
         """
