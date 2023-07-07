@@ -1,8 +1,10 @@
 # pylint: disable=[import-outside-toplevel,import-error]
 
 """Code for generating Onnx Models"""
+import re
 import tempfile
 import warnings
+from functools import reduce
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
@@ -22,12 +24,12 @@ from opsml.model.types import (
     UPDATE_REGISTRY_MODELS,
     ApiDataSchemas,
     DataDict,
+    ExtraOnnxArgs,
     Feature,
     ModelReturn,
     OnnxDataProto,
     OnnxModelDefinition,
     OnnxModelType,
-    TorchOnnxArgs,
 )
 
 ONNX_VERSION = onnx.__version__
@@ -38,6 +40,14 @@ class ModelConverter:
     def __init__(self, model_info: ModelInfo):
         self.model_info = model_info
         self.data_converter = OnnxDataConverter(model_info=model_info)
+
+    @property
+    def is_sklearn_classifier(self) -> bool:
+        """Checks if model is a classifier"""
+
+        from sklearn.base import is_classifier
+
+        return is_classifier(self.model_info.model)
 
     def update_onnx_registries(self) -> bool:
         return OnnxRegistryUpdater.update_onnx_registry(model_estimator_name=self.model_info.model_type)
@@ -58,33 +68,92 @@ class ModelConverter:
         """
         return self.data_converter.get_data_types()
 
+    def _raise_shape_mismatch(self, onnx_shape: Tuple[int, ...], pred_shape: Tuple[int, ...]):
+        raise ValueError(
+            f"""Onnx and model prediction shape mismatch. \n
+                Onnx prediction shape: {onnx_shape} \n
+                Model prediction shape: {pred_shape}
+            """
+        )
+
+    def _validate_pred_arrays(self, onnx_preds: NDArray, model_preds: NDArray) -> bool:
+        """
+        Validates onnx and original model predictions. Checks whether average diff between model and onnx
+        is <= .001.
+
+        Args:
+            onnx_preds:
+                Array of onnx model predictions
+            model_preds:
+                Array of model predictions
+        Returns:
+            bool indicating if onnx model prediction is close to original model
+        """
+
+        if model_preds.ndim != onnx_preds.ndim:
+            if model_preds.ndim < onnx_preds.ndim:
+                # onnx tends to add an extra dim
+                if onnx_preds.shape[0] == 1:
+                    onnx_preds = onnx_preds[0]
+                else:
+                    self._raise_shape_mismatch(onnx_preds.shape, model_preds.shape)
+            else:
+                self._raise_shape_mismatch(onnx_preds.shape, model_preds.shape)
+
+        # assert shapes match
+        assert onnx_preds.shape == model_preds.shape
+
+        diff = np.sum(abs(np.around(onnx_preds, 4) - np.around(model_preds, 4)))
+        n_values = reduce((lambda x, y: x * y), model_preds.shape)
+        avg_diff = np.divide(diff, n_values)
+
+        # check if raw diff value is less than a certain amount
+        if avg_diff <= 0.001:
+            return True
+
+        return False
+
     def _predictions_close(
         self,
-        onnx_preds: List[Union[float, int]],
+        onnx_preds: List[Union[float, int, NDArray]],
         model_preds: Union[List[Union[float, int]], Union[float, int], NDArray],
     ) -> bool:
-        if not isinstance(model_preds, list):
-            model_preds = cast(Union[float, int], model_preds)
-            valid_list = [np.sum(abs(onnx_preds[0] - model_preds)) <= 0.001]
+        """Checks if model and onnx predictions are close
 
-        else:
+        Args:
+            onnx_preds:
+                Onnx model predictions
+            model_preds:
+                Model predictions
+        Returns:
+            Bool indicating if onnx and original model predictions are close
+        """
+
+        if isinstance(onnx_preds, list) and isinstance(model_preds, list):
             valid_list = []
             for onnx_pred, model_pred in zip(onnx_preds, model_preds):
-                valid = np.sum(abs(onnx_pred - model_pred)) <= 0.001
+                valid = np.sum(np.abs(onnx_pred - model_pred)) <= 0.001
                 valid_list.append(valid)
+            return all(valid_list)
 
+        if isinstance(model_preds, np.ndarray):
+            onnx_pred = onnx_preds[0]
+            if isinstance(onnx_pred, np.ndarray):
+                return self._validate_pred_arrays(onnx_pred, model_preds)
+            raise ValueError("Model and onnx predictions should both be of type NDArray")
+
+        model_preds = cast(Union[float, int], model_preds)
+        valid_list = [np.sum(np.abs(onnx_preds[0] - model_preds)) <= 0.001]
         return all(valid_list)
 
     def validate_model(self, onnx_model: ModelProto) -> None:
         """Validates an onnx model on training data"""
         inputs = self.data_converter.convert_data()
-
         model_preds = self.model_info.model.predict(self.model_info.model_data.data)
 
         logger.info("Validating converted onnx model")
         sess = rt.InferenceSession(onnx_model.SerializeToString())
         onnx_preds = sess.run(None, inputs)
-
         if not self._predictions_close(onnx_preds=onnx_preds, model_preds=model_preds):
             raise ValueError("Model prediction validation failed")
 
@@ -93,7 +162,7 @@ class ModelConverter:
     def _get_data_elem_type(self, sig: Any) -> int:
         return sig.type.tensor_type.elem_type
 
-    def _parse_onnx_sigature(self, signature: RepeatedCompositeFieldContainer):
+    def _parse_onnx_signature(self, signature: RepeatedCompositeFieldContainer):
         feature_dict = {}
 
         for sig in signature:
@@ -111,8 +180,8 @@ class ModelConverter:
         return feature_dict
 
     def create_feature_dict(self, onnx_model: ModelProto) -> Tuple[Dict[str, Feature], Dict[str, Feature]]:
-        input_dict = self._parse_onnx_sigature(onnx_model.graph.input)
-        output_dict = self._parse_onnx_sigature(onnx_model.graph.output)
+        input_dict = self._parse_onnx_signature(onnx_model.graph.input)
+        output_dict = self._parse_onnx_signature(onnx_model.graph.output)
 
         return input_dict, output_dict
 
@@ -252,14 +321,48 @@ class SklearnOnnxModel(ModelConverter):
         self.prepare_registries_and_data()
         return super().convert_data()
 
-    def convert_model(self, initial_types: List[Any]) -> ModelProto:
-        """Converts sklearn model to ONNX ModelProto"""
+    @property
+    def options(self) -> Optional[Dict[str, Any]]:
+        """Sets onnx options for model conversion
+
+        Our inference implementation uses triton for onnx hosting which does not support sequence output
+        for classification models (skl2onnx default). This defaults all sklearn classifiers to an array output
+        """
+        add_model_args = self.model_info.additional_model_args
+        options = getattr(add_model_args, "options", None)
+
+        if self.is_sklearn_classifier and options is None:
+            return {"zipmap": False}
+        return options
+
+    def _convert_sklearn(self, initial_types: List[Any]) -> ModelProto:
+        """Converts an sklearn model to onnx using skl2onnx library
+
+        Args:
+            initial_types:
+                List of data types the onnx model should expect
+        Returns:
+            `ModelProto`
+        """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             from skl2onnx import convert_sklearn
 
-            onnx_model = convert_sklearn(model=self.model_info.model, initial_types=initial_types)
-            self.validate_model(onnx_model=onnx_model)
+        try:
+            return convert_sklearn(model=self.model_info.model, initial_types=initial_types, options=self.options)
+        except NameError as error:
+            # There may be a small amount of instances where a sklearn classifier does
+            # not support zipmap as a default option (LinearSVC). This catches those errors
+            if re.search("Option 'zipmap' not in", str(error), re.IGNORECASE):
+                logger.info("Zipmap not supported for classifier")
+                return convert_sklearn(model=self.model_info.model, initial_types=initial_types)
+            raise error
+
+    def convert_model(self, initial_types: List[Any]) -> ModelProto:
+        """Converts sklearn model to ONNX ModelProto"""
+
+        onnx_model = self._convert_sklearn(initial_types=initial_types)
+        self.validate_model(onnx_model=onnx_model)
 
         return onnx_model
 
@@ -268,7 +371,7 @@ class SklearnOnnxModel(ModelConverter):
         return model_type in SKLEARN_SUPPORTED_MODEL_TYPES
 
 
-class LighGBMBoosterOnnxModel(ModelConverter):
+class LightGBMBoosterOnnxModel(ModelConverter):
     def convert_model(self, initial_types: List[Any]) -> ModelProto:
         """Converts sklearn model to ONNX ModelProto"""
         from onnxmltools import convert_lightgbm
@@ -315,16 +418,16 @@ class PytorchArgBuilder:
         if isinstance(self.input_data, dict):
             return list(self.input_data.keys())
 
-        return ["input"]
+        return ["predict"]
 
     def _get_output_names(self) -> List[str]:
         return ["output"]
 
-    def get_args(self) -> TorchOnnxArgs:
+    def get_args(self) -> ExtraOnnxArgs:
         input_names = self._get_input_names()
         output_names = self._get_output_names()
 
-        return TorchOnnxArgs(
+        return ExtraOnnxArgs(
             input_names=input_names,
             output_names=output_names,
         )
@@ -343,9 +446,9 @@ class PyTorchOnnxModel(ModelConverter):
     def _get_additional_model_args(
         self,
         input_data: Any,
-        additional_onnx_args: Optional[TorchOnnxArgs] = None,
-    ) -> TorchOnnxArgs:
-        """Passes or creates TorchOnnxArgs needed for Onnx model conversion"""
+        additional_onnx_args: Optional[ExtraOnnxArgs] = None,
+    ) -> ExtraOnnxArgs:
+        """Passes or creates ExtraOnnxArgs needed for Onnx model conversion"""
 
         if additional_onnx_args is None:
             return PytorchArgBuilder(input_data=input_data).get_args()
@@ -356,7 +459,12 @@ class PyTorchOnnxModel(ModelConverter):
 
         if hasattr(predictions, "logits"):
             return predictions.logits.detach().numpy()
-        return predictions.detach().numpy()
+        if hasattr(predictions, "detach"):
+            return predictions.detach().numpy()
+        if hasattr(predictions, "last_hidden_state"):
+            return predictions.last_hidden_state.detach().numpy()
+
+        return predictions.numpy()
 
     def _model_predict(self) -> NDArray:
         """Generate prediction for pytorch model using sample data"""
@@ -422,7 +530,7 @@ class PyTorchOnnxModel(ModelConverter):
                 model=self.model_info.model,
                 args=arg_data,
                 f=filename,
-                **self.additional_args.to_dict(),
+                **self.additional_args.dict(exclude={"options"}),
             )
             onnx.checker.check_model(filename)
             model = onnx.load(filename)
@@ -438,7 +546,10 @@ class PyTorchOnnxModel(ModelConverter):
 
     @staticmethod
     def validate(model_type: str) -> bool:
-        return model_type in OnnxModelType.PYTORCH
+        return model_type in [
+            OnnxModelType.PYTORCH,
+            OnnxModelType.TRANSFORMER,
+        ]
 
 
 class OnnxModelConverter:

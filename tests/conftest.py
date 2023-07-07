@@ -1,7 +1,10 @@
-from typing import Any, Iterator, Optional, Union
-from dataclasses import dataclass
+from typing import Any, Iterator
 import os
 import pathlib
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 # setting initial env vars to override default sql db
 # these must be set prior to importing opsml since they establish their
@@ -49,7 +52,6 @@ from sklearn import (
     neighbors,
     svm,
     multioutput,
-    multiclass,
     neural_network,
     cross_decomposition,
 )
@@ -70,18 +72,19 @@ from opsml.registry.data.splitter import DataSplit
 from opsml.registry.cards.types import ModelCardUris
 from opsml.registry import ModelCard
 from opsml.helpers.gcp_utils import GcpCreds, GCSStorageClient
+from opsml.helpers.request_helpers import ApiClient
 from opsml.registry.storage.types import StorageClientSettings, GcsStorageClientSettings
 from opsml.registry.sql.sql_schema import BaseMixin, Base, RegistryTableNames
 from opsml.registry.sql.db_initializer import DBInitializer
 from opsml.registry.sql.connectors.connector import LocalSQLConnection
-from opsml.registry.storage.storage_system import StorageClientGetter, StorageSystem
+from opsml.registry.storage.storage_system import StorageClientGetter, StorageSystem, StorageClientType
+
 from opsml.projects import get_project
 from opsml.projects.mlflow import MlflowProject
 from opsml.projects.base.types import ProjectInfo
 from opsml.registry import CardRegistries
 from opsml.projects import OpsmlProject
 from opsml.model.types import OnnxModelDefinition
-
 
 # testing
 from tests.mock_api_registries import CardRegistry as ClientCardRegistry
@@ -112,7 +115,6 @@ def cleanup() -> None:
     shutil.rmtree("loader_test", ignore_errors=True)
 
 
-################ Test Classes
 class Blob(BaseModel):
     name: str = "test_upload/test.csv"
 
@@ -254,11 +256,6 @@ def mock_pyarrow_parquet_dataset(mock_pathlib, test_df, test_arrow_table):
         yield mock_dataset
 
 
-################################################################################
-# Mocks
-################################################################################
-
-
 @pytest.fixture(scope="module")
 def test_app() -> Iterator[TestClient]:
     cleanup()
@@ -285,7 +282,7 @@ def mock_registries(test_client: TestClient) -> CardRegistries:
     def callable_api():
         return test_client
 
-    with patch("httpx.Client", callable_api) as mock_client:
+    with patch("httpx.Client", callable_api):
         from opsml.registry.sql.settings import settings
 
         settings.opsml_tracking_uri = "http://testserver"
@@ -332,6 +329,7 @@ def mock_mlflow_project(info: ProjectInfo) -> MlflowProject:
 
     # set storage client
     mlflow_storage = mlflow_storage_client()
+    mlflow_storage.opsml_storage_client = api_card_registries.data._registry.storage_client
 
     api_card_registries.set_storage_client(mlflow_storage)
     mlflow_exp._run_mgr.registries = api_card_registries
@@ -342,12 +340,12 @@ def mock_mlflow_project(info: ProjectInfo) -> MlflowProject:
 
 
 @pytest.fixture(scope="function")
-def api_registries(test_app: TestClient) -> Iterator[dict[str, ClientCardRegistry]]:
+def api_registries(test_app: TestClient) -> Iterator[CardRegistries]:
     yield mock_registries(test_app)
 
 
 @pytest.fixture(scope="function")
-def mock_cli_property(api_registries):
+def mock_cli_property(api_registries: CardRegistries) -> Iterator[ApiClient]:
     with patch("opsml.cli.utils.CliApiClient.client", new_callable=PropertyMock) as client_mock:
         from opsml.registry.sql.settings import settings
 
@@ -356,16 +354,8 @@ def mock_cli_property(api_registries):
 
 
 @pytest.fixture(scope="function")
-def api_storage_client(api_registries):
+def api_storage_client(api_registries: CardRegistries) -> StorageClientType:
     return api_registries.data._registry.storage_client
-
-
-@pytest.fixture(scope="function")
-def mock_app_config_token(api_registries):
-    with patch("opsml.app.core.config.OpsmlConfig.PROD_TOKEN", new_callable=PropertyMock) as attr_mock:
-        attr_mock.return_value = "fail"
-
-        yield attr_mock
 
 
 @pytest.fixture(scope="function")
@@ -374,6 +364,7 @@ def mlflow_project(api_registries: CardRegistries) -> Iterator[MlflowProject]:
     mlflow_exp: MlflowProject = get_project(info=info)
 
     mlflow_storage = mlflow_storage_client()
+    mlflow_storage.opsml_storage_client = api_registries.data._registry.storage_client
     api_registries.set_storage_client(mlflow_storage)
     mlflow_exp._run_mgr.registries = api_registries
 
@@ -486,23 +477,6 @@ def db_registries():
     }
 
     cleanup()
-
-
-@pytest.fixture(scope="function")
-def mock_model_cli_loader(db_registries):
-    model_registry = db_registries["model"]
-    from opsml.cli.load_model_card import ModelLoader
-
-    class MockModelLoader(ModelLoader):
-        @property
-        def base_path(self) -> str:
-            return "loader_test"
-
-        def _set_registry(self) -> Any:
-            return model_registry
-
-    with patch("opsml.cli.load_model_card.ModelLoader", MockModelLoader) as mock_cli_loader:
-        yield mock_cli_loader
 
 
 @pytest.fixture(scope="function")
@@ -658,8 +632,8 @@ def load_pytorch_language():
         padding="max_length",
         truncation=True,
         return_tensors="pt",
-    )
-    sample_data = {name: values.numpy() for name, values in data.items()}
+    ).input_ids
+    sample_data = {"input_ids": data.numpy()}
     loaded_model = torch.load("tests/assets/distill-bert-tiny.pt", torch.device("cpu"))
 
     return loaded_model, sample_data
@@ -990,6 +964,57 @@ def random_forest_api_example():
     }
 
     return 2, record
+
+
+@pytest.fixture(scope="module")
+def huggingface_whisper():
+    import transformers
+
+    model = transformers.WhisperForConditionalGeneration.from_pretrained("openai/whisper-tiny")
+    model.config.forced_decoder_ids = None
+
+    # come up with some dummy test data to fake out training.
+    data = joblib.load("tests/assets/whisper-data.joblib")
+
+    return model, data
+
+
+@pytest.fixture(scope="module")
+def huggingface_openai_gpt():
+    from transformers import OpenAIGPTTokenizer, OpenAIGPTLMHeadModel
+
+    tokenizer = OpenAIGPTTokenizer.from_pretrained("openai-gpt")
+    model = OpenAIGPTLMHeadModel.from_pretrained("openai-gpt")
+    inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+
+    return model, inputs
+
+
+@pytest.fixture(scope="module")
+def huggingface_bart():
+    from transformers import BartTokenizer, BartModel
+
+    tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+    model = BartModel.from_pretrained("facebook/bart-base")
+    inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+
+    return model, inputs
+
+
+@pytest.fixture(scope="module")
+def huggingface_vit():
+    from transformers import ViTFeatureExtractor, ViTModel
+    from PIL import Image
+    import requests
+
+    image = Image.open("tests/assets/cats.jpg")
+
+    feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+    model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
+
+    inputs = feature_extractor(images=image, return_tensors="pt")
+
+    return model, inputs
 
 
 @pytest.fixture(scope="function")

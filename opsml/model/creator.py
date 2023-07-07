@@ -1,20 +1,24 @@
-from typing import Any, Dict, Optional, cast
+# pylint: disable=no-member,broad-exception-caught
+from typing import Any, Dict, Optional
 
 import numpy as np
 
+from opsml.helpers.logging import ArtifactLogger
 from opsml.model.model_converters import OnnxModelConverter
 from opsml.model.model_info import ModelInfo, get_model_data
 from opsml.model.model_types import ModelType, OnnxModelType
 from opsml.model.types import (
     ApiDataSchemas,
     DataDict,
+    ExtraOnnxArgs,
     Feature,
     InputData,
     InputDataType,
     ModelReturn,
     OnnxModelDefinition,
-    TorchOnnxArgs,
 )
+
+logger = ArtifactLogger.get_logger(__name__)
 
 
 class ModelCreator:
@@ -22,7 +26,7 @@ class ModelCreator:
         self,
         model: Any,
         input_data: InputData,
-        additional_onnx_args: Optional[TorchOnnxArgs] = None,
+        additional_onnx_args: Optional[ExtraOnnxArgs] = None,
         onnx_model_def: Optional[OnnxModelDefinition] = None,
     ):
         """
@@ -37,27 +41,12 @@ class ModelCreator:
                 Optional `OnnxModelDefinition`
         """
         self.model = model
-        self.input_data = self._get_one_sample(input_data)
+        self.input_data = input_data
         self.model_class = self._get_model_class_name()
         self.additional_model_args = additional_onnx_args
         self.onnx_model_def = onnx_model_def
         self.input_data_type = type(self.input_data)
         self.model_type = self.get_model_type()
-
-    def _get_one_sample(self, input_data: InputData) -> InputData:  # fix the any types later
-        """Parses input data and returns a single record to be used during ONNX conversion and validation"""
-
-        if not isinstance(input_data, InputDataType.DICT.value):
-            if isinstance(input_data, InputDataType.POLARS_DATAFRAME.value):
-                input_data = input_data.to_pandas()
-
-            return input_data[0:1]
-
-        sample_dict = cast(Dict[str, np.ndarray], {})
-        for key in cast(Dict[str, np.ndarray], input_data).keys():
-            sample_dict[key] = input_data[key][0:1]
-
-        return sample_dict
 
     def _get_model_class_name(self):
         """Gets class name from model"""
@@ -70,7 +59,7 @@ class ModelCreator:
 
         # for transformer models from huggingface
         if "transformers.models" in str(self.model.__class__.__bases__):
-            return OnnxModelType.PYTORCH.value
+            return OnnxModelType.TRANSFORMER.value
 
         return self.model.__class__.__name__
 
@@ -110,14 +99,79 @@ class TrainedModelMetadataCreator(ModelCreator):
             data_type=type(predictions),
         )
 
+        model_data.features = ["outputs"]
+
         return model_data.feature_dict
 
-    def _get_output_schema(self) -> Dict[str, Feature]:
-        if hasattr(self.model, "predict"):
-            predictions = self.model.predict(self.input_data)
+    def _predict_prediction(self) -> Dict[str, Feature]:
+        """Test default predict method leveraged by most ml libraries"""
+        predictions = self.model.predict(self.input_data)
+        return self._get_prediction_type(predictions=predictions)
+
+    def _generate_prediction(self) -> Dict[str, Feature]:
+        """Tests generate method commonly used with huggingface models.
+        If generate fails, prediction will fall back to normal functional call.
+        """
+        import torch
+
+        try:
+            if isinstance(self.input_data, np.ndarray):
+                array_input = torch.from_numpy(self.input_data)
+                predictions = self.model.generate(array_input)
+
+            elif isinstance(self.input_data, dict):
+                dict_input: Dict[str, torch.Tensor] = {
+                    key: torch.from_numpy(val) for key, val in self.input_data.items()
+                }
+                predictions = self.model.generate(**dict_input)
+
+            if isinstance(predictions, torch.Tensor):
+                predictions = predictions.numpy()
+
             return self._get_prediction_type(predictions=predictions)
-        # placeholder for now
-        return {"placeholder": Feature(feature_type=str, shape=[1])}
+
+        except TypeError as error:
+            logger.error("%s. Falling back to model functional call", error)
+
+        return self._functional_prediction()
+
+    def _functional_prediction(self) -> Dict[str, Feature]:
+        """Calls the model directly using functional call"""
+        import torch
+
+        if isinstance(self.input_data, np.ndarray):
+            array_input = torch.from_numpy(self.input_data)
+            predictions = self.model(array_input)
+
+        elif isinstance(self.input_data, dict):
+            dict_input: Dict[str, torch.Tensor] = {key: torch.from_numpy(val) for key, val in self.input_data.items()}
+            predictions = self.model(**dict_input)
+
+        if isinstance(predictions, torch.Tensor):
+            predictions = predictions.numpy()
+
+        # assumes model predictions can be retrieved via hidden state
+        else:
+            predictions = predictions.last_hidden_state.detach().numpy()
+
+        return self._get_prediction_type(predictions=predictions)
+
+    def _get_output_schema(self) -> Dict[str, Feature]:
+        try:
+            if hasattr(self.model, "predict"):
+                return self._predict_prediction()
+
+            # huggingface/pytorch
+            # Majority of huggingface models have generate method but may raise error
+            if hasattr(self.model, "generate"):
+                return self._generate_prediction()
+
+            return self._functional_prediction()
+
+        except Exception as error:
+            logger.error("Failed to determine prediction output. Defaulting to placeholder. %s", error)
+
+        return {"placeholder": Feature(feature_type="str", shape=[1])}
 
     def create_model(self) -> ModelReturn:
         input_features = self._get_input_schema()
@@ -145,7 +199,7 @@ class OnnxModelCreator(ModelCreator):
         self,
         model: Any,
         input_data: InputData,
-        additional_onnx_args: Optional[TorchOnnxArgs] = None,
+        additional_onnx_args: Optional[ExtraOnnxArgs] = None,
         onnx_model_def: Optional[OnnxModelDefinition] = None,
     ):
         """
@@ -212,6 +266,7 @@ class OnnxModelCreator(ModelCreator):
             model=self.model,
             model_data=model_data,
             model_type=self.model_type,
+            model_class=self.model_class,
             data_type=self.input_data_type,
             additional_model_args=self.additional_model_args,
             onnx_model_def=self.onnx_model_def,
@@ -235,14 +290,14 @@ def create_model(
     model: Any,
     input_data: InputData,
     to_onnx: bool,
-    additional_onnx_args: Optional[TorchOnnxArgs] = None,
+    additional_onnx_args: Optional[ExtraOnnxArgs] = None,
     onnx_model_def: Optional[OnnxModelDefinition] = None,
 ) -> ModelReturn:
     """
     Validates and selects s `ModeCreator` subclass and creates a `ModelReturn`
 
     Args:
-            Model:
+            model:
                 Model to convert (BaseEstimator, Pipeline, StackingRegressor, Booster)
             input_data:
                 Sample of data used to train model (pd.DataFrame, np.ndarray, dict of np.ndarray)
@@ -253,6 +308,8 @@ def create_model(
             onnx_model_def:
                 Optional onnx model def. This is primarily used for bring your own onnx models
 
+    Returns:
+        `ModelReturn`
     """
 
     creator = next(

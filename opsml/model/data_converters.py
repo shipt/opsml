@@ -10,11 +10,11 @@ from opsml.model.onnx_data_types import get_onnx_tensor_spec
 from opsml.model.types import (
     AVAILABLE_MODEL_TYPES,
     DataDtypes,
+    ExtraOnnxArgs,
     Feature,
     InputDataType,
     OnnxModelDefinition,
     OnnxModelType,
-    TorchOnnxArgs,
 )
 
 ModelConvertOutput = Tuple[OnnxModelDefinition, Dict[str, Feature], Optional[Dict[str, Feature]]]
@@ -46,7 +46,7 @@ class DataConverter:
         converts Float64 types to Float32. Skl2Onnx does not support Float64 for some estimator types.
 
         Args:
-            all:
+            convert_all:
                 Boolean indicating whether to convert all columns to Float32
 
         """
@@ -118,6 +118,7 @@ class NumpyOnnxConverter(DataConverter):
             if model_info.model_type in AVAILABLE_MODEL_TYPES and model_info.model_type not in [
                 OnnxModelType.TF_KERAS,
                 OnnxModelType.PYTORCH,
+                OnnxModelType.TRANSFORMER,
             ]:
                 return True
         return False
@@ -278,7 +279,7 @@ class PyTorchOnnxDataConverter(DataConverter):
         self.input_name = self._get_input_name()
 
     def _get_input_name(self) -> str:
-        args = cast(TorchOnnxArgs, self.model_info.additional_model_args)
+        args = cast(ExtraOnnxArgs, self.model_info.additional_model_args)
         return args.input_names[0]
 
     def get_onnx_data_types(self) -> List[Any]:
@@ -293,13 +294,14 @@ class PyTorchOnnxDataConverter(DataConverter):
         return None
 
     def convert_data_to_onnx(self) -> Dict[str, Any]:
-        return {self.input_name: self.model_data.data.astype(np.float32)}
+        return {self.input_name: self.model_data.data}
 
     @staticmethod
     def validate(model_info: ModelInfo) -> bool:
-        return (
-            model_info.data_type == InputDataType.NUMPY_ARRAY.value and model_info.model_type == OnnxModelType.PYTORCH
-        )
+        return model_info.data_type == InputDataType.NUMPY_ARRAY.value and model_info.model_type in [
+            OnnxModelType.PYTORCH,
+            OnnxModelType.TRANSFORMER,
+        ]
 
 
 class PyTorchOnnxDictConverter(DataConverter):
@@ -316,7 +318,7 @@ class PyTorchOnnxDictConverter(DataConverter):
         self.input_names = self._get_input_names()
 
     def _get_input_names(self) -> List[str]:
-        args = cast(TorchOnnxArgs, self.model_info.additional_model_args)
+        args = cast(ExtraOnnxArgs, self.model_info.additional_model_args)
         return args.input_names
 
     def get_data_schema(self) -> Optional[Dict[str, Feature]]:
@@ -358,7 +360,10 @@ class PyTorchOnnxDictConverter(DataConverter):
 
     @staticmethod
     def validate(model_info: ModelInfo) -> bool:
-        return model_info.data_type == InputDataType.DICT.value and model_info.model_type == OnnxModelType.PYTORCH
+        return model_info.data_type == InputDataType.DICT.value and model_info.model_type in [
+            OnnxModelType.PYTORCH,
+            OnnxModelType.TRANSFORMER,
+        ]
 
 
 class OnnxDataConverter:

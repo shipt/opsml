@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, cast, Dict, Tuple
 
 import os
 import sys
@@ -17,8 +17,8 @@ from opsml.projects.mlflow import MlflowProject, ProjectInfo, MlflowActiveRun
 from opsml.projects import OpsmlProject, ProjectInfo
 from opsml.helpers.logging import ArtifactLogger
 from tests import conftest
-
 import matplotlib
+import torch
 
 matplotlib.use("Agg")
 
@@ -37,6 +37,7 @@ def test_read_only(mlflow_project: MlflowProject, sklearn_pipeline: tuple[pipeli
         run.log_metric(key="m1", value=1.1)
         run.log_metric(key="mape", value=2, step=1)
         run.log_metric(key="mape", value=2, step=2)
+        run.log_metrics({"mse": 10, "rmse": 20}, step=10)
         run.log_parameter(key="m1", value="apple")
         model, data = sklearn_pipeline
         data_card = DataCard(
@@ -59,7 +60,7 @@ def test_read_only(mlflow_project: MlflowProject, sklearn_pipeline: tuple[pipeli
 
     # Retrieve the run and load projects without making the run active (read only mode)
     proj = conftest.mock_mlflow_project(info)
-    assert len(proj.metrics) == 2
+    assert len(proj.metrics) == 4
 
     assert proj.get_metric("m1").value == 1.1
     assert len(proj.parameters) == 1
@@ -313,23 +314,24 @@ def test_pytorch_model(
 @pytest.mark.skipif(sys.platform == "darwin", reason="Not supported on apple silicon")
 def test_tf_model(
     mlflow_project: MlflowProject,
-    load_transformer_example: tuple[Any, NDArray],
+    load_multi_input_keras_example: tuple[Any, Dict[str, NDArray]],
 ):
     # another run (pytorch)
     info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
     with mlflow_project.run() as run:
-        model, data = load_transformer_example
+        model, data = load_multi_input_keras_example
+
         data_card = DataCard(
-            data=data,
-            name="transformer_data",
+            data=data["title"],
+            name="sample_input",
             team="mlops",
             user_email="mlops.com",
         )
         run.register_card(card=data_card)
         model_card = ModelCard(
             trained_model=model,
-            sample_input_data=data[0:1],
-            name="transformer_model",
+            sample_input_data=data,
+            name="multi_model",
             team="mlops",
             user_email="mlops.com",
             datacard_uid=data_card.uid,
@@ -342,3 +344,66 @@ def test_tf_model(
         info=CardInfo(uid=model_card.uid),
     )
     loaded_card.load_trained_model()
+
+
+@pytest.mark.large
+def test_register_large_model_run(
+    mlflow_project: MlflowProject,
+    huggingface_whisper: Tuple[Any, Dict[str, np.ndarray]],
+) -> None:
+    with mlflow_project.run() as run:
+        """An example of saving a large, pretrained model to opsml using mlflow"""
+        model, data = huggingface_whisper
+
+        data_card = DataCard(
+            data=data,
+            name="dummy-data",
+            team="mlops",
+            user_email="test@mlops.com",
+        )
+
+        run.register_card(data_card)
+
+        model_card = ModelCard(
+            trained_model=model,
+            sample_input_data=data,
+            name="whisper-small",
+            team="mlops",
+            user_email="test@mlops.com",
+            tags={"id": "model1"},
+            datacard_uid=data_card.uid,
+            to_onnx=False,  # onnx conversion fails w/ this model - not sure why
+        )
+
+        run.register_card(model_card)
+
+
+@pytest.mark.large
+def test_register_transformer_model_run(
+    mlflow_project: MlflowProject,
+    huggingface_vit: Tuple[Any, Dict[str, torch.Tensor]],
+) -> None:
+    with mlflow_project.run() as run:
+        """An example of saving a large, pretrained model to opsml using mlflow"""
+        model, data = huggingface_vit
+
+        data_card = DataCard(
+            data=data["pixel_values"].numpy(),
+            name="dummy-data",
+            team="mlops",
+            user_email="test@mlops.com",
+        )
+
+        run.register_card(data_card)
+
+        model_card = ModelCard(
+            trained_model=model,
+            sample_input_data={"pixel_values": data["pixel_values"].numpy()},
+            name="vit",
+            team="mlops",
+            user_email="test@mlops.com",
+            tags={"id": "model1"},
+            datacard_uid=data_card.uid,
+        )
+
+        run.register_card(model_card)
