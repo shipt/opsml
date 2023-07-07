@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 
-from opsml.registry.cards.cards import ArtifactCard, PipelineCard
+from opsml.registry.cards import ArtifactCard, PipelineCard
 from opsml.registry.cards.types import (
     NON_PIPELINE_CARDS,
     CardType,
@@ -183,12 +183,12 @@ class DependencyParser:
 
 class PipelineLoader:
     def __init__(self, pipelinecard_uid: str):
-        """Loads all cards assoicated with a PipelineCard.
+        """Loads all cards associated with a PipelineCard.
 
         Args:
             pipelinecard_uid (str) Uid of a PipelineCard
         """
-        self.pipline_card = self._load_pipeline_card(uid=pipelinecard_uid)
+        self.pipeline_card = self._load_pipeline_card(uid=pipelinecard_uid)
         self._card_deck: Dict[str, List[ArtifactCard]] = {}
 
     def _load_pipeline_card(self, uid: str) -> PipelineCard:
@@ -197,14 +197,13 @@ class PipelineLoader:
         return cast(PipelineCard, loaded_card)
 
     def _load_cards(self, cards: Dict[str, str], card_type: str):
-
         card_list = [self._registries[card_type].load_card(uid=card_uid) for card_uid in cards]
 
         self._card_deck[card_type] = card_list
 
     def load_cards(self):
         for card_type in NON_PIPELINE_CARDS:
-            cards = getattr(self.pipline_card, f"{card_type}card_uids")
+            cards = getattr(self.pipeline_card, f"{card_type}card_uids")
             if bool(cards):
                 self._load_cards(cards=cards, card_type=card_type)
 
@@ -215,7 +214,7 @@ class PipelineLoader:
         card_uids = cast(Dict[str, Dict[str, str]], {})
 
         for card_type in NON_PIPELINE_CARDS:
-            cards = getattr(self.pipline_card, f"{card_type}card_uids")
+            cards = getattr(self.pipeline_card, f"{card_type}card_uids")
             if bool(cards):
                 card_uids[card_type] = cards
 
@@ -237,7 +236,7 @@ class PipelineLoader:
 
         viz = Visualizer(
             relationships=depen_parser.card_dependencies,
-            pipeline_card_name=self.pipline_card.name,
+            pipeline_card_name=self.pipeline_card.name,
         )
 
         return viz
@@ -248,7 +247,7 @@ class PipelineLoader:
         if save:
             viz.graph().render(
                 cleanup=True,
-                filename=self.pipline_card.name,
+                filename=self.pipeline_card.name,
                 format="png",
             )
         return viz.graph()

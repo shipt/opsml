@@ -78,6 +78,7 @@ class CardType(str, Enum):
     MODELCARD = "model"
     PIPELINECARD = "pipeline"
     PROJECTCARD = "project"
+    AUDITCARD = "audit"
 
 
 class PipelineCardArgs(str, Enum):

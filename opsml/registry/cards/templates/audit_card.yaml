@@ -1,4 +1,4 @@
-business understanding:
+business_understanding:
   - question: What business objectives does the product owner pursue?
     purpose:
       "\n- Identify the purposes for which the product owner intends to use the\
@@ -114,7 +114,7 @@ business understanding:
 
 
 
-data understanding:
+data_understanding:
   - purpose: "
       - Learn more about the input data and output data of the application.
       "
@@ -189,7 +189,7 @@ data understanding:
     question: "How do you ensure data security? "
     response: 
 
-data preparation:
+data_preparation:
   - purpose:
       "\n- Possible shortcomings include:\n--- lacking values, \n--- erroneous\
       \ entries, \n--- inaccurate entries (transposed letters etc.),\n--- lacking datasets,\
@@ -280,7 +280,7 @@ data preparation:
     question: "How do you manage the data? "
     response: 
 
-modelling:
+modeling:
   - purpose:
       "\nMethods may include but are not limited to: \nFrequent pattern mining:\
       \ association mining, correlation mining\nClassification: decision trees, Bayes\
@@ -419,7 +419,7 @@ evaluation:
       the intended purposes?
     response: 
 
-deployment and operation:
+deployment_ops:
   - purpose: "- Learn more about whether the model is static or dynamic."
     question:
       At what intervals is the model updated  (e.g. to reflect current training

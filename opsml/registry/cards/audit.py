@@ -1,12 +1,18 @@
 # pylint: disable=too-many-lines
-
+import os
 from typing import Optional, List
 import yaml
-from pydantic import validator, BaseModel
+from pydantic import validator, BaseModel, root_validator
 
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
+import yaml
+
+
+DIR_PATH = os.path.dirname(__file__)
+AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
+
 
 class Question:
     def __init__(self, purpose: str, question: str):
@@ -52,16 +58,13 @@ class AuditCard:
         for section_name, section in self.sections.items():
             data[section_name] = {
                 "questions": [
-                    {
-                        "purpose": question.purpose,
-                        "question": question.question,
-                        "response": question.response
-                    }
+                    {"purpose": question.purpose, "question": question.question, "response": question.response}
                     for question in section.questions
                 ]
             }
         with open(filename, "w") as file:
             yaml.dump(data, file)
+
 
 if __name__ == "__main__":
     audit_card = AuditCard()
@@ -80,10 +83,66 @@ if __name__ == "__main__":
     audit_card.to_yaml("opsml/registry/cards/templates/audit_responses.yaml")
 
 
-# class Question(BaseModel):
-#     question: str
-#     purpose: str
-#     response: Optional[str] = None
+# create new python class that inherits from ArtifactCard and is called AuditCard
+
+
+class Question(BaseModel):
+    question: str
+    purpose: str
+    response: Optional[str] = None
+
+    class Config:
+        allow_mutation = True
+
+
+class AuditSections(BaseModel):
+    business_understanding: List[Question]
+    data_understanding: List[Question]
+    data_preparation: List[Question]
+    modeling: List[Question]
+    evaluation: List[Question]
+    deployment_ops: List[Question]
+    misc: List[Question]
+
+    @root_validator(pre=True)
+    def load_sections(cls, values):
+        """Loads sections from template"""
+
+        with open(AUDIT_TEMPLATE_PATH, "r") as stream:
+            try:
+                audit_sections = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                raise exc
+        return audit_sections
+
+
+class AuditCard(ArtifactCard):
+    """
+    Card containing audit information
+    """
+
+    audit: AuditSections
+
+    @validator("audit", pre=True, always=True)
+    def validate_audit(cls, audit: Optional[AuditSections] = None):
+        if audit is None:
+            return AuditSections()
+        return audit
+
+    def create_registry_record(self) -> RegistryRecord:
+        """Creates a registry record for a project"""
+
+        return ProjectRegistryRecord(**self.dict())
+
+    @property
+    def card_type(self) -> str:
+        return CardType.AUDITCARD.value
+
+
+class Question(BaseModel):
+    question: str
+    purpose: str
+    response: Optional[str] = None
 
 
 # class BaseAudit:
@@ -163,4 +222,3 @@ if __name__ == "__main__":
 
 #     def score(self):
 #         "Audit score"
-
