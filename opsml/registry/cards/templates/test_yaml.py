@@ -7,9 +7,9 @@ with open("opsml/registry/cards/templates/audit_card.yaml", "r") as stream:
         print(exc)
 
 
-from opsml.registry.cards.audit import AuditSections
+from opsml.registry.cards.audit import AuditCard
 
 
-audit = AuditSections()
+audit_card = AuditCard(name="model-audit", team="ds", user_email="test")
 
-print(audit.business_understanding[0].question)
+print(audit_card.audit.business_understanding[0].question)

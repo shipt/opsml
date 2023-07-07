@@ -3,7 +3,9 @@ import os
 from typing import Optional, List
 import yaml
 from pydantic import validator, BaseModel, root_validator
-
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
@@ -106,7 +108,7 @@ class AuditSections(BaseModel):
 
     @root_validator(pre=True)
     def load_sections(cls, values):
-        """Loads sections from template"""
+        """Loads audit sections from template"""
 
         with open(AUDIT_TEMPLATE_PATH, "r") as stream:
             try:
@@ -121,13 +123,7 @@ class AuditCard(ArtifactCard):
     Card containing audit information
     """
 
-    audit: AuditSections
-
-    @validator("audit", pre=True, always=True)
-    def validate_audit(cls, audit: Optional[AuditSections] = None):
-        if audit is None:
-            return AuditSections()
-        return audit
+    audit: AuditSections = AuditSections()
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a project"""
@@ -137,12 +133,29 @@ class AuditCard(ArtifactCard):
     @property
     def card_type(self) -> str:
         return CardType.AUDITCARD.value
+    
+    # create a function that lists questions by section and number and displays them in a rich table
+    
+    def list_questions(self):
+    
+        console = Console()
+        table = Table(title=f"{registry_name} cards")
+        table.add_column("Section", no_wrap=True)
+        table.add_column("Number")
+        table.add_column("Question", justify="right")
+        
+        for section in self.audit:
+            
+        
+    
+    def answer_question(self, section: str, question: str, response: str):
+        """Answers a question in a section"""
 
-
-class Question(BaseModel):
-    question: str
-    purpose: str
-    response: Optional[str] = None
+        for q in self.audit[section]:
+            if q.question == question:
+                q.response = response
+                return
+        raise ValueError(f"Question {question} not found in section {section}")
 
 
 # class BaseAudit:
