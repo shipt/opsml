@@ -17,7 +17,9 @@ def get_timestamp():
     return int(round(time.time() * 1_000_000))
 
 
-class SaveRecord(BaseModel):
+class SaveCard(BaseModel):
+    """Base class for all save records"""
+
     name: str
     team: str
     user_email: str
@@ -29,7 +31,7 @@ class SaveRecord(BaseModel):
         smart_union = True
 
 
-class DataRegistryRecord(SaveRecord):
+class DataRegistryRecord(SaveCard):
     data_uri: Optional[str]
     data_type: Optional[str]
     timestamp: int = get_timestamp()
@@ -46,7 +48,7 @@ class DataRegistryRecord(SaveRecord):
         return values
 
 
-class ModelRegistryRecord(SaveRecord):
+class ModelRegistryRecord(SaveCard):
     modelcard_uri: str
     datacard_uid: str
     trained_model_uri: str
@@ -69,7 +71,7 @@ class ModelRegistryRecord(SaveRecord):
         return values
 
 
-class RunRegistryRecord(SaveRecord):
+class RunRegistryRecord(SaveCard):
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
     pipelinecard_uid: Optional[str]
@@ -80,7 +82,7 @@ class RunRegistryRecord(SaveRecord):
     runcard_uri: str
 
 
-class PipelineRegistryRecord(SaveRecord):
+class PipelineRegistryRecord(SaveCard):
     pipeline_code_uri: Optional[str]
     datacard_uids: List[str]
     modelcard_uids: List[str]
@@ -98,7 +100,7 @@ class ProjectRegistryRecord(BaseModel):
     timestamp: int = get_timestamp()
 
 
-class AuditRegistryRecord(SaveRecord):
+class AuditRegistryRecord(SaveCard):
     audit_uri: str
     datacard_uids: List[str]
     modelcard_uids: List[str]
@@ -116,7 +118,7 @@ RegistryRecord = Union[
 ]
 
 
-class LoadRecord(BaseModel):
+class LoadCard(BaseModel):
     version: str
     name: str
     team: str
@@ -135,7 +137,7 @@ class LoadRecord(BaseModel):
         raise NotImplementedError
 
 
-class LoadedDataRecord(LoadRecord):
+class LoadedDataRecord(LoadCard):
     uris: DataCardUris
     data_type: Optional[str]
     feature_map: Optional[Dict[str, str]]
@@ -208,7 +210,7 @@ class LoadedDataRecord(LoadRecord):
         return table_name == RegistryTableNames.DATA
 
 
-class LoadedModelRecord(LoadRecord):
+class LoadedModelRecord(LoadCard):
     datacard_uid: str
     sample_data_type: str
     model_type: str
@@ -263,7 +265,7 @@ class LoadedModelRecord(LoadRecord):
         return table_name == RegistryTableNames.MODEL
 
 
-class LoadedRunRecord(LoadRecord):
+class LoadedRunRecord(LoadCard):
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
     pipelinecard_uid: Optional[str]
@@ -317,7 +319,7 @@ class LoadedRunRecord(LoadRecord):
 
 
 # same as piplelineregistry (duplicating to stay with theme of separate records)
-class LoadedPipelineRecord(LoadRecord):
+class LoadedPipelineRecord(LoadCard):
     pipeline_code_uri: Optional[str]
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
@@ -328,7 +330,7 @@ class LoadedPipelineRecord(LoadRecord):
         return table_name == RegistryTableNames.PIPELINE
 
 
-class LoadedAuditRecord(LoadRecord):
+class LoadedAuditRecord(LoadCard):
     audit_uri: str
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
@@ -355,7 +357,7 @@ def load_record(
 ) -> LoadedRecordType:
     record = next(
         record
-        for record in LoadRecord.__subclasses__()
+        for record in LoadCard.__subclasses__()
         if record.validate_table(
             table_name=table_name,
         )
