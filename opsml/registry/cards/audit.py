@@ -1,4 +1,6 @@
+# mypy: disable-error-code="call-arg"
 # pylint: disable=too-many-lines
+
 import os
 from typing import Dict, Optional
 
@@ -109,7 +111,7 @@ class AuditSections(BaseModel):
     def load_sections(cls, values):
         """Loads audit sections from template"""
 
-        with open(AUDIT_TEMPLATE_PATH, "r") as stream:
+        with open(AUDIT_TEMPLATE_PATH, "r", encoding="utf-8") as stream:
             try:
                 audit_sections = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -131,7 +133,7 @@ class AuditQuestionTable:
         table.add_column("Answered", justify="right")
         return table
 
-    def add_row(self, section_name: str, nbr: str, question: Question):
+    def add_row(self, section_name: str, nbr: int, question: Question):
         self.table.add_row(
             section_name,
             str(nbr),
@@ -205,7 +207,8 @@ class AuditCard(ArtifactCard):
 
         Args:
             section:
-                Section name. Can be one of: business, data_understanding, data_preparation, modeling, evaluation or misc
+                Section name. Can be one of: business, data_understanding, data_preparation, modeling,
+                evaluation or misc
         """
 
         table = AuditQuestionTable()
@@ -216,8 +219,8 @@ class AuditCard(ArtifactCard):
                 table.add_row(section_name=section, nbr=nbr, question=question)
 
         else:
-            for section in self.audit:
-                section_name, questions = section
+            for _section in self.audit:
+                section_name, questions = _section
                 for nbr, question in questions.items():
                     table.add_row(section_name=section_name, nbr=nbr, question=question)
 
@@ -230,18 +233,19 @@ class AuditCard(ArtifactCard):
 
         Args:
             section:
-                Section name. Can be one of: business, data_understanding, data_preparation, modeling, evaluation or misc
+                Section name. Can be one of: business, data_understanding, data_preparation, modeling,
+                evaluation or misc
         Returns:
             Dict[int, Question]: A dictionary of questions
         """
 
-        section = getattr(self, section, None)
-        if section is None:
+        if not hasattr(self, section):
             raise ValueError(
                 f"""Section {section} not found. Accepted values are: business, data_understanding,
                 data_preparation, modeling, evaluation, deployment or misc"""
             )
-        return section
+        _section: Dict[int, Question] = getattr(self, section)
+        return _section
 
     def answer_question(self, section: str, question_nbr: int, response: str) -> None:
         """Answers a question in a section
@@ -257,10 +261,10 @@ class AuditCard(ArtifactCard):
 
         """
 
-        section = self._get_section(section)
+        _section: Dict[int, Question] = self._get_section(section)
 
         try:
-            section[question_nbr].response = response
+            _section[question_nbr].response = response
         except KeyError as exc:
-            logger.error(f"Question {question_nbr} not found in section {section}")
+            logger.error("Question %s not found in section %s", question_nbr, section)
             raise exc
