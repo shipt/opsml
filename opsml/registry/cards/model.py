@@ -13,12 +13,12 @@ from opsml.model.predictor import OnnxModelPredictor
 from opsml.model.types import (
     ApiDataSchemas,
     DataDict,
+    ExtraOnnxArgs,
     Feature,
+    InputDataType,
     ModelMetadata,
     ModelReturn,
-    InputDataType,
     OnnxModelDefinition,
-    ExtraOnnxArgs,
 )
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType, ModelCardUris

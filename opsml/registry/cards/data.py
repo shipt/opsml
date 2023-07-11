@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Dict, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd

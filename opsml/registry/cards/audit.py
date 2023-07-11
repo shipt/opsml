@@ -1,16 +1,16 @@
 # pylint: disable=too-many-lines
 import os
-from typing import Optional, List, Dict
+from typing import Dict, Optional
+
 import yaml
-from pydantic import validator, BaseModel, root_validator
+from pydantic import BaseModel, root_validator
 from rich.console import Console
 from rich.table import Table
-from rich.text import Text
+
+from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
-from opsml.helpers.logging import ArtifactLogger
-import yaml
 
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
@@ -239,7 +239,7 @@ class AuditCard(ArtifactCard):
         if section is None:
             raise ValueError(
                 f"""Section {section} not found. Accepted values are: business, data_understanding, 
-                    data_preparation, modeling, evaluation, deployment or misc"""
+                data_preparation, modeling, evaluation, deployment or misc"""
             )
         return section
 
