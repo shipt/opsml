@@ -169,31 +169,31 @@ class AuditCard(ArtifactCard):
         return ProjectRegistryRecord(**self.dict())
 
     @property
-    def business(self) -> List[Question]:
+    def business(self) -> Dict[int, Question]:
         return self.audit.business_understanding
 
     @property
-    def data_understanding(self) -> List[Question]:
+    def data_understanding(self) -> Dict[int, Question]:
         return self.audit.data_understanding
 
     @property
-    def data_preparation(self) -> List[Question]:
+    def data_preparation(self) -> Dict[int, Question]:
         return self.audit.data_preparation
 
     @property
-    def modeling(self) -> List[Question]:
+    def modeling(self) -> Dict[int, Question]:
         return self.audit.modeling
 
     @property
-    def evaluation(self) -> List[Question]:
+    def evaluation(self) -> Dict[int, Question]:
         return self.audit.evaluation
 
     @property
-    def deployment(self) -> List[Question]:
+    def deployment(self) -> Dict[int, Question]:
         return self.audit.deployment_ops
 
     @property
-    def misc(self) -> List[Question]:
+    def misc(self) -> Dict[int, Question]:
         return self.audit.misc
 
     @property
@@ -211,7 +211,7 @@ class AuditCard(ArtifactCard):
         table = AuditQuestionTable()
 
         if section is not None:
-            section = self._get_section(section)
+            questions = self._get_section(section)
             for nbr, question in questions.items():
                 table.add_row(section_name=section, nbr=nbr, question=question)
 
@@ -261,6 +261,6 @@ class AuditCard(ArtifactCard):
 
         try:
             section[question_nbr].response = response
-        except IndexError as exc:
+        except KeyError as exc:
             logger.error(f"Question {question_nbr} not found in section {section}")
             raise exc
