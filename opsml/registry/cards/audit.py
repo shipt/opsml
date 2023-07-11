@@ -17,101 +17,73 @@ DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
 
 
-class Question:
-    def __init__(self, purpose: str, question: str):
-        self.purpose = purpose
-        self.question = question
-        self.response = None
-
-    def __repr__(self):
-        return f"Question(purpose={self.purpose}, question={self.question}, response={self.response})"
-
-
-class AuditSection:
-    def __init__(self, section_name: str):
-        self.section_name = section_name
-        self.questions = []
-
-    def add_question(self, purpose: str, question: str):
-        self.questions.append(Question(purpose, question))
-
-    def __repr__(self):
-        return f"AuditSection(section_name={self.section_name}, questions={self.questions})"
-
-
-class AuditCard:
-    def __init__(self):
-        self.sections = {}
-
-    def add_section(self, section_name: str):
-        self.sections[section_name] = AuditSection(section_name)
-
-    def add_question_to_section(self, section_name: str, purpose: str, question: str):
-        if section_name not in self.sections:
-            self.add_section(section_name)
-        self.sections[section_name].add_question(purpose, question)
-
-    def collect_responses(self):
-        for section in self.sections.values():
-            for question in section.questions:
-                question.response = input(f"Question: {question.question} \n Purpose: {question.purpose}: \n")
-
-    def to_yaml(self, filename: str):
-        data = {}
-        for section_name, section in self.sections.items():
-            data[section_name] = {
-                "questions": [
-                    {"purpose": question.purpose, "question": question.question, "response": question.response}
-                    for question in section.questions
-                ]
-            }
-        with open(filename, "w") as file:
-            yaml.dump(data, file)
-
-
-if __name__ == "__main__":
-    audit_card = AuditCard()
-
-    # Load the YAML file and populate the AuditCard
-    with open("opsml/registry/cards/templates/audit.yaml") as file:
-        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
-        for section_name, section_data in yaml_data.items():
-            for question_data in section_data:
-                audit_card.add_question_to_section(section_name, question_data["purpose"], question_data["question"])
-
-    # Collect user responses
-    audit_card.collect_responses()
-
-    # Output the audit report as YAML file
-    audit_card.to_yaml("opsml/registry/cards/templates/audit_responses.yaml")
-
-
-class AuditQuestionTable:
-    def __init__(self) -> None:
-        self.table = self.create_table()
-
-    def create_table(self):
-        table = Table(title="Audit Questions")
-        table.add_column("Section", no_wrap=True)
-        table.add_column("Number")
-        table.add_column("Question")
-        table.add_column("Answered", justify="right")
-        return table
-
-    def add_row(self, section_name: str, nbr: str, question: Question):
-        self.table.add_row(
-            section_name,
-            str(nbr),
-            question.question,
-            "Yes" if question.response else "No",
-        )
-
-    def add_section(self):
-        self.table.add_section()
-
-    def print_table(self):
-        console = Console()
-        console.print(self.table)
+# class Question:
+#    def __init__(self, purpose: str, question: str):
+#        self.purpose = purpose
+#        self.question = question
+#        self.response = None
+#
+#    def __repr__(self):
+#        return f"Question(purpose={self.purpose}, question={self.question}, response={self.response})"
+#
+#
+# class AuditSection:
+#    def __init__(self, section_name: str):
+#        self.section_name = section_name
+#        self.questions = []
+#
+#    def add_question(self, purpose: str, question: str):
+#        self.questions.append(Question(purpose, question))
+#
+#    def __repr__(self):
+#        return f"AuditSection(section_name={self.section_name}, questions={self.questions})"
+#
+#
+# class AuditCard:
+#    def __init__(self):
+#        self.sections = {}
+#
+#    def add_section(self, section_name: str):
+#        self.sections[section_name] = AuditSection(section_name)
+#
+#    def add_question_to_section(self, section_name: str, purpose: str, question: str):
+#        if section_name not in self.sections:
+#            self.add_section(section_name)
+#        self.sections[section_name].add_question(purpose, question)
+#
+#    def collect_responses(self):
+#        for section in self.sections.values():
+#            for question in section.questions:
+#                question.response = input(f"Question: {question.question} \n Purpose: {question.purpose}: \n")
+#
+#    def to_yaml(self, filename: str):
+#        data = {}
+#        for section_name, section in self.sections.items():
+#            data[section_name] = {
+#                "questions": [
+#                    {"purpose": question.purpose, "question": question.question, "response": question.response}
+#                    for question in section.questions
+#                ]
+#            }
+#        with open(filename, "w") as file:
+#            yaml.dump(data, file)
+#
+#
+# if __name__ == "__main__":
+#    audit_card = AuditCard()
+#
+#    # Load the YAML file and populate the AuditCard
+#    with open("opsml/registry/cards/templates/audit.yaml") as file:
+#        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
+#        for section_name, section_data in yaml_data.items():
+#            for question_data in section_data:
+#                audit_card.add_question_to_section(section_name, question_data["purpose"], question_data["question"])
+#
+#    # Collect user responses
+#    audit_card.collect_responses()
+#
+#    # Output the audit report as YAML file
+#    audit_card.to_yaml("opsml/registry/cards/templates/audit_responses.yaml")
 
 
 # create new python class that inherits from ArtifactCard and is called AuditCard
@@ -145,9 +117,48 @@ class AuditSections(BaseModel):
         return audit_sections
 
 
+class AuditQuestionTable:
+    """Helper class for creating a rich table to be used with an AuditCard"""
+
+    def __init__(self) -> None:
+        self.table = self.create_table()
+
+    def create_table(self):
+        table = Table(title="Audit Questions")
+        table.add_column("Section", no_wrap=True)
+        table.add_column("Number")
+        table.add_column("Question")
+        table.add_column("Answered", justify="right")
+        return table
+
+    def add_row(self, section_name: str, nbr: str, question: Question):
+        self.table.add_row(
+            section_name,
+            str(nbr),
+            question.question,
+            "Yes" if question.response else "No",
+        )
+
+    def add_section(self):
+        self.table.add_section()
+
+    def print_table(self):
+        console = Console()
+        console.print(self.table)
+
+
 class AuditCard(ArtifactCard):
     """
-    Card containing audit information
+    Creates an AuditCard for storing audit-related information about a
+    machine learning project.
+
+    Args:
+        name:
+            What to name the AuditCard
+        team:
+            Team that this card is associated with
+        user_email:
+            Email to associate with the AuditCard
     """
 
     audit: AuditSections = AuditSections()
