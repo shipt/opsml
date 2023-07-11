@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 import os
-from typing import Optional, List
+from typing import Optional, List, Dict
 import yaml
 from pydantic import validator, BaseModel, root_validator
 from rich.console import Console
@@ -9,9 +9,10 @@ from rich.text import Text
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
+from opsml.helpers.logging import ArtifactLogger
 import yaml
 
-
+logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
 
@@ -85,9 +86,35 @@ if __name__ == "__main__":
     audit_card.to_yaml("opsml/registry/cards/templates/audit_responses.yaml")
 
 
+class AuditQuestionTable:
+    def __init__(self) -> None:
+        self.table = self.create_table()
+
+    def create_table(self):
+        table = Table(title="Audit Questions")
+        table.add_column("Section", no_wrap=True)
+        table.add_column("Number")
+        table.add_column("Question")
+        table.add_column("Answered", justify="right")
+        return table
+
+    def add_row(self, section_name: str, nbr: str, question: Question):
+        self.table.add_row(
+            section_name,
+            str(nbr),
+            question.question,
+            "Yes" if question.response else "No",
+        )
+
+    def add_section(self):
+        self.table.add_section()
+
+    def print_table(self):
+        console = Console()
+        console.print(self.table)
+
+
 # create new python class that inherits from ArtifactCard and is called AuditCard
-
-
 class Question(BaseModel):
     question: str
     purpose: str
@@ -98,13 +125,13 @@ class Question(BaseModel):
 
 
 class AuditSections(BaseModel):
-    business_understanding: List[Question]
-    data_understanding: List[Question]
-    data_preparation: List[Question]
-    modeling: List[Question]
-    evaluation: List[Question]
-    deployment_ops: List[Question]
-    misc: List[Question]
+    business_understanding: Dict[int, Question]
+    data_understanding: Dict[int, Question]
+    data_preparation: Dict[int, Question]
+    modeling: Dict[int, Question]
+    evaluation: Dict[int, Question]
+    deployment_ops: Dict[int, Question]
+    misc: Dict[int, Question]
 
     @root_validator(pre=True)
     def load_sections(cls, values):
@@ -131,107 +158,98 @@ class AuditCard(ArtifactCard):
         return ProjectRegistryRecord(**self.dict())
 
     @property
+    def business(self) -> List[Question]:
+        return self.audit.business_understanding
+
+    @property
+    def data_understanding(self) -> List[Question]:
+        return self.audit.data_understanding
+
+    @property
+    def data_preparation(self) -> List[Question]:
+        return self.audit.data_preparation
+
+    @property
+    def modeling(self) -> List[Question]:
+        return self.audit.modeling
+
+    @property
+    def evaluation(self) -> List[Question]:
+        return self.audit.evaluation
+
+    @property
+    def deployment(self) -> List[Question]:
+        return self.audit.deployment_ops
+
+    @property
+    def misc(self) -> List[Question]:
+        return self.audit.misc
+
+    @property
     def card_type(self) -> str:
         return CardType.AUDITCARD.value
-    
-    # create a function that lists questions by section and number and displays them in a rich table
-    
-    def list_questions(self):
-    
-        console = Console()
-        table = Table(title=f"{registry_name} cards")
-        table.add_column("Section", no_wrap=True)
-        table.add_column("Number")
-        table.add_column("Question", justify="right")
-        
-        for section in self.audit:
-            
-        
-    
-    def answer_question(self, section: str, question: str, response: str):
-        """Answers a question in a section"""
 
-        for q in self.audit[section]:
-            if q.question == question:
-                q.response = response
-                return
-        raise ValueError(f"Question {question} not found in section {section}")
+    def list_questions(self, section: Optional[str] = None) -> None:
+        """Lists all Audit Card questions in a rich table
 
+        Args:
+            section:
+                Section name. Can be one of: business, data_understanding, data_preparation, modeling, evaluation or misc
+        """
 
-# class BaseAudit:
-#     questions: List[Question]
+        table = AuditQuestionTable()
 
+        if section is not None:
+            section = self._get_section(section)
+            for nbr, question in questions.items():
+                table.add_row(section_name=section, nbr=nbr, question=question)
 
-# class DataUnderstanding(BaseAudit):
-#     pass
+        else:
+            for section in self.audit:
+                section_name, questions = section
+                for nbr, question in questions.items():
+                    table.add_row(section_name=section_name, nbr=nbr, question=question)
 
+                table.add_section()
 
-# class DataPreparation(BaseAudit):
-#     pass
+        table.print_table()
 
+    def _get_section(self, section: str) -> Dict[int, Question]:
+        """Gets a section from the audit card
 
-# class DataAudit(BaseModel):
-#     understanding: DataUnderstanding
-#     preparation: DataPreparation
+        Args:
+            section:
+                Section name. Can be one of: business, data_understanding, data_preparation, modeling, evaluation or misc
+        Returns:
+            Dict[int, Question]: A dictionary of questions
+        """
 
+        section = getattr(self, section, None)
+        if section is None:
+            raise ValueError(
+                f"""Section {section} not found. Accepted values are: business, data_understanding, 
+                    data_preparation, modeling, evaluation, deployment or misc"""
+            )
+        return section
 
-# class ModelAudit(BaseAudit):
-#     pass
+    def answer_question(self, section: str, question_nbr: int, response: str) -> None:
+        """Answers a question in a section
 
+        Args:
+            section:
+                Section name. Can be one of: business, data_understanding, data_preparation, modeling, evaluation,
+                deployment or misc
+            question_nbr:
+                Question number
+            response:
+                Response to the question
 
-# class EvaluationAudit(BaseAudit):
-#     pass
+        """
 
+        section = self._get_section(section)
 
-# class DeploymentAudit(BaseAudit):
-#     pass
-
-
-# class AuditCard(ArtifactCard):
-#     """
-#     Card containing audit information
-#     """
-
-#     data: DataAudit
-#     model: ModelAudit
-#     evaluation: EvaluationAudit
-#     deployment: DeploymentAudit
-
-#     def load(self):
-#         """Load section questions from templates
-
-#         Maybe make templates with yaml?
-
-#         i.e.:
-
-#         data:
-#             understanding:
-#                 - Question
-#                   Purpose
-#                   Response
-#                 - Question
-#                   Purpose
-#                   Response
-#             preparation:
-#                 - Question
-#                   Purpose
-#                   Response
-#                 - Question
-#                   Purpose
-#                   Response
-#         model:
-#             - Question
-#               Purpose
-#               Response
-#         evaluation:
-#             - Question
-#               Purpose
-#               Response
-#         deployment:
-#             - Question
-#               Purpose
-#               Response
-#         """
-
-#     def score(self):
-#         "Audit score"
+        try:
+            section[question_nbr].response = response
+        except IndexError as exc:
+            logger.error(f"Question {question_nbr} not found in section {section}")
+            raise exc
