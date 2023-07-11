@@ -23,6 +23,7 @@ class RegistryTableNames(str, Enum):
     RUN = os.getenv("ML_RUN_REGISTRY_NAME", "OPSML_RUN_REGISTRY")
     PIPELINE = os.getenv("ML_PIPELINE_REGISTRY_NAME", "OPSML_PIPELINE_REGISTRY")
     PROJECT = os.getenv("ML_PROJECT_REGISTRY_NAME", "OPSML_PROJECT_REGISTRY")
+    AUDIT = os.getenv("ML_AUDIT_REGISTRY_NAME", "OPSML_AUDIT_REGISTRY")
 
 
 @declarative_mixin
@@ -126,12 +127,28 @@ class ProjectSchema(Base):
     timestamp = Column("timestamp", BigInteger)
 
 
+@declarative_mixin
+class AuditMixin:
+    audit_card_uri = Column("audit_card_uri", String(2048))
+    datacard_uids = Column("datacard_uids", JSON)
+    modelcard_uids = Column("modelcard_uids", JSON)
+    runcard_uids = Column("runcard_uids", JSON)
+
+
+class AuditSchema(Base, BaseMixin, AuditMixin):  # type: ignore
+    __tablename__ = RegistryTableNames.AUDIT.value
+
+    def __repr__(self):
+        return f"<SqlMetric({self.__tablename__}"
+
+
 REGISTRY_TABLES = Union[  # pylint: disable=invalid-name
     DataSchema,
     ModelSchema,
     RunSchema,
     PipelineSchema,
     ProjectSchema,
+    AuditSchema,
 ]
 
 
