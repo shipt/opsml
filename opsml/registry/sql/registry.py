@@ -325,8 +325,9 @@ class CardRegistries:
         self.run = CardRegistry(registry_name=CardType.RUNCARD.value)
         self.pipeline = CardRegistry(registry_name=CardType.PIPELINECARD.value)
         self.project = CardRegistry(registry_name=CardType.PROJECTCARD.value)
+        self.audit = CardRegistry(registry_name=CardType.AUDITCARD.value)
 
     def set_storage_client(self, storage_client: StorageClientType):
-        for attr in ["data", "model", "run", "project", "pipeline"]:
+        for attr in ["data", "model", "run", "project", "pipeline", "audit"]:
             registry: CardRegistry = getattr(self, attr)
             registry._registry.storage_client = storage_client
