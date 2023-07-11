@@ -334,15 +334,15 @@ class LoadedPipelineRecord(LoadCard):
 class LoadedAuditRecord(LoadCard):
     audit_uri: str
     approved: bool
-    datacard_uids: Optional[List[str]]
-    modelcard_uids: Optional[List[str]]
-    runcard_uids: Optional[List[str]]
+    datacard_uids: List[str]
+    modelcard_uids: List[str]
+    runcard_uids: List[str]
 
     @root_validator(pre=True)
     def load_audit_attr(cls, values) -> Dict[str, Any]:
         storage_client = cast(StorageClientType, values["storage_client"])
 
-        values["audit"] = cls._load_audit_artifact(
+        values["audit"] = cls._load_audit(
             audit_uri=values.get("audit_uri"),
             storage_client=storage_client,
         )
@@ -350,7 +350,7 @@ class LoadedAuditRecord(LoadCard):
         return values
 
     @classmethod
-    def _load_audit_artifact(
+    def _load_audit(
         cls,
         audit_uri: str,
         storage_client: StorageClientType,
@@ -379,7 +379,7 @@ class LoadedAuditRecord(LoadCard):
 
     @staticmethod
     def validate_table(table_name: str) -> bool:
-        return table_name == RegistryTableNames.PIPELINE
+        return table_name == RegistryTableNames.AUDIT
 
 
 LoadedRecordType = Union[

@@ -171,9 +171,9 @@ class AuditCard(ArtifactCard):
 
     audit: AuditSections = AuditSections()
     audit_uri: Optional[str] = None
-    datacard_uids: Optional[List[str]] = None
-    modelcard_uids: Optional[List[str]] = None
-    runcard_uids: Optional[List[str]] = None
+    datacard_uids: List[str] = []
+    modelcard_uids: List[str] = []
+    runcard_uids: List[str] = []
     approved: bool = False
 
     def create_registry_record(self) -> RegistryRecord:
