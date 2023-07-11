@@ -98,12 +98,21 @@ class ProjectRegistryRecord(BaseModel):
     timestamp: int = get_timestamp()
 
 
+class AuditRegistryRecord(SaveRecord):
+    audit_uri: str
+    datacard_uids: List[str]
+    modelcard_uids: List[str]
+    runcard_uids: List[str]
+    timestamp: int = get_timestamp()
+
+
 RegistryRecord = Union[
     DataRegistryRecord,
     ModelRegistryRecord,
     RunRegistryRecord,
     PipelineRegistryRecord,
     ProjectRegistryRecord,
+    AuditRegistryRecord,
 ]
 
 
@@ -286,7 +295,7 @@ class LoadedRunRecord(LoadRecord):
         runcard_uri: str,
         storage_client: StorageClientType,
     ) -> Dict[str, Any]:
-        """Loads a model card definition from current attributes
+        """Loads a runcard definition from current attributes
 
         Returns:
             Dictionary to be parsed by RunCard.parse_obj()
@@ -319,11 +328,23 @@ class LoadedPipelineRecord(LoadRecord):
         return table_name == RegistryTableNames.PIPELINE
 
 
+class LoadedAuditRecord(LoadRecord):
+    audit_uri: str
+    datacard_uids: Optional[List[str]]
+    modelcard_uids: Optional[List[str]]
+    runcard_uids: Optional[List[str]]
+
+    @staticmethod
+    def validate_table(table_name: str) -> bool:
+        return table_name == RegistryTableNames.PIPELINE
+
+
 LoadedRecordType = Union[
     LoadedPipelineRecord,
     LoadedDataRecord,
     LoadedRunRecord,
     LoadedModelRecord,
+    LoadedAuditRecord,
 ]
 
 
