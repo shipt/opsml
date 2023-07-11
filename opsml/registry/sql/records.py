@@ -101,6 +101,7 @@ class ProjectRegistryRecord(BaseModel):
 
 
 class AuditRegistryRecord(SaveCard):
+    approved: bool
     audit_uri: str
     datacard_uids: List[str]
     modelcard_uids: List[str]
@@ -332,9 +333,49 @@ class LoadedPipelineRecord(LoadCard):
 
 class LoadedAuditRecord(LoadCard):
     audit_uri: str
+    approved: bool
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
     runcard_uids: Optional[List[str]]
+
+    @root_validator(pre=True)
+    def load_audit_attr(cls, values) -> Dict[str, Any]:
+        storage_client = cast(StorageClientType, values["storage_client"])
+
+        values["audit"] = cls._load_audit_artifact(
+            audit_uri=values.get("audit_uri"),
+            storage_client=storage_client,
+        )
+
+        return values
+
+    @classmethod
+    def _load_audit_artifact(
+        cls,
+        audit_uri: str,
+        storage_client: StorageClientType,
+    ) -> Dict[str, Any]:
+        """Loads a audit artifact from an audit uri
+
+        Args:
+            audit_uri:
+                URI to audit artifact
+            storage_client:
+                Storage client to use for loading
+
+        Returns:
+            Audit dictionary
+        """
+
+        storage_spec = ArtifactStorageSpecs(save_path=audit_uri)
+
+        storage_client.storage_spec = storage_spec
+        audit_definition = load_record_artifact_from_storage(
+            storage_client=storage_client,
+            artifact_type=ARBITRARY_ARTIFACT_TYPE,
+        )
+
+        return audit_definition
 
     @staticmethod
     def validate_table(table_name: str) -> bool:

@@ -2,7 +2,7 @@
 # pylint: disable=too-many-lines
 
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import yaml
 from pydantic import BaseModel, root_validator
@@ -161,9 +161,20 @@ class AuditCard(ArtifactCard):
             Team that this card is associated with
         user_email:
             Email to associate with the AuditCard
+        audit:
+            AuditSections object containing the audit questions and responses
+        audit_uri:
+            URI to the audit report
+        approved:
+            Whether the audit has been approved
     """
 
     audit: AuditSections = AuditSections()
+    audit_uri: Optional[str] = None
+    datacard_uids: Optional[List[str]] = None
+    modelcard_uids: Optional[List[str]] = None
+    runcard_uids: Optional[List[str]] = None
+    approved: bool = False
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a project"""

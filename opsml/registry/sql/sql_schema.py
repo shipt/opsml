@@ -4,7 +4,7 @@ import uuid
 from enum import Enum
 from typing import Type, Union, cast
 
-from sqlalchemy import BigInteger, Column, String
+from sqlalchemy import BigInteger, Column, String, Boolean
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_mixin, validates  # type: ignore
@@ -129,6 +129,7 @@ class ProjectSchema(Base):
 
 @declarative_mixin
 class AuditMixin:
+    approved = Column("approved", Boolean)
     audit_uri = Column("audit_uri", String(2048))
     datacard_uids = Column("datacard_uids", JSON)
     modelcard_uids = Column("modelcard_uids", JSON)
