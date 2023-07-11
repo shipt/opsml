@@ -100,6 +100,12 @@ class ProjectCardRegistry(Registry):  # type:ignore
         return registry_name in RegistryTableNames.PROJECT
 
 
+class AuditCardRegistry(Registry):  # type:ignore
+    @staticmethod
+    def validate(registry_name: str):
+        return registry_name in RegistryTableNames.AUDIT
+
+
 # CardRegistry also needs to set a storage file system
 class CardRegistry:
     def __init__(self, registry_name: str):
