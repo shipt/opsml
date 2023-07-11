@@ -129,7 +129,7 @@ class ProjectSchema(Base):
 
 @declarative_mixin
 class AuditMixin:
-    audit_card_uri = Column("audit_card_uri", String(2048))
+    auditcard_uri = Column("auditcard_uri", String(2048))
     datacard_uids = Column("datacard_uids", JSON)
     modelcard_uids = Column("modelcard_uids", JSON)
     runcard_uids = Column("runcard_uids", JSON)
