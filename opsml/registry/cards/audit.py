@@ -238,7 +238,7 @@ class AuditCard(ArtifactCard):
         section = getattr(self, section, None)
         if section is None:
             raise ValueError(
-                f"""Section {section} not found. Accepted values are: business, data_understanding, 
+                f"""Section {section} not found. Accepted values are: business, data_understanding,
                 data_preparation, modeling, evaluation, deployment or misc"""
             )
         return section
