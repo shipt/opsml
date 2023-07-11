@@ -138,7 +138,7 @@ class LoadCard(BaseModel):
         raise NotImplementedError
 
 
-class LoadedDataRecord(LoadCard):
+class LoadedDataCard(LoadCard):
     uris: DataCardUris
     data_type: Optional[str]
     feature_map: Optional[Dict[str, str]]
@@ -157,14 +157,14 @@ class LoadedDataRecord(LoadCard):
             storage_client=storage_client,
         )
 
-        # values["data_splits"] = LoadedDataRecord.get_splits(splits=values["data_splits"])
+        # values["data_splits"] = LoadedDataCard.get_splits(splits=values["data_splits"])
         datacard_definition["storage_client"] = storage_client
         datacard_definition["uris"].datacard_uri = values.get("datacard_uri")
 
         if datacard_definition["uris"].profile_uri is not None:
             profile_uri = datacard_definition["uris"].profile_uri
 
-            datacard_definition["data_profile"] = LoadedDataRecord.load_data_profile(
+            datacard_definition["data_profile"] = LoadedDataCard.load_data_profile(
                 data_profile_uri=profile_uri,
                 storage_client=storage_client,
             )
@@ -211,7 +211,7 @@ class LoadedDataRecord(LoadCard):
         return table_name == RegistryTableNames.DATA
 
 
-class LoadedModelRecord(LoadCard):
+class LoadedModelCard(LoadCard):
     datacard_uid: str
     sample_data_type: str
     model_type: str
@@ -266,7 +266,7 @@ class LoadedModelRecord(LoadCard):
         return table_name == RegistryTableNames.MODEL
 
 
-class LoadedRunRecord(LoadCard):
+class LoadedRunCard(LoadCard):
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
     pipelinecard_uid: Optional[str]
@@ -320,7 +320,7 @@ class LoadedRunRecord(LoadCard):
 
 
 # same as piplelineregistry (duplicating to stay with theme of separate records)
-class LoadedPipelineRecord(LoadCard):
+class LoadedPipelineCard(LoadCard):
     pipeline_code_uri: Optional[str]
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
@@ -331,7 +331,7 @@ class LoadedPipelineRecord(LoadCard):
         return table_name == RegistryTableNames.PIPELINE
 
 
-class LoadedAuditRecord(LoadCard):
+class LoadedAuditCard(LoadCard):
     audit_uri: str
     approved: bool
     datacard_uids: List[str]
@@ -383,11 +383,11 @@ class LoadedAuditRecord(LoadCard):
 
 
 LoadedRecordType = Union[
-    LoadedPipelineRecord,
-    LoadedDataRecord,
-    LoadedRunRecord,
-    LoadedModelRecord,
-    LoadedAuditRecord,
+    LoadedPipelineCard,
+    LoadedDataCard,
+    LoadedRunCard,
+    LoadedModelCard,
+    LoadedAuditCard,
 ]
 
 
