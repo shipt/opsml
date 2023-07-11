@@ -6,7 +6,7 @@ from pydantic import validator
 
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
-from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
+from opsml.registry.sql.records import ProjectRegistryCard, RegistryCard
 
 
 class ProjectCard(ArtifactCard):
@@ -20,10 +20,10 @@ class ProjectCard(ArtifactCard):
     def create_project_id(cls, value, values, **kwargs):
         return f'{values["name"]}:{values["team"]}'
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record for a project"""
 
-        return ProjectRegistryRecord(**self.dict())
+        return ProjectRegistryCard(**self.dict())
 
     @property
     def card_type(self) -> str:

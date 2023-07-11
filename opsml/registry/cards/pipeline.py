@@ -5,7 +5,7 @@ from typing import List, Optional
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
-from opsml.registry.sql.records import PipelineRegistryRecord, RegistryRecord
+from opsml.registry.sql.records import PipelineRegistryCard, RegistryCard
 from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -63,9 +63,9 @@ class PipelineCard(ArtifactCard):
     def load_pipeline_code(self):
         raise NotImplementedError
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record from the current PipelineCard"""
-        return PipelineRegistryRecord(**self.dict())
+        return PipelineRegistryCard(**self.dict())
 
     @property
     def card_type(self) -> str:

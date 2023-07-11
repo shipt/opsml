@@ -1,8 +1,12 @@
-from opsml.registry import AuditCard
+from typing import Dict
+from opsml.registry import AuditCard, CardRegistry
 import pytest
 
 
-def test_audit_card():
+def test_audit_card(
+    db_registries: Dict[str, CardRegistry],
+):
+    audit_registry = db_registries["audit"]
     card = AuditCard(name="audit_card", team="team", user_email="test")
 
     assert card.business[1].response is None
@@ -16,6 +20,8 @@ def test_audit_card():
     card.list_questions(section="business")
 
     assert card.card_type == "audit"
+
+    audit_registry.register_card(card=card)
 
 
 def test_audit_card_failure():

@@ -8,8 +8,8 @@ from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import METRICS, PARAMS, CardType, Metric, Param
 from opsml.registry.sql.records import (
     ARBITRARY_ARTIFACT_TYPE,
-    RegistryRecord,
-    RunRegistryRecord,
+    RegistryCard,
+    RunRegistryCard,
 )
 from opsml.registry.sql.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
@@ -186,12 +186,12 @@ class RunCard(ArtifactCard):
         self.artifacts = {**new_artifact, **curr_artifacts}
         setattr(self, "artifacts", {**new_artifact, **self.artifacts})
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record from the current RunCard"""
 
         exclude_attr = {"artifacts", "params", "metrics"}
 
-        return RunRegistryRecord(**self.dict(exclude=exclude_attr))
+        return RunRegistryCard(**self.dict(exclude=exclude_attr))
 
     def add_artifact_uri(self, name: str, uri: str):
         """

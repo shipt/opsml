@@ -12,7 +12,7 @@ from rich.table import Table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
-from opsml.registry.sql.records import ProjectRegistryRecord, RegistryRecord
+from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
@@ -176,10 +176,10 @@ class AuditCard(ArtifactCard):
     runcard_uids: List[str] = []
     approved: bool = False
 
-    def create_registry_record(self) -> RegistryRecord:
-        """Creates a registry record for a project"""
+    def create_registry_record(self) -> RegistryCard:
+        """Creates a registry record for a audit"""
 
-        return ProjectRegistryRecord(**self.dict())
+        return AuditRegistryCard(**self.dict())
 
     @property
     def business(self) -> Dict[int, Question]:

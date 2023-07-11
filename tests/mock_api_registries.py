@@ -11,10 +11,10 @@ from opsml.registry.cards import (
     PipelineCard,
 )
 from opsml.registry.sql.records import (
-    DataRegistryRecord,
-    RunRegistryRecord,
-    PipelineRegistryRecord,
-    ModelRegistryRecord,
+    DataRegistryCard,
+    RunRegistryCard,
+    PipelineRegistryCard,
+    ModelRegistryCard,
 )
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.registry_base import ClientRegistry, SQLRegistryBase, VersionType
@@ -42,7 +42,7 @@ class DataCardRegistry(Registry):
             None
         """
 
-        record = DataRegistryRecord(**card.dict())
+        record = DataRegistryCard(**card.dict())
         self.update_card_record(card=record.dict())
 
     @staticmethod

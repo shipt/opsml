@@ -8,7 +8,7 @@ from pydantic import BaseModel, root_validator
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import clean_string, validate_name_team_pattern
 from opsml.registry.cards.types import CardInfo
-from opsml.registry.sql.records import RegistryRecord
+from opsml.registry.sql.records import RegistryCard
 from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -57,7 +57,7 @@ class ArtifactCard(BaseModel):
 
         return env_vars
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record from self attributes"""
         raise NotImplementedError
 

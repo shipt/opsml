@@ -22,7 +22,7 @@ from opsml.model.types import (
 )
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType, ModelCardUris
-from opsml.registry.sql.records import ModelRegistryRecord, RegistryRecord
+from opsml.registry.sql.records import ModelRegistryCard, RegistryCard
 from opsml.registry.sql.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs, ArtifactStorageType
@@ -234,11 +234,11 @@ class ModelCard(ArtifactCard):
 
         setattr(self, "onnx_model_def", model_def)
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record from the current ModelCard"""
 
         exclude_vars = {"trained_model", "sample_input_data", "onnx_model_def"}
-        return ModelRegistryRecord(**self.dict(exclude=exclude_vars))
+        return ModelRegistryCard(**self.dict(exclude=exclude_vars))
 
     def _set_version_for_predictor(self) -> str:
         if self.version is None:

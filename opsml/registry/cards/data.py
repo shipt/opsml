@@ -14,7 +14,7 @@ from opsml.profile.profile_data import DataProfiler, ProfileReport
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType, DataCardUris
 from opsml.registry.data.splitter import DataHolder, DataSplit, DataSplitter
-from opsml.registry.sql.records import DataRegistryRecord, RegistryRecord
+from opsml.registry.sql.records import DataRegistryCard, RegistryCard
 from opsml.registry.sql.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs
@@ -207,7 +207,7 @@ class DataCard(ArtifactCard):
         else:
             logger.info("Data has already been loaded")
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """
         Creates required metadata for registering the current data card.
         Implemented with a DataRegistry object.
@@ -217,7 +217,7 @@ class DataCard(ArtifactCard):
 
         """
         exclude_attr = {"data"}
-        return DataRegistryRecord(**self.dict(exclude=exclude_attr))
+        return DataRegistryCard(**self.dict(exclude=exclude_attr))
 
     def add_info(self, info: Dict[str, Union[float, int, str]]) -> None:
         """

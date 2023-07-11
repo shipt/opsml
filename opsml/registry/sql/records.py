@@ -31,7 +31,7 @@ class SaveCard(BaseModel):
         smart_union = True
 
 
-class DataRegistryRecord(SaveCard):
+class DataRegistryCard(SaveCard):
     data_uri: Optional[str]
     data_type: Optional[str]
     timestamp: int = get_timestamp()
@@ -48,7 +48,7 @@ class DataRegistryRecord(SaveCard):
         return values
 
 
-class ModelRegistryRecord(SaveCard):
+class ModelRegistryCard(SaveCard):
     modelcard_uri: str
     datacard_uid: str
     trained_model_uri: str
@@ -71,7 +71,7 @@ class ModelRegistryRecord(SaveCard):
         return values
 
 
-class RunRegistryRecord(SaveCard):
+class RunRegistryCard(SaveCard):
     datacard_uids: Optional[List[str]]
     modelcard_uids: Optional[List[str]]
     pipelinecard_uid: Optional[str]
@@ -82,7 +82,7 @@ class RunRegistryRecord(SaveCard):
     runcard_uri: str
 
 
-class PipelineRegistryRecord(SaveCard):
+class PipelineRegistryCard(SaveCard):
     pipeline_code_uri: Optional[str]
     datacard_uids: List[str]
     modelcard_uids: List[str]
@@ -90,7 +90,7 @@ class PipelineRegistryRecord(SaveCard):
     timestamp: int = get_timestamp()
 
 
-class ProjectRegistryRecord(BaseModel):
+class ProjectRegistryCard(BaseModel):
     uid: str
     name: str
     team: str
@@ -100,7 +100,7 @@ class ProjectRegistryRecord(BaseModel):
     timestamp: int = get_timestamp()
 
 
-class AuditRegistryRecord(SaveCard):
+class AuditRegistryCard(SaveCard):
     approved: bool
     audit_uri: str
     datacard_uids: List[str]
@@ -109,13 +109,13 @@ class AuditRegistryRecord(SaveCard):
     timestamp: int = get_timestamp()
 
 
-RegistryRecord = Union[
-    DataRegistryRecord,
-    ModelRegistryRecord,
-    RunRegistryRecord,
-    PipelineRegistryRecord,
-    ProjectRegistryRecord,
-    AuditRegistryRecord,
+RegistryCard = Union[
+    DataRegistryCard,
+    ModelRegistryCard,
+    RunRegistryCard,
+    PipelineRegistryCard,
+    ProjectRegistryCard,
+    AuditRegistryCard,
 ]
 
 

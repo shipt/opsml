@@ -454,7 +454,7 @@ class AuditCardArtifactSaver(CardArtifactSaver):
             storage_client=self.storage_client,
         )
 
-        self.card.uris.modelcard_uri = storage_path.uri
+        self.card.audit_uri = storage_path.uri
 
     def save_artifacts(self) -> ArtifactCard:
         self._save_audit()
