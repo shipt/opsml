@@ -181,6 +181,24 @@ class AuditCard(ArtifactCard):
 
         return AuditRegistryCard(**self.dict())
 
+    def add_card_uid(self, card_type: str, uid: str) -> None:
+        """
+        Adds a card uid to the appropriate card uid list for tracking
+
+        Args:
+            card_type:
+                ArtifactCard class name
+            uid:
+                Uid of registered ArtifactCard
+        """
+
+        if card_type == CardType.DATACARD:
+            self.datacard_uids = [uid, *self.datacard_uids]
+        elif card_type == CardType.MODELCARD:
+            self.modelcard_uids = [uid, *self.modelcard_uids]
+        elif card_type == CardType.RUN:
+            self.runcard_uids = [uid, *self.runcard_uids]
+
     @property
     def business(self) -> Dict[int, Question]:
         return self.audit.business_understanding
