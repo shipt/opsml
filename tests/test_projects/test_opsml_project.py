@@ -5,7 +5,7 @@ import pytest
 from sklearn import pipeline
 
 import numpy as np
-from opsml.registry import DataCard, ModelCard
+from opsml.registry import DataCard, ModelCard, AuditCard
 from opsml.registry.cards.types import CardInfo
 from opsml.projects.base._active_run import ActiveRun
 from opsml.projects import OpsmlProject, ProjectInfo
@@ -51,6 +51,12 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         info.run_id = run.run_id
 
         assert data_card.runcard_uid == run.run_id
+
+        auditcard = AuditCard(name="audit_card", team="team", user_email="test")
+        auditcard.add_card_uid(card_type="data", uid=data_card.uid)
+        auditcard.add_card_uid(card_type="model", uid=model_card.uid)
+        auditcard.add_card_uid(card_type="run", uid=run.run_id)
+        run.register_card(card=auditcard)
 
     # Retrieve the run and load projects without making the run active (read only mode)
     proj = conftest.mock_opsml_project(info)

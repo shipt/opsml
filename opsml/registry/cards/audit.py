@@ -212,10 +212,10 @@ class AuditCard(ArtifactCard):
                 self.modelcard_uids = [uid, *self.modelcard_uids]
                 return  # Exit early
 
-        elif card_type == CardType.RUN:
-            if audit_registry.validate_uid(uid, RegistryTableNames.RUN.value):
-                self.runcard_uids = [uid, *self.runcard_uids]
-                return  # Exit early
+        elif card_type == CardType.RUNCARD:
+            # RunCard does not get a validation because registration will occur at end of run
+            self.runcard_uids = [uid, *self.runcard_uids]
+            return  # Exit early
 
         raise ValueError(f"Invalid uid {uid} for {card_type}. Uid must be registered prior to adding to AuditCard.")
 
