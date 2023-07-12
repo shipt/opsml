@@ -2,7 +2,7 @@
 # pylint: disable=too-many-lines
 
 import os
-from typing import Dict, Optional, List, TypeVar
+from typing import Dict, List, Optional
 
 import yaml
 from pydantic import BaseModel, root_validator
@@ -14,13 +14,9 @@ from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 
-
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
-
-
-AuditCard = TypeVar("AuditCard")
 
 # class Question:
 #    def __init__(self, purpose: str, question: str):
@@ -184,9 +180,6 @@ class AuditCard(ArtifactCard):
 
         return AuditRegistryCard(**self.dict())
 
-    def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
-        raise ValueError("AuditCard cannot be added to another AuditCard")
-
     def add_card_uid(self, card_type: str, uid: str) -> None:
         """
         Adds a card uid to the appropriate card uid list for tracking
@@ -197,8 +190,12 @@ class AuditCard(ArtifactCard):
             uid:
                 Uid of registered ArtifactCard
         """
-        from opsml.registry.sql.sql_schema import RegistryTableNames
-        from opsml.registry.sql.registry import AuditCardRegistry
+        from opsml.registry.sql.registry import (
+            AuditCardRegistry,  # pylint: disable=cyclic-import
+        )
+        from opsml.registry.sql.sql_schema import (
+            RegistryTableNames,  # pylint: disable=cyclic-import
+        )
 
         audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)
 

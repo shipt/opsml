@@ -7,7 +7,7 @@ from pydantic import BaseModel, root_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import clean_string, validate_name_team_pattern
-from opsml.registry.cards.types import CardInfo
+from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.records import RegistryCard
 from opsml.registry.sql.settings import settings
 
@@ -79,20 +79,25 @@ class ArtifactCard(BaseModel):
         Args:
             auditcard:
                 Optional AuditCard to add card uid to
-            uid:
+            auditcard_uid:
                 Optional uid of AuditCard to add card uid to
 
         """
+
+        if self.card_type == CardType.AUDITCARD:
+            raise ValueError("add_to_auditcard is not implemented for AuditCard")
 
         if self.uid is None:
             raise ValueError("Card must be registered before adding to auditcard")
 
         if auditcard_uid is not None:
-            from opsml.registry.sql.registry import CardRegistry
+            from opsml.registry.sql.registry import (
+                CardRegistry,  # pylint: disable=cyclic-import
+            )
 
             audit_registry = CardRegistry(registry_name="audit")
-            card: AuditCard = audit_registry.load_card(uid=auditcard_uid)
-            card.add_card_uid(card_type=self.card_type, uid=self.uid)
+            card = audit_registry.load_card(uid=auditcard_uid)
+            card.add_card_uid(card_type=self.card_type, uid=self.uid)  # type: ignore
             return audit_registry.update_card(card=card)
 
         if auditcard is not None:

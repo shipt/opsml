@@ -3,7 +3,6 @@ from typing import Any, List
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy import inspect
 
 from opsml.helpers.logging import ArtifactLogger
