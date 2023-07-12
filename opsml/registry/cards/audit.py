@@ -190,11 +190,11 @@ class AuditCard(ArtifactCard):
             uid:
                 Uid of registered ArtifactCard
         """
-        from opsml.registry.sql.registry import (
-            AuditCardRegistry,  # pylint: disable=cyclic-import
+        from opsml.registry.sql.registry import (  # pylint: disable=cyclic-import
+            AuditCardRegistry,
         )
-        from opsml.registry.sql.sql_schema import (
-            RegistryTableNames,  # pylint: disable=cyclic-import
+        from opsml.registry.sql.sql_schema import (  # pylint: disable=cyclic-import
+            RegistryTableNames,
         )
 
         audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)

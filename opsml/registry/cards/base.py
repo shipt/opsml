@@ -91,8 +91,8 @@ class ArtifactCard(BaseModel):
             raise ValueError("Card must be registered before adding to auditcard")
 
         if auditcard_uid is not None:
-            from opsml.registry.sql.registry import (
-                CardRegistry,  # pylint: disable=cyclic-import
+            from opsml.registry.sql.registry import (  # pylint: disable=cyclic-import
+                CardRegistry,
             )
 
             audit_registry = CardRegistry(registry_name="audit")
