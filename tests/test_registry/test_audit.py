@@ -78,3 +78,7 @@ def test_audit_card_add_uids(
             name="model_card", team="team", user_email="test", trained_model=reg, sample_input_data=data
         )
         modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
+
+    # need to raise other errors
+    with pytest.raises(ValueError):
+        auditcard.add_card_uid(uid="not_a_uid", card_type="data")
