@@ -2,7 +2,7 @@
 # pylint: disable=too-many-lines
 
 import os
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, TypeVar
 
 import yaml
 from pydantic import BaseModel, root_validator
@@ -14,10 +14,13 @@ from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 
+
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
 
+
+AuditCard = TypeVar("AuditCard")
 
 # class Question:
 #    def __init__(self, purpose: str, question: str):
@@ -181,6 +184,9 @@ class AuditCard(ArtifactCard):
 
         return AuditRegistryCard(**self.dict())
 
+    def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
+        raise ValueError("AuditCard cannot be added to another AuditCard")
+
     def add_card_uid(self, card_type: str, uid: str) -> None:
         """
         Adds a card uid to the appropriate card uid list for tracking
@@ -191,13 +197,27 @@ class AuditCard(ArtifactCard):
             uid:
                 Uid of registered ArtifactCard
         """
+        from opsml.registry.sql.sql_schema import RegistryTableNames
+        from opsml.registry.sql.registry import AuditCardRegistry
+
+        audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)
 
         if card_type == CardType.DATACARD:
-            self.datacard_uids = [uid, *self.datacard_uids]
+            if audit_registry.validate_uid(uid, RegistryTableNames.DATA.value):
+                self.datacard_uids = [uid, *self.datacard_uids]
+                return  # Exit early
+
         elif card_type == CardType.MODELCARD:
-            self.modelcard_uids = [uid, *self.modelcard_uids]
+            if audit_registry.validate_uid(uid, RegistryTableNames.MODEL.value):
+                self.modelcard_uids = [uid, *self.modelcard_uids]
+                return  # Exit early
+
         elif card_type == CardType.RUN:
-            self.runcard_uids = [uid, *self.runcard_uids]
+            if audit_registry.validate_uid(uid, RegistryTableNames.RUN.value):
+                self.runcard_uids = [uid, *self.runcard_uids]
+                return  # Exit early
+
+        raise ValueError(f"Invalid uid {uid} for {card_type}. Uid must be registered prior to adding to AuditCard.")
 
     @property
     def business(self) -> Dict[int, Question]:

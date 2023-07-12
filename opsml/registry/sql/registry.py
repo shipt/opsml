@@ -1,10 +1,11 @@
 # pylint: disable=protected-access
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast, Protocol
 
 import pandas as pd
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 
 from opsml.helpers.logging import ArtifactLogger
+
 from opsml.registry.cards import ArtifactCard, ModelCard
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.registry_base import OpsmlRegistry, ServerRegistry, VersionType
@@ -13,8 +14,8 @@ from opsml.registry.storage.storage_system import StorageClientType
 
 logger = ArtifactLogger.get_logger(__name__)
 
-
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
+
 
 if TYPE_CHECKING:
     Registry = ServerRegistry
@@ -101,6 +102,9 @@ class ProjectCardRegistry(Registry):  # type:ignore
 
 
 class AuditCardRegistry(Registry):  # type:ignore
+    def validate_uid(self, uid: str, table_to_check: str) -> bool:
+        return self.check_uid(uid=uid, table_to_check=table_to_check)
+
     @staticmethod
     def validate(registry_name: str):
         return registry_name in RegistryTableNames.AUDIT

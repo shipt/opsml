@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Protocol
 
 from pydantic import BaseModel, root_validator
 
@@ -13,6 +13,15 @@ from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
 storage_client = settings.storage_client
+
+
+class AuditCard(Protocol):
+    @property
+    def uid(self):
+        ...
+
+    def add_card_uid(self, card_type: str, uid: str) -> None:
+        ...
 
 
 class ArtifactCard(BaseModel):
@@ -63,6 +72,33 @@ class ArtifactCard(BaseModel):
 
     def add_tag(self, key: str, value: str):
         self.tags[key] = str(value)
+
+    def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
+        """Add card uid to auditcard
+
+        Args:
+            auditcard:
+                Optional AuditCard to add card uid to
+            uid:
+                Optional uid of AuditCard to add card uid to
+
+        """
+
+        if self.uid is None:
+            raise ValueError("Card must be registered before adding to auditcard")
+
+        if auditcard_uid is not None:
+            from opsml.registry.sql.registry import CardRegistry
+
+            audit_registry = CardRegistry(registry_name="audit")
+            card: AuditCard = audit_registry.load_card(uid=auditcard_uid)
+            card.add_card_uid(card_type=self.card_type, uid=self.uid)
+            return audit_registry.update_card(card=card)
+
+        if auditcard is not None:
+            return auditcard.add_card_uid(card_type=self.card_type, uid=self.uid)
+
+        raise ValueError("Either auditcard or uid must be specified")
 
     @property
     def card_type(self) -> str:
