@@ -23,7 +23,7 @@ class DBInitializer:
         _inspect = inspect(self.engine)
         table_names = _inspect.get_table_names()
         registry_tables = self.registry_tables
-        return all(registry_table in table_names for registry_table in registry_tables)
+        return all(registry_table.value in table_names for registry_table in registry_tables)
 
     def create_tables(self):
         """Creates tables"""

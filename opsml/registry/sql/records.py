@@ -208,7 +208,7 @@ class LoadedDataCard(LoadCard):
 
     @staticmethod
     def validate_table(table_name: str) -> bool:
-        return table_name == RegistryTableNames.DATA
+        return table_name == RegistryTableNames.DATA.value
 
 
 class LoadedModelCard(LoadCard):
@@ -263,7 +263,7 @@ class LoadedModelCard(LoadCard):
 
     @staticmethod
     def validate_table(table_name: str) -> bool:
-        return table_name == RegistryTableNames.MODEL
+        return table_name == RegistryTableNames.MODEL.value
 
 
 class LoadedRunCard(LoadCard):
@@ -316,7 +316,7 @@ class LoadedRunCard(LoadCard):
 
     @staticmethod
     def validate_table(table_name: str) -> bool:
-        return table_name == RegistryTableNames.RUN
+        return table_name == RegistryTableNames.RUN.value
 
 
 # same as piplelineregistry (duplicating to stay with theme of separate records)
@@ -328,7 +328,7 @@ class LoadedPipelineCard(LoadCard):
 
     @staticmethod
     def validate_table(table_name: str) -> bool:
-        return table_name == RegistryTableNames.PIPELINE
+        return table_name == RegistryTableNames.PIPELINE.value
 
 
 class LoadedAuditCard(LoadCard):
