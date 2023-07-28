@@ -14,10 +14,14 @@ from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 
+from opsml.registry.cards.data import DataCard
+from opsml.registry.cards.model import ModelCard
+from opsml.registry.cards.run import RunCard
+
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
-AUDIT_TEMPLATE_HTML_PATH = "report.html"
+AUDIT_TEMPLATE_HTML_FILE = "templates/report-copy.html"
 
 
 # create new python class that inherits from ArtifactCard and is called AuditCard
@@ -119,7 +123,7 @@ class AuditCard(ArtifactCard):
 
         Args:
             card_type:
-                ArtifactCard class name
+                ArtifactCard class name. Can be "data", "model" or "run"
             uid:
                 Uid of registered ArtifactCard
         """
@@ -132,17 +136,17 @@ class AuditCard(ArtifactCard):
 
         audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)
 
-        if card_type == CardType.DATACARD:
+        if card_type.lower() == CardType.DATACARD:
             if audit_registry.validate_uid(uid, RegistryTableNames.DATA.value):
                 self.datacard_uids = [uid, *self.datacard_uids]
                 return  # Exit early
 
-        elif card_type == CardType.MODELCARD:
+        elif card_type.lower() == CardType.MODELCARD:
             if audit_registry.validate_uid(uid, RegistryTableNames.MODEL.value):
                 self.modelcard_uids = [uid, *self.modelcard_uids]
                 return  # Exit early
 
-        elif card_type == CardType.RUNCARD:
+        elif card_type.lower() == CardType.RUNCARD:
             # RunCard does not get a validation because registration will occur at end of run
             self.runcard_uids = [uid, *self.runcard_uids]
             return  # Exit early
@@ -254,8 +258,28 @@ class AuditCard(ArtifactCard):
         template_env = Environment(
             loader=FileSystemLoader(searchpath=DIR_PATH),
         )
-        template = template_env.get_template(template_file)
+        template = template_env.get_template(AUDIT_TEMPLATE_HTML_FILE)
 
     @property
     def card_type(self) -> str:
         return CardType.AUDITCARD.value
+
+
+def render_audit_template(models: List[ModelCard], data: List[DataCard], runs: List[RunCard]):
+    from jinja2 import FileSystemLoader, Environment
+
+    template_env = Environment(
+        loader=FileSystemLoader(searchpath=DIR_PATH),
+    )
+
+    template = template_env.get_template(AUDIT_TEMPLATE_HTML_FILE)
+
+    output_text = template.render(
+        zip=zip,
+        models=models,
+        data=data,
+        runs=runs,
+    )
+
+    with open("audit.html", "w") as f:
+        f.write(output_text)
