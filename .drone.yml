@@ -88,6 +88,68 @@ steps:
       - make publish
 
 ---
+name: publish-release-candidate-experimental
+kind: pipeline
+type: docker
+
+trigger:
+  branch:
+    - experimental
+  event:
+    - push
+
+steps:
+  - name: setup_310
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.10.10_poetry_1.4.0
+    commands:
+      - make setup.project
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
+
+  - name: py310
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.10.10_poetry_1.4.0
+    commands:
+      - make test.unit
+    depends_on:
+      - setup_310
+
+  - name: quality-checks
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.10.10_poetry_1.4.0
+    commands:
+      - make lints.ci
+    depends_on:
+      - setup_310
+
+  - name: code-analysis
+    image: plugins/sonarqube-drone-plugin
+    environment:
+      SONAR_HOST:
+        from_secret: SONAR_HOST
+      SONAR_TOKEN:
+        from_secret: SONAR_TOKEN
+      SONAR_SCANNER_FLAGS: -Dsonar.verbose=true
+    depends_on:
+      - py310
+      - quality-checks
+
+  - name: publish-release-candidate
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.10.10_poetry_1.4.0
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
+    depends_on:
+      - code-analysis
+    commands:
+      - make prep.pre.patch.exp
+      - make publish
+
+
+---
 name: publish-release-candidate
 kind: pipeline
 type: docker

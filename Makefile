@@ -73,7 +73,15 @@ poetry.sub.pre.tag:
 	$(eval REL_CANDIDATE = $(subst a0,rc.$(TS),$(VER)))
 	@sed -i "s/$(VER)/$(REL_CANDIDATE)/" pyproject.toml
 
+poetry.sub.pre.exp.tag:
+	$(eval VER = $(shell grep "^version =" pyproject.toml | tr -d '"' | sed "s/^version = //"))
+	$(eval TS = $(shell date +%s))
+	$(eval REL_CANDIDATE = $(subst a0,exp-rc.$(TS),$(VER)))
+	@sed -i "s/$(VER)/$(REL_CANDIDATE)/" pyproject.toml
+
 prep.pre.patch: poetry.pre.patch poetry.sub.pre.tag
+
+prep.pre.patch.exp: poetry.pre.patch poetry.sub.pre.exp.tag
 
 publish:
 	poetry config repositories.shipt-deploy https://artifactory.gcp.shipttech.com/artifactory/api/pypi/pypi-local

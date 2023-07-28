@@ -1836,33 +1836,33 @@ files = [
 
 [[package]]
 name = "jax"
-version = "0.4.13"
+version = "0.4.14"
 description = "Differentiate, compile, and transform Numpy code."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "jax-0.4.13.tar.gz", hash = "sha256:03bfe6749dfe647f16f15f6616638adae6c4a7ca7167c75c21961ecfd3a3baaa"},
+    {file = "jax-0.4.14.tar.gz", hash = "sha256:18fed3881f26e8b13c8cb46eeeea3dba9eb4d48e3714d8e8f2304dd6e237083d"},
 ]
 
 [package.dependencies]
 importlib_metadata = {version = ">=4.6", markers = "python_version < \"3.10\""}
-ml_dtypes = ">=0.1.0"
-numpy = ">=1.21"
+ml_dtypes = ">=0.2.0"
+numpy = ">=1.22"
 opt_einsum = "*"
 scipy = ">=1.7"
 
 [package.extras]
 australis = ["protobuf (>=3.13,<4)"]
-ci = ["jaxlib (==0.4.12)"]
-cpu = ["jaxlib (==0.4.13)"]
-cuda = ["jaxlib (==0.4.13+cuda11.cudnn86)"]
-cuda11-cudnn86 = ["jaxlib (==0.4.13+cuda11.cudnn86)"]
-cuda11-local = ["jaxlib (==0.4.13+cuda11.cudnn86)"]
-cuda11-pip = ["jaxlib (==0.4.13+cuda11.cudnn86)", "nvidia-cublas-cu11 (>=11.11)", "nvidia-cuda-cupti-cu11 (>=11.8)", "nvidia-cuda-nvcc-cu11 (>=11.8)", "nvidia-cuda-runtime-cu11 (>=11.8)", "nvidia-cudnn-cu11 (>=8.8)", "nvidia-cufft-cu11 (>=10.9)", "nvidia-cusolver-cu11 (>=11.4)", "nvidia-cusparse-cu11 (>=11.7)"]
-cuda12-local = ["jaxlib (==0.4.13+cuda12.cudnn89)"]
-cuda12-pip = ["jaxlib (==0.4.13+cuda12.cudnn89)", "nvidia-cublas-cu12", "nvidia-cuda-cupti-cu12", "nvidia-cuda-nvcc-cu12", "nvidia-cuda-runtime-cu12", "nvidia-cudnn-cu12 (>=8.9)", "nvidia-cufft-cu12", "nvidia-cusolver-cu12", "nvidia-cusparse-cu12"]
+ci = ["jaxlib (==0.4.13)"]
+cpu = ["jaxlib (==0.4.14)"]
+cuda = ["jaxlib (==0.4.14+cuda11.cudnn86)"]
+cuda11-cudnn86 = ["jaxlib (==0.4.14+cuda11.cudnn86)"]
+cuda11-local = ["jaxlib (==0.4.14+cuda11.cudnn86)"]
+cuda11-pip = ["jaxlib (==0.4.14+cuda11.cudnn86)", "nvidia-cublas-cu11 (>=11.11)", "nvidia-cuda-cupti-cu11 (>=11.8)", "nvidia-cuda-nvcc-cu11 (>=11.8)", "nvidia-cuda-runtime-cu11 (>=11.8)", "nvidia-cudnn-cu11 (>=8.8)", "nvidia-cufft-cu11 (>=10.9)", "nvidia-cusolver-cu11 (>=11.4)", "nvidia-cusparse-cu11 (>=11.7)"]
+cuda12-local = ["jaxlib (==0.4.14+cuda12.cudnn89)"]
+cuda12-pip = ["jaxlib (==0.4.14+cuda12.cudnn89)", "nvidia-cublas-cu12", "nvidia-cuda-cupti-cu12", "nvidia-cuda-nvcc-cu12", "nvidia-cuda-runtime-cu12", "nvidia-cudnn-cu12 (>=8.9)", "nvidia-cufft-cu12", "nvidia-cusolver-cu12", "nvidia-cusparse-cu12"]
 minimum-jaxlib = ["jaxlib (==0.4.11)"]
-tpu = ["jaxlib (==0.4.13)", "libtpu-nightly (==0.1.dev20230622)"]
+tpu = ["jaxlib (==0.4.14)", "libtpu-nightly (==0.1.dev20230727)"]
 
 [[package]]
 name = "jinja2"
@@ -2051,19 +2051,20 @@ testing = ["pytest"]
 
 [[package]]
 name = "markdown"
-version = "3.3.7"
-description = "Python implementation of Markdown."
+version = "3.4.4"
+description = "Python implementation of John Gruber's Markdown."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "Markdown-3.3.7-py3-none-any.whl", hash = "sha256:f5da449a6e1c989a4cea2631aa8ee67caa5a2ef855d551c88f9e309f4634c621"},
-    {file = "Markdown-3.3.7.tar.gz", hash = "sha256:cbb516f16218e643d8e0a95b309f77eb118cb138d39a4f27851e6a63581db874"},
+    {file = "Markdown-3.4.4-py3-none-any.whl", hash = "sha256:a4c1b65c0957b4bd9e7d86ddc7b3c9868fb9670660f6f99f6d1bca8954d5a941"},
+    {file = "Markdown-3.4.4.tar.gz", hash = "sha256:225c6123522495d4119a90b3a3ba31a1e87a70369e03f14799ea9c0d7183a3d6"},
 ]
 
 [package.dependencies]
 importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
 
 [package.extras]
+docs = ["mdx-gh-links (>=0.2)", "mkdocs (>=1.0)", "mkdocs-nature (>=0.4)"]
 testing = ["coverage", "pyyaml"]
 
 [[package]]
@@ -2235,13 +2236,13 @@ files = [
 
 [[package]]
 name = "mkdocs"
-version = "1.4.3"
+version = "1.5.1"
 description = "Project documentation with Markdown."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mkdocs-1.4.3-py3-none-any.whl", hash = "sha256:6ee46d309bda331aac915cd24aab882c179a933bd9e77b80ce7d2eaaa3f689dd"},
-    {file = "mkdocs-1.4.3.tar.gz", hash = "sha256:5955093bbd4dd2e9403c5afaf57324ad8b04f16886512a3ee6ef828956481c57"},
+    {file = "mkdocs-1.5.1-py3-none-any.whl", hash = "sha256:67e889f8d8ba1fe5decdfc59f5f8f21d6a8925a129339e93dede303bdea03a98"},
+    {file = "mkdocs-1.5.1.tar.gz", hash = "sha256:f2f323c62fffdf1b71b84849e39aef56d6852b3f0a5571552bca32cefc650209"},
 ]
 
 [package.dependencies]
@@ -2250,16 +2251,19 @@ colorama = {version = ">=0.4", markers = "platform_system == \"Windows\""}
 ghp-import = ">=1.0"
 importlib-metadata = {version = ">=4.3", markers = "python_version < \"3.10\""}
 jinja2 = ">=2.11.1"
-markdown = ">=3.2.1,<3.4"
+markdown = ">=3.2.1"
+markupsafe = ">=2.0.1"
 mergedeep = ">=1.3.4"
 packaging = ">=20.5"
+pathspec = ">=0.11.1"
+platformdirs = ">=2.2.0"
 pyyaml = ">=5.1"
 pyyaml-env-tag = ">=0.1"
 watchdog = ">=2.0"
 
 [package.extras]
 i18n = ["babel (>=2.9.0)"]
-min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4)", "ghp-import (==1.0)", "importlib-metadata (==4.3)", "jinja2 (==2.11.1)", "markdown (==3.2.1)", "markupsafe (==2.0.1)", "mergedeep (==1.3.4)", "packaging (==20.5)", "pyyaml (==5.1)", "pyyaml-env-tag (==0.1)", "typing-extensions (==3.10)", "watchdog (==2.0)"]
+min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4)", "ghp-import (==1.0)", "importlib-metadata (==4.3)", "jinja2 (==2.11.1)", "markdown (==3.2.1)", "markupsafe (==2.0.1)", "mergedeep (==1.3.4)", "packaging (==20.5)", "pathspec (==0.11.1)", "platformdirs (==2.2.0)", "pyyaml (==5.1)", "pyyaml-env-tag (==0.1)", "typing-extensions (==3.10)", "watchdog (==2.0)"]
 
 [[package]]
 name = "mkdocs-autorefs"
@@ -2278,20 +2282,20 @@ mkdocs = ">=1.1"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.1.19"
+version = "9.1.21"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mkdocs_material-9.1.19-py3-none-any.whl", hash = "sha256:fb0a149294b319aedf36983919d8c40c9e566db21ead16258e20ebd2e6c0961c"},
-    {file = "mkdocs_material-9.1.19.tar.gz", hash = "sha256:73b94b08c765e92a80645aac58d6a741fc5f587deec2b715489c714827b15a6f"},
+    {file = "mkdocs_material-9.1.21-py3-none-any.whl", hash = "sha256:58bb2f11ef240632e176d6f0f7d1cff06be1d11c696a5a1b553b808b4280ed47"},
+    {file = "mkdocs_material-9.1.21.tar.gz", hash = "sha256:71940cdfca84ab296b6362889c25395b1621273fb16c93deda257adb7ff44ec8"},
 ]
 
 [package.dependencies]
 colorama = ">=0.4"
 jinja2 = ">=3.0"
 markdown = ">=3.2"
-mkdocs = ">=1.4.2"
+mkdocs = ">=1.5.0"
 mkdocs-material-extensions = ">=1.1"
 pygments = ">=2.14"
 pymdown-extensions = ">=9.9.1"
@@ -3264,17 +3268,17 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "polars"
-version = "0.18.8"
+version = "0.18.9"
 description = "Blazingly fast DataFrame library"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "polars-0.18.8-cp38-abi3-macosx_10_7_x86_64.whl", hash = "sha256:b3c541b91dfc528ea5923b409c7dbe21902eeb6070bd3f4cc32e3bef9aced7df"},
-    {file = "polars-0.18.8-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:519212359f45e84fcca9e61d81ec1a1f04da4ad1539de2f0575ea287a33f7fab"},
-    {file = "polars-0.18.8-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0c8b91abd684c50cfb9f08311264e19e03a9a56e5fc152c760ff69d6a8998fbf"},
-    {file = "polars-0.18.8-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:61d61440b10355a1af1206ee8d9cae002ec2398c710603f5ce2c4b6732af31fc"},
-    {file = "polars-0.18.8-cp38-abi3-win_amd64.whl", hash = "sha256:0bc01d496b07093c92be17777c48d5ec6a741ffc723c55a992759c189f22e8b2"},
-    {file = "polars-0.18.8.tar.gz", hash = "sha256:283ca1357ef643b366bdfd0da2c9f31f252d1ce9a1b656eda3041cc9f83e0fa9"},
+    {file = "polars-0.18.9-cp38-abi3-macosx_10_7_x86_64.whl", hash = "sha256:d4e4d063beb6f5663ceaa53a12ab7b7a6052601e55e05b7bb2b21eac56aa369e"},
+    {file = "polars-0.18.9-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:e23b44c94bde9ea21e8d89b0539919a1d4e18a4f049b973d48ff289f2e3f1821"},
+    {file = "polars-0.18.9-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9830041ff128e61f61465c7eb7a75a5ff03d338436190cbed842662f0b09146b"},
+    {file = "polars-0.18.9-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:60ea395ba76aa06734939c55e9a54ace8a10048699ee26d1feef64c39b2fce2d"},
+    {file = "polars-0.18.9-cp38-abi3-win_amd64.whl", hash = "sha256:ad3d55c52cc8e48927b727e74bb9fe3235a38f02403f868dc2542c6408b5a1f7"},
+    {file = "polars-0.18.9.tar.gz", hash = "sha256:39a0684398f72ca12d76940a6b4cf52b2a62d73e84a239c300bae7a5bf0a2cf5"},
 ]
 
 [package.extras]
@@ -5153,6 +5157,17 @@ files = [
 ]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.11"
+description = "Typing stubs for PyYAML"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-PyYAML-6.0.12.11.tar.gz", hash = "sha256:7d340b19ca28cddfdba438ee638cd4084bde213e501a3978738543e27094775b"},
+    {file = "types_PyYAML-6.0.12.11-py3-none-any.whl", hash = "sha256:a461508f3096d1d5810ec5ab95d7eeecb651f3a15b71959999988942063bf01d"},
+]
+
+[[package]]
 name = "types-requests"
 version = "2.31.0.2"
 description = "Typing stubs for requests"
@@ -5733,4 +5748,4 @@ server = ["fastapi", "gunicorn", "prometheus-fastapi-instrumentator", "rollbar",
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<=3.11.2"
-content-hash = "985e966a96cb714beb16c0443bb6579f096ea0d30c53f274f847e1c4869f28bd"
+content-hash = "6b8e983d13e6b57ec3eaefbf75ef7e623fe5e81f2a57f7f9bcdcbec5db899817"

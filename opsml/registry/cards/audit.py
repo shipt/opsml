@@ -17,74 +17,7 @@ from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
-
-# class Question:
-#    def __init__(self, purpose: str, question: str):
-#        self.purpose = purpose
-#        self.question = question
-#        self.response = None
-#
-#    def __repr__(self):
-#        return f"Question(purpose={self.purpose}, question={self.question}, response={self.response})"
-#
-#
-# class AuditSection:
-#    def __init__(self, section_name: str):
-#        self.section_name = section_name
-#        self.questions = []
-#
-#    def add_question(self, purpose: str, question: str):
-#        self.questions.append(Question(purpose, question))
-#
-#    def __repr__(self):
-#        return f"AuditSection(section_name={self.section_name}, questions={self.questions})"
-#
-#
-# class AuditCard:
-#    def __init__(self):
-#        self.sections = {}
-#
-#    def add_section(self, section_name: str):
-#        self.sections[section_name] = AuditSection(section_name)
-#
-#    def add_question_to_section(self, section_name: str, purpose: str, question: str):
-#        if section_name not in self.sections:
-#            self.add_section(section_name)
-#        self.sections[section_name].add_question(purpose, question)
-#
-#    def collect_responses(self):
-#        for section in self.sections.values():
-#            for question in section.questions:
-#                question.response = input(f"Question: {question.question} \n Purpose: {question.purpose}: \n")
-#
-#    def to_yaml(self, filename: str):
-#        data = {}
-#        for section_name, section in self.sections.items():
-#            data[section_name] = {
-#                "questions": [
-#                    {"purpose": question.purpose, "question": question.question, "response": question.response}
-#                    for question in section.questions
-#                ]
-#            }
-#        with open(filename, "w") as file:
-#            yaml.dump(data, file)
-#
-#
-# if __name__ == "__main__":
-#    audit_card = AuditCard()
-#
-#    # Load the YAML file and populate the AuditCard
-#    with open("opsml/registry/cards/templates/audit.yaml") as file:
-#        yaml_data = yaml.load(file, Loader=yaml.FullLoader)
-#        for section_name, section_data in yaml_data.items():
-#            for question_data in section_data:
-#                audit_card.add_question_to_section(section_name, question_data["purpose"], question_data["question"])
-#
-#    # Collect user responses
-#    audit_card.collect_responses()
-#
-#    # Output the audit report as YAML file
-#    audit_card.to_yaml("opsml/registry/cards/templates/audit_responses.yaml")
+AUDIT_TEMPLATE_HTML_PATH = "report.html"
 
 
 # create new python class that inherits from ArtifactCard and is called AuditCard
@@ -314,3 +247,15 @@ class AuditCard(ArtifactCard):
         except KeyError as exc:
             logger.error("Question %s not found in section %s", question_nbr, section)
             raise exc
+
+    def create_report(self, save_path: str) -> None:
+        from jinja2 import FileSystemLoader, Environment
+
+        template_env = Environment(
+            loader=FileSystemLoader(searchpath=DIR_PATH),
+        )
+        template = template_env.get_template(template_file)
+
+    @property
+    def card_type(self) -> str:
+        return CardType.AUDITCARD.value

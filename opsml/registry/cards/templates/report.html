@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Model Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <style type="text/css">
+    .container {
+      max-width: 800px;
+      padding-top: 100px;
+    }
+    p {font-size: medium; text-align: left; display:flex; flex-direction: column}
+    h4 {text-align: center;}
+    h3 {text-align:center; color: rgb(19, 17, 17);}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="opsml-logo.png" style="float: left; WIDTH:120px; HEIGHT:120px"/>
+    <h3><b>Audit Report for Model {{model_name}}</b></h3>
+  
+   <br>
+   <br>
+   <br>
+   <br>
+   <h5 style="font-size: large;"><b>Model Info</b></h5>
+   <p>Name: {{model_name}}</p>
+   <p>Team: {{model_team}}</p>
+   <p>Version: {{model_version}}</p>
+   <p>Email: {{user_email}}</p>
+
+    <br>
+  <h5 style="font-size: large;"><b>Business Understanding</b></h5>
+
+    {% for q_nbr, question in business_understanding.items() %}
+      {% if question.response is not None %} 
+        <p>{{question.question}}</p>
+        <p>{{question.response}}</p>
+        <br>
+      {% endif %}
+    {% endfor %}
+
+    </div>
+  </div>
+  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

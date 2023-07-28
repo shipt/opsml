@@ -93,6 +93,7 @@ black = "22.3.0"
 sqlalchemy2-stubs = "0.0.2a32"
 mypy = "1.0.0"
 types-protobuf = "^4.21.0.3"
+types-pyyaml = "^6.0.12.11"
 
 
 [tool.poetry.group.docs.dependencies]
