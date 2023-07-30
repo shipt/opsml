@@ -1,5 +1,6 @@
 # pylint: disable=protected-access
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, status
+from fastapi.responses import RedirectResponse
 
 from opsml import version
 from opsml.app.core.config import config
@@ -30,3 +31,9 @@ def get_storage_settings() -> StorageSettingsResponse:
         proxy=config.is_proxy,
         version=version.__version__,
     )
+
+
+@router.get("/home", name="home")
+def home(request: Request):
+    redirect_url = request.url_for("/")
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

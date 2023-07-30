@@ -1,9 +1,10 @@
 # pylint: disable=import-outside-toplevel
 from typing import Any, List, Optional
-
+import os
 import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from opsml.app.core.config import config
@@ -15,6 +16,7 @@ from opsml.helpers.logging import ArtifactLogger
 logger = ArtifactLogger.get_logger(__name__)
 
 instrumentator = Instrumentator()
+STATIC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 
 
 class OpsmlApp:
@@ -78,8 +80,14 @@ class OpsmlApp:
         """Add rollbar middleware"""
         self.app.middleware("http")(rollbar_middleware)
 
+    def add_static(self):
+        """Add static files"""
+
+        self.app.mount("/static", StaticFiles(directory="opsml/app/static"), name="static")
+
     def build_app(self):
         self.app.include_router(api_router)
+        self.add_static()
 
         if self.run_mlflow:
             self.build_mlflow_app()

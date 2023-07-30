@@ -1,7 +1,8 @@
 # pylint: disable=protected-access
 from typing import Any, Dict, List, Union
-
-from fastapi import APIRouter, Body, HTTPException, Request, status
+import os
+from fastapi import APIRouter, Body, HTTPException, Request, status, Form
+from fastapi.templating import Jinja2Templates
 
 from opsml.app.routes.pydantic_models import (
     CardRequest,
@@ -21,9 +22,45 @@ from opsml.registry.model.registrar import (
     RegistrationRequest,
 )
 
+
 logger = ArtifactLogger.get_logger(__name__)
 
+# Constants
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
+
+
+templates = Jinja2Templates(directory=TEMPLATE_PATH)
+
 router = APIRouter()
+
+
+@router.get("/models")
+async def model(request: Request):
+    """UI home for listing models in model registry
+
+    Args:
+        request:
+            The incoming HTTP request.
+    Returns:
+        200 if the request is successful. The body will contain a JSON string
+        with the list of models.
+    """
+    teams = []
+    registry: CardRegistry = request.app.state.registries.model
+    models = registry.list_cards(as_dataframe=False)
+
+    for model in models:
+        teams.append(model["team"])
+
+    return templates.TemplateResponse("models.html", {"request": request, "teams": set(teams)})
+
+
+@router.post("/models/list")
+async def list_model(request: Request, team: str = Form(...)):
+    registry: CardRegistry = request.app.state.registries.model
+    models = registry.list_cards(team=team, as_dataframe=False)
+    return templates.TemplateResponse("models.html", {"request": request, "models": models})
 
 
 @router.post("/models/register", name="model_register")

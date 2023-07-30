@@ -53,7 +53,7 @@
       }
 
       .container {
-        max-width: 800px;
+        max-width: 900px;
         padding-top: 100px;
       }
 
@@ -89,29 +89,29 @@
 
       <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
         <div class="col">
-          <div class="card mb-4 rounded-3 shadow-sm" style="border-color:#502d91;">
+          <div class="card mb-4 rounded-3 shadow" style="border-color:#502d91;">
             <div class="card-header py-3 text-white" style="background:#502d91;">
               <h4 class="my-0 fw-normal">Model</h4>
             </div>
             <div class="card-body">
-              <h6 class="card-title pricing-card-title">Name: {{model.name}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Version: {{model.version}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Team: {{model.team}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Email: {{model.user_email}}<small class="text-muted fw-light"></small></h6>
+              <h5 class="card-title pricing-card-title">Name: {{model.name}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Version: {{model.version}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Team: {{model.team}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Email: {{model.user_email}}<small class="text-muted fw-light"></small></h5>
             </div>
           </div>
         </div>
 
         <div class="col">
-          <div class="card mb-4 rounded-3 shadow-sm" style="border-color:#038767;">
+          <div class="card mb-4 rounded-3 shadow" style="border-color:#038767;">
             <div class="card-header py-3 text-white" style="background:#038767;">
               <h4 class="my-0 fw-normal">Data</h4>
             </div>
             <div class="card-body">
-              <h6 class="card-title pricing-card-title">Name: {{datum.name}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Version: {{datum.version}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Team: {{datum.team}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Email: {{datum.user_email}}<small class="text-muted fw-light"></small></h6>
+              <h5 class="card-title pricing-card-title">Name: {{datum.name}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Version: {{datum.version}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Team: {{datum.team}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Email: {{datum.user_email}}<small class="text-muted fw-light"></small></h5>
             </div>
           </div>
         </div>
@@ -119,15 +119,17 @@
         {% if run is not none %} 
 
         <div class="col">
-          <div class="card mb-4 rounded-3 shadow-sm" style="border-color:#d64b4e;">
+          <div class="card mb-4 rounded-3 shadow" style="border-color:#d64b4e;">
             <div class="card-header py-3 text-white" style="background:#d64b4e;">
               <h4 class="my-0 fw-normal">Run</h4>
             </div>
             <div class="card-body">
-              <h6 class="card-title pricing-card-title">Name: {{run.name}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Version: {{run.version}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Team: {{run.team}}<small class="text-muted fw-light"></small></h6>
-              <h6 class="card-title pricing-card-title">Email: {{run.user_email}}<small class="text-muted fw-light"></small></h6>
+              <h5 class="card-title pricing-card-title">Name: {{run.name}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Version: {{run.version}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Team: {{run.team}}<small class="text-muted fw-light"></small></h5>
+              <h5 class="card-title pricing-card-title">Email: {{run.user_email}}<small class="text-muted fw-light"></small></h5>
+              <a href="{{tracking_url}}/#/experiments/{{run.project_id}}/runs/{{run.run_id}}" class="btn btn-info w-100 btn btn-lg btn-secondary" style="background:#c7c6c5; border-color:#c7c6c5; color:#050505;" role="button">Link Button</a>
+
             </div>
           </div>
         </div>

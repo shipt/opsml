@@ -1,9 +1,10 @@
-from typing import Any, Dict
-
+from typing import Any, Dict, List
+from functools import cached_property
 from streaming_form_data.targets import FileTarget
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
+from opsml.registry import CardRegistry
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -77,3 +78,11 @@ class ExternalFileTarget(FileTarget):
 
     def on_start(self):
         self._fd = self.storage_client.open(self.filepath, self._mode)
+
+
+class AvailableTeams:
+    @cached_property
+    def teams(self) -> List[str]:
+        registry = CardRegistry("model")
+        teams = registry.list_cards(as_dataframe=False)
+        return list(set([team["team"] for team in teams]))

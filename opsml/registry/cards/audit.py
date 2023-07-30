@@ -263,23 +263,3 @@ class AuditCard(ArtifactCard):
     @property
     def card_type(self) -> str:
         return CardType.AUDITCARD.value
-
-
-def render_audit_template(models: List[ModelCard], data: List[DataCard], runs: List[RunCard]):
-    from jinja2 import FileSystemLoader, Environment
-
-    template_env = Environment(
-        loader=FileSystemLoader(searchpath=DIR_PATH),
-    )
-
-    template = template_env.get_template(AUDIT_TEMPLATE_HTML_FILE)
-
-    output_text = template.render(
-        zip=zip,
-        models=models,
-        data=data,
-        runs=runs,
-    )
-
-    with open("audit.html", "w") as f:
-        f.write(output_text)
