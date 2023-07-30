@@ -1,5 +1,5 @@
 # pylint: disable=protected-access
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 import os
 from fastapi import APIRouter, Body, HTTPException, Request, status, Form
 from fastapi.templating import Jinja2Templates
@@ -35,8 +35,20 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-@router.get("/models")
-async def model(request: Request):
+def get_all_teams(registry: CardRegistry) -> List[str]:
+    """Returns a list of all teams in the registry
+
+    Args:
+        registry:
+            The registry to query
+    Returns:
+        A list of teams
+    """
+    return list(set([card["team"] for card in registry.list_cards(as_dataframe=False)]))
+
+
+@router.post("/models")
+async def model_homepage(request: Request, team: Optional[str] = Form(None)):
     """UI home for listing models in model registry
 
     Args:
@@ -46,14 +58,26 @@ async def model(request: Request):
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
     """
-    teams = []
     registry: CardRegistry = request.app.state.registries.model
-    models = registry.list_cards(as_dataframe=False)
+    all_teams = get_all_teams(registry)
 
-    for model in models:
-        teams.append(model["team"])
+    if team is None:
+        selected_team = all_teams[0]
+        models = registry.list_cards(team=selected_team, as_dataframe=False)
 
-    return templates.TemplateResponse("models.html", {"request": request, "teams": set(teams)})
+    else:
+        selected_team = team
+        models = registry.list_cards(team=selected_team, as_dataframe=False)
+
+    return templates.TemplateResponse(
+        "models.html",
+        {
+            "request": request,
+            "all_teams": all_teams,
+            "selected_team": selected_team,
+            "models": models,
+        },
+    )
 
 
 @router.post("/models/list")

@@ -21,13 +21,16 @@
         <select class="form-control" name="team" onchange="this.form.submit()">
             <option value="none">Select Team</option>
 
-            {% for team in teams %}
+            {% for team in all_teams %}
                 <option value="{{team}}">{{team}}</option>
             {% endfor %}
         </select>
 </form>
 
 <!---- Form for selecting model -------->
+<div class="container">
+    <div class="page-header">
+      <h2>{{selected_team}}</h2>
 
 <div class="row">
       {% for model in models %}

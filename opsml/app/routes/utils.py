@@ -78,11 +78,3 @@ class ExternalFileTarget(FileTarget):
 
     def on_start(self):
         self._fd = self.storage_client.open(self.filepath, self._mode)
-
-
-class AvailableTeams:
-    @cached_property
-    def teams(self) -> List[str]:
-        registry = CardRegistry("model")
-        teams = registry.list_cards(as_dataframe=False)
-        return list(set([team["team"] for team in teams]))
