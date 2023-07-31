@@ -1,8 +1,11 @@
-<div class="card shadow p-3 mb-2 bg-body rounded" style="width: 18rem;">
+<div class="card  text-center shadow rounded m-1" style="width: 12rem;">
+  <div class="card-header py-3 text-white" style="background:#62586d;">
+    <h4 class="my-0 fw-normal">Model</h4>
+  </div>
     <div class="card-body">
       <h5 class="card-title">{{model.name}}</h5>
       <p class="card-text">Team : {{model.team}}</p>
       <p class="card-text">Version : {{model.version}}</p>
-      <a href="/details/{{model.uid}}" class="btn btn-primary">Read more</a>
+      <a href="/details/{{model.uid}}" class="btn btn-primary" style="background:#02af84; border-color:#02af84;">Read more</a>
     </div>
   </div>

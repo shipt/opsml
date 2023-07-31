@@ -16,34 +16,37 @@
 </div>
 
 <!---- Form for selecting team -------->
-<form method="post" action="/opsml/models/list">
-    <div class="form-group" style="WIDTH:150px;">
-        <select class="form-control" name="team" onchange="this.form.submit()">
-            <option value="none">Select Team</option>
-
-            {% for team in all_teams %}
-                <option value="{{team}}">{{team}}</option>
-            {% endfor %}
-        </select>
-</form>
-
+<div class="container">
+  <!---- Form for selecting team -------->
+  <form method="post" action="/opsml/models">
+      <div class="form-group" style="WIDTH:150px;">
+          <select class="form-control" name="team" onchange="this.form.submit()">
+              <option value="none">Select Team</option>
+  
+              {% for team in all_teams %}
+                  <option value="{{team}}">{{team}}</option>
+              {% endfor %}
+          </select>
+  </form>
+  </div>
+  <br>
 <!---- Form for selecting model -------->
 <div class="container">
     <div class="page-header">
       <h2>{{selected_team}}</h2>
-
-<div class="row">
+    </div>
+</div>
+<br>
+<div class="container">
+  <div class="row row-cols-lg-5">
       {% for model in models %}
-        <div class="col-lg-4 col-md-3 col-sm-10 mr-auto">
+        <div class="col-12">
           {% with model=model %}
-      		{% include "include/cards.html" %}
+      		{% include "include/model_card.html" %}
     	    {% endwith %}
-          {% if loop.index %4 %}
-            </div>
-          {% else %}
-            </div></div><br><div class="row">
-          {% endif %}
+        </div>
       {% endfor %}
+    </div>
 </div>
 
 

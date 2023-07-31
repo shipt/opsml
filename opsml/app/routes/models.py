@@ -47,8 +47,8 @@ def get_all_teams(registry: CardRegistry) -> List[str]:
     return list(set([card["team"] for card in registry.list_cards(as_dataframe=False)]))
 
 
-@router.post("/models")
-async def model_homepage(request: Request, team: Optional[str] = Form(None)):
+@router.get("/models")
+async def model_homepage(request: Request):
     """UI home for listing models in model registry
 
     Args:
@@ -60,31 +60,24 @@ async def model_homepage(request: Request, team: Optional[str] = Form(None)):
     """
     registry: CardRegistry = request.app.state.registries.model
     all_teams = get_all_teams(registry)
-
-    if team is None:
-        selected_team = all_teams[0]
-        models = registry.list_cards(team=selected_team, as_dataframe=False)
-
-    else:
-        selected_team = team
-        models = registry.list_cards(team=selected_team, as_dataframe=False)
+    models = registry.list_cards(team=all_teams[0], as_dataframe=False)
 
     return templates.TemplateResponse(
         "models.html",
         {
             "request": request,
             "all_teams": all_teams,
-            "selected_team": selected_team,
+            "selected_team": all_teams[0],
             "models": models,
         },
     )
 
 
-@router.post("/models/list")
-async def list_model(request: Request, team: str = Form(...)):
-    registry: CardRegistry = request.app.state.registries.model
-    models = registry.list_cards(team=team, as_dataframe=False)
-    return templates.TemplateResponse("models.html", {"request": request, "models": models})
+# @router.post("/models/list")
+# async def list_model(request: Request, team: str = Form(...)):
+#    registry: CardRegistry = request.app.state.registries.model
+#    models = registry.list_cards(team=team, as_dataframe=False)
+#    return templates.TemplateResponse("models.html", {"request": request, "models": models})
 
 
 @router.post("/models/register", name="model_register")
