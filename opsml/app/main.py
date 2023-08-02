@@ -56,7 +56,10 @@ class OpsmlApp:
             config.proxy_root = mlflow_config.MLFLOW_SERVER_ARTIFACT_ROOT
 
     def add_startup(self):
-        self.app.add_event_handler("startup", start_app_handler(app=self.app))
+        self.app.add_event_handler(
+            "startup",
+            start_app_handler(app=self.app, run_mlflow=self.run_mlflow),
+        )
 
     def add_shutdown(self):
         self.app.add_event_handler("shutdown", stop_app_handler(app=self.app))

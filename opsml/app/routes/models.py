@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Union, Optional
 import os
 from fastapi import APIRouter, Body, HTTPException, Request, status, Form
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 
 from opsml.app.routes.pydantic_models import (
     CardRequest,
@@ -47,8 +48,8 @@ def get_all_teams(registry: CardRegistry) -> List[str]:
     return list(set([card["team"] for card in registry.list_cards(as_dataframe=False)]))
 
 
-@router.get("/models")
-async def model_homepage(request: Request):
+@router.get("/models/list")
+async def model_homepage(request: Request, team: Optional[str] = None):
     """UI home for listing models in model registry
 
     Args:
@@ -60,7 +61,11 @@ async def model_homepage(request: Request):
     """
     registry: CardRegistry = request.app.state.registries.model
     all_teams = get_all_teams(registry)
-    models = registry.list_cards(team=all_teams[0], as_dataframe=False)
+
+    team = team or all_teams[0]
+    models = registry.list_cards(team=team, as_dataframe=False)
+
+    model_names = list(set([card["name"] for card in models]))
 
     return templates.TemplateResponse(
         "models.html",
@@ -68,16 +73,51 @@ async def model_homepage(request: Request):
             "request": request,
             "all_teams": all_teams,
             "selected_team": all_teams[0],
-            "models": models,
+            "models": model_names,
         },
     )
 
 
-# @router.post("/models/list")
-# async def list_model(request: Request, team: str = Form(...)):
-#    registry: CardRegistry = request.app.state.registries.model
-#    models = registry.list_cards(team=team, as_dataframe=False)
-#    return templates.TemplateResponse("models.html", {"request": request, "models": models})
+@router.get("/models/versions/{model}")
+async def list_model(request: Request, model: str):
+    registry: CardRegistry = request.app.state.registries.model
+    models = registry.list_cards(name=model, as_dataframe=False)
+    runs = list(set(model["runcard_uid"] for model in models))
+
+    if len(runs) >= 0:
+        run = request.app.state.registries.run.list_cards(uid=runs[0], as_dataframe=False)
+        project_id = run[0]["project_id"]
+    else:
+        project_id = None
+
+    if project_id is not None:
+        project_num = request.app.state.mlflow_client.get_experiment_by_name(name=project_id).experiment_id
+    else:
+        project_num = None
+
+    return templates.TemplateResponse(
+        "model_version.html",
+        {
+            "request": request,
+            "versions": models,
+            "selected_model": model,
+            "project_num": project_num,
+        },
+    )
+
+
+@router.get("/models/metadata")
+async def list_model(request: Request, uid: str):
+    metadata = post_model_metadata(request=request, payload=CardRequest(uid=uid))
+
+    return templates.TemplateResponse(
+        "metadata.html",
+        {
+            "request": request,
+            "metadata": metadata.dict(),
+            "model_uid": uid,
+        },
+    )
 
 
 @router.post("/models/register", name="model_register")

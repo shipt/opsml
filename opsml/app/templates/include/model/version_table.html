@@ -1,0 +1,16 @@
+<tr>
+    <td>{{version["date"]}}</td>
+    <td>{{version["name"]}}</td>
+    <td>{{version["team"]}}</td>
+    <td>{{version["version"]}}</td>
+    <td>{{version["user_email"]}}</td>
+    <td>{{version["datacard_uid"]}}</td>
+    <td><a href="/opsml/models/metadata?uid={{version["uid"]}}" style="color:white; background:#038767;" class="btn" type="button">Info</a></td>
+
+    {% if version["runcard_uid"] is not none %}
+        <td><a href="/#/experiments/{{project_num}}/runs/{{version["runcard_uid"]}}" style="color:white; background:#038767;" class="btn" type="button">Run</a></td>
+    {% else %}
+        <td><a href="#" style="color:white; background:#b83d3d;" class="btn" type="button">No Run</a></td>
+    {% endif %}
+    
+</tr>

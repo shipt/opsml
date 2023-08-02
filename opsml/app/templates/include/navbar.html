@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light px-5">
+<nav class="navbar navbar-expand-lg navbar-light px-5" id="MainNav">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
       <img src="{{ url_for('static', path='/images/opsml-logo.png') }}" alt="" width="40" height="40">
@@ -9,16 +9,19 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/">Home</a>
+          <a class="nav-link" aria-current="page" href="/" style="font-size: 1.1vw; color:white;"> <i class="bi-house-door-fill"></i> Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/opsml/models">Models</a>
+          <a class="nav-link" href="/opsml/models/list" style="font-size: 1.1vw; color:white;"><i class="bi-lightbulb-fill"></i> Models</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/docs/">Data</a>
+          <a class="nav-link" href="/docs/" style="font-size: 1.1vw; color:white;"><i class="bi-table"></i> Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/docs/">Audit</a>
+          <a class="nav-link" href="/docs/"style="font-size: 1.1vw; color:white;"><i class="bi-journal-text"></i> Audit</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://didactic-bassoon-l5emw7m.pages.github.io/"style="font-size: 1.1vw; color:white;"><i class="bi-journal-text"></i> Docs</a>
         </li>
       </ul>
 
@@ -29,3 +32,15 @@
     </div>
   </div>
 </nav>
+
+
+<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+    $(function(){
+        $('a').each(function(){
+            if ($(this).prop('href') == window.location.href) {
+                $(this).addClass('active'); $(this).parents('li').addClass('active');
+            }
+        });
+    });
+</script>
