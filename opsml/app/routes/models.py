@@ -48,7 +48,7 @@ def get_all_teams(registry: CardRegistry) -> List[str]:
     return list(set([card["team"] for card in registry.list_cards(as_dataframe=False)]))
 
 
-@router.get("/models/list")
+@router.get("/models/list/")
 async def model_homepage(request: Request, team: Optional[str] = None):
     """UI home for listing models in model registry
 
@@ -78,8 +78,11 @@ async def model_homepage(request: Request, team: Optional[str] = None):
     )
 
 
-@router.get("/models/versions/{model}")
-async def list_model(request: Request, model: str):
+@router.get("/models/versions/")
+async def model_versions(request: Request, model: Optional[str] = None):
+    if model is None:
+        return RedirectResponse(url="/opsml/models/list/")
+
     registry: CardRegistry = request.app.state.registries.model
     models = registry.list_cards(name=model, as_dataframe=False)
     runs = list(set(model["runcard_uid"] for model in models))
@@ -106,9 +109,12 @@ async def list_model(request: Request, model: str):
     )
 
 
-@router.get("/models/metadata")
+@router.get("/models/metadata/")
 async def list_model(request: Request, uid: str):
     metadata = post_model_metadata(request=request, payload=CardRequest(uid=uid))
+
+    # get all versions
+    versions = request.app.state.registries.model.list_cards(name=metadata.model_name, as_dataframe=False)
 
     return templates.TemplateResponse(
         "metadata.html",
@@ -116,6 +122,7 @@ async def list_model(request: Request, uid: str):
             "request": request,
             "metadata": metadata.dict(),
             "model_uid": uid,
+            "versions": versions,
         },
     )
 

@@ -2,6 +2,6 @@
     <div class="card-body">
       <img src="{{ url_for('static', path='/images/chip.png') }}" alt="" width="40" height="40" >
       <h5 class="card-title">{{model}}</h5>
-      <a href="/opsml/models/versions/{{model}}" class="stretched-link" name="model" value={{model}}></a>
+      <a href="/opsml/models/versions/?model={{model}}" class="stretched-link" name="model" value={{model}}></a>
     </div>
   </div>

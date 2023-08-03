@@ -7,10 +7,14 @@
 {% block content %}
 <body id="ModelMetadataPage">
 
-{% include "include/model/meta_subnav.html" %}
+<div class="container" style="padding-top:65px;">
+</div>
+  
+{% include "include/model/model_subnav.html" %}
+  
 
 <br>
-<div class="container">
+<div class="container" style="padding-top:50px;">
 
 
 <!---- Model version table -------->
@@ -20,6 +24,27 @@
     </div>
 </div>
 <br>
+
+<!---- Form for selecting team -------->
+<div class="container">
+  <!---- Form for selecting team -------->
+  <form method="get" action="/opsml/models/versions/">
+      <div class="form-group" style="WIDTH:150px;">
+          <select class="form-control" name="uid" onchange="this.form.submit()">
+              <option value="none">Select Version</option>
+  
+              {% for version in versions %}
+                  <option value={{version["uid"]}}>{{version["version"]}}</option>
+              {% endfor %}
+          </select>
+  </form>
+  </div>
+
+
+
+
+
+
 
 <hr>
 <div class="page-header" id="metadata-container">

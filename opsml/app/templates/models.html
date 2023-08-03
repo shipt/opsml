@@ -6,6 +6,13 @@
 
 {% block content %}
 <body id="ModelPage">
+<div class="container" style="padding-top:65px;">
+</div>
+
+{% with model=none %}
+{% include "include/model/model_subnav.html" %}
+{% endwith %}
+
 <br>
 <div class="container" style="padding-top:50px;">
     <div class="row">
@@ -19,13 +26,13 @@
 <!---- Form for selecting team -------->
 <div class="container">
   <!---- Form for selecting team -------->
-  <form method="get" action="/opsml/models/list">
+  <form method="get" action="/opsml/models/list/">
       <div class="form-group" style="WIDTH:150px;">
           <select class="form-control" name="team" onchange="this.form.submit()">
               <option value="none">Select Team</option>
   
               {% for team in all_teams %}
-                  <option value="{{team}}">{{team}}</option>
+                  <option value="/{{team}}">{{team}}</option>
               {% endfor %}
           </select>
   </form>

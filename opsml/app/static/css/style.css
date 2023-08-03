@@ -101,6 +101,8 @@ p {
 #MetaSubnav {
     background: #fafafa;
     color: black !important;
+    width: 100%;
+    position: fixed;
 
 }
 
@@ -109,6 +111,17 @@ p {
     border-bottom: 1px solid rgb(0, 0, 0);
     bottom: -10px;
 }
+
+
+#ModelSubnav {
+    background: #fafafa;
+    color: black !important;
+    width: 100%;
+    position: fixed;
+
+}
+
+
 
 .line {
     width: 100%;
