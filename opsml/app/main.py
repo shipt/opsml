@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from opsml.app.core.config import config

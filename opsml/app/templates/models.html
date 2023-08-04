@@ -29,7 +29,11 @@
   <form method="get" action="/opsml/models/list/">
       <div class="form-group" style="WIDTH:150px;">
           <select class="form-control" name="team" onchange="this.form.submit()">
+            {% if selected_team is not none%}
+              <option value="/{{selected_team}}" selected>{{selected_team}}</option>
+            {% else %}
               <option value="none">Select Team</option>
+            {% endif %}
   
               {% for team in all_teams %}
                   <option value="/{{team}}">{{team}}</option>

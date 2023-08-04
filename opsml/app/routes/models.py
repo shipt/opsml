@@ -45,7 +45,38 @@ def get_all_teams(registry: CardRegistry) -> List[str]:
     Returns:
         A list of teams
     """
-    return list(set([card["team"] for card in registry.list_cards(as_dataframe=False)]))
+    return list(set(card["team"] for card in registry.list_cards(as_dataframe=False)))
+
+
+def get_team_model_names(registry: CardRegistry, team: str) -> List[str]:
+    """Returns a list of model names for a given team
+
+    Args:
+        registry:
+            The registry to query
+        team:
+            The team to query
+    Returns:
+        A list of model names
+    """
+    return list(
+        set(card["name"] for card in registry.list_cards(team=team, as_dataframe=False)),
+    )
+
+
+def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:
+    """Returns a list of model versions for a given team and model
+
+    Args:
+        registry:
+            The registry to query
+        model:
+            The model to query
+    Returns:
+        A list of model versions
+    """
+
+    return [card["version"] for card in registry.list_cards(name=model, team=team, as_dataframe=False)]
 
 
 @router.get("/models/list/")
@@ -63,9 +94,7 @@ async def model_homepage(request: Request, team: Optional[str] = None):
     all_teams = get_all_teams(registry)
 
     team = team or all_teams[0]
-    models = registry.list_cards(team=team, as_dataframe=False)
-
-    model_names = list(set([card["name"] for card in models]))
+    model_names = get_team_model_names(registry, team)
 
     return templates.TemplateResponse(
         "models.html",
@@ -79,7 +108,7 @@ async def model_homepage(request: Request, team: Optional[str] = None):
 
 
 @router.get("/models/versions/")
-async def model_versions(request: Request, model: Optional[str] = None):
+async def model_versions_page(request: Request, model: Optional[str] = None):
     if model is None:
         return RedirectResponse(url="/opsml/models/list/")
 
@@ -110,21 +139,91 @@ async def model_versions(request: Request, model: Optional[str] = None):
 
 
 @router.get("/models/metadata/")
-async def list_model(request: Request, uid: str):
-    metadata = post_model_metadata(request=request, payload=CardRequest(uid=uid))
+async def list_model(
+    request: Request,
+    uid: Optional[str] = None,
+    version: Optional[str] = None,
+    model: Optional[str] = None,
+    team: Optional[str] = None,
+):
+    teams = get_all_teams(request.app.state.registries.model)
+    if all(attr is None for attr in [uid, version, model, team]):
+        return templates.TemplateResponse(
+            "metadata.html",
+            {
+                "request": request,
+                "teams": teams,
+                "metadata": None,
+                "models": None,
+                "selected_team": None,
+                "selected_model": None,
+            },
+        )
 
-    # get all versions
-    versions = request.app.state.registries.model.list_cards(name=metadata.model_name, as_dataframe=False)
+    elif team is not None and all(attr is None for attr in [version, model]):
+        models = get_team_model_names(request.app.state.registries.model, team)
+        return templates.TemplateResponse(
+            "metadata.html",
+            {
+                "request": request,
+                "teams": teams,
+                "selected_team": team,
+                "metadata": None,
+                "models": models,
+                "selected_model": model,
+            },
+        )
 
-    return templates.TemplateResponse(
-        "metadata.html",
-        {
-            "request": request,
-            "metadata": metadata.dict(),
-            "model_uid": uid,
-            "versions": versions,
-        },
-    )
+    elif team is not None and model is not None and version is None:
+        versions = get_model_versions(request.app.state.registries.model, model, team)
+        models = get_team_model_names(request.app.state.registries.model, team)
+
+        return templates.TemplateResponse(
+            "metadata.html",
+            {
+                "request": request,
+                "teams": [team],
+                "selected_team": team,
+                "metadata": None,
+                "models": models,
+                "selected_model": model,
+                "versions": versions,
+            },
+        )
+
+    elif all(attr is not None for attr in [version, model, team]) or uid is not None:
+        metadata = post_model_metadata(
+            request=request,
+            payload=CardRequest(name=model, team=team, version=version, uid=uid),
+        )
+        versions = get_model_versions(request.app.state.registries.model, metadata.model_name, metadata.model_team)
+        models = get_team_model_names(request.app.state.registries.model, metadata.model_team)
+
+        max_dim = 0
+        if metadata.data_schema.model_data_schema.data_type == "NUMPY_ARRAY":
+            features = metadata.data_schema.model_data_schema.input_features
+            inputs = features.get("inputs")
+            if inputs is not None:
+                max_dim = max(features.get("inputs").shape)
+
+        # capping amount of sample data shown
+        if max_dim > 200:
+            metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
+
+        return templates.TemplateResponse(
+            "metadata.html",
+            {
+                "request": request,
+                "teams": [team],
+                "selected_team": team,
+                "metadata": metadata,
+                "models": models,
+                "selected_model": model,
+                "versions": versions,
+            },
+        )
+
+    return RedirectResponse(url="/opsml/models/metadata/")
 
 
 @router.post("/models/register", name="model_register")
