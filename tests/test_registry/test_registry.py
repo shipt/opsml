@@ -94,6 +94,20 @@ def test_datacard_sql_register(db_registries: Dict[str, CardRegistry]):
     assert loaded_card.sql_logic.get("test") is not None
 
 
+def test_datacard_major_minor_version(db_registries: Dict[str, CardRegistry]):
+    # create data card
+    registry = db_registries["data"]
+    data_card = DataCard(
+        name="major_minor",
+        team="mlops",
+        user_email="mlops.com",
+    )
+
+    registry.register_card(card=data_card)
+    loaded_card: DataCard = registry.load_card(uid=data_card.uid)
+    assert loaded_card.sql_logic.get("test") is not None
+
+
 def test_datacard_tags(db_registries: Dict[str, CardRegistry]):
     # create data card
     registry = db_registries["data"]
