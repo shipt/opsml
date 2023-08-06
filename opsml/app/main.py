@@ -75,10 +75,10 @@ class OpsmlApp:
             from wsgi_basic_auth import BasicAuth
 
             logger.info("Setting login credentials")
-            self.app.mount("/", WSGIMiddleware(BasicAuth(mlflow_flask)))
+            self.app.mount("/mlflow", WSGIMiddleware(BasicAuth(mlflow_flask)))
 
         else:
-            self.app.mount("/", WSGIMiddleware(mlflow_flask))
+            self.app.mount("/mlflow", WSGIMiddleware(mlflow_flask))
 
     def add_middleware(self):
         """Add rollbar middleware"""
@@ -90,11 +90,11 @@ class OpsmlApp:
         self.app.mount("/static", StaticFiles(directory="opsml/app/static"), name="static")
 
     def build_app(self):
-        self.app.include_router(api_router)
-        self.add_static()
-
         if self.run_mlflow:
             self.build_mlflow_app()
+
+        self.app.include_router(api_router)
+        self.add_static()
 
         self.add_startup()
         self.add_shutdown()
