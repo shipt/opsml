@@ -36,14 +36,20 @@ body {
     box-shadow: 0px 10px 20px rgba(150, 79, 201, 0.469);
 }
 
-#mlflow-card2 {
-    display: flex;
-    justify-content: center;
-    position: absolute;
-    top: 70%;
-    left: 50%;
-    margin: -100px 0 0 -100px;
-  }
+#opsml-card {
+  background-color: #241239;
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  margin: -100px 0 0 -100px;
+}
+
+#opsml-card:hover{
+  transform: scale(1.05);
+  box-shadow: 0px 10px 20px rgba(150, 79, 201, 0.469);
+}
 
 #footer {
     padding-bottom: 100px;
@@ -215,12 +221,13 @@ p {
 }
 
 #model-card {
+    width: fit-content;
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
-    background-image: url(static/images/chip.png);
     background-repeat: no-repeat;
     background-position: right;
     background-size: 80px;
 }
+
 
 #homepage-cards {
 
@@ -228,12 +235,11 @@ p {
     z-index: 2;
 }
 
-#model-card img{
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    max-height: 120px;
-  }
+.center-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+ }
 
   #metadata-table-header {
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);

@@ -8,37 +8,10 @@
     <td class="text-center"><a href="/opsml/models/metadata/?uid={{version["uid"]}}" style="color:white; background:#038767;" class="btn" type="button">Info</a></td>
 
     {% if version["runcard_uid"] is not none %}
-        <td><a href="/#/experiments/{{project_num}}/runs/{{version["runcard_uid"]}}" style="color:white; background:#038767;" class="btn" type="button">Run</a></td>
+        <td class="text-center"><a href="/mlflow/#/experiments/{{project_num}}/runs/{{version["runcard_uid"]}}" style="color:white; background:#038767;" class="btn" type="button">Run</a></td>
     {% else %}
-        <td><a href="#" style="color:white; background:#b83d3d;" class="btn" type="button">No Run</a></td>
+        <td class="text-center"><a href="#" style="color:white; background:#b83d3d;" class="btn" type="button">No Run</a></td>
     {% endif %}
     
 </tr>
 
-
-
-<div class="model-container" id="mlflow-card">
-
-    <div class="card text-center" style="width: 28rem;" id="mlflow-card">
-        <div class="card-body">
-            <img src="{{ url_for('static', path='/images/mlflow.png') }}" alt="" width="375" height="92" >
-            <a href="/mlflow" class="stretched-link" name="model"></a>
-        </div>
-        </div>
-    </div>
-
-</div>
-
-
-<br><br>
-<div class="model-container" id="mlflow-card">
-
-    <div class="card card-img-center" style="width: 28rem;" id="mlflow-card">
-        <div class="card-body">
-            <img src="{{ url_for('static', path='/images/mlflow.png') }}" alt="" width="375" height="92" >
-            <a href="/mlflow" class="stretched-link" name="model"></a>
-        </div>
-        </div>
-    </div>
-
-</div>

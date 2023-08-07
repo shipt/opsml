@@ -101,7 +101,7 @@ async def model_homepage(request: Request, team: Optional[str] = None):
         {
             "request": request,
             "all_teams": all_teams,
-            "selected_team": all_teams[0],
+            "selected_team": team,
             "models": model_names,
         },
     )
@@ -196,6 +196,7 @@ async def list_model(
             request=request,
             payload=CardRequest(name=model, team=team, version=version, uid=uid),
         )
+
         versions = get_model_versions(request.app.state.registries.model, metadata.model_name, metadata.model_team)
         models = get_team_model_names(request.app.state.registries.model, metadata.model_team)
 

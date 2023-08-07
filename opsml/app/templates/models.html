@@ -23,24 +23,27 @@
           {% endfor %}
 </div>
 
-<!---- Form for selecting team -------->
-<div class="container">
-  <!---- Form for selecting team -------->
-  <form method="get" action="/opsml/models/list/">
-      <div class="form-group" style="WIDTH:150px;">
-          <select class="form-control" name="team" onchange="this.form.submit()">
-            {% if selected_team is not none%}
-              <option value="/{{selected_team}}" selected>{{selected_team}}</option>
-            {% else %}
-              <option value="none">Select Team</option>
-            {% endif %}
+
+<div class="btn-group">
+  <div class="dropdown" id="MetadataTeamSelect">
+    <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+      
+      {% if selected_team is not none %}
+        {{selected_team}}
+      {% else %}
+        Select Team
+      {% endif %}
+
+    </a>
   
-              {% for team in all_teams %}
-                  <option value="/{{team}}">{{team}}</option>
-              {% endfor %}
-          </select>
-  </form>
+    <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+      {% for team in all_teams %}
+        <a class="dropdown-item" href="/opsml/models/list/?team={{team}}">{{team}}</a>
+      {% endfor %}
+    </div>
   </div>
+</div>
+
 
 
   <br>
