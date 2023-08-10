@@ -22,7 +22,7 @@ from opsml.registry.cards import (
     RunCard,
 )
 from opsml.registry.cards.card_saver import save_card_artifacts
-from opsml.registry.sql.query_helpers import QueryCreator, log_card_change
+from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
 from opsml.registry.sql.semver import SemVerSymbols, sort_semvers, CardVersion, VersionType
 from opsml.registry.sql.settings import settings

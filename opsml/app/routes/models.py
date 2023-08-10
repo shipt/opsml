@@ -206,7 +206,7 @@ async def list_model(
             features = metadata.data_schema.model_data_schema.input_features
             inputs = features.get("inputs")
             if inputs is not None:
-                max_dim = max(features.get("inputs").shape)
+                max_dim = max(inputs.shape)
 
         # capping amount of sample data shown
         if max_dim > 200:

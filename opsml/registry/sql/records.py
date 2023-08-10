@@ -338,7 +338,7 @@ class LoadedAuditCard(LoadCard):
     modelcard_uids: List[str]
     runcard_uids: List[str]
 
-    @model_validator(pre=True)
+    @model_validator(mode="before")
     def load_audit_attr(cls, values) -> Dict[str, Any]:
         storage_client = cast(StorageClientType, values["storage_client"])
 
