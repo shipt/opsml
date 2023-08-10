@@ -1,4 +1,7 @@
 # pylint: disable=[import-outside-toplevel,import-error]
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 
 import json
 import tempfile
@@ -158,7 +161,7 @@ class ArtifactStorage:
         return loadable_path or tmp_path
 
     @cleanup_files
-    def load_artifact(self, storage_uri: str) -> Tuple[Any, str]:
+    def load_artifact(self, storage_uri: str, **kwargs) -> Tuple[Any, str]:
         files = self.storage_client.list_files(storage_uri=storage_uri)
 
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -168,7 +171,7 @@ class ArtifactStorage:
                 tmp_path=tmpdirname,
             )
 
-            artifact = self._load_artifact(file_path=loadable_filepath)
+            artifact = self._load_artifact(file_path=loadable_filepath, **kwargs)
 
         return artifact, loadable_filepath
 

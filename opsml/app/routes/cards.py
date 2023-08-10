@@ -1,4 +1,7 @@
 # pylint: disable=protected-access
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from typing import Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
@@ -55,6 +58,7 @@ def set_version(
     version = registry._registry.set_version(
         name=payload.name,
         team=payload.team,
+        partial_version=payload.version,
         version_type=payload.version_type,
     )
 

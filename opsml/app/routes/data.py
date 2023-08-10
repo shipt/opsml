@@ -1,3 +1,6 @@
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 import os
 from typing import cast
 
@@ -27,7 +30,6 @@ def download_data_profile(
         DataCard,
         registry.load_card(
             name=payload.name,
-            team=payload.team,
             version=payload.version,
             uid=payload.uid,
         ),
@@ -75,12 +77,7 @@ def compare_data_profile(
 
     if payload.uids is not None:
         for uid in payload.uids:
-            datacard = cast(
-                DataCard,
-                registry.load_card(
-                    uid=uid,
-                ),
-            )
+            datacard = cast(DataCard, registry.load_card(uid=uid))
 
             if datacard.data_profile is not None:
                 profiles.append(datacard.data_profile.get_description())
@@ -94,11 +91,7 @@ def compare_data_profile(
         for version in payload.versions:
             datacard = cast(
                 DataCard,
-                registry.load_card(
-                    name=payload.name,
-                    team=payload.team,
-                    version=version,
-                ),
+                registry.load_card(name=payload.name, version=version),
             )
             if datacard.data_profile is not None:
                 profiles.append(datacard.data_profile.get_description())

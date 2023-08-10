@@ -1,4 +1,8 @@
 # pylint: disable=invalid-envvar-value
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 from typing import Any, Dict, Optional, Union
 
 from opsml.helpers.logging import ArtifactLogger
@@ -55,7 +59,7 @@ class CardHandler:
         """Loads an ArtifactCard"""
 
         registry: CardRegistry = getattr(registries, registry_name)
-        return registry.load_card(name=info.name, team=info.team, version=info.version, uid=info.uid)
+        return registry.load_card(name=info.name, version=info.version, uid=info.uid)
 
     @staticmethod
     def update_card(registries: CardRegistries, card: ArtifactCard) -> None:

@@ -1,8 +1,12 @@
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import os
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from opsml.helpers.types import OpsmlUri
 from opsml.registry.sql.settings import settings
@@ -61,7 +65,7 @@ class ProjectInfo(BaseModel):
         """The project name."""
         return self.name
 
-    @validator("name", "team", pre=True)
+    @field_validator("name", "team", mode="before")
     def identifier_validator(cls, value: Optional[str]) -> Optional[str]:
         """Lowers and strips an identifier.
 

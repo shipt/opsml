@@ -1,3 +1,8 @@
+# type: ignore
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import datetime
 from functools import wraps
 from typing import Any, Dict, Iterable, Optional, Type, Union, cast
@@ -21,18 +26,26 @@ class QueryCreator:
         self,
         table: Type[REGISTRY_TABLES],
         name: str,
-        team: str,
+        version: Optional[str] = None,
     ) -> Select:
-        """Creates query to get latest card version"""
-        return (
-            select(table)
-            .filter(  # type: ignore
-                table.name == name,
-                table.team == team,
-            )
-            .order_by(table.timestamp.desc(), table.version.desc())
-            .limit(20)  # type: ignore
-        )
+        """Creates query to get latest card version
+
+        Args:
+            table:
+                Registry table to query
+            name:
+                Name of the card
+            version:
+                Version of the card
+        Returns:
+            Query to get latest card version
+        """
+        table_select = select(table).filter(table.name == name)
+
+        if version is not None:
+            table_select = table_select.filter(table.version.like(f"{version}%"))
+
+        return table_select.order_by(table.timestamp.desc(), table.version.desc()).limit(20)  # type: ignore
 
     # TODO: refactor
     def record_from_table_query(

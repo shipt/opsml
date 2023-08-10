@@ -125,7 +125,6 @@ with project.run(run_name="challenger-poisson") as run:
 model_registry = CardRegistry(registry_name="model")
 linreg_card = model_registry.load_card(
     name="linear_reg",
-    team="mlops",
     tags={"example": "challenger"},
 )
 
@@ -140,7 +139,7 @@ reports = challenger.challenge_champion(
 )
 
 # can also access the battle report objects directly
-print([report.dict() for report in reports])
+print([report.model_dump() for report in reports])
 # [
 #    {
 #        "champion_name": "lasso_reg",

@@ -1,3 +1,6 @@
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -5,6 +8,7 @@ from pydantic import BaseModel, Field
 from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
 from opsml.registry.sql.registry_base import VersionType
+from opsml.registry.sql.semver import CardVersion
 
 
 class StorageUri(BaseModel):
@@ -19,8 +23,8 @@ class DebugResponse(BaseModel):
     url: str
     storage: str
     app_env: str
-    proxy_root: Optional[str]
-    is_proxy: Optional[bool]
+    proxy_root: Optional[str] = None
+    is_proxy: Optional[bool] = None
 
 
 class StorageSettingsResponse(BaseModel):
@@ -33,6 +37,7 @@ class StorageSettingsResponse(BaseModel):
 class VersionRequest(BaseModel):
     name: str
     team: str
+    version: Optional[CardVersion] = None
     version_type: VersionType
     table_name: str
 
@@ -51,18 +56,18 @@ class UidExistsResponse(BaseModel):
 
 
 class ListCardRequest(BaseModel):
-    name: Optional[str]
-    team: Optional[str]
-    version: Optional[str]
-    uid: Optional[str]
-    max_date: Optional[str]
-    limit: Optional[int]
-    tags: Optional[Dict[str, str]]
+    name: Optional[str] = None
+    team: Optional[str] = None
+    version: Optional[str] = None
+    uid: Optional[str] = None
+    max_date: Optional[str] = None
+    limit: Optional[int] = None
+    tags: Optional[Dict[str, str]] = None
     table_name: str
 
 
 class ListCardResponse(BaseModel):
-    cards: Optional[List[Dict[str, Any]]]
+    cards: Optional[List[Dict[str, Any]]] = None
 
 
 class AddCardRequest(BaseModel):
@@ -84,10 +89,10 @@ class UpdateCardResponse(BaseModel):
 
 
 class QuerycardRequest(BaseModel):
-    name: Optional[str]
-    team: Optional[str]
-    version: Optional[str]
-    uid: Optional[str]
+    name: Optional[str] = None
+    team: Optional[str] = None
+    version: Optional[str] = None
+    uid: Optional[str] = None
     table_name: str
 
 
@@ -98,7 +103,6 @@ class QuerycardResponse(BaseModel):
 class CardRequest(BaseModel):
     name: Optional[str] = None
     version: Optional[str] = None
-    team: Optional[str] = None
     uid: Optional[str] = None
 
 
@@ -110,14 +114,10 @@ class CompareCardRequest(BaseModel):
 
 
 class RegisterModelRequest(BaseModel):
-    name: str = Field(
-        ...,
-        description="Model name (does not include team)",
-        example="tlmd-drive-time",
-    )
+    name: str = Field(..., description="Model name (does not include team)")
     version: str = Field(
         ...,
-        regex="^[0-9]+(.[0-9]+)?(.[0-9]+)?$",
+        pattern="^[0-9]+(.[0-9]+)?(.[0-9]+)?$",
         description="""
                 Version of model to register in major[.minor[.patch]] format. Valid
                 formats are "1", "1.1", and "1.1.1". If not all components are
@@ -128,12 +128,9 @@ class RegisterModelRequest(BaseModel):
                     * "1"     = registers 1.2.3 at "1" (the highest minor / patch version is used)
                     * "1.2"   = registers 1.2.3 at "1.2"
                     * "1.1"   = registers 1.1.100 at "1.1"
-                    * "1.1.1" = regisers 1.1.1 at "1.1.1"
+                    * "1.1.1" = registers 1.1.1 at "1.1.1"
                 """,
     )
-
-    team: str = Field(..., description="Team name")
-    uid: Optional[str] = Field(None, description="Optional UID. Overrides team / model name / version")
     onnx: bool = Field(
         True, description="Flag indicating if the onnx or non-onnx model should be registered. Default True."
     )
@@ -152,10 +149,10 @@ class ListFileResponse(BaseModel):
 
 
 class MetricRequest(BaseModel):
-    name: Optional[str]
-    team: Optional[str]
-    version: Optional[str]
-    uid: Optional[str]
+    name: Optional[str] = None
+    team: Optional[str] = None
+    version: Optional[str] = None
+    uid: Optional[str] = None
 
 
 class MetricResponse(BaseModel):

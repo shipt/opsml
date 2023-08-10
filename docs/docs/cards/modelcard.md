@@ -26,7 +26,7 @@ card_info = CardInfo(name="linnerrud", team="opsml", user_email="user@email.com"
 
 
 # load datacard
-datacard = data_registry.load_card(name=card_info.name, team=card_info.team, version="1.0.0")
+datacard = data_registry.load_card(name=card_info.name, version="1.0.0")
 
 # data is not loaded by default (helps when sharing cards with large data)
 datacard.load_data()
@@ -51,14 +51,14 @@ modelcard = ModelCard(
 onnx_predictor = modelcard.onnx_model()
 record = list(modelcard.sample_input_data[0:1].T.to_dict().values())[0]
 
-pred_onnx = onnx_predictor.predict(record)["variable"]
+pred_onnx = onnx_predictor.predict(record)["value"]
 pred_orig = onnx_predictor.predict_with_model(linreg, record)[0][0]
 
 print(f"Original: {pred_orig}, Onnx: {pred_onnx}")
 # > Original: 54.4616866, Onnx: 54.4616866
 
-print(onnx_predictor.input_sig.schema_json())
-print(onnx_predictor.output_sig.schema_json())
+print(onnx_predictor.input_sig.model_json_schema())
+print(onnx_predictor.output_sig.model_json_schema())
 
 # everything looks good
 model_registry.register_card(modelcard)

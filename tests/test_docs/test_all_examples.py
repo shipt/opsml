@@ -117,7 +117,6 @@ def test_challenger_example(mlflow_project: MlflowProject):
     model_registry = CardRegistry(registry_name="model")
     linreg_card = model_registry.load_card(
         name="linear_reg",
-        team="mlops",
         tags={"example": "challenger"},
     )
 
@@ -132,7 +131,7 @@ def test_challenger_example(mlflow_project: MlflowProject):
         ],
     )
 
-    print([report.dict() for report in reports["mae"]])
+    print([report.model_dump() for report in reports["mae"]])
 
 
 def test_datacard(db_registries):
@@ -308,7 +307,7 @@ def test_modelcard(db_registries):
     card_info = CardInfo(name="linnerrud", team="opsml", user_email="user@email.com")
 
     # load datacard
-    datacard = data_registry.load_card(name=card_info.name, team=card_info.team, version="1.0.0")
+    datacard = data_registry.load_card(name=card_info.name, version="1.0.0")
 
     # data is not loaded by default (helps when sharing cards with large data)
     datacard.load_data()
@@ -332,14 +331,14 @@ def test_modelcard(db_registries):
     onnx_predictor = modelcard.onnx_model()
     record = list(modelcard.sample_input_data[0:1].T.to_dict().values())[0]
 
-    pred_onnx = onnx_predictor.predict(record)["variable"]
+    pred_onnx = onnx_predictor.predict(record)["value"]
     pred_orig = onnx_predictor.predict_with_model(linreg, record)[0][0]
 
     print(f"Original: {pred_orig}, Onnx: {pred_onnx}")
     # > Original: 54.4616866, Onnx: 54.4616866
 
-    print(onnx_predictor.input_sig.schema_json())
-    print(onnx_predictor.output_sig.schema_json())
+    print(onnx_predictor.input_sig.model_json_schema())
+    print(onnx_predictor.output_sig.model_json_schema())
 
     # everything looks good
     model_registry.register_card(modelcard)
@@ -511,7 +510,7 @@ def test_overview_list(
     registry.list_cards(name="linear-reg", team="opsml", version="~2.3.4")
     # list card with name "linear-reg" with team "opsml" and latest version < 2.4.0
 
-    registry.list_cards(uid=uid, as_dataframe=False)
+    registry.list_cards(uid=uid, as_dataframe=True)
 
 
 def test_runcard_opsml_example(opsml_project: OpsmlProject):
@@ -691,8 +690,8 @@ def test_index_example(db_registries):
     )
 
     model_registry.register_card(card=modelcard)
-    print(data_registry.list_cards(info=card_info, as_dataframe=False))
-    print(model_registry.list_cards(info=card_info, as_dataframe=False))
+    print(data_registry.list_cards(info=card_info))
+    print(model_registry.list_cards(info=card_info))
 
 
 def test_quickstart(mlflow_project: MlflowProject):

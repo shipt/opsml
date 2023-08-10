@@ -42,8 +42,8 @@ class DataCardRegistry(Registry):
             None
         """
 
-        record = DataRegistryCard(**card.dict())
-        self.update_card_record(card=record.dict())
+        record = DataRegistryCard(**card.model_dump())
+        self.update_card_record(card=record.model_dump())
 
     @staticmethod
     def validate(registry_name: str):
@@ -181,7 +181,7 @@ class CardRegistry:
         info: Optional[CardInfo] = None,
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
-        as_dataframe: bool = True,
+        as_dataframe: bool = False,
     ) -> Union[List[Dict[str, Any]], pd.DataFrame]:
         """Retrieves records from registry
 
@@ -237,7 +237,6 @@ class CardRegistry:
     def load_card(
         self,
         name: Optional[str] = None,
-        team: Optional[str] = None,
         uid: Optional[str] = None,
         version: Optional[str] = None,
     ) -> ArtifactCard:
@@ -257,10 +256,7 @@ class CardRegistry:
             name = name.lower()
             name = name.replace("_", "-")
 
-        if team is not None:
-            team = team.lower()
-
-        return self._registry.load_card(uid=uid, name=name, team=team, version=version)
+        return self._registry.load_card(uid=uid, name=name, version=version)
 
     def register_card(
         self,

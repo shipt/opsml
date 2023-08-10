@@ -1,6 +1,10 @@
 # pylint: disable=[import-outside-toplevel,import-error]
 
 """Code for generating Onnx Models"""
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import re
 import tempfile
 import warnings
@@ -581,7 +585,7 @@ class PyTorchOnnxModel(ModelConverter):
                 model=self.model_info.model,
                 args=arg_data,
                 f=filename,
-                **self.additional_args.dict(exclude={"options"}),
+                **self.additional_args.model_dump(exclude={"options"}),
             )
             onnx.checker.check_model(filename)
             model = onnx.load(filename)
