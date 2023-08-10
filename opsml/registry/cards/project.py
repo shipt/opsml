@@ -2,11 +2,22 @@
 
 from typing import Optional
 
-from pydantic import validator
+from pydantic import field_validator, ValidationInfo
 
+
+from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType
-from opsml.registry.sql.records import ProjectRegistryCard, RegistryCard
+from opsml.registry.cards.types import (
+    CardType,
+)
+from opsml.registry.sql.records import (
+    ProjectRegistryCard,
+    RegistryCard,
+)
+from opsml.registry.sql.settings import settings
+
+logger = ArtifactLogger.get_logger(__name__)
+storage_client = settings.storage_client
 
 
 class ProjectCard(ArtifactCard):
@@ -16,14 +27,15 @@ class ProjectCard(ArtifactCard):
 
     project_id: Optional[str] = None
 
-    @validator("project_id", pre=True, always=True)
-    def create_project_id(cls, value, values, **kwargs):
-        return f'{values["name"]}:{values["team"]}'
+    @field_validator("project_id", mode="before")
+    def create_project_id(cls, value, info: ValidationInfo, **kwargs):
+        data = info.data  # type: ignore
+        return f'{data.get("name")}:{data.get("team")}'
 
     def create_registry_record(self) -> RegistryCard:
         """Creates a registry record for a project"""
 
-        return ProjectRegistryCard(**self.dict())
+        return ProjectRegistryCard(**self.model_dump())
 
     @property
     def card_type(self) -> str:

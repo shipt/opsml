@@ -6,7 +6,8 @@ from typing import Any, Dict, Optional, Union, cast
 import numpy as np
 import pandas as pd
 import polars as pl
-from pydantic import root_validator, validator
+from pydantic import model_validator, field_validator, ConfigDict
+
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.predictor import OnnxModelPredictor
@@ -21,8 +22,14 @@ from opsml.model.types import (
     OnnxModelDefinition,
 )
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, ModelCardUris
-from opsml.registry.sql.records import ModelRegistryCard, RegistryCard
+from opsml.registry.cards.types import (
+    CardType,
+    ModelCardUris,
+)
+from opsml.registry.sql.records import (
+    ModelRegistryCard,
+    RegistryCard,
+)
 from opsml.registry.sql.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs, ArtifactStorageType
@@ -79,25 +86,27 @@ class ModelCard(ArtifactCard):
                 URI where model metadata is stored
     """
 
-    trained_model: Optional[Any]
-    sample_input_data: SampleModelData
-    datacard_uid: Optional[str]
-    onnx_model_data: Optional[DataDict]
-    onnx_model_def: Optional[OnnxModelDefinition]
-    sample_data_type: Optional[str]
-    model_type: Optional[str]
-    additional_onnx_args: Optional[ExtraOnnxArgs]
-    data_schema: Optional[ApiDataSchemas]
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        ignored_types=(cached_property,),
+        protected_namespaces=("protect_",),
+    )
+
+    trained_model: Optional[Any] = None
+    sample_input_data: SampleModelData = None
+    datacard_uid: Optional[str] = None
+    onnx_model_data: Optional[DataDict] = None
+    onnx_model_def: Optional[OnnxModelDefinition] = None
+    sample_data_type: Optional[str] = None
+    model_type: Optional[str] = None
+    additional_onnx_args: Optional[ExtraOnnxArgs] = None
+    data_schema: Optional[ApiDataSchemas] = None
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
     to_onnx: bool = True
     uris: ModelCardUris = ModelCardUris()
 
-    class Config:
-        arbitrary_types_allowed = True
-        keep_untouched = (cached_property,)
-
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def check_args(cls, values: Dict[str, Any]):
         """Converts trained model to modelcard"""
 
@@ -111,7 +120,7 @@ class ModelCard(ArtifactCard):
 
         return values
 
-    @validator("sample_input_data", pre=True)
+    @field_validator("sample_input_data", mode="before")
     def get_one_sample(cls, input_data: SampleModelData) -> SampleModelData:
         """Parses input data and returns a single record to be used during ONNX conversion and validation"""
 
@@ -198,7 +207,7 @@ class ModelCard(ArtifactCard):
             artifact_type=ArtifactStorageType.JSON.value,
         )
 
-        return ModelMetadata.parse_obj(model_metadata)
+        return ModelMetadata.model_validate(model_metadata)
 
     def _load_onnx_model(self, metadata: ModelMetadata) -> Any:
         """Loads the actual onnx file
@@ -234,11 +243,11 @@ class ModelCard(ArtifactCard):
 
         setattr(self, "onnx_model_def", model_def)
 
-    def create_registry_record(self) -> RegistryCard:
+    def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record from the current ModelCard"""
 
         exclude_vars = {"trained_model", "sample_input_data", "onnx_model_def"}
-        return ModelRegistryCard(**self.dict(exclude=exclude_vars))
+        return ModelRegistryCard(**self.model_dump(exclude=exclude_vars))
 
     def _set_version_for_predictor(self) -> str:
         if self.version is None:

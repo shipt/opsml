@@ -3,9 +3,17 @@
 from typing import Any, Dict, List, Optional, Union, cast
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import TypeChecker
+from opsml.helpers.utils import (
+    TypeChecker,
+)
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import METRICS, PARAMS, CardType, Metric, Param
+from opsml.registry.cards.types import (
+    METRICS,
+    PARAMS,
+    CardType,
+    Metric,
+    Param,
+)
 from opsml.registry.sql.records import (
     ARBITRARY_ARTIFACT_TYPE,
     RegistryCard,
@@ -59,14 +67,14 @@ class RunCard(ArtifactCard):
 
     datacard_uids: List[str] = []
     modelcard_uids: List[str] = []
-    pipelinecard_uid: Optional[str]
+    pipelinecard_uid: Optional[str] = None
     metrics: METRICS = {}
     parameters: PARAMS = {}
     artifacts: Dict[str, Any] = {}
     artifact_uris: Dict[str, str] = {}
     tags: Dict[str, str] = {}
-    project_id: Optional[str]
-    runcard_uri: Optional[str]
+    project_id: Optional[str] = None
+    runcard_uri: Optional[str] = None
 
     def add_tag(self, key: str, value: str):
         """
@@ -191,7 +199,7 @@ class RunCard(ArtifactCard):
 
         exclude_attr = {"artifacts", "params", "metrics"}
 
-        return RunRegistryCard(**self.dict(exclude=exclude_attr))
+        return RunRegistryCard(**self.model_dump(exclude=exclude_attr))
 
     def add_artifact_uri(self, name: str, uri: str):
         """

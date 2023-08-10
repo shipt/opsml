@@ -1,18 +1,26 @@
 # pylint: disable=too-many-lines
 
-from typing import Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
 import polars as pl
 from pyarrow import Table
-from pydantic import validator
+from pydantic import field_validator
+
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import FindPath
+from opsml.helpers.utils import (
+    FindPath,
+)
+
 from opsml.profile.profile_data import DataProfiler, ProfileReport
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, DataCardUris
+from opsml.registry.cards.types import (
+    CardType,
+    DataCardUris,
+)
+from opsml.registry.data.formatter import check_data_schema
 from opsml.registry.data.splitter import DataHolder, DataSplit, DataSplitter
 from opsml.registry.sql.records import DataRegistryCard, RegistryCard
 from opsml.registry.sql.settings import settings
@@ -77,28 +85,33 @@ class DataCard(ArtifactCard):
 
     """
 
-    data: Optional[Union[np.ndarray, pd.DataFrame, Table, pl.DataFrame]]
+    data: Optional[Union[np.ndarray, pd.DataFrame, Table, pl.DataFrame]] = None
     data_splits: List[DataSplit] = []
-    feature_map: Optional[Dict[str, Union[str, None]]]
-    data_type: Optional[str]
-    dependent_vars: Optional[List[Union[int, str]]]
-    feature_descriptions: Optional[Dict[str, str]]
-    additional_info: Optional[Dict[str, Union[float, int, str]]]
+    feature_map: Optional[Dict[str, Optional[Any]]] = None
+    data_type: Optional[str] = None
+    dependent_vars: Optional[List[Union[int, str]]] = None
+    feature_descriptions: Optional[Dict[str, str]] = None
+    additional_info: Optional[Dict[str, Union[float, int, str]]] = None
     sql_logic: Dict[Optional[str], Optional[str]] = {}
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
-    uris: DataCardUris = DataCardUris()
     data_profile: Optional[ProfileReport] = None
+    uris: DataCardUris = DataCardUris()
 
-    @validator("uris", pre=True, always=True)
-    def check_data(cls, uris: DataCardUris, values):
-        if uris.data_uri is None:
-            if values["data"] is None and not bool(values["sql_logic"]):
+    @field_validator("uris", mode="before")
+    def check_data(cls, uris, info):
+        if isinstance(uris, DataCardUris):
+            data_uri = uris.data_uri
+        else:
+            data_uri = uris.get("data_uri")
+
+        if info.data.get("data") is None and not bool(info.data.get("sql_logic")):
+            if data_uri is None:
                 raise ValueError("Data or sql logic must be supplied when no data_uri is present")
 
         return uris
 
-    @validator("data_profile", pre=True, always=True)
+    @field_validator("data_profile", mode="before")
     def check_profile(cls, profile):
         if profile is not None:
             from ydata_profiling import ProfileReport as ydata_profile
@@ -106,23 +119,17 @@ class DataCard(ArtifactCard):
             assert isinstance(profile, ydata_profile)
         return profile
 
-    @validator("feature_descriptions", pre=True, always=True)
+    @field_validator("feature_descriptions", mode="before")
     def lower_descriptions(cls, feature_descriptions):
         if feature_descriptions is None:
             return feature_descriptions
-
         feat_dict = {}
         for feature, description in feature_descriptions.items():
             feat_dict[feature.lower()] = description.lower()
+            return feat_dict
 
-        return feat_dict
-
-    @validator("additional_info", pre=True, always=True)
-    def check_info(cls, value):
-        return value or {}
-
-    @validator("sql_logic", pre=True, always=True)
-    def load_sql(cls, sql_logic, values):
+    @field_validator("sql_logic", mode="before")
+    def load_sql(cls, sql_logic):
         if not bool(sql_logic):
             return sql_logic
 
@@ -198,9 +205,9 @@ class DataCard(ArtifactCard):
 
             settings.storage_client.storage_spec = storage_spec
             data = load_record_artifact_from_storage(
-                storage_client=settings.storage_client,
-                artifact_type=self.data_type,
+                storage_client=settings.storage_client, artifact_type=self.data_type
             )
+            data = check_data_schema(data, self.feature_map)
 
             setattr(self, "data", data)
 
@@ -217,7 +224,7 @@ class DataCard(ArtifactCard):
 
         """
         exclude_attr = {"data"}
-        return DataRegistryCard(**self.dict(exclude=exclude_attr))
+        return DataRegistryCard(**self.model_dump(exclude=exclude_attr))
 
     def add_info(self, info: Dict[str, Union[float, int, str]]) -> None:
         """

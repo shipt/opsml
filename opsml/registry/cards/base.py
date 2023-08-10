@@ -1,14 +1,32 @@
 # pylint: disable=too-many-lines
 
-
-from typing import Dict, Optional, Protocol
-
 from pydantic import BaseModel, root_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import clean_string, validate_name_team_pattern
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.records import RegistryCard
+
+from typing import Dict, Optional, Union
+
+import numpy as np
+import pandas as pd
+import polars as pl
+from pydantic import BaseModel, model_validator, ConfigDict
+
+
+from opsml.helpers.logging import ArtifactLogger
+from opsml.helpers.utils import (
+    clean_string,
+    validate_name_team_pattern,
+)
+
+from opsml.registry.cards.types import (
+    CardInfo,
+)
+from opsml.registry.sql.records import (
+    RegistryRecord,
+)
 from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -24,8 +42,17 @@ class AuditCard(Protocol):
         ...
 
 
+SampleModelData = Optional[Union[pd.DataFrame, np.ndarray, Dict[str, np.ndarray], pl.DataFrame]]
+
+
 class ArtifactCard(BaseModel):
     """Base pydantic class for artifact cards"""
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=False,
+        validate_default=True,
+    )
 
     name: str
     team: str
@@ -35,12 +62,7 @@ class ArtifactCard(BaseModel):
     info: Optional[CardInfo] = None
     tags: Dict[str, str] = {}
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = False
-        smart_union = True
-
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def validate(cls, env_vars):
         """Validate base args and Lowercase name and team"""
 
