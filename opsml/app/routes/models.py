@@ -222,6 +222,7 @@ async def list_model(
                 "models": models,
                 "selected_model": model,
                 "versions": versions,
+                "version": metadata.model_version,
             },
         )
 

@@ -69,7 +69,11 @@
 
     <div class="dropdown" id="MetadataTeamSelect">
       <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
-        Select Version
+        {% if version is not none %}
+          {{version}}
+        {% else %}
+          Select Version
+        {% endif %}
       </a>
     
       <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
