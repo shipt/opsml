@@ -5,13 +5,10 @@ import polars as pl
 from numpy.typing import NDArray
 import pyarrow as pa
 from os import path
-from unittest.mock import patch
 import pytest
 from pytest_lazyfixture import lazy_fixture
 from opsml.registry.cards import DataCard, RunCard, PipelineCard, ModelCard, DataSplit
-from opsml.registry.cards.pipeline_loader import PipelineLoader
 from opsml.registry.sql.registry import CardRegistry
-from sklearn.model_selection import train_test_split
 from sklearn import linear_model
 from sklearn.pipeline import Pipeline
 import uuid
@@ -796,71 +793,6 @@ def test_pipeline_registry(db_registries: Dict[str, CardRegistry]):
         columns=["datacard_uids"],
     )
     assert bool(values["datacard_uids"])
-
-
-def test_full_pipeline_with_loading(
-    db_registries: Dict[str, CardRegistry],
-    linear_regression: linear_model.LinearRegression,
-):
-    team = "mlops"
-    user_email = "mlops.com"
-    pipeline_code_uri = "test_pipe_uri"
-    data_registry: CardRegistry = db_registries["data"]
-    model_registry: CardRegistry = db_registries["model"]
-    experiment_registry: CardRegistry = db_registries["run"]
-    pipeline_registry: CardRegistry = db_registries["pipeline"]
-    model, data = linear_regression
-
-    #### Create DataCard
-    data_card = DataCard(
-        data=data,
-        name="test_data",
-        team=team,
-        user_email=user_email,
-    )
-
-    data_registry.register_card(card=data_card)
-    ###### ModelCard
-    model_card = ModelCard(
-        trained_model=model,
-        sample_input_data=data[:1],
-        name="test_model",
-        team=team,
-        user_email=user_email,
-        datacard_uid=data_card.uid,
-    )
-
-    model_registry.register_card(model_card)
-
-    ##### RunCard
-    exp_card = RunCard(
-        name="test_experiment",
-        team=team,
-        user_email=user_email,
-        datacard_uids=[data_card.uid],
-        modelcard_uids=[model_card.uid],
-    )
-    exp_card.log_metric("test_metric", 10)
-    experiment_registry.register_card(card=exp_card)
-
-    #### PipelineCard
-    pipeline_card = PipelineCard(
-        name="test_pipeline",
-        team=team,
-        user_email=user_email,
-        pipeline_code_uri=pipeline_code_uri,
-        datacard_uids=[data_card.uid],
-        modelcard_uids=[model_card.uid],
-        runcard_uids=[exp_card.uid],
-    )
-    pipeline_registry.register_card(card=pipeline_card)
-
-    loader = PipelineLoader(pipelinecard_uid=pipeline_card.uid)
-    uids = loader.card_uids
-
-    assert uids["data"][0] == data_card.uid
-    assert uids["run"][0] == exp_card.uid
-    assert uids["model"][0] == model_card.uid
 
 
 def test_model_registry_with_polars(

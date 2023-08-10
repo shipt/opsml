@@ -1,13 +1,10 @@
 # pylint: disable=too-many-lines
 
-from pydantic import BaseModel, root_validator
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 
-from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import clean_string, validate_name_team_pattern
-from opsml.registry.cards.types import CardInfo, CardType
-from opsml.registry.sql.records import RegistryCard
-
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Protocol
 
 import numpy as np
 import pandas as pd
@@ -21,11 +18,9 @@ from opsml.helpers.utils import (
     validate_name_team_pattern,
 )
 
-from opsml.registry.cards.types import (
-    CardInfo,
-)
+from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.records import (
-    RegistryRecord,
+    RegistryCard,
 )
 from opsml.registry.sql.settings import settings
 

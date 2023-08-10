@@ -1,5 +1,9 @@
 # pylint: disable=too-many-lines
 
+# Copyright (c) Shipt, Inc.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 from functools import cached_property
 from typing import Any, Dict, Optional, Union, cast
 
@@ -243,7 +247,7 @@ class ModelCard(ArtifactCard):
 
         setattr(self, "onnx_model_def", model_def)
 
-    def create_registry_record(self) -> RegistryRecord:
+    def create_registry_record(self) -> RegistryCard:
         """Creates a registry record from the current ModelCard"""
 
         exclude_vars = {"trained_model", "sample_input_data", "onnx_model_def"}
