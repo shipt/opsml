@@ -18,9 +18,6 @@ from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
 
-from opsml.registry.cards.data import DataCard
-from opsml.registry.cards.model import ModelCard
-from opsml.registry.cards.run import RunCard
 
 logger = ArtifactLogger.get_logger(__name__)
 DIR_PATH = os.path.dirname(__file__)
@@ -185,10 +182,6 @@ class AuditCard(ArtifactCard):
     def misc(self) -> Dict[int, Question]:
         return self.audit.misc
 
-    @property
-    def card_type(self) -> str:
-        return CardType.AUDITCARD.value
-
     def list_questions(self, section: Optional[str] = None) -> None:
         """Lists all Audit Card questions in a rich table
 
@@ -262,7 +255,7 @@ class AuditCard(ArtifactCard):
         template_env = Environment(
             loader=FileSystemLoader(searchpath=DIR_PATH),
         )
-        template = template_env.get_template(AUDIT_TEMPLATE_HTML_FILE)
+        template_env.get_template(AUDIT_TEMPLATE_HTML_FILE)
 
     @property
     def card_type(self) -> str:

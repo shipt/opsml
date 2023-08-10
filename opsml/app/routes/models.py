@@ -1,12 +1,10 @@
 # pylint: disable=protected-access
-from typing import Any, Dict, List, Union, Optional
 import os
-from fastapi import APIRouter, Body, HTTPException, Request, status, Form
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 
 from opsml.app.routes.pydantic_models import (
     CardRequest,

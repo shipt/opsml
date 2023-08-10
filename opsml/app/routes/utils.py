@@ -1,10 +1,8 @@
-from typing import Any, Dict, List
-from functools import cached_property
+from typing import Any, Dict
 from streaming_form_data.targets import FileTarget
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
-from opsml.registry import CardRegistry
 
 logger = ArtifactLogger.get_logger(__name__)
 
