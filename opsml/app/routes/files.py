@@ -73,29 +73,36 @@ async def upload_file(request: Request):
         logger.error("Client disconnected")
 
     except MaxBodySizeException as error:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"""
+        detail = f"""
                Maximum request body size limit ({MAX_REQUEST_BODY_SIZE}.
-               Bytes exceeded ({error.body_len} bytes read)""",
-        ) from error
+               Bytes exceeded ({error.body_len} bytes read)
+               """
+
+        logger.error(detail)
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=detail) from error
 
     except streaming_form_data.validators.ValidationError as error:
+        detail = f"Maximum file size limit ({MAX_FILE_SIZE} bytes) exceeded"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"Maximum file size limit ({MAX_FILE_SIZE} bytes) exceeded",
+            detail=detail,
         ) from error
 
     except Exception as error:
+        detail = f"There was an error uploading the file. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"There was an error uploading the file. {error}",
+            detail=detail,
         ) from error
 
     if not file_.multipart_filename:
+        detail = "File is missing"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="File is missing",
+            detail=detail,
         )
     return {
         "storage_uri": os.path.join(write_path, filename),
@@ -130,9 +137,11 @@ def download_file(
         )
 
     except Exception as error:
+        detail = f"There was an error downloading the file. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"There was an error downloading the file. {error}",
+            detail=detail,
         ) from error
 
 
@@ -159,7 +168,9 @@ def list_files(
         return ListFileResponse(files=files)
 
     except Exception as error:
+        detail = f"There was an error listing files. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"There was an error listing files. {error}",
+            detail=detail,
         ) from error
