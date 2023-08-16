@@ -193,7 +193,7 @@ def test_model_metrics(
     assert result.exit_code == 0
 
     # test metric failure
-    result = runner.invoke(app, ["get-model-metrics", "--name", modelcard.name, "--team", modelcard.team])
+    result = runner.invoke(app, ["get-model-metrics", "--name", modelcard.name])
     assert result.exit_code == 1
 
     ### Create 2nd batch

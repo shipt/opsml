@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 
 import pandas as pd
-import semver
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import ColumnElement, FromClause, Select
 
@@ -23,7 +22,7 @@ from opsml.registry.cards import (
 )
 from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
-from opsml.registry.sql.semver import SemVerSymbols, sort_semvers, CardVersion, VersionType, SemVerUtils
+from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils
 from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
 from opsml.registry.storage.types import ArtifactStorageSpecs
@@ -199,6 +198,7 @@ class SQLRegistryBase:
             pre_tag=pre_tag,
             build_tag=build_tag,
         )
+
         card.version = version
 
         return None
@@ -285,7 +285,7 @@ class SQLRegistryBase:
 
     def _sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         versions = [record["version"] for record in records]
-        sorted_versions = sort_semvers(versions)
+        sorted_versions = SemVerUtils.sort_semvers(versions)
 
         sorted_records = []
         for version in sorted_versions:
@@ -384,7 +384,7 @@ class ServerRegistry(SQLRegistryBase):
 
             versions = [result.version for result in results]
             sorted_versions = SemVerUtils.sort_semvers(versions=versions)
-            return SemVerUtils.finalize_version(
+            return SemVerUtils.increment_version(
                 version=sorted_versions[0],
                 version_type=version_type,
                 pre_tag=pre_tag,
@@ -396,7 +396,7 @@ class ServerRegistry(SQLRegistryBase):
 
         version = final_version or "1.0.0"
 
-        return SemVerUtils.add_tags(version=version, pre_tag=pre_tag, build_tag=build_tag)
+        return version
 
     @log_card_change
     def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:

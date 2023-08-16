@@ -68,7 +68,8 @@ class ModelCardRegistry(Registry):
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        save_path: Optional[str] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> None:
         """
         Adds new record to registry.
@@ -79,12 +80,6 @@ class ModelCardRegistry(Registry):
             version_type:
                 Version type for increment. Options are "major", "minor" and
                 "patch". Defaults to "minor"
-            save_path:
-                Blob path to save card artifacts too. This path SHOULD NOT
-                include the base prefix (e.g. "gs://my_bucket" - this prefix is
-                already inferred using either "OPSML_TRACKING_URI" or
-                "OPSML_STORAGE_URI" env variables. In addition, save_path should
-                specify a directory.
         """
 
         model_card = cast(ModelCard, card)
@@ -98,7 +93,8 @@ class ModelCardRegistry(Registry):
         return super().register_card(
             card=card,
             version_type=version_type,
-            save_path=save_path,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
         )
 
     @staticmethod
@@ -262,28 +258,29 @@ class CardRegistry:
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        save_path: Optional[str] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> None:
         """
         Adds new record to registry.
 
         Args:
             card:
-                Card to register
+                card to register
             version_type:
-                Version type for increment. Options are "major", "minor" and "patch". Defaults to "minor"
-            save_path:
-                Blob path to save card artifacts too. This path SHOULD NOT
-                include the base prefix (e.g. "gs://my_bucket") - this prefix is
-                already inferred using either "OPSML_TRACKING_URI" or
-                "OPSML_STORAGE_URI" env variables. In addition, save_path should
-                specify a directory.
+                Version type for increment. Options are "major", "minor" and
+                "patch". Defaults to "minor".
+            pre_tag:
+                pre-release tag to add to card version
+            build_tag:
+                build tag to add to card version
         """
 
         self._registry.register_card(
             card=card,
             version_type=version_type,
-            save_path=save_path,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
         )
 
     def update_card(

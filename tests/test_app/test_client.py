@@ -247,8 +247,7 @@ def test_register_model(
         datacard_uid=data_card.uid,
     )
 
-    model_registry.register_card(card=model_card_custom, save_path="steven-test/models")
-    assert "steven-test/models" in model_card_custom.uris.trained_model_uri
+    model_registry.register_card(card=model_card_custom)
 
     model_card2 = ModelCard(
         trained_model=model,
@@ -477,7 +476,6 @@ def test_metadata_download_and_registration(
     )
 
     model_registry.register_card(model_card)
-
     response = test_app.post(
         url=f"opsml/{ApiRoutes.MODEL_METADATA}",
         json={"uid": model_card.uid},

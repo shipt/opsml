@@ -54,7 +54,7 @@ def post_model_register(request: Request, payload: RegisterModelRequest) -> str:
 
     # get model metadata
     metadata = post_model_metadata(request, CardRequest(name=payload.name, version=payload.version))
-    logger.info(f"Registering model {payload.name} {payload.version} {payload.uid}")
+    logger.info(f"Registering model {payload.name} {payload.version}")
 
     try:
         registrar: ModelRegistrar = request.app.state.model_registrar
@@ -63,7 +63,7 @@ def post_model_register(request: Request, payload: RegisterModelRequest) -> str:
             metadata,
         )
     except RegistrationError as exc:
-        detail = f"Failed to register model {payload.name} {payload.version} {payload.uid}. {exc}"
+        detail = f"Failed to register model {payload.name} {payload.version}. {exc}"
         logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -100,7 +100,7 @@ def post_model_metadata(
         )
 
     except IndexError as exc:
-        detail = f"Model not found: {payload.name} {payload.version} {payload.uid}"
+        detail = f"Model not found"
         logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
