@@ -128,13 +128,80 @@ class CardVersion(BaseModel):
             return None
 
 
-def sort_semvers(semvers: List[str]) -> List[str]:
-    """Sorts a list of semvers"""
-    sorted_versions = sorted(
-        semvers, key=lambda x: [int(i) if i.isdigit() else i for i in x.replace("-", ".").split(".")]
-    )
-    sorted_versions.reverse()
-    return sorted_versions
+class SemVerUtils:
+    """Class for general semver-related functions"""
+
+    @staticmethod
+    def sort_semvers(versions: List[str]) -> List[str]:
+        """Sorts a list of semvers"""
+        sorted_versions = sorted(
+            versions, key=lambda x: [int(i) if i.isdigit() else i for i in x.replace("-", ".").split(".")]
+        )
+        sorted_versions.reverse()
+        return sorted_versions
+
+    @staticmethod
+    def increment_version(version: str, version_type: VersionType) -> str:
+        """
+        Increments a version based on version type
+
+        Args:
+            version:
+                Current version
+            version_type:
+                Type of version increment.
+
+        Raises:
+            ValueError:
+                unknown version_type
+
+        Returns:
+            New version
+        """
+        ver: semver.VersionInfo = semver.VersionInfo.parse(version)
+        if version_type == VersionType.MAJOR:
+            return str(ver.bump_major())
+        if version_type == VersionType.MINOR:
+            return str(ver.bump_minor())
+        if version_type == VersionType.PATCH:
+            return str(ver.bump_patch())
+        raise ValueError(f"Unknown version_type: {version_type}")
+
+    @staticmethod
+    def add_tags(
+        version: str,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
+    ):
+        if pre_tag is not None:
+            version = f"{version}-{pre_tag}"
+        if build_tag is not None:
+            version = f"{version}+{build_tag}"
+
+        return version
+
+    def finalize_version(
+        version: str,
+        version_type: VersionType,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
+    ) -> str:
+        """Finalizes a semver version
+
+        Args:
+            version:
+                version to finalize
+            version_type:
+                type of version increment
+            pre_tag:
+                pre-release tag
+            build_tag:
+                build tag
+        Returns:
+            str: finalized version
+        """
+        version = SemVerUtils.increment_version(version, version_type)
+        return SemVerUtils.add_tags(version, pre_tag, build_tag)
 
 
 class SemVerSymbols(str, Enum):

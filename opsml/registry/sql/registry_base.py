@@ -23,7 +23,7 @@ from opsml.registry.cards import (
 )
 from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
-from opsml.registry.sql.semver import SemVerSymbols, sort_semvers, CardVersion, VersionType
+from opsml.registry.sql.semver import SemVerSymbols, sort_semvers, CardVersion, VersionType, SemVerUtils
 from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
 from opsml.registry.storage.types import ArtifactStorageSpecs
@@ -90,38 +90,14 @@ class SQLRegistryBase:
 
         self._table = TableSchema.get_table(table_name=table_name)
 
-    def _increment_version(self, version: str, version_type: VersionType) -> str:
-        """
-        Increments a version based on version type
-
-        Args:
-            version:
-                Current version
-            version_type:
-                Type of version increment.
-
-        Raises:
-            ValueError:
-                unknown version_type
-
-        Returns:
-            New version
-        """
-        ver: semver.VersionInfo = semver.VersionInfo.parse(version)
-        if version_type == VersionType.MAJOR:
-            return str(ver.bump_major())
-        if version_type == VersionType.MINOR:
-            return str(ver.bump_minor())
-        if version_type == VersionType.PATCH:
-            return str(ver.bump_patch())
-        raise ValueError(f"Unknown version_type: {version_type}")
-
     def set_version(
         self,
         name: str,
         team: str,
         version_type: VersionType,
         partial_version: Optional[CardVersion] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> str:
         raise NotImplementedError
 
@@ -155,11 +131,10 @@ class SQLRegistryBase:
             """
             )
 
-    def _set_artifact_storage_spec(self, card: ArtifactCard, save_path: Optional[str] = None) -> None:
+    def _set_artifact_storage_spec(self, card: ArtifactCard) -> None:
         """Creates artifact storage info to associate with artifacts"""
 
-        if save_path is None:
-            save_path = f"{self.table_name}/{card.team}/{card.name}/v{card.version}"
+        save_path = f"{self.table_name}/{card.team}/{card.name}/v{card.version}"
 
         artifact_storage_spec = ArtifactStorageSpecs(save_path=save_path)
         self._update_storage_client_metadata(storage_specdata=artifact_storage_spec)
@@ -189,7 +164,13 @@ class SQLRegistryBase:
                 raise ValueError("Major, minor and patch version combination already exists")
         return card_version
 
-    def _set_card_version(self, card: ArtifactCard, version_type: VersionType):
+    def _set_card_version(
+        self,
+        card: ArtifactCard,
+        version_type: VersionType,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
+    ):
         """Sets a given card's version and uid
 
         Args:
@@ -215,6 +196,8 @@ class SQLRegistryBase:
             partial_version=card_version,
             team=card.team,
             version_type=version_type,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
         )
         card.version = version
 
@@ -249,7 +232,8 @@ class SQLRegistryBase:
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        save_path: Optional[str] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> None:
         """
         Adds new record to registry.
@@ -259,17 +243,17 @@ class SQLRegistryBase:
                 Card to register
             version_type:
                 Version type for increment. Options are "major", "minor" and "patch". Defaults to "minor"
-            save_path:
-                Blob path to save card artifacts too.
-                This path SHOULD NOT include the base prefix (e.g. "gs://my_bucket")
-                - this prefix is already inferred using either "OPSML_TRACKING_URI" or "OPSML_STORAGE_URI"
-                env variables. In addition, save_path should specify a directory.
         """
 
         self._validate_card_type(card=card)
-        self._set_card_version(card=card, version_type=version_type)
+        self._set_card_version(
+            card=card,
+            version_type=version_type,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
+        )
         self._set_card_uid(card=card)
-        self._set_artifact_storage_spec(card=card, save_path=save_path)
+        self._set_artifact_storage_spec(card=card)
         self._create_registry_record(card=card)
 
     def update_card(self, card: ArtifactCard) -> None:
@@ -365,6 +349,8 @@ class ServerRegistry(SQLRegistryBase):
         team: str,
         version_type: VersionType,
         partial_version: Optional[CardVersion] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> str:
         """
         Sets a version following semantic version standards
@@ -397,17 +383,20 @@ class ServerRegistry(SQLRegistryBase):
                 raise ValueError("""Model name already exists for a different team. Try a different name.""")
 
             versions = [result.version for result in results]
-            sorted_versions = sort_semvers(versions)
-
-            return self._increment_version(
+            sorted_versions = SemVerUtils.sort_semvers(versions=versions)
+            return SemVerUtils.finalize_version(
                 version=sorted_versions[0],
                 version_type=version_type,
+                pre_tag=pre_tag,
+                build_tag=build_tag,
             )
 
         if partial_version is not None:
             final_version = CardVersion.finalize_partial_version(version=partial_version.valid_version)
 
-        return final_version or "1.0.0"
+        version = final_version or "1.0.0"
+
+        return SemVerUtils.add_tags(version=version, pre_tag=pre_tag, build_tag=build_tag)
 
     @log_card_change
     def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
@@ -565,6 +554,8 @@ class ClientRegistry(SQLRegistryBase):
         team: str,
         version_type: VersionType = VersionType.MINOR,
         partial_version: Optional[CardVersion] = None,
+        pre_tag: Optional[str] = None,
+        build_tag: Optional[str] = None,
     ) -> str:
         if partial_version is not None:
             version_to_send = partial_version.dict()
@@ -579,6 +570,8 @@ class ClientRegistry(SQLRegistryBase):
                 "version": version_to_send,
                 "version_type": version_type,
                 "table_name": self.table_name,
+                "pre_tag": pre_tag,
+                "build_tag": build_tag,
             },
         )
 
