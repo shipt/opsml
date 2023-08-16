@@ -60,6 +60,8 @@ def set_version(
         team=payload.team,
         partial_version=payload.version,
         version_type=payload.version_type,
+        pre_tag=payload.pre_tag,
+        build_tag=payload.build_tag,
     )
 
     return VersionResponse(version=version)
