@@ -75,7 +75,7 @@ def list_cards(
     try:
         table_for_registry = payload.table_name.split("_")[1].lower()
         registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
-        logger.info("Listing cards with request: %s", payload.dict())
+        logger.info("Listing cards with request: %s", payload.model_dump())
 
         cards = registry.list_cards(
             uid=payload.uid,
@@ -101,9 +101,11 @@ def list_cards(
         return ListCardResponse(cards=cards)
 
     except Exception as error:
+        detail = f"""Error listing cards. {error}"""
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"""Error listing cards. {error}""",
+            detail=detail,
         ) from error
 
 

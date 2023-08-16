@@ -36,9 +36,11 @@ def download_data_profile(
     )
 
     if datacard.data_profile is None:
+        detail = f"No data profile available for datacard uid:{payload.uid}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"No data profile available for datacard uid:{payload.uid}",
+            detail=detail,
         )
 
     try:
@@ -52,9 +54,11 @@ def download_data_profile(
         )
 
     except Exception as error:
+        detail = f"There was an error downloading the file. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"There was an error downloading the file. {error}",
+            detail=detail,
         ) from error
 
 
@@ -101,9 +105,11 @@ def compare_data_profile(
                     detail=f"No data profile detected for {datacard.uid}",
                 )
     else:
+        detail = "DataCard versions or uids must be lists"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="DataCard versions or uids must be lists",
+            detail=detail,
         )
 
     try:
@@ -117,7 +123,9 @@ def compare_data_profile(
         )
 
     except Exception as error:
+        detail = f"There was an error downloading the file. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"There was an error downloading the file. {error}",
+            detail=detail,
         ) from error
