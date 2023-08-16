@@ -54,6 +54,7 @@ def post_model_register(request: Request, payload: RegisterModelRequest) -> str:
 
     # get model metadata
     metadata = post_model_metadata(request, CardRequest(name=payload.name, version=payload.version))
+    logger.info(f"Registering model {payload.name} {payload.version} {payload.uid}")
 
     try:
         registrar: ModelRegistrar = request.app.state.model_registrar
@@ -62,9 +63,11 @@ def post_model_register(request: Request, payload: RegisterModelRequest) -> str:
             metadata,
         )
     except RegistrationError as exc:
+        detail = f"Failed to register model {payload.name} {payload.version} {payload.uid}. {exc}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unknown error registering model",
+            detail=detail,
         ) from exc
 
 
@@ -87,6 +90,7 @@ def post_model_metadata(
         ModelMetadata or HTTP_404_NOT_FOUND if the model is not found.
     """
     registry: CardRegistry = request.app.state.registries.model
+    logger.info(f"Loading model metadata for {payload.name} {payload.version} {payload.uid}")
 
     try:
         model_card: ModelCard = registry.load_card(  # type:ignore
@@ -96,9 +100,11 @@ def post_model_metadata(
         )
 
     except IndexError as exc:
+        detail = f"Model not found: {payload.name} {payload.version} {payload.uid}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Model not found",
+            detail=detail,
         ) from exc
 
     return model_card.model_metadata
@@ -122,16 +128,20 @@ def post_model_metrics(
     )
 
     if len(cards) > 1:
+        detail = "More than one card found"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="More than one card found",
+            detail=detail,
         )
 
     card = cards[0]
     if card.get("runcard_uid") is None:
+        detail = "Model is not associated with a run"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Model is not associated with a run",
+            detail=detail,
         )
 
     runcard: RunCard = registries.run.load_card(uid=card.get("runcard_uid"))
@@ -165,7 +175,9 @@ def compare_metrics(
             report=battle_report,
         )
     except Exception as error:
+        detail = f"Failed to compare model metrics. {error}"
+        logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to compare model metrics. {error}",
+            detail=detail,
         ) from error

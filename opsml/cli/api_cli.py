@@ -212,7 +212,6 @@ def list_cards(
 @app.command()
 def get_model_metrics(
     name: str = typer.Option(default=None, help="Model name"),
-    team: str = typer.Option(default=None, help="Team associated with model"),
     version: str = typer.Option(default=None, help="Model Version"),
     uid: str = typer.Option(default=None, help="Model uid"),
 ):
@@ -236,13 +235,12 @@ def get_model_metrics(
         ```
 
     """
-    if uid is None and not all(bool(val) for val in [name, team, version]):
+    if uid is None and not all(bool(val) for val in [name, version]):
         raise ValueError("A combination of (name, team, version) and uid must be supplied")
 
     payload: Dict[str, Union[str, int]] = {
         "name": name,
         "version": version,
-        "team": team,
         "uid": uid,
     }
 
