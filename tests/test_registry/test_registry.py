@@ -1056,7 +1056,7 @@ def test_version_tags(db_registries: Dict[str, CardRegistry]):
     assert card.version == "1.0.0-prod.2"
 
     # Switch pre-release to major.minor.patch
-    card = DataCard(**kwargs, version="1.0.0")
+    card = DataCard(**kwargs)
     registry.register_card(card=card, version_type="minor")
     assert card.version == "1.0.0"
 
