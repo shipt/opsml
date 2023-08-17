@@ -6,7 +6,7 @@ import uuid
 from enum import Enum
 from typing import Type, Union, cast
 
-from sqlalchemy import BigInteger, Column, String
+from sqlalchemy import BigInteger, Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_mixin, validates  # type: ignore
@@ -37,6 +37,7 @@ class BaseMixin:
     version = Column("version", String(512), nullable=False)
     user_email = Column("user_email", String(512))
     tags = Column("tags", JSON)
+    UniqueConstraint("name", "version", name="name-version")
 
     @validates("team")
     def lower_team(self, key, team):

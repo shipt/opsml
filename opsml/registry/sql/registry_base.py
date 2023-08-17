@@ -6,9 +6,10 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 
 import pandas as pd
+from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import ColumnElement, FromClause, Select
-
+from semver import VersionInfo
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import api_routes
 from opsml.helpers.utils import clean_string
@@ -22,9 +23,10 @@ from opsml.registry.cards import (
 )
 from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
-from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils
+from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
 from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
+from opsml.registry.sql.exceptions import VersionError
 from opsml.registry.storage.types import ArtifactStorageSpecs
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -94,7 +96,7 @@ class SQLRegistryBase:
         name: str,
         team: str,
         version_type: VersionType,
-        partial_version: Optional[CardVersion] = None,
+        supplied_version: Optional[CardVersion] = None,
         pre_tag: Optional[str] = None,
         build_tag: Optional[str] = None,
     ) -> str:
@@ -142,7 +144,7 @@ class SQLRegistryBase:
         """Updates storage metadata"""
         self.storage_client.storage_spec = storage_specdata
 
-    def _validate_semver(self, name: str, team: str, version: str) -> CardVersion:
+    def _validate_semver(self, name: str, team: str, version: CardVersion) -> None:
         """
         Validates version if version is manually passed to Card
 
@@ -156,12 +158,23 @@ class SQLRegistryBase:
         Returns:
             `CardVersion`
         """
-        card_version = CardVersion(version=version)  # type: ignore
-        if card_version.is_full_semver:
-            records = self.list_cards(name=name, team=team, version=card_version.valid_version)
+        if version.is_full_semver:
+            records = self.list_cards(name=name, version=version.valid_version)
             if len(records) > 0:
-                raise ValueError("Major, minor and patch version combination already exists")
-        return card_version
+                for record in records:
+                    ver = VersionInfo.parse(record["version"])
+                    if not any([ver.prerelease or ver.build]):
+                        raise VersionError("Major, minor and patch version combination already exists")
+
+    def _validate_pre_build_version(self, version: Optional[str] = None) -> CardVersion:
+        if version is None:
+            raise ValueError("Cannot set pre-release or build tag without a version")
+        version = CardVersion(version=version)
+
+        if not version.is_full_semver:
+            raise ValueError("Cannot set pre-release or build tag without a full major.minor.patch specified")
+
+        return version
 
     def _set_card_version(
         self,
@@ -180,19 +193,28 @@ class SQLRegistryBase:
         """
 
         card_version = None
-        if card.version is not None:
-            card_version = self._validate_semver(
-                name=card.name,
-                team=card.team,
-                version=card.version,
-            )
 
+        if version_type in [VersionType.PRE, VersionType.BUILD, VersionType.PRE_BUILD]:
+            card_version = self._validate_pre_build_version(version=card.version)
+
+        # if DS specifies version
+        elif card.version is not None:
+            card_version = CardVersion(version=card.version)
             if card_version.is_full_semver:
+                self._validate_semver(name=card.name, team=card.team, version=card_version)
                 return None
+            # card_version = self._validate_semver(
+            #    name=card.name,
+            #    team=card.team,
+            #    version=card.version,
+            # )
+        #
+        # if card_version.is_full_semver:
+        #    return None
 
         version = self.set_version(
             name=card.name,
-            partial_version=card_version,
+            supplied_version=card_version,
             team=card.team,
             version_type=version_type,
             pre_tag=pre_tag,
@@ -333,7 +355,7 @@ class ServerRegistry(SQLRegistryBase):
         return settings.connection_client.get_engine()
 
     @contextmanager
-    def session(self) -> Any:
+    def session(self) -> Engine:
         engine = self._get_engine()
 
         with Session(engine) as sess:  # type: ignore
@@ -343,12 +365,40 @@ class ServerRegistry(SQLRegistryBase):
         engine = self._get_engine()
         self._table.__table__.create(bind=engine, checkfirst=True)
 
+    def _get_versions_from_db(
+        self, name: str, team: str, version_to_search: Optional[str] = None
+    ) -> List[Optional[str]]:
+        """Query versions from Card Database
+
+        Args:
+            name:
+                Card name
+            team:
+                Card team
+            version_to_search:
+                Version to search for
+        Returns:
+            List of versions
+        """
+        query = query_creator.create_version_query(table=self._table, name=name, version=version_to_search)
+
+        with self.session() as sess:
+            results = sess.scalars(query).all()
+
+        if bool(results):
+            if results[0].team != team:
+                raise ValueError("""Model name already exists for a different team. Try a different name.""")
+
+            versions = [result.version for result in results]
+            return SemVerUtils.sort_semvers(versions=versions)
+        return []
+
     def set_version(
         self,
         name: str,
         team: str,
         version_type: VersionType,
-        partial_version: Optional[CardVersion] = None,
+        supplied_version: Optional[CardVersion] = None,
         pre_tag: Optional[str] = None,
         build_tag: Optional[str] = None,
     ) -> str:
@@ -367,36 +417,21 @@ class ServerRegistry(SQLRegistryBase):
             Version string
         """
 
-        version_to_search = None
-        final_version = None
-        if partial_version is not None:
-            version_to_search = partial_version.get_version_to_search(version_type=version_type)
+        ver_validator = SemVerRegistryValidator(
+            version_type=version_type,
+            version=supplied_version,
+            name=name,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
+        )
 
-        query = query_creator.create_version_query(table=self._table, name=name, version=version_to_search)
+        versions = self._get_versions_from_db(
+            name=name,
+            team=team,
+            version_to_search=ver_validator.version_to_search,
+        )
 
-        with self.session() as sess:
-            results = sess.scalars(query).all()
-
-        if bool(results):
-            # check if current model team is same as requesting team
-            if results[0].team != team:
-                raise ValueError("""Model name already exists for a different team. Try a different name.""")
-
-            versions = [result.version for result in results]
-            sorted_versions = SemVerUtils.sort_semvers(versions=versions)
-            return SemVerUtils.increment_version(
-                version=sorted_versions[0],
-                version_type=version_type,
-                pre_tag=pre_tag,
-                build_tag=build_tag,
-            )
-
-        if partial_version is not None:
-            final_version = CardVersion.finalize_partial_version(version=partial_version.valid_version)
-
-        version = final_version or "1.0.0"
-
-        return version
+        return ver_validator.set_version(versions=versions)
 
     @log_card_change
     def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:

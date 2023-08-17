@@ -10,6 +10,7 @@ from pytest_lazyfixture import lazy_fixture
 from opsml.registry.cards import DataCard, RunCard, PipelineCard, ModelCard, DataSplit
 from opsml.registry.cards.pipeline_loader import PipelineLoader
 from opsml.registry.sql.registry import CardRegistry
+from opsml.registry.sql.exceptions import VersionError
 from sklearn import linear_model
 from sklearn.pipeline import Pipeline
 import uuid
@@ -370,7 +371,7 @@ def test_semver_registry_list(db_registries: Dict[str, CardRegistry], test_array
 
     assert records[0]["version"] == "3.0.0"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(VersionError):
         # try registering card where version already exists
         data_card = DataCard(
             data=test_array,
@@ -1036,30 +1037,56 @@ def test_datacard_major_minor_version(db_registries: Dict[str, CardRegistry]):
 def test_version_tags(db_registries: Dict[str, CardRegistry]):
     # create data card
     registry: CardRegistry = db_registries["data"]
-    card = DataCard(
-        name="major_minor",
-        team="mlops",
-        user_email="mlops.com",
-        sql_logic={"test": "select * from test_table"},
-    )
-    registry.register_card(card=card, version_type="pre", pre_tag="prod")
-    assert card.version == "4.1.0-prod.1"
 
-    registry: CardRegistry = db_registries["data"]
-    card = DataCard(
-        name="major_minor",
-        team="mlops",
-        user_email="mlops.com",
-        sql_logic={"test": "select * from test_table"},
-    )
-    registry.register_card(card=card, version_type="pre", pre_tag="prod")
-    assert card.version == "4.1.0-prod.2"
+    kwargs = {
+        "name": "pre_build",
+        "team": "mlops",
+        "user_email": "opsml.com",
+        "sql_logic": {"test": "select * from test_table"},
+    }
 
-    card = DataCard(
-        name="major_minor",
-        team="mlops",
-        user_email="mlops.com",
-        sql_logic={"test": "select * from test_table"},
-    )
-    registry.register_card(card=card, version_type="build", build_tag="build")
-    assert card.version == "4.1.0-prod.2+build.1"
+    # create initial prerelease
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="pre", pre_tag="prod")
+    assert card.version == "1.0.0-prod.1"
+
+    # increment pre-release
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="pre", pre_tag="prod")
+    assert card.version == "1.0.0-prod.2"
+
+    # Switch pre-release to major.minor.patch
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="minor")
+    assert card.version == "1.0.0"
+
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="pre", pre_tag="prod")
+    assert card.version == "1.0.0-prod.3"
+
+    # this should fail (version already exists)
+    card = DataCard(**kwargs, version="1.0.0")
+    with pytest.raises(VersionError) as ve:
+        registry.register_card(card=card, version_type="minor")
+    assert ve.match("Major, minor and patch version combination already exists")
+
+    # add build
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="pre_build", pre_tag="prod")
+    assert card.version == "1.0.0-prod.4+build.1"
+
+    # increment build
+    card = DataCard(**kwargs, version="1.0.0")
+    registry.register_card(card=card, version_type="build")
+    assert card.version == "1.0.0-prod.4+build.2"
+
+    # increment minor
+    card = DataCard(**kwargs)
+    registry.register_card(card=card, version_type="patch")
+    assert card.version == "1.0.1"
+
+    # this should fail
+    with pytest.raises(ValueError) as ve:
+        card = DataCard(**kwargs)
+        registry.register_card(card=card, version_type="pre")
+    assert ve.match("Cannot set pre-release or build tag without a version")
