@@ -100,7 +100,7 @@ def post_model_metadata(
         )
 
     except IndexError as exc:
-        detail = f"Model not found"
+        detail = "Model not found"
         logger.error(detail)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

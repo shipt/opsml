@@ -1090,3 +1090,16 @@ def test_version_tags(db_registries: Dict[str, CardRegistry]):
         card = DataCard(**kwargs)
         registry.register_card(card=card, version_type="pre")
     assert ve.match("Cannot set pre-release or build tag without a version")
+
+    # this should fail
+    kwargs = {
+        "name": "pre_build",
+        "team": "fail",
+        "user_email": "opsml.com",
+        "sql_logic": {"test": "select * from test_table"},
+    }
+
+    with pytest.raises(ValueError) as ve:
+        card = DataCard(**kwargs, version="1.0.0")
+        registry.register_card(card=card)
+    assert ve.match("Model name already exists for a different team. Try a different name.")

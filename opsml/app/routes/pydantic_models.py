@@ -39,8 +39,8 @@ class VersionRequest(BaseModel):
     version: Optional[CardVersion] = None
     version_type: VersionType
     table_name: str
-    pre_tag: Optional[str] = None
-    build_tag: Optional[str] = None
+    pre_tag: str
+    build_tag: str
 
 
 class VersionResponse(BaseModel):

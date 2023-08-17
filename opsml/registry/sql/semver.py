@@ -3,7 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 import re
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional
 import semver
 from pydantic import BaseModel, model_validator
 from opsml.registry.sql.exceptions import VersionError
@@ -23,8 +23,8 @@ class VersionType(str, Enum):
 
 class CardVersion(BaseModel):
     version: str
-    version_splits: List[str]
-    is_full_semver: bool
+    version_splits: List[str] = []
+    is_full_semver: bool = False
     pre_tag: Optional[str] = None
     build_tag: Optional[str] = None
 
@@ -232,9 +232,9 @@ class SemVerRegistryValidator:
         self,
         name: str,
         version_type: VersionType,
+        pre_tag: str,
+        build_tag: str,
         version: Optional[CardVersion] = None,
-        pre_tag: str = "rc",
-        build_tag: str = "build",
     ) -> None:
         """Instantiate SemverValidator
 
@@ -288,8 +288,8 @@ class SemVerRegistryValidator:
                 version = str(recent_ver.finalize_version())
                 try:
                     for ver in versions:
-                        ver = semver.VersionInfo.parse(ver)
-                        if not any([ver.prerelease or ver.build]):
+                        parsed_ver = semver.VersionInfo.parse(ver)
+                        if not any([parsed_ver.prerelease or parsed_ver.build]):
                             raise VersionError("Major, minor and patch version combination already exists")
                     return version
                 except VersionError:

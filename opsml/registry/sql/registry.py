@@ -48,8 +48,8 @@ class ModelCardRegistry(Registry):
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        pre_tag: Optional[str] = None,
-        build_tag: Optional[str] = None,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
     ) -> None:
         """
         Adds new record to registry.
@@ -259,8 +259,8 @@ class CardRegistry:
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        pre_tag: Optional[str] = None,
-        build_tag: Optional[str] = None,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
     ) -> None:
         """
         Adds new record to registry.
