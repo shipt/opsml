@@ -235,9 +235,26 @@ class SemVerRegistryValidator:
         version: Optional[CardVersion] = None,
         pre_tag: str = "rc",
         build_tag: str = "build",
-    ):
+    ) -> None:
+        """Instantiate SemverValidator
+
+        Args:
+            name:
+                name of the artifact
+            version_type:
+                type of version increment
+            version:
+                version to use
+            pre_tag:
+                pre-release tag
+            build_tag:
+                build tag
+
+        Returns:
+            None
+        """
         self.version = version
-        self.version_to_search = None
+        self._version_to_search = None
         self.final_version = None
         self.version_type = version_type
         self.name = name
@@ -249,7 +266,7 @@ class SemVerRegistryValidator:
         """Parses version and returns version to search for in the registry"""
         if self.version is not None:
             return self.version.get_version_to_search(version_type=self.version_type)
-        return self.version_to_search
+        return self._version_to_search
 
     def _set_version_from_existing(self, versions: List[str]) -> str:
         """Search existing versions to find the correct version to use
@@ -261,7 +278,8 @@ class SemVerRegistryValidator:
         Returns:
             str: version to use
         """
-        recent_ver = semver.VersionInfo.parse(versions[0])
+        version = versions[0]
+        recent_ver = semver.VersionInfo.parse(version)
         # first need to check if increment is mmp
         if self.version_type in [VersionType.MAJOR, VersionType.MINOR, VersionType.PATCH]:
             # if most recent version is a pre-release
@@ -270,7 +288,7 @@ class SemVerRegistryValidator:
                 version = str(recent_ver.finalize_version())
                 try:
                     for ver in versions:
-                        ver = semver.VersionInfo.parse(ver["version"])
+                        ver = semver.VersionInfo.parse(ver)
                         if not any([ver.prerelease or ver.build]):
                             raise VersionError("Major, minor and patch version combination already exists")
                     return version
@@ -297,6 +315,7 @@ class SemVerRegistryValidator:
         if bool(versions):
             return self._set_version_from_existing(versions=versions)
         else:
+            final_version = None
             if self.version is not None:
                 final_version = CardVersion.finalize_partial_version(version=self.version.valid_version)
 
