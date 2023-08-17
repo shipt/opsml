@@ -58,7 +58,7 @@ class ModelCardRegistry(Registry):
         table_to_check = self._get_data_table_name()
         exists = self.check_uid(uid=uid, table_to_check=table_to_check)
         if not exists:
-            raise ValueError("""ModelCard must be assoicated with a valid DataCard uid""")
+            raise ValueError("""ModelCard must be associated with a valid DataCard uid""")
 
     def _has_datacard_uid(self, uid: Optional[str]) -> bool:
         return bool(uid)
@@ -68,8 +68,8 @@ class ModelCardRegistry(Registry):
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        pre_tag: Optional[str] = None,
-        build_tag: Optional[str] = None,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
     ) -> None:
         """
         Adds new record to registry.
@@ -258,8 +258,8 @@ class CardRegistry:
         self,
         card: ArtifactCard,
         version_type: VersionType = VersionType.MINOR,
-        pre_tag: Optional[str] = None,
-        build_tag: Optional[str] = None,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
     ) -> None:
         """
         Adds new record to registry.

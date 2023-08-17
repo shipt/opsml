@@ -158,8 +158,8 @@ class SemVerUtils:
     def increment_version(
         version: str,
         version_type: VersionType,
-        pre_tag: Optional[str] = None,
-        build_tag: Optional[str] = None,
+        pre_tag: str,
+        build_tag: str,
     ) -> str:
         """
         Increments a version based on version type
@@ -193,19 +193,15 @@ class SemVerUtils:
 
         # Set pre-release
         if version_type == VersionType.PRE:
-            return str(
-                ver.bump_prerelease() if pre_tag is None else ver.bump_prerelease(token=pre_tag),
-            )
+            return str(ver.bump_prerelease(token=pre_tag))
 
         # Set build
         if version_type == VersionType.BUILD:
-            return str(
-                ver.bump_build() if build_tag is None else ver.bump_build(token=build_tag),
-            )
+            return str(ver.bump_build(token=build_tag))
 
         if version_type == VersionType.PRE_BUILD:
-            ver = ver.bump_prerelease() if pre_tag is None else ver.bump_prerelease(token=pre_tag)
-            ver = ver.bump_build() if build_tag is None else ver.bump_build(token=build_tag)
+            ver = ver.bump_prerelease(token=pre_tag)
+            ver = ver.bump_build(token=build_tag)
 
             return str(ver)
 
