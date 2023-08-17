@@ -1,26 +1,26 @@
 # Versioning
 
-All `ArtifactCard`s follow a Semver version format (major.minor.patch). By default, a `minor` increment is used whenever a card is registered. If a version is provided, it overrides the default version type.
+All `ArtifactCard`s follow a Semver version format (`major.minor.patch`). By default, a `minor` increment is used whenever a card is registered. If a version is provided, it overrides the default version type.
 
 Cards can also be versioned as a release candidate and/or attached with a build tag (you can use default or provide your own tags when registering a card).
 - Release candidate -> `major.minor.patch-rc.{#}` -> `1.0.0-rc.1` -> version_type: "pre"
-- Build tag -> `major.minor.patch+build.{#}` -> `1.0.0+build.1` -> version_type: "build
+- Build tag -> `major.minor.patch+build.{#}` -> `1.0.0+build.1` -> version_type: "build"
 - Release candidate with build tag -> `major.minor.patch-rc.{#}+build.{#}` -> `1.0.0-rc.1+build.1` -> version_type: "pre_build"
 
 ## Rules for release candidates and build tags:
 1. A full `major.minor.patch` version must be specified in the card.
 2. Version type must be either `pre`, `post` or `pre_build`.
-3. Supply custom tags to either `pre_tag` or `post_tag` if you prefer to override defaults.
+3. Supply custom tags to either `pre_tag` or `build_tag` if you prefer to override defaults.
 
 ```python
 card = ModelCard(**kwargs, version="1.0.0")
-registry.register_card(card=card, version_type="pre", pre_tag="prod")
-# 1.0.0-prod.1
+registry.register_card(card=card, version_type="pre", pre_tag="foo")
+# 1.0.0-foo.1
 ```
 
 4. Registering a card with the same information (above) will increment the pre-release and/or build tag.
 5. Incrementing a pre-release tag resets the build tag counter.
-6. If a card is registered with a `major`, `minor` or `patch` increment **and** there are only pre-release or build candidates associated with the respective`major.minor.patch` the version will be incremented to the corresponding `valid` version
+6. If a card is registered with a `major`, `minor` or `patch` increment **and** there are only pre-release or build candidates associated with the respective `major.minor.patch` the version will be incremented to the corresponding `valid` version
 
 ```python
 
@@ -42,6 +42,39 @@ registry.register_card(card=card)
 ```
 
 All Cards accept manual insertion of `major.minor.patch`, `major.minor` or `major`. If a version is supplied, `opsml` will search the associated registry for the latest version that matches the supplied version. As an example, if the latest registered version of a card is `1.2.0` and a new card is registered with a version specified as `1.2` and a `version_type` or `patch`, `opsml` will increment the version to `1.2.1`.
+
+Example:
+```python
+
+card = DataCard(**kwargs)
+registry.register_card(card=card)
+# 1.2.0
+
+card = DataCard(**kwargs, version="1.2")
+registry.register_card(card=card, version_type="patch")
+# 1.2.1
+```
+
+## Important
+- The ability to provide `version` is only an option to enable flexibility; it is not required. The recommended approach if you don't need release candidates or extra flexibility is to create a `Card` and specify the `version_type` when registering a card, which will allow `OpsML` to handle the versioning for you. 
+
+```python
+modelcard = ModelCard(
+    name="model", 
+    team="opsml", 
+    sample_input_data=data, 
+    trained_model=model,
+    datacard_uid=datacard.uid,
+    )
+
+model_registry.register_card(
+    card=modelcard, 
+    version_type="patch",
+    )
+# let OpsML take care of figuring out the version
+```
+
+### Other Examples:
 
 ```python
 
