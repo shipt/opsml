@@ -25,8 +25,6 @@ class CardVersion(BaseModel):
     version: str
     version_splits: List[str] = []
     is_full_semver: bool = False
-    pre_tag: Optional[str] = None
-    build_tag: Optional[str] = None
 
     @model_validator(mode="before")
     def validate_inputs(cls, values):
