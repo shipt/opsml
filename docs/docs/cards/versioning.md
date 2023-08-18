@@ -20,7 +20,7 @@ registry.register_card(card=card, version_type="pre", pre_tag="foo")
 
 4. Registering a card with the same information (above) will increment the pre-release and/or build tag.
 5. Incrementing a pre-release tag resets the build tag counter.
-6. If a card is registered with a `major`, `minor` or `patch` increment **and** there are only pre-release or build candidates associated with the respective `major.minor.patch` the version will be incremented to the corresponding `valid` version
+6. If a card is registered with a `major`, `minor` or `patch` increment **and** there are only pre-release or build candidates associated with the respective `major.minor.patch` the version will be incremented to the corresponding `valid` version.
 
 ```python
 
@@ -41,7 +41,7 @@ registry.register_card(card=card)
 # 1.0.0
 ```
 
-All Cards accept manual insertion of `major.minor.patch`, `major.minor` or `major`. If a version is supplied, `opsml` will search the associated registry for the latest version that matches the supplied version. As an example, if the latest registered version of a card is `1.2.0` and a new card is registered with a version specified as `1.2` and a `version_type` or `patch`, `opsml` will increment the version to `1.2.1`.
+All Cards accept manual insertion of `major.minor.patch`, `major.minor` or `major`. If a version is supplied, `opsml` will search the associated registry for the latest version that matches the supplied version. As an example, if the latest registered version of a card is `1.2.0` and a new card is registered with a version specified as `1.2` and a `version_type` of `patch`, `opsml` will increment the version to `1.2.1`.
 
 Example:
 ```python
