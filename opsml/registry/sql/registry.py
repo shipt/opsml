@@ -225,6 +225,7 @@ class CardRegistry:
         tags: Optional[Dict[str, str]] = None,
         version: Optional[str] = None,
         info: Optional[CardInfo] = None,
+        ignore_release_candidates: bool = False,
     ) -> ArtifactCard:
         """Loads a specific card
 
@@ -253,7 +254,13 @@ class CardRegistry:
             version = version or info.version
             tags = tags or info.tags
 
-        return self._registry.load_card(uid=uid, name=name, version=version, tags=tags)
+        return self._registry.load_card(
+            uid=uid,
+            name=name,
+            version=version,
+            tags=tags,
+            ignore_release_candidates=ignore_release_candidates,
+        )
 
     def register_card(
         self,

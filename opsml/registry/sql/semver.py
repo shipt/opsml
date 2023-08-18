@@ -153,6 +153,14 @@ class SemVerUtils:
         return sorted_versions
 
     @staticmethod
+    def is_release_candidate(version: str) -> str:
+        """Ignores pre-release versions"""
+        ver = semver.VersionInfo.parse(version)
+        if not any([ver.prerelease, ver.build]):
+            return True
+        return False
+
+    @staticmethod
     def increment_version(
         version: str,
         version_type: VersionType,

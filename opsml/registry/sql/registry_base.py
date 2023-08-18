@@ -293,6 +293,7 @@ class SQLRegistryBase:
         tags: Optional[Dict[str, str]] = None,
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
+        ignore_release_candidates: bool = False,
     ) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
@@ -317,6 +318,7 @@ class SQLRegistryBase:
         version: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
         uid: Optional[str] = None,
+        ignore_release_candidates: bool = False,
     ) -> ArtifactCard:
         cleaned_name = clean_string(name)
 
@@ -326,6 +328,7 @@ class SQLRegistryBase:
             uid=uid,
             limit=1,
             tags=tags,
+            ignore_release_candidates=ignore_release_candidates,
         )
 
         loaded_record = load_record(
@@ -495,6 +498,7 @@ class ServerRegistry(SQLRegistryBase):
         tags: Optional[Dict[str, str]] = None,
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
+        ignore_release_candidates: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Retrieves records from registry
@@ -537,9 +541,18 @@ class ServerRegistry(SQLRegistryBase):
         sorted_records = self._get_sql_records(query=query)
 
         if version is not None:
+            if ignore_release_candidates:
+                sorted_records = [
+                    record for record in sorted_records if not SemVerUtils.is_release_candidate(record["version"])
+                ]
             if any(symbol in version for symbol in [SemVerSymbols.CARET, SemVerSymbols.TILDE]):
                 # return top version
                 return sorted_records[:1]
+
+        if version is None and ignore_release_candidates:
+            sorted_records = [
+                record for record in sorted_records if not SemVerUtils.is_release_candidate(record["version"])
+            ]
 
         return sorted_records[:limit]
 
