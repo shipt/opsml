@@ -9,7 +9,7 @@ Cards can also be versioned as a release candidate and/or attached with a build 
 
 ## Rules for release candidates and build tags:
 1. A full `major.minor.patch` version must be specified in the card.
-2. Version type must be either `pre`, `build` or `pre_build`.
+2. `version_type` must be either `pre`, `build` or `pre_build`.
 3. Supply custom tags to either `pre_tag` or `build_tag` if you prefer to override defaults.
 
 ```python
