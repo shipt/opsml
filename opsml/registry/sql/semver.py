@@ -276,11 +276,12 @@ class SemVerRegistryValidator:
         recent_ver = semver.VersionInfo.parse(version)
         # first need to check if increment is mmp
         if self.version_type in [VersionType.MAJOR, VersionType.MINOR, VersionType.PATCH]:
-            # if most recent version is a pre-release
-            # check is mmp already exists
+            # check if most recent version is a pre-release or build
             if any([recent_ver.prerelease, recent_ver.build]):
                 version = str(recent_ver.finalize_version())
                 try:
+                    # if all version are pre-release or build use finalized version
+                    # if not, increment version
                     for ver in versions:
                         parsed_ver = semver.VersionInfo.parse(ver)
                         if not any([parsed_ver.prerelease or parsed_ver.build]):
