@@ -7,6 +7,25 @@ Cards can also be versioned as a release candidate and/or attached with a build 
 - Build tag -> `major.minor.patch+build.{#}` -> `1.0.0+build.1` -> version_type: "build"
 - Release candidate with build tag -> `major.minor.patch-rc.{#}+build.{#}` -> `1.0.0-rc.1+build.1` -> version_type: "pre_build"
 
+## Recommended Versioning
+- The ability to provide `version` is only an option to enable flexibility; it is not required. The recommended approach if you don't need release candidates or extra flexibility is to create a `Card` and specify the `version_type` when registering a card, which will allow `OpsML` to handle the versioning for you. 
+
+```python
+modelcard = ModelCard(
+    name="model", 
+    team="opsml", 
+    sample_input_data=data, 
+    trained_model=model,
+    datacard_uid=datacard.uid,
+    )
+
+model_registry.register_card(
+    card=modelcard, 
+    version_type="patch",
+    )
+# let OpsML take care of figuring out the version
+```
+
 ## Rules for release candidates and build tags:
 1. A full `major.minor.patch` version must be specified in the card.
 2. `version_type` must be either `pre`, `build` or `pre_build`.
@@ -53,25 +72,6 @@ registry.register_card(card=card)
 card = DataCard(**kwargs, version="1.2")
 registry.register_card(card=card, version_type="patch")
 # 1.2.1
-```
-
-## Important
-- The ability to provide `version` is only an option to enable flexibility; it is not required. The recommended approach if you don't need release candidates or extra flexibility is to create a `Card` and specify the `version_type` when registering a card, which will allow `OpsML` to handle the versioning for you. 
-
-```python
-modelcard = ModelCard(
-    name="model", 
-    team="opsml", 
-    sample_input_data=data, 
-    trained_model=model,
-    datacard_uid=datacard.uid,
-    )
-
-model_registry.register_card(
-    card=modelcard, 
-    version_type="patch",
-    )
-# let OpsML take care of figuring out the version
 ```
 
 ### Other Examples:
