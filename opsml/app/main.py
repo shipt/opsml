@@ -3,10 +3,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 from typing import Any, List, Optional
-
+import os
 import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from opsml.app.core.config import config
@@ -18,6 +19,7 @@ from opsml.helpers.logging import ArtifactLogger
 logger = ArtifactLogger.get_logger(__name__)
 
 instrumentator = Instrumentator()
+STATIC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 
 
 class OpsmlApp:
@@ -57,7 +59,10 @@ class OpsmlApp:
             config.proxy_root = mlflow_config.MLFLOW_SERVER_ARTIFACT_ROOT
 
     def add_startup(self):
-        self.app.add_event_handler("startup", start_app_handler(app=self.app))
+        self.app.add_event_handler(
+            "startup",
+            start_app_handler(app=self.app, run_mlflow=self.run_mlflow),
+        )
 
     def add_shutdown(self):
         self.app.add_event_handler("shutdown", stop_app_handler(app=self.app))
@@ -72,20 +77,26 @@ class OpsmlApp:
             from wsgi_basic_auth import BasicAuth
 
             logger.info("Setting login credentials")
-            self.app.mount("/", WSGIMiddleware(BasicAuth(mlflow_flask)))
+            self.app.mount("/mlflow", WSGIMiddleware(BasicAuth(mlflow_flask)))
 
         else:
-            self.app.mount("/", WSGIMiddleware(mlflow_flask))
+            self.app.mount("/mlflow", WSGIMiddleware(mlflow_flask))
 
     def add_middleware(self):
         """Add rollbar middleware"""
         self.app.middleware("http")(rollbar_middleware)
 
-    def build_app(self):
-        self.app.include_router(api_router)
+    def add_static(self):
+        """Add static files"""
 
+        self.app.mount("/static", StaticFiles(directory="opsml/app/static"), name="static")
+
+    def build_app(self):
         if self.run_mlflow:
             self.build_mlflow_app()
+
+        self.app.include_router(api_router)
+        self.add_static()
 
         self.add_startup()
         self.add_shutdown()

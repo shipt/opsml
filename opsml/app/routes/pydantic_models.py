@@ -3,7 +3,8 @@
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
+
 from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
 from opsml.registry.sql.registry_base import VersionType
@@ -63,12 +64,6 @@ class ListCardRequest(BaseModel):
     limit: Optional[int] = None
     tags: Optional[Dict[str, str]] = None
     table_name: str
-
-    @model_validator(mode="before")
-    def update_limit(cls, env_vars: Dict[str, Optional[Union[str, int]]]):
-        if not any([env_vars.get(key) for key in ["name", "team", "limit"]]):
-            env_vars["limit"] = 20
-        return env_vars
 
 
 class ListCardResponse(BaseModel):
