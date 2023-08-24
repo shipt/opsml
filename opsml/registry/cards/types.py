@@ -98,4 +98,4 @@ class RunCardArgs(str, Enum):
     PIPELINE_UID = "pipelinecard_uid"
 
 
-NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project"]]
+NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]

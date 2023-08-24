@@ -103,8 +103,8 @@ class ArtifactCard(BaseModel):
             )
 
             audit_registry = CardRegistry(registry_name="audit")
-            card = audit_registry.load_card(uid=auditcard_uid)
-            card.add_card_uid(card_type=self.card_type, uid=self.uid)  # type: ignore
+            card: AuditCard = audit_registry.load_card(uid=auditcard_uid)
+            card.add_card_uid(card_type=self.card_type, uid=self.uid)
             return audit_registry.update_card(card=card)
 
         if auditcard is not None:
