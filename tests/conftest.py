@@ -459,6 +459,7 @@ def db_registries():
     data_registry = CardRegistry(registry_name="data")
     run_registry = CardRegistry(registry_name="run")
     pipeline_registry = CardRegistry(registry_name="pipeline")
+    audit_registry = CardRegistry(registry_name="audit")
 
     engine = model_registry._registry._get_engine()
 
@@ -474,6 +475,7 @@ def db_registries():
         "model": model_registry,
         "run": run_registry,
         "pipeline": pipeline_registry,
+        "audit": audit_registry,
     }
 
     cleanup()
