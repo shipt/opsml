@@ -98,7 +98,6 @@ async def model_homepage(request: Request, team: Optional[str] = None):
         with the list of models.
     """
     registry: CardRegistry = request.app.state.registries.model
-    all_teams = get_all_teams(registry)
 
     if not bool(all_teams):
         default_team = None
