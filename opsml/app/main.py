@@ -77,10 +77,10 @@ class OpsmlApp:
             from wsgi_basic_auth import BasicAuth
 
             logger.info("Setting login credentials")
-            self.app.mount("/mlflow", WSGIMiddleware(BasicAuth(mlflow_flask)))
+            self.app.mount("/", WSGIMiddleware(BasicAuth(mlflow_flask)))
 
         else:
-            self.app.mount("/mlflow", WSGIMiddleware(mlflow_flask))
+            self.app.mount("/", WSGIMiddleware(mlflow_flask))
 
     def add_middleware(self):
         """Add rollbar middleware"""
