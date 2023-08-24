@@ -6,7 +6,7 @@ import uuid
 from enum import Enum
 from typing import Type, Union, cast
 
-from sqlalchemy import BigInteger, Column, String
+from sqlalchemy import BigInteger, Column, String, Boolean
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declarative_mixin, validates  # type: ignore
@@ -24,6 +24,7 @@ class RegistryTableNames(str, Enum):
     RUN = os.getenv("ML_RUN_REGISTRY_NAME", "OPSML_RUN_REGISTRY")
     PIPELINE = os.getenv("ML_PIPELINE_REGISTRY_NAME", "OPSML_PIPELINE_REGISTRY")
     PROJECT = os.getenv("ML_PROJECT_REGISTRY_NAME", "OPSML_PROJECT_REGISTRY")
+    AUDIT = os.getenv("ML_AUDIT_REGISTRY_NAME", "OPSML_AUDIT_REGISTRY")
 
 
 @declarative_mixin
@@ -101,6 +102,22 @@ class RunSchema(Base, BaseMixin, RunMixin):  # type: ignore
 
 
 @declarative_mixin
+class AuditMixin:
+    approved = Column("approved", Boolean)
+    audit_uri = Column("audit_uri", String(2048))
+    datacard_uids = Column("datacard_uids", JSON)
+    modelcard_uids = Column("modelcard_uids", JSON)
+    runcard_uids = Column("runcard_uids", JSON)
+
+
+class AuditSchema(Base, BaseMixin, AuditMixin):  # type: ignore
+    __tablename__ = RegistryTableNames.AUDIT.value
+
+    def __repr__(self):
+        return f"<SqlMetric({self.__tablename__}"
+
+
+@declarative_mixin
 class PipelineMixin:
     pipeline_code_uri = Column("pipeline_code_uri", String(512))
     datacard_uids = Column("datacard_uids", JSON)
@@ -133,6 +150,7 @@ REGISTRY_TABLES = Union[  # pylint: disable=invalid-name
     RunSchema,
     PipelineSchema,
     ProjectSchema,
+    AuditSchema,
 ]
 
 
