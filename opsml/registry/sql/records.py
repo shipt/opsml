@@ -100,12 +100,22 @@ class ProjectRegistryRecord(BaseModel):
     timestamp: int = get_timestamp()
 
 
+class AuditRegistryCard(SaveRecord):
+    approved: bool
+    audit_uri: str
+    datacard_uids: List[str]
+    modelcard_uids: List[str]
+    runcard_uids: List[str]
+    timestamp: int = get_timestamp()
+
+
 RegistryRecord = Union[
     DataRegistryRecord,
     ModelRegistryRecord,
     RunRegistryRecord,
     PipelineRegistryRecord,
     ProjectRegistryRecord,
+    AuditRegistryCard,
 ]
 
 

@@ -9,14 +9,14 @@ import os
 from typing import Dict, List, Optional
 
 import yaml
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 from rich.console import Console
 from rich.table import Table
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
 from opsml.registry.cards.types import CardType
-from opsml.registry.sql.records import AuditRegistryCard, RegistryCard
+from opsml.registry.sql.records import AuditRegistryRecord, RegistryRecord
 
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -44,7 +44,7 @@ class AuditSections(BaseModel):
     deployment_ops: Dict[int, Question]
     misc: Dict[int, Question]
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def load_sections(cls, values):
         """Loads audit sections from template"""
 
@@ -113,10 +113,10 @@ class AuditCard(ArtifactCard):
     runcard_uids: List[str] = []
     approved: bool = False
 
-    def create_registry_record(self) -> RegistryCard:
+    def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a audit"""
 
-        return AuditRegistryCard(**self.dict())
+        return AuditRegistryRecord(**self.model_dump())
 
     def add_card_uid(self, card_type: str, uid: str) -> None:
         """
