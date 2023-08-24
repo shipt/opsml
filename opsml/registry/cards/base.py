@@ -2,7 +2,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Protocol
 
 import numpy as np
 import pandas as pd
@@ -16,9 +16,7 @@ from opsml.helpers.utils import (
     validate_name_team_pattern,
 )
 
-from opsml.registry.cards.types import (
-    CardInfo,
-)
+from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.records import (
     RegistryRecord,
 )
@@ -28,6 +26,15 @@ logger = ArtifactLogger.get_logger(__name__)
 storage_client = settings.storage_client
 
 SampleModelData = Optional[Union[pd.DataFrame, np.ndarray, Dict[str, np.ndarray], pl.DataFrame]]
+
+
+class AuditCard(Protocol):
+    @property
+    def uid(self):
+        ...
+
+    def add_card_uid(self, card_type: str, uid: str) -> None:
+        ...
 
 
 class ArtifactCard(BaseModel):
@@ -72,6 +79,36 @@ class ArtifactCard(BaseModel):
         )
 
         return env_vars
+
+    def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
+        """Add card uid to auditcard
+
+        Args:
+            auditcard:
+                Optional AuditCard to add card uid to
+            auditcard_uid:
+                Optional uid of AuditCard to add card uid to
+
+        """
+
+        if self.card_type == CardType.AUDITCARD:
+            raise ValueError("add_to_auditcard is not implemented for AuditCard")
+
+        if self.uid is None:
+            raise ValueError("Card must be registered before adding to auditcard")
+
+        if auditcard_uid is not None:
+            from opsml.registry.sql.registry import (  # pylint: disable=cyclic-import
+                CardRegistry,
+            )
+
+            audit_registry = CardRegistry(registry_name="audit")
+            card = audit_registry.load_card(uid=auditcard_uid)
+            card.add_card_uid(card_type=self.card_type, uid=self.uid)  # type: ignore
+            return audit_registry.update_card(card=card)
+
+        if auditcard is not None:
+            return auditcard.add_card_uid(card_type=self.card_type, uid=self.uid)
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record from self attributes"""
