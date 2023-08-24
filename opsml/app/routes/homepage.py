@@ -6,7 +6,7 @@
 import os
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-
+from fastapi.responses import RedirectResponse
 
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -18,6 +18,13 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/opsml")
 async def opsml_homepage(request: Request):
     return templates.TemplateResponse("homepage.html", {"request": request})
+
+
+@router.get("/")
+async def homepage(request: Request, mlflow: bool = False):
+    if not mlflow:
+        return RedirectResponse("/opsml")
+    return RedirectResponse("/mlflow/")

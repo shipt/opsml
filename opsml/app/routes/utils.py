@@ -1,14 +1,74 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+import os
+from functools import wraps
 from streaming_form_data.targets import FileTarget
-
+from fastapi.templating import Jinja2Templates
+from opsml.registry import CardRegistries, ModelCard, RunCard
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
 
 logger = ArtifactLogger.get_logger(__name__)
+# Constants
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
+
+
+templates = Jinja2Templates(directory=TEMPLATE_PATH)
+
+
+def get_runcard_from_model(
+    registries: CardRegistries,
+    name: Optional[str] = None,
+    version: Optional[str] = None,
+    uid: Optional[str] = None,
+) -> Optional[RunCard]:
+    """Loads the runcard associated with a modelcard
+
+    Args:
+        registries:
+            CardRegistries object
+        name:
+            Name of the model
+        version:
+            Version of the model
+        uid:
+            UID of the model
+    Returns:
+        RunCard object
+    """
+    modelcard: ModelCard = registries.model.list_cards(
+        name=name,
+        version=version,
+        uid=uid,
+    )[0]
+
+    run_uid = modelcard.get("runcard_uid", None)
+
+    if run_uid is not None:
+        return registries.run.load_card(uid=run_uid)
+
+    return None
+
+
+def error_to_404(func):
+    @wraps(func)
+    async def wrapper(request, *args, **kwargs):
+        try:
+            return await func(request, *args, **kwargs)
+        except Exception as exc:
+            logger.error(exc)
+            return templates.TemplateResponse(
+                "include/404.html",
+                {
+                    "request": request,
+                    "error_message": str(exc),
+                },
+            )
+
+    return wrapper
 
 
 def get_real_path(current_path: str, proxy_root: str, storage_root: str) -> str:

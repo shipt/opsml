@@ -28,6 +28,7 @@
 {% endif %}
 
 
+
 <!---- Form for selecting team -------->
 <div class="btn-group">
     <div class="dropdown" id="MetadataTeamSelect">
@@ -87,65 +88,102 @@
 
 </div>
 
-
 {% if metadata is not none %}
 <hr>
-<div class="page-header" id="metadata-container">
 
-<div class="card text-center rounded m-1" id="metadata-table-header">
-    <div class="card-body">
-      <h5 class="card-title" id="Metadata">Metadata</h5>
+
+<div style="width: 100%;">
+  <div style="width: 12%; float: left;"> 
+
+    <div class="form-check form-switch" style="width:15%;">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Metadata">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Metadata</label>
+  
+      <div></div>
+
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Features">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Features</label>
+  
+      <div></div>
+
+      {% if metrics is not none %}
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Metrics">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Metrics</label>
+      {% endif %}
+
     </div>
-</div>
+  </div>
+  <div style="width: 85%;"> 
 
-<div>
-<table class="table table-striped table-hover table-sm" id="metadata-table">
-    <tbody>
-        {% with metadata=metadata %}
-        {% include "include/model/metadata_table.html" %}
-        {% endwith %}
-    </tbody>
-    </table>
-</div>
-<br>
-<hr>
-<div class="page-header" id="feature-container">
-
-    <div class="card text-center rounded m-1" id="metadata-table-header">
-        <div class="card-body">
-          <h5 class="card-title" id="Features">Features</h5>
+    <div class="collapse" id="Metadata" style="width:85%; float:right;">
+      <div class="content">
+        <table class="table table-striped table-hover table-sm" id="metadata-table">
+          <caption>Metadata</caption>
+            <tbody>
+                {% with metadata=metadata %}
+                {% include "include/model/metadata_table.html" %}
+                {% endwith %}
+            </tbody>
+            </table>
         </div>
     </div>
 
-    {% set input_schema= metadata["data_schema"]["input_data_schema"] %}
-    {% if input_schema is not none %} 
-    <div>
-    <table class="table table-striped table-hover table-sm" id="feature-table">
+    <div class="collapse" id="Features" style="width:85%; float:right;">
+      {% set input_schema= metadata["data_schema"]["input_data_schema"] %}
+        {% if input_schema is not none %} 
+        <table class="table table-striped table-hover table-sm" id="feature-table">
+          <caption>Features</caption>
             <thead style="background:white;">
               <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Shape</th>
+                <th class="text-center" scope="col">Name</th>
+                <th class="text-center" scope="col">Type</th>
+                <th class="text-center" scope="col">Shape</th>
               </tr>
             </thead>
             <tbody>
                   {% for name, data_schema in input_schema.items() %}
                     <tr>
-                        <td>{{name}}</td>
-                        <td>{{data_schema["feature_type"]}}</td>
-                        <td>{{data_schema["shape"]}}</td>
+                      <td class="text-center">{{name}}</td>
+                      <td class="text-center">{{data_schema["feature_type"]}}</td>
+                      <td class="text-center">{{data_schema["shape"]}}</td>
                     </tr>
                   {% endfor %}
             </tbody>
         </table>
+        {% endif %}
+    </div>
+
+
+    {% if metrics is not none %}
+    <div class="collapse" id="Metrics" style="width:85%; float:right;">
+      <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
+          <caption>Metrics</caption>
+          <thead style="background:white;">
+            <tr>
+              <th class="text-center" scope="col">Name</th>
+              <th class="text-center" scope="col">Value</th>
+              <th class="text-center" scope="col">Step</th>
+              <th class="text-center" scope="col">Timestamps</th>
+            </tr>
+          </thead>
+          <tbody>
+                {% for metric_name, metric_values in metrics.items() %}
+                  <tr>
+                    <td class="text-center">{{metric_name}}</td>
+                    <td class="text-center">{{metric_values[-1].value}}</td>
+                    <td class="text-center">{{metric_values[-1].step}}</td>
+                    <td class="text-center">{{metric_values[-1].timestamp}}</td>
+                  </tr>
+                {% endfor %}
+          </tbody>
+        </table>
     </div>
     {% endif %}
 
-<hr>
-<div class="page-header" id="code-container">
-<h3 id="Example">Load Model</h3>
-<pre><code class="python">from opsml.registry import CardRegistry
-
+    <div class="page-header" id="code-container" style="width:85%; float:right;">
+      <h3 id="Example">Load Model</h3>
+      <pre><code class="python">from opsml.registry import CardRegistry
+      
 model_registry = CardRegistry("model")
 modelcard = model_registry.load_card(name="{{metadata.model_name}}", version="{{metadata.model_version}}")
 modelcard.load_trained_model() # load the train model
@@ -156,14 +194,25 @@ print(modelcard.trained_model.predict(modelcard.sample_input_data))
 # onnx version of model (if converted to onnx) if you want to play around with it
 onnx_model = modelcard.onnx_model()
 print(onnx_model.predict(onnx_model.sample_api_data))
-</code></pre>
+      </code></pre>
+      {% endif %}
+      </div>
 
-<div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
+  </div>
 </div>
 
-{% endif %}
 
+
+
+
+
+
+
+
+
+
+  <div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
+  </div>
 </body>
 
 {% endblock %}
-
