@@ -1,8 +1,6 @@
 from typing import List
 import os
-from opsml.registry.cards.data import DataCard
-from opsml.registry.cards.model import ModelCard
-from opsml.registry.cards.run import RunCard
+from opsml.registry.cards import DataCard, ModelCard, RunCard
 from jinja2 import FileSystemLoader, Environment
 
 

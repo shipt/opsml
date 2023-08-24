@@ -7,14 +7,7 @@ from enum import Enum
 from functools import cached_property
 from typing import Dict, Optional, cast
 from opsml.model.types import ModelMetadata, OnnxAttr
-from opsml.registry.cards import (
-    ArtifactCard,
-    DataCard,
-    ModelCard,
-    PipelineCard,
-    ProjectCard,
-    RunCard,
-)
+from opsml.registry.cards import ArtifactCard, DataCard, ModelCard, PipelineCard, ProjectCard, RunCard, AuditCard
 from opsml.registry.cards.types import CardType, StoragePath
 from opsml.registry.data.formatter import ArrowTable, DataFormatter
 from opsml.registry.data.types import AllowedTableTypes
@@ -27,6 +20,7 @@ class SaveName(str, Enum):
     DATACARD = "datacard"
     RUNCARD = "runcard"
     MODELCARD = "modelcard"
+    AUDIT = "audit"
     PIPLELINECARD = "pipelinecard"
     MODEL_METADATA = "model-metadata"
     TRAINED_MODEL = "trained-model"
@@ -372,6 +366,34 @@ class ModelCardArtifactSaver(CardArtifactSaver):
     @staticmethod
     def validate(card_type: str) -> bool:
         return CardType.MODELCARD.value in card_type
+
+
+class AuditCardArtifactSaver(CardArtifactSaver):
+    @cached_property
+    def card(self):
+        return cast(AuditCard, self._card)
+
+    def _save_audit(self):
+        self._set_storage_spec(
+            filename=SaveName.AUDIT,
+            uri=self.card.audit_uri,
+        )
+
+        storage_path = save_record_artifact_to_storage(
+            artifact=self.card.audit.model_dump(),
+            storage_client=self.storage_client,
+        )
+
+        self.card.audit_uri = storage_path.uri
+
+    def save_artifacts(self) -> ArtifactCard:
+        self._save_audit()
+
+        return self.card
+
+    @staticmethod
+    def validate(card_type: str) -> bool:
+        return CardType.AUDITCARD.value in card_type
 
 
 class RunCardArtifactSaver(CardArtifactSaver):
