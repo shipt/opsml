@@ -25,10 +25,10 @@ class QueryCreator:
     def get_unique_teams_query(self, table: Type[REGISTRY_TABLES]):
         return select(table.team).distinct()
 
-    def get_unique_card_names_query(self, table: Type[REGISTRY_TABLES], team: str):
+    def get_unique_card_names_query(self, table: Type[REGISTRY_TABLES], team: Optional[str] = None):
         query = select(table.name)
         if team is not None:
-            return query.filter(table.team == team)
+            return query.filter(table.team == team).distinct()
         return query.distinct()
 
     def create_version_query(

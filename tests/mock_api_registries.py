@@ -99,7 +99,6 @@ class ModelCardRegistry(Registry):
 
     @staticmethod
     def validate(registry_name: str):
-        print(registry_name, RegistryTableNames.MODEL.value)
         return registry_name in RegistryTableNames.MODEL.value
 
 
@@ -331,6 +330,7 @@ class CardRegistry:
         Returns:
             List of unique card names
         """
+
         return self._registry.get_unique_card_names(team=team)
 
     def list_teams(self) -> List[str]:

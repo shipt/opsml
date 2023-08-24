@@ -61,6 +61,10 @@ class TeamsResponse(BaseModel):
     teams: List[str] = []
 
 
+class NamesResponse(BaseModel):
+    names: List[str] = []
+
+
 class ListCardRequest(BaseModel):
     name: Optional[str] = None
     team: Optional[str] = None

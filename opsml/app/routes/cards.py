@@ -2,7 +2,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Union
+from typing import Union, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 
@@ -20,6 +20,7 @@ from opsml.app.routes.pydantic_models import (
     VersionRequest,
     VersionResponse,
     TeamsResponse,
+    NamesResponse,
 )
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
@@ -48,7 +49,7 @@ def check_uid(
 
 
 @router.get("/cards/teams", response_model=TeamsResponse, name="teams")
-def check_uid(
+def card_teams(
     request: Request,
     table_name: str,
 ) -> TeamsResponse:
@@ -70,6 +71,32 @@ def check_uid(
     teams = registry.list_teams()
 
     return TeamsResponse(teams=teams)
+
+
+@router.get("/cards/names", response_model=NamesResponse, name="names")
+def card_names(
+    request: Request,
+    table_name: str,
+    team: Optional[str] = None,
+):
+    """Get all names associated with a registry
+
+    Args:
+        request:
+            FastAPI request object
+        table_name:
+            Name of the registry table
+        team:
+            Team to filter names by
+
+    Returns:
+        `NamesResponse`
+    """
+    table_for_registry = table_name.split("_")[1].lower()
+    registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
+    names = registry.list_card_names(team=team)
+
+    return NamesResponse(names=names)
 
 
 @router.post("/cards/version", response_model=Union[VersionResponse, UidExistsResponse], name="version")
