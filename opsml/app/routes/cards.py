@@ -19,6 +19,7 @@ from opsml.app.routes.pydantic_models import (
     UpdateCardResponse,
     VersionRequest,
     VersionResponse,
+    TeamsResponse,
 )
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
@@ -44,6 +45,31 @@ def check_uid(
     ):
         return UidExistsResponse(uid_exists=True)
     return UidExistsResponse(uid_exists=False)
+
+
+@router.get("/cards/teams", response_model=TeamsResponse, name="teams")
+def check_uid(
+    request: Request,
+    table_name: str,
+) -> TeamsResponse:
+    """Get all teams associated with a registry
+
+    Args:
+        request:
+            FastAPI request object
+        table_name:
+            Name of the registry table
+
+    Returns:
+        `TeamsResponse`
+    """
+
+    table_for_registry = table_name.split("_")[1].lower()
+    registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
+
+    teams = registry.list_teams()
+
+    return TeamsResponse(teams=teams)
 
 
 @router.post("/cards/version", response_model=Union[VersionResponse, UidExistsResponse], name="version")
@@ -77,7 +103,7 @@ def list_cards(
     try:
         table_for_registry = payload.table_name.split("_")[1].lower()
         registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
-        logger.info("Listing cards: %s", payload.dict())
+        logger.info("Listing cards: %s", payload.model_dump())
 
         cards = registry.list_cards(
             uid=payload.uid,

@@ -84,6 +84,15 @@ def test_register_data(
         registry.list_cards()
 
 
+def test_list_teams(
+    api_registries: CardRegistries,
+):
+    registry = api_registries.data
+    teams = registry.list_teams()
+    assert len(teams) == 1
+    assert teams[0] == "mlops"
+
+
 def test_register_major_minor(api_registries: CardRegistries, test_array: NDArray):
     # create data card
     registry = api_registries.data

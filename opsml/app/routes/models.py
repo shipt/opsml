@@ -98,7 +98,7 @@ async def model_homepage(request: Request, team: Optional[str] = None):
         with the list of models.
     """
     registry: CardRegistry = request.app.state.registries.model
-
+    all_teams = get_all_teams(registry)
     if not bool(all_teams):
         default_team = None
     else:
@@ -119,6 +119,7 @@ async def model_homepage(request: Request, team: Optional[str] = None):
 
 
 @router.get("/models/versions/")
+@error_to_404
 async def model_versions_page(request: Request, model: Optional[str] = None):
     if model is None:
         return RedirectResponse(url="/opsml/models/list/")
@@ -150,6 +151,7 @@ async def model_versions_page(request: Request, model: Optional[str] = None):
 
 
 @router.get("/models/metadata/")
+@error_to_404
 async def list_model(
     request: Request,
     uid: Optional[str] = None,

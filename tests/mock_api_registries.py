@@ -99,7 +99,17 @@ class ModelCardRegistry(Registry):
 
     @staticmethod
     def validate(registry_name: str):
+        print(registry_name, RegistryTableNames.MODEL.value)
         return registry_name in RegistryTableNames.MODEL.value
+
+
+class AuditCardRegistry(Registry):  # type:ignore
+    def validate_uid(self, uid: str, table_to_check: str) -> bool:
+        return self.check_uid(uid=uid, table_to_check=table_to_check)
+
+    @staticmethod
+    def validate(registry_name: str):
+        return registry_name in RegistryTableNames.AUDIT.value
 
 
 class RunCardRegistry(Registry):  # type:ignore
@@ -310,3 +320,23 @@ class CardRegistry:
         """
         results = self._registry.list_cards(uid=uid)[0]  # pylint: disable=protected-access
         return {col: results[col] for col in columns}
+
+    def list_card_names(self, team: Optional[str] = None) -> List[str]:
+        """Returns a list of unique card names
+
+        Args:
+            team:
+                Team to query
+
+        Returns:
+            List of unique card names
+        """
+        return self._registry.get_unique_card_names(team=team)
+
+    def list_teams(self) -> List[str]:
+        """Returns a list of unique teams
+
+        Returns:
+            List of unique teams
+        """
+        return self._registry.unique_teams

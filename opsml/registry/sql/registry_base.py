@@ -101,6 +101,10 @@ class SQLRegistryBase:
     ) -> str:
         raise NotImplementedError
 
+    @property
+    def unique_teams(self) -> List[str]:
+        raise NotImplementedError
+
     def _is_correct_card_type(self, card: ArtifactCard):
         """Checks wether the current card is associated with the correct registry type"""
         return self.supported_card.lower() == card.__class__.__name__.lower()
@@ -390,6 +394,16 @@ class ServerRegistry(SQLRegistryBase):
         engine = self._get_engine()
         self._table.__table__.create(bind=engine, checkfirst=True)
 
+    @property
+    def unique_teams(self) -> List[str]:
+        """Returns a list of unique teams"""
+        query = query_creator.get_unique_teams_query(table=self._table)
+
+        with self.session() as sess:
+            results = sess.scalars(query).all()
+
+        return results
+
     def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
         """Query versions from Card Database
 
@@ -615,6 +629,16 @@ class ClientRegistry(SQLRegistryBase):
         )
 
         return bool(data.get("uid_exists"))
+
+    @property
+    def unique_teams(self) -> List[str]:
+        """Returns a list of unique teams"""
+        data = self._session.get_request(
+            route=api_routes.TEAM_CARDS,
+            params={"table_name": self.table_name},
+        )
+
+        return data["teams"]
 
     def set_version(
         self,

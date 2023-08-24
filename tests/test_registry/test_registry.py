@@ -78,6 +78,14 @@ def test_register_data(
     assert len(cards) == 1
 
 
+def test_list_teams(db_registries: Dict[str, CardRegistry]):
+    # create data card
+    registry = db_registries["data"]
+    teams = registry.list_teams()
+    assert len(teams) == 1
+    assert teams[0] == "mlops"
+
+
 def test_datacard_sql_register(db_registries: Dict[str, CardRegistry]):
     # create data card
     registry = db_registries["data"]

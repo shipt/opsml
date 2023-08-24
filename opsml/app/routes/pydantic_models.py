@@ -57,6 +57,10 @@ class UidExistsResponse(BaseModel):
     uid_exists: bool
 
 
+class TeamsResponse(BaseModel):
+    teams: List[str] = []
+
+
 class ListCardRequest(BaseModel):
     name: Optional[str] = None
     team: Optional[str] = None

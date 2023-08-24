@@ -297,6 +297,7 @@ def mock_registries(test_client: TestClient) -> CardRegistries:
         registries.pipeline = ClientCardRegistry(registry_name="pipeline")
         registries.run = ClientCardRegistry(registry_name="run")
         registries.project = ClientCardRegistry(registry_name="project")
+        registries.audit = ClientCardRegistry(registry_name="audit")
 
         return registries
 
