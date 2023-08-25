@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from requests.auth import HTTPBasicAuth
 
 from opsml.registry import DataCard, ModelCard, RunCard, PipelineCard, CardRegistry, CardRegistries, CardInfo
+from opsml.app.routes.utils import list_team_name_info
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
 from tests.conftest import TODAY_YMD
@@ -105,6 +106,18 @@ def test_list_card_names(
     names = registry.list_card_names()
     assert len(names) == 1
     assert names[0] == "test-df"
+
+
+def test_list_team_info(
+    api_registries: CardRegistries,
+):
+    registry = api_registries.data
+    info = list_team_name_info(registry=registry, team="mlops")
+    assert info.names[0] == "test-df"
+    assert info.teams[0] == "mlops"
+
+    info = list_team_name_info(registry=registry)
+    assert info.names[0] == "test-df"
 
 
 def test_register_major_minor(api_registries: CardRegistries, test_array: NDArray):

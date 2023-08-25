@@ -59,9 +59,7 @@ def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[st
 
 @router.get("/models/list/")
 @error_to_500
-async def model_list_homepage(
-    request: Request, team: Optional[str] = None
-) -> Dict[str, Union[List[str], Optional[str], Request]]:
+async def model_list_homepage(request: Request, team: Optional[str] = None):
     """UI home for listing models in model registry
 
     Args:
