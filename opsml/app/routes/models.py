@@ -42,34 +42,6 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-def get_all_teams(registry: CardRegistry) -> List[str]:
-    """Returns a list of all teams in the registry
-
-    Args:
-        registry:
-            The registry to query
-    Returns:
-        A list of teams
-    """
-    return list(set(card["team"] for card in registry.list_cards(as_dataframe=False)))
-
-
-def get_team_model_names(registry: CardRegistry, team: str) -> List[str]:
-    """Returns a list of model names for a given team
-
-    Args:
-        registry:
-            The registry to query
-        team:
-            The team to query
-    Returns:
-        A list of model names
-    """
-    return list(
-        set(card["name"] for card in registry.list_cards(team=team, as_dataframe=False)),
-    )
-
-
 def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:
     """Returns a list of model versions for a given team and model
 
@@ -87,7 +59,7 @@ def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[st
 
 @router.get("/models/list/")
 @error_to_404
-async def model_homepage(request: Request, team: Optional[str] = None):
+async def model_list_homepage(request: Request, team: Optional[str] = None):
     """UI home for listing models in model registry
 
     Args:
@@ -98,14 +70,16 @@ async def model_homepage(request: Request, team: Optional[str] = None):
         with the list of models.
     """
     registry: CardRegistry = request.app.state.registries.model
-    all_teams = get_all_teams(registry)
+
+    all_teams = registry.list_teams()
+    model_names = registry.list_card_names(team=team)
+
     if not bool(all_teams):
         default_team = None
     else:
         default_team = all_teams[0]
 
     team = team or default_team
-    model_names = get_team_model_names(registry, team)
 
     return templates.TemplateResponse(
         "models.html",
@@ -159,7 +133,8 @@ async def list_model(
     model: Optional[str] = None,
     team: Optional[str] = None,
 ):
-    teams = get_all_teams(request.app.state.registries.model)
+    teams = request.app.state.registries.model.list_teams()
+
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
             "metadata.html",
@@ -174,7 +149,7 @@ async def list_model(
         )
 
     elif team is not None and all(attr is None for attr in [version, model]):
-        models = get_team_model_names(request.app.state.registries.model, team)
+        models = request.app.state.registries.model.list_card_names(team=team)
         return templates.TemplateResponse(
             "metadata.html",
             {
@@ -189,7 +164,7 @@ async def list_model(
 
     elif team is not None and model is not None and version is None:
         versions = get_model_versions(request.app.state.registries.model, model, team)
-        models = get_team_model_names(request.app.state.registries.model, team)
+        models = request.app.state.registries.model.list_card_names(team=team)
 
         return templates.TemplateResponse(
             "metadata.html",
@@ -210,8 +185,14 @@ async def list_model(
             payload=CardRequest(name=model, team=team, version=version, uid=uid),
         )
 
+        runcard = get_runcard_from_model(request.app.state.registries, metadata.model_name, metadata.model_version)
+        metrics = getattr(runcard, "metrics", None)
+        params = getattr(runcard, "parameters", None)
+        tags = getattr(runcard, "tags", None)
+        artifacts = getattr(runcard, "artifacts", None)
+
         versions = get_model_versions(request.app.state.registries.model, metadata.model_name, metadata.model_team)
-        models = get_team_model_names(request.app.state.registries.model, metadata.model_team)
+        models = request.app.state.registries.model.list_card_names(team=metadata.model_team)
 
         max_dim = 0
         if metadata.data_schema.model_data_schema.data_type == "NUMPY_ARRAY":
@@ -229,12 +210,15 @@ async def list_model(
             {
                 "request": request,
                 "teams": [team],
-                "selected_team": team,
+                "selected_team": metadata.model_team,
                 "metadata": metadata,
                 "models": models,
-                "selected_model": model,
+                "selected_model": metadata.model_name,
                 "versions": versions,
                 "version": metadata.model_version,
+                "metrics": metrics,
+                "params": params,
+                "tags": tags,
             },
         )
 

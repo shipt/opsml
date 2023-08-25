@@ -9,7 +9,7 @@ import os
 from typing import Dict, List, Optional
 
 import yaml
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, ConfigDict
 from rich.console import Console
 from rich.table import Table
 
@@ -31,8 +31,7 @@ class Question(BaseModel):
     purpose: str
     response: Optional[str] = None
 
-    class Config:
-        allow_mutation = True
+    model_config = ConfigDict(frozen=False)
 
 
 class AuditSections(BaseModel):

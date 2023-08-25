@@ -106,9 +106,19 @@
   
       <div></div>
 
-      {% if metrics is not none %}
+      {% if metrics|length > 0 %}
       <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Metrics">
       <label class="form-check-label" for="flexSwitchCheckDefault">Metrics</label>
+      {% endif %}
+
+      {% if params|length > 0  %}
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Params">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Parameters</label>
+      {% endif %}
+
+      {% if tags|length > 0  %}
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Tags">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Tags</label>
       {% endif %}
 
     </div>
@@ -118,7 +128,7 @@
     <div class="collapse" id="Metadata" style="width:85%; float:right;">
       <div class="content">
         <table class="table table-striped table-hover table-sm" id="metadata-table">
-          <caption>Metadata</caption>
+            <caption>Metadata</caption>
             <tbody>
                 {% with metadata=metadata %}
                 {% include "include/model/metadata_table.html" %}
@@ -154,7 +164,7 @@
     </div>
 
 
-    {% if metrics is not none %}
+    {% if metrics|length > 0 %}
     <div class="collapse" id="Metrics" style="width:85%; float:right;">
       <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
           <caption>Metrics</caption>
@@ -173,6 +183,50 @@
                     <td class="text-center">{{metric_values[-1].value}}</td>
                     <td class="text-center">{{metric_values[-1].step}}</td>
                     <td class="text-center">{{metric_values[-1].timestamp}}</td>
+                  </tr>
+                {% endfor %}
+          </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if params|length > 0 %}
+    <div class="collapse" id="Params" style="width:85%; float:right;">
+      <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
+          <caption>Parameters</caption>
+          <thead style="background:white;">
+            <tr>
+              <th class="text-center" scope="col">Name</th>
+              <th class="text-center" scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+                {% for param_name, param_value in params.items() %}
+                  <tr>
+                    <td class="text-center">{{param_name}}</td>
+                    <td class="text-center">{{param_value}}</td>
+                  </tr>
+                {% endfor %}
+          </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if tags|length > 0 %}
+    <div class="collapse" id="Tags" style="width:85%; float:right;">
+      <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
+          <caption>Tags</caption>
+          <thead style="background:white;">
+            <tr>
+              <th class="text-center" scope="col">Name</th>
+              <th class="text-center" scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+                {% for tag_name, tag_value in tags.items() %}
+                  <tr>
+                    <td class="text-center">{{tag_name}}</td>
+                    <td class="text-center">{{tag_value}}</td>
                   </tr>
                 {% endfor %}
           </tbody>
