@@ -4,13 +4,13 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
-from opsml.app.routes.utils import error_to_404, get_runcard_from_model
+from opsml.app.routes.utils import error_to_500, get_runcard_from_model, list_team_name_info
 from opsml.app.routes.pydantic_models import (
     CardRequest,
     CompareMetricRequest,
@@ -58,8 +58,10 @@ def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[st
 
 
 @router.get("/models/list/")
-@error_to_404
-async def model_list_homepage(request: Request, team: Optional[str] = None):
+@error_to_500
+async def model_list_homepage(
+    request: Request, team: Optional[str] = None
+) -> Dict[str, Union[List[str], Optional[str], Request]]:
     """UI home for listing models in model registry
 
     Args:
@@ -71,29 +73,21 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
     """
     registry: CardRegistry = request.app.state.registries.model
 
-    all_teams = registry.list_teams()
-    model_names = registry.list_card_names(team=team)
-
-    if not bool(all_teams):
-        default_team = None
-    else:
-        default_team = all_teams[0]
-
-    team = team or default_team
+    info = list_team_name_info(registry, team)
 
     return templates.TemplateResponse(
         "models.html",
         {
             "request": request,
-            "all_teams": all_teams,
-            "selected_team": team,
-            "models": model_names,
+            "all_teams": info.all_teams,
+            "selected_team": info.selected_team,
+            "models": info.names,
         },
     )
 
 
 @router.get("/models/versions/")
-@error_to_404
+@error_to_500
 async def model_versions_page(request: Request, model: Optional[str] = None):
     if model is None:
         return RedirectResponse(url="/opsml/models/list/")
@@ -125,7 +119,7 @@ async def model_versions_page(request: Request, model: Optional[str] = None):
 
 
 @router.get("/models/metadata/")
-@error_to_404
+@error_to_500
 async def list_model(
     request: Request,
     uid: Optional[str] = None,

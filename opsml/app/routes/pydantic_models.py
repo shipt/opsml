@@ -19,6 +19,12 @@ class HealthCheckResult(BaseModel):
     is_alive: bool
 
 
+class ListTeamNameInfo(BaseModel):
+    teams: List[str]
+    selected_team: str
+    names: List[str]
+
+
 class DebugResponse(BaseModel):
     url: str
     storage: str

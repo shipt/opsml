@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+  <title>Model Audit</title>
+{% endblock %}
+
+{% block content %}
+<body id="ModelAuditPage">
+
+  <div class="container" style="padding-top:65px;">
+  </div>
+    
+  {% include "include/model/model_subnav.html" %}
+    
+  
+<br>
+<div class="container" style="padding-top:50px;">
+
+
+<!---- Form for selecting team -------->
+  <div class="btn-group">
+      <div class="dropdown" id="TeamSelect">
+        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+          
+          {% if selected_team is not none %}
+            {{selected_team}}
+          {% else %}
+            Select Team
+          {% endif %}
+
+        </a>
+      
+        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+          {% for team in teams %}
+            <a class="dropdown-item" href="/opsml/models/metadata/?team={{team}}">{{team}}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="dropdown" id="MetadataTeamSelect">
+        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+          
+          {% if selected_model is not none %}
+            {{selected_model}}
+          {% else %}
+            Select Model
+          {% endif %}
+    
+        </a>
+        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+          {% if models is not none %}
+            {% for model in models %}
+              <a class="dropdown-item" href="/opsml/models/metadata/?team={{selected_team}}&model={{model}}">{{model}}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+  </div>
+
+</div>
+
+
+<div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
+</div>
+</body>
+
+{% endblock %}
+

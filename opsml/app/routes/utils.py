@@ -1,12 +1,13 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union, List
 import os
 from functools import wraps
 from streaming_form_data.targets import FileTarget
 from fastapi.templating import Jinja2Templates
-from opsml.registry import CardRegistries, ModelCard, RunCard
+from opsml.app.routes.pydantic_models import ListTeamNameInfo
+from opsml.registry import CardRegistries, ModelCard, RunCard, CardRegistry
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
 
@@ -53,7 +54,7 @@ def get_runcard_from_model(
     return None
 
 
-def error_to_404(func):
+def error_to_500(func):
     @wraps(func)
     async def wrapper(request, *args, **kwargs):
         try:
@@ -61,7 +62,7 @@ def error_to_404(func):
         except Exception as exc:
             logger.error(exc)
             return templates.TemplateResponse(
-                "include/404.html",
+                "include/500.html",
                 {
                     "request": request,
                     "error_message": str(exc),
@@ -140,3 +141,23 @@ class ExternalFileTarget(FileTarget):
 
     def on_start(self):
         self._fd = self.storage_client.open(self.filepath, self._mode)
+
+
+def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> ListTeamNameInfo:
+    """Returns dictionary of items"""
+
+    all_teams = registry.list_teams()
+
+    if not bool(all_teams):
+        default_team = None
+    else:
+        default_team = all_teams[0]
+
+    team = team or default_team
+    names = registry.list_card_names(team=team)
+
+    return ListTeamNameInfo(
+        teams=all_teams,
+        selected_team=team,
+        names=names,
+    )
