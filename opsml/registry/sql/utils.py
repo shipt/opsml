@@ -57,7 +57,7 @@ class CardValidator:
 
 class CardValidatorServer(CardValidator):
     """Card validator for server side validation"""
-
+create a sql mixin
     def __init__(self):
         self.query_engine = QueryEngine()
 
