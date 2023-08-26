@@ -31,9 +31,9 @@ from opsml.registry.sql.utils import card_validator, CardValidatorServer
 logger = ArtifactLogger.get_logger(__name__)
 
 if TYPE_CHECKING:
-    card_type_validator = CardValidatorServer()
+    card_validator = CardValidatorServer()
 else:
-    card_type_validator = card_validator
+    card_validator = card_validator
 
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
@@ -113,11 +113,6 @@ class SQLRegistryBase:
         supplied_version: Optional[CardVersion] = None,
     ) -> str:
         raise NotImplementedError
-
-    # TODO: refactor
-    def _get_uid(self) -> str:
-        """Sets a unique id to be applied to a card"""
-        return uuid.uuid4().hex
 
     # TODO: refactor
     def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
@@ -249,17 +244,6 @@ class SQLRegistryBase:
         return None
 
     # TODO: refactor
-    def _set_card_uid(self, card: ArtifactCard) -> None:
-        """Sets a given card's uid
-
-        Args:
-            card:
-                Card to set
-        """
-        if card.uid is None:
-            card.uid = self._get_uid()
-
-    # TODO: refactor
     def _create_registry_record(self, card: ArtifactCard) -> None:
         """
         Creates a registry record from a given ArtifactCard.
@@ -293,14 +277,14 @@ class SQLRegistryBase:
                 Version type for increment. Options are "major", "minor" and "patch". Defaults to "minor"
         """
 
-        card_type_validator.validate_card_type(table_name=self.table_name, card=card)
+        card_validator.validate_card_type(table_name=self.table_name, card=card)
         self._set_card_version(
             card=card,
             version_type=version_type,
             pre_tag=pre_tag,
             build_tag=build_tag,
         )
-        self._set_card_uid(card=card)
+        card_validator.set_card_uid(card=card)
         self._set_artifact_storage_spec(card=card)
         self._create_registry_record(card=card)
 

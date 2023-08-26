@@ -1,6 +1,6 @@
 from typing import Iterator
 from sqlalchemy.orm.session import Session
-
+import uuid
 from opsml.registry.sql.settings import settings
 from opsml.registry.cards import ArtifactCard
 from opsml.registry.sql.query_helpers import QueryEngine
@@ -43,6 +43,16 @@ class CardValidator:
                 If registering a new Card, create a new Card of the correct type.
                 """
             )
+
+    def set_card_uid(self, card: ArtifactCard) -> None:
+        """Sets a given card's uid
+
+        Args:
+            card:
+                Card to set
+        """
+        if card.uid is None:
+            card.uid = uuid.uuid4().hex
 
 
 class CardValidatorServer(CardValidator):
