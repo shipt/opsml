@@ -60,9 +60,8 @@ async def audit_list_homepage(
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
     """
-
+    teams = request.app.state.registries.model.list_teams()
     if all(attr is None for attr in [uid, version, model, team]):
-        teams = request.app.state.registries.model.list_teams()
         return templates.TemplateResponse(
             "audits.html",
             {
@@ -96,9 +95,8 @@ async def audit_list_homepage(
             "metadata.html",
             {
                 "request": request,
-                "teams": [team],
+                "teams": teams,
                 "selected_team": team,
-                "metadata": None,
                 "models": models,
                 "selected_model": model,
                 "versions": versions,

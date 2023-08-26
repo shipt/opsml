@@ -146,7 +146,7 @@ async def list_model(
             "metadata.html",
             {
                 "request": request,
-                "teams": [team],
+                "teams": teams,
                 "selected_team": team,
                 "metadata": None,
                 "models": models,
@@ -185,7 +185,7 @@ async def list_model(
             "metadata.html",
             {
                 "request": request,
-                "teams": [team],
+                "teams": teams,
                 "selected_team": metadata.model_team,
                 "metadata": metadata,
                 "models": models,
