@@ -19,7 +19,7 @@ from opsml.registry.cards import (
     PipelineCard,
     RunCard,
 )
-from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
+from opsml.registry.sql.query_helpers import QueryEngine, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
 from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
 from opsml.registry.sql.settings import settings
@@ -48,7 +48,7 @@ if settings.request_client is None:
     )
     initializer.initialize()
 
-query_creator = QueryCreator()
+query_creator = QueryEngine()
 
 table_name_card_map = {
     RegistryTableNames.DATA.value: DataCard,

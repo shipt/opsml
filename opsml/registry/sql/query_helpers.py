@@ -5,8 +5,10 @@
 
 import datetime
 from functools import wraps
-from typing import Any, Dict, Iterable, Optional, Type, Union, cast
+from typing import Any, Dict, Iterable, Optional, Type, Union, cast, Iterator
 
+from contextlib import contextmanager
+from sqlalchemy.orm.session import Session
 from sqlalchemy import select
 from sqlalchemy.sql import FromClause, Select
 from sqlalchemy.sql.expression import ColumnElement
@@ -14,6 +16,7 @@ from sqlalchemy.sql.expression import ColumnElement
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.semver import get_version_to_search
 from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
+from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -21,7 +24,17 @@ SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
 YEAR_MONTH_DATE = "%Y-%m-%d"
 
 
-class QueryCreator:
+class QueryEngine:
+    def _get_engine(self):
+        return settings.connection_client.get_engine()
+
+    @contextmanager  # type: ignore
+    def session(self) -> Iterator[Session]:
+        engine = self._get_engine()
+
+        with Session(engine) as sess:  # type: ignore
+            yield sess
+
     def create_version_query(
         self,
         table: Type[REGISTRY_TABLES],

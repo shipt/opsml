@@ -1,25 +1,10 @@
 from typing import Iterator
-from contextlib import contextmanager
 from sqlalchemy.orm.session import Session
+
 from opsml.registry.sql.settings import settings
 from opsml.registry.cards import ArtifactCard
-from opsml.registry.sql.query_helpers import QueryCreator  # type: ignore
+from opsml.registry.sql.query_helpers import QueryEngine
 from opsml.helpers.request_helpers import api_routes
-
-
-query_creator = QueryCreator()
-
-
-class SqlConnMixin:
-    def _get_engine(self):
-        return settings.connection_client.get_engine()
-
-    @contextmanager  # type: ignore
-    def session(self) -> Iterator[Session]:
-        engine = self._get_engine()
-
-        with Session(engine) as sess:  # type: ignore
-            yield sess
 
 
 class ApiMixin:
@@ -60,11 +45,17 @@ class CardValidator:
             )
 
 
-class CardValidatorServer(SqlConnMixin, CardValidator):
+class CardValidatorServer(CardValidator):
     """Card validator for server side validation"""
 
+    def __init__(self):
+        self.query_engine = QueryEngine()
+
+    def session(self) -> Iterator[Session]:
+        return self.query_engine.session()
+
     def check_uid_exists(self, uid: str, table_to_check: str) -> bool:
-        query = query_creator.uid_exists_query(
+        query = self.query_engine.uid_exists_query(
             uid=uid,
             table_to_check=table_to_check,
         )
