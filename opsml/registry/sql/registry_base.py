@@ -3,8 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 import uuid
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast, Iterator
-
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast, Iterator, TYPE_CHECKING
 import pandas as pd
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import ColumnElement, FromClause, Select
@@ -27,8 +26,14 @@ from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
 from opsml.helpers.exceptions import VersionError
 from opsml.registry.storage.types import ArtifactStorageSpecs
+from opsml.registry.sql.utils import card_validator, CardValidatorServer
 
 logger = ArtifactLogger.get_logger(__name__)
+
+if TYPE_CHECKING:
+    card_type_validator = CardValidatorServer()
+else:
+    card_type_validator = card_validator
 
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
@@ -110,39 +115,17 @@ class SQLRegistryBase:
         raise NotImplementedError
 
     # TODO: refactor
-    def _is_correct_card_type(self, card: ArtifactCard):
-        """Checks wether the current card is associated with the correct registry type"""
-        return self.supported_card.lower() == card.__class__.__name__.lower()
-
-    # TODO: refactor
     def _get_uid(self) -> str:
         """Sets a unique id to be applied to a card"""
         return uuid.uuid4().hex
 
     # TODO: refactor
-    def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         raise NotImplementedError
 
     # TODO: refactor
     def update_card_record(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         raise NotImplementedError
-
-    # TODO: refactor
-    def _validate_card_type(self, card: ArtifactCard):
-        # check compatibility
-        if not self._is_correct_card_type(card=card):
-            raise ValueError(
-                f"""Card of type {card.__class__.__name__} is not supported by registry
-                {self._table.__tablename__}"""
-            )
-
-        if self.check_uid(uid=str(card.uid), table_to_check=self.table_name):
-            raise ValueError(
-                """This Card has already been registered.
-            If the card has been modified try updating the Card in the registry.
-            If registering a new Card, create a new Card of the correct type.
-            """
-            )
 
     # TODO: refactor
     def _set_artifact_storage_spec(self, card: ArtifactCard) -> None:
@@ -290,7 +273,7 @@ class SQLRegistryBase:
         card = save_card_artifacts(card=card, storage_client=self.storage_client)
         record = card.create_registry_record()
 
-        self.add_and_commit(card=record.model_dump())
+        self._add_and_commit(card=record.model_dump())
 
     # TODO: refactor
     def register_card(
@@ -310,7 +293,7 @@ class SQLRegistryBase:
                 Version type for increment. Options are "major", "minor" and "patch". Defaults to "minor"
         """
 
-        self._validate_card_type(card=card)
+        card_type_validator.validate_card_type(table_name=self.table_name, card=card)
         self._set_card_version(
             card=card,
             version_type=version_type,
@@ -344,9 +327,6 @@ class SQLRegistryBase:
         limit: Optional[int] = None,
         ignore_release_candidates: bool = False,
     ) -> List[Dict[str, Any]]:
-        raise NotImplementedError
-
-    def check_uid(self, uid: str, table_to_check: str) -> bool:
         raise NotImplementedError
 
     def _sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -478,7 +458,7 @@ class ServerRegistry(SQLRegistryBase):
         return ver_validator.set_version(versions=versions)
 
     @log_card_change
-    def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         sql_record = self._table(**card)
 
         with self.session() as sess:
@@ -605,15 +585,6 @@ class ServerRegistry(SQLRegistryBase):
 
         return sorted_records[:limit]
 
-    def check_uid(self, uid: str, table_to_check: str) -> bool:
-        query = query_creator.uid_exists_query(
-            uid=uid,
-            table_to_check=table_to_check,
-        )
-        with self.session() as sess:
-            result = sess.scalars(query).first()  # type: ignore[attr-defined]
-        return bool(result)
-
     @staticmethod
     def validate(registry_name: str) -> bool:
         raise NotImplementedError
@@ -628,14 +599,6 @@ class ClientRegistry(SQLRegistryBase):
     def _get_session(self):
         """Gets the requests session for connecting to the opsml api"""
         return settings.request_client
-
-    def check_uid(self, uid: str, table_to_check: str) -> bool:
-        data = self._session.post_request(
-            route=api_routes.CHECK_UID,
-            json={"uid": uid, "table_name": table_to_check},
-        )
-
-        return bool(data.get("uid_exists"))
 
     def set_version(
         self,
@@ -717,7 +680,7 @@ class ClientRegistry(SQLRegistryBase):
         return data["cards"]
 
     @log_card_change
-    def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         data = self._session.post_request(
             route=api_routes.CREATE_CARD,
             json={

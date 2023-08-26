@@ -23,6 +23,7 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
+from opsml.registry.sql.utils import card_validator
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -35,10 +36,8 @@ def check_uid(
     payload: UidExistsRequest = Body(...),
 ) -> UidExistsResponse:
     """Checks if a uid already exists in the database"""
-    table_for_registry = payload.table_name.split("_")[1].lower()
-    registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
 
-    if registry._registry.check_uid(
+    if card_validator.check_uid_exists(
         uid=payload.uid,
         table_to_check=payload.table_name,
     ):
@@ -127,7 +126,7 @@ def add_card(
 
     logger.info("Creating card: %s", payload.dict())
 
-    registry._registry.add_and_commit(card=payload.card)
+    registry._registry._add_and_commit(card=payload.card)
     return AddCardResponse(registered=True)
 
 

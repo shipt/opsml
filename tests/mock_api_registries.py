@@ -19,6 +19,7 @@ from opsml.registry.sql.records import (
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.registry_base import ClientRegistry, SQLRegistryBase, VersionType
 from opsml.registry.sql.sql_schema import RegistryTableNames
+from opsml.registry.sql.utils import card_validator
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -56,7 +57,7 @@ class ModelCardRegistry(Registry):
 
     def _validate_datacard_uid(self, uid: str) -> None:
         table_to_check = self._get_data_table_name()
-        exists = self.check_uid(uid=uid, table_to_check=table_to_check)
+        exists = card_validator.check_uid_exists(uid=uid, table_to_check=table_to_check)
         if not exists:
             raise ValueError("""ModelCard must be assoicated with a valid DataCard uid""")
 
