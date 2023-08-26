@@ -53,6 +53,13 @@ table_name_card_map = {
 }
 
 
+###################### Attention ######################
+# Registry classes should only expose list, load, register and update methods
+# Private methods should ideally be independent classes that are called by these 4 methods
+# This is done to decouple code and make a better user experience
+########################################################
+
+
 def load_card_from_record(
     table_name: str,
     record: LoadedRecordType,
@@ -90,6 +97,7 @@ class SQLRegistryBase:
 
         self._table = TableSchema.get_table(table_name=table_name)
 
+    # TODO: refactor
     def set_version(
         self,
         name: str,
@@ -101,20 +109,25 @@ class SQLRegistryBase:
     ) -> str:
         raise NotImplementedError
 
+    # TODO: refactor
     def _is_correct_card_type(self, card: ArtifactCard):
         """Checks wether the current card is associated with the correct registry type"""
         return self.supported_card.lower() == card.__class__.__name__.lower()
 
+    # TODO: refactor
     def _get_uid(self) -> str:
         """Sets a unique id to be applied to a card"""
         return uuid.uuid4().hex
 
+    # TODO: refactor
     def add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         raise NotImplementedError
 
+    # TODO: refactor
     def update_card_record(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         raise NotImplementedError
 
+    # TODO: refactor
     def _validate_card_type(self, card: ArtifactCard):
         # check compatibility
         if not self._is_correct_card_type(card=card):
@@ -131,6 +144,7 @@ class SQLRegistryBase:
             """
             )
 
+    # TODO: refactor
     def _set_artifact_storage_spec(self, card: ArtifactCard) -> None:
         """Creates artifact storage info to associate with artifacts"""
 
@@ -139,10 +153,12 @@ class SQLRegistryBase:
         artifact_storage_spec = ArtifactStorageSpecs(save_path=save_path)
         self._update_storage_client_metadata(storage_specdata=artifact_storage_spec)
 
+    # TODO: refactor
     def _update_storage_client_metadata(self, storage_specdata: ArtifactStorageSpecs):
         """Updates storage metadata"""
         self.storage_client.storage_spec = storage_specdata
 
+    # TODO: refactor
     def _validate_semver(self, name: str, team: str, version: CardVersion) -> None:
         """
         Validates version if version is manually passed to Card
@@ -174,6 +190,7 @@ class SQLRegistryBase:
                     if record["version"] == version.version:
                         raise VersionError("Version combination already exists. %s" % version.version)
 
+    # TODO: refactor
     def _validate_pre_build_version(self, version: Optional[str] = None) -> CardVersion:
         if version is None:
             raise ValueError("Cannot set pre-release or build tag without a version")
@@ -184,6 +201,7 @@ class SQLRegistryBase:
 
         return card_version
 
+    # TODO: refactor
     def _set_card_version(
         self,
         card: ArtifactCard,
@@ -247,6 +265,7 @@ class SQLRegistryBase:
 
         return None
 
+    # TODO: refactor
     def _set_card_uid(self, card: ArtifactCard) -> None:
         """Sets a given card's uid
 
@@ -257,6 +276,7 @@ class SQLRegistryBase:
         if card.uid is None:
             card.uid = self._get_uid()
 
+    # TODO: refactor
     def _create_registry_record(self, card: ArtifactCard) -> None:
         """
         Creates a registry record from a given ArtifactCard.
@@ -272,6 +292,7 @@ class SQLRegistryBase:
 
         self.add_and_commit(card=record.model_dump())
 
+    # TODO: refactor
     def register_card(
         self,
         card: ArtifactCard,
