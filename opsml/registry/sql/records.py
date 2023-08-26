@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
-from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris
+from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris, CardVersion
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
@@ -103,9 +103,9 @@ class ProjectRegistryRecord(BaseModel):
 class AuditRegistryRecord(SaveRecord):
     approved: bool
     audit_uri: str
-    datacard_uids: List[str]
-    modelcard_uids: List[str]
-    runcard_uids: List[str]
+    datacards: List[CardVersion]
+    modelcards: List[CardVersion]
+    runcards: List[CardVersion]
     timestamp: int = get_timestamp()
 
 
@@ -267,9 +267,9 @@ class LoadedModelRecord(LoadRecord):
 class LoadedAuditRecord(LoadRecord):
     audit_uri: str
     approved: bool
-    datacard_uids: List[str]
-    modelcard_uids: List[str]
-    runcard_uids: List[str]
+    datacards: List[CardVersion]
+    modelcards: List[CardVersion]
+    runcards: List[CardVersion]
 
     @model_validator(mode="before")
     def load_audit_attr(cls, values) -> Dict[str, Any]:

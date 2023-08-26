@@ -15,7 +15,7 @@ from rich.table import Table
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType
+from opsml.registry.cards.types import CardType, CardVersion
 from opsml.registry.sql.records import AuditRegistryRecord, RegistryRecord
 
 
@@ -107,9 +107,10 @@ class AuditCard(ArtifactCard):
 
     audit: AuditSections = AuditSections()
     audit_uri: Optional[str] = None
-    datacard_uids: List[str] = []
-    modelcard_uids: List[str] = []
-    runcard_uids: List[str] = []
+    datacards: List[CardVersion] = []
+    modelcards: List[CardVersion] = []
+    runcards: List[CardVersion] = []
+    attached_cards: List[CardVersion] = []
     approved: bool = False
 
     def create_registry_record(self) -> RegistryRecord:
@@ -117,7 +118,7 @@ class AuditCard(ArtifactCard):
 
         return AuditRegistryRecord(**self.model_dump())
 
-    def add_card_uid(self, card_type: str, uid: str) -> None:
+    def add_card(self, card: ArtifactCard) -> None:
         """
         Adds a card uid to the appropriate card uid list for tracking
 
@@ -134,24 +135,51 @@ class AuditCard(ArtifactCard):
             RegistryTableNames,
         )
 
+        if card.card_type.lower() not in [
+            CardType.DATACARD.value,
+            CardType.MODELCARD.value,
+            CardType.RUNCARD.value,
+        ]:
+            raise ValueError(f"Invalid card type {card.card_type}. Valid card types are: data, model or run")
+
         audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)
 
-        if card_type.lower() == CardType.DATACARD:
-            if audit_registry.validate_uid(uid, RegistryTableNames.DATA.value):
-                self.datacard_uids = [uid, *self.datacard_uids]
-                return  # Exit early
+        if card.card_type.lower() == CardType.DATACARD.value:
+            if audit_registry.validate_uid(card.uid, RegistryTableNames.DATA.value):
+                self.datacards.append(
+                    CardVersion(
+                        name=card.name,
+                        version=card.version,
+                        card_type=card.card_type,
+                    )
+                )
+                return
 
-        elif card_type.lower() == CardType.MODELCARD:
-            if audit_registry.validate_uid(uid, RegistryTableNames.MODEL.value):
-                self.modelcard_uids = [uid, *self.modelcard_uids]
-                return  # Exit early
+        elif card.card_type.lower() == CardType.MODELCARD:
+            if audit_registry.validate_uid(card.uid, RegistryTableNames.MODEL.value):
+                self.modelcards.append(
+                    CardVersion(
+                        name=card.name,
+                        version=card.version,
+                        card_type=card.card_type,
+                    )
+                )
+                return
 
-        elif card_type.lower() == CardType.RUNCARD:
+        elif card.card_type.lower() == CardType.RUNCARD:
             # RunCard does not get a validation because registration will occur at end of run
-            self.runcard_uids = [uid, *self.runcard_uids]
+            self.runcards.append(
+                CardVersion(
+                    name=card.name,
+                    version=card.version,
+                    card_type=card.card_type,
+                )
+            )
             return  # Exit early
 
-        raise ValueError(f"Invalid uid {uid} for {card_type}. Uid must be registered prior to adding to AuditCard.")
+        raise ValueError(
+            f"Invalid uid {card.uid} for {card.card_type}. Uid must be registered prior to adding to AuditCard."
+        )
 
     @property
     def business(self) -> Dict[int, Question]:

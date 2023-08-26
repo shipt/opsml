@@ -28,6 +28,7 @@ from opsml.registry.sql.records import (
     DataRegistryRecord,
     RegistryRecord,
 )
+from opsml.registry.cards.audit_deco import auditable
 from opsml.registry.sql.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs
@@ -36,6 +37,7 @@ logger = ArtifactLogger.get_logger(__name__)
 storage_client = settings.storage_client
 
 
+@auditable
 class DataCard(ArtifactCard):
     """Create a DataCard from your data.
 

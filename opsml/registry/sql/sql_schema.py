@@ -105,9 +105,9 @@ class RunSchema(Base, BaseMixin, RunMixin):  # type: ignore
 class AuditMixin:
     approved = Column("approved", Boolean)
     audit_uri = Column("audit_uri", String(2048))
-    datacard_uids = Column("datacard_uids", JSON)
-    modelcard_uids = Column("modelcard_uids", JSON)
-    runcard_uids = Column("runcard_uids", JSON)
+    datacards = Column("datacard_uids", JSON)
+    modelcards = Column("modelcard_uids", JSON)
+    runcards = Column("runcard_uids", JSON)
 
 
 class AuditSchema(Base, BaseMixin, AuditMixin):  # type: ignore

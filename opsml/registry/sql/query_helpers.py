@@ -7,13 +7,13 @@ import datetime
 from functools import wraps
 from typing import Any, Dict, Iterable, Optional, Type, Union, cast
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.sql import FromClause, Select
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.semver import get_version_to_search
-from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
+from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema, AuditSchema
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -22,6 +22,21 @@ YEAR_MONTH_DATE = "%Y-%m-%d"
 
 
 class QueryCreator:
+    def query_audit_by_model(
+        self, table: Type[AuditSchema], model_name: str, model_version: Optional[str] = None
+    ) -> Select:
+        query = select(table)
+
+        if model_version is not None:
+            return select(table).filter(
+                and_(
+                    table.modelcards.like(f"%{model_name}%"),
+                    table.modelcards.like(f"%{model_version}%"),
+                )
+            )
+
+        return query.filter(table.modelcards.like(f"%{model_name}%"))
+
     def get_unique_teams_query(self, table: Type[REGISTRY_TABLES]):
         return select(table.team).distinct()
 

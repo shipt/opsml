@@ -28,15 +28,6 @@ storage_client = settings.storage_client
 SampleModelData = Optional[Union[pd.DataFrame, np.ndarray, Dict[str, np.ndarray], pl.DataFrame]]
 
 
-class AuditCard(Protocol):
-    @property
-    def uid(self):
-        ...
-
-    def add_card_uid(self, card_type: str, uid: str) -> None:
-        ...
-
-
 class ArtifactCard(BaseModel):
     """Base pydantic class for artifact cards"""
 
@@ -79,36 +70,6 @@ class ArtifactCard(BaseModel):
         )
 
         return env_vars
-
-    def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
-        """Add card uid to auditcard
-
-        Args:
-            auditcard:
-                Optional AuditCard to add card uid to
-            auditcard_uid:
-                Optional uid of AuditCard to add card uid to
-
-        """
-
-        if self.card_type == CardType.AUDITCARD:
-            raise ValueError("add_to_auditcard is not implemented for AuditCard")
-
-        if self.uid is None:
-            raise ValueError("Card must be registered before adding to auditcard")
-
-        if auditcard_uid is not None:
-            from opsml.registry.sql.registry import (  # pylint: disable=cyclic-import
-                CardRegistry,
-            )
-
-            audit_registry = CardRegistry(registry_name="audit")
-            card: AuditCard = audit_registry.load_card(uid=auditcard_uid)
-            card.add_card_uid(card_type=self.card_type, uid=self.uid)
-            return audit_registry.update_card(card=card)
-
-        if auditcard is not None:
-            return auditcard.add_card_uid(card_type=self.card_type, uid=self.uid)
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record from self attributes"""

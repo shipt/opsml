@@ -98,4 +98,10 @@ class RunCardArgs(str, Enum):
     PIPELINE_UID = "pipelinecard_uid"
 
 
+class CardVersion(BaseModel):
+    name: str
+    version: str
+    card_type: CardType
+
+
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]

@@ -1,5 +1,6 @@
 from typing import Dict, Tuple
-from opsml.registry import AuditCard, DataCard, ModelCard, CardRegistry
+from opsml.registry import AuditCard, DataCard, ModelCard, CardRegistry, PipelineCard
+from opsml.registry.sql.query_helpers import QueryCreator
 from sklearn import linear_model
 import pandas as pd
 import pytest
@@ -50,7 +51,8 @@ def test_audit_card_add_uids(
 
     # test 1st path to add uid
     datacard.add_to_auditcard(auditcard=auditcard)
-    assert auditcard.datacard_uids[0] == datacard.uid
+
+    assert auditcard.datacards[0].name == datacard.name
 
     # register card
     audit_registry.register_card(card=auditcard)
@@ -70,7 +72,7 @@ def test_audit_card_add_uids(
     # test 2nd path to add uid
     modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
     auditcard = audit_registry.load_card(uid=auditcard.uid)
-    assert auditcard.modelcard_uids[0] == modelcard.uid
+    assert auditcard.modelcards[0].version == modelcard.version
 
     ### These should fail
     with pytest.raises(ValueError):
@@ -81,4 +83,19 @@ def test_audit_card_add_uids(
 
     # need to raise other errors
     with pytest.raises(ValueError):
-        auditcard.add_card_uid(uid="not_a_uid", card_type="data")
+        pipe = PipelineCard(name="pipe", team="team", user_email="test")
+        auditcard.add_card(pipe)
+
+    query_creator = QueryCreator()
+
+    query = query_creator.query_audit_by_model(
+        table=audit_registry._registry._table,
+        model_name=modelcard.name,
+        model_version=modelcard.version,
+    )
+
+    with audit_registry._registry.session() as sess:
+        results = sess.execute(query).all()
+
+    print(results)
+    a

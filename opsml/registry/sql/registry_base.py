@@ -13,13 +13,7 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import api_routes
 from opsml.helpers.utils import clean_string
 from opsml.registry.cards.card_saver import save_card_artifacts
-from opsml.registry.cards import (
-    ArtifactCard,
-    DataCard,
-    ModelCard,
-    PipelineCard,
-    RunCard,
-)
+from opsml.registry.cards import ArtifactCard, DataCard, ModelCard, PipelineCard, RunCard, AuditCard
 from opsml.registry.sql.query_helpers import QueryCreator, log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
 from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
@@ -50,6 +44,7 @@ table_name_card_map = {
     RegistryTableNames.MODEL.value: ModelCard,
     RegistryTableNames.RUN.value: RunCard,
     RegistryTableNames.PIPELINE.value: PipelineCard,
+    RegistryTableNames.AUDIT.value: AuditCard,
 }
 
 
