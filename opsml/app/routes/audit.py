@@ -103,4 +103,6 @@ async def audit_list_homepage(
             },
         )
 
+    # create sql query that can search auditcards by associated modelcard uid
+
     return RedirectResponse(url="/opsml/audit/")
