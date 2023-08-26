@@ -161,3 +161,18 @@ def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> L
         selected_team=team,
         names=names,
     )
+
+
+def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:
+    """Returns a list of model versions for a given team and model
+
+    Args:
+        registry:
+            The registry to query
+        model:
+            The model to query
+    Returns:
+        A list of model versions
+    """
+
+    return [card["version"] for card in registry.list_cards(name=model, team=team, as_dataframe=False)]

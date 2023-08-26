@@ -20,9 +20,9 @@ class HealthCheckResult(BaseModel):
 
 
 class ListTeamNameInfo(BaseModel):
-    teams: List[str]
-    selected_team: str
-    names: List[str]
+    teams: Optional[List[str]] = None
+    selected_team: Optional[str] = None
+    names: Optional[List[str]] = None
 
 
 class DebugResponse(BaseModel):

@@ -19,7 +19,7 @@
           <a class="nav-link" href="/docs/" style="font-size: 1.1vw; color:white;" id="data"><i class="bi-table"></i> Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/docs/"style="font-size: 1.1vw; color:white;" id="audit"><i class="bi-journal-text"></i> Audit</a>
+          <a class="nav-link" href="/opsml/audit/"style="font-size: 1.1vw; color:white;" id="audit"><i class="bi-journal-text"></i> Audit</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="https://didactic-bassoon-l5emw7m.pages.github.io/"style="font-size: 1.1vw; color:white;"><i class="bi-journal-text"></i> Docs</a>
@@ -37,7 +37,14 @@
         if (window.location.href.includes("opsml/models")) {
             $("#models").addClass('active'); 
             $("#models").parents('li').addClass('active');
-        } else {
+        } else if (window.location.href.includes("opsml/audit")) {
+          $("#audit").addClass('active'); 
+          $("#audit").parents('li').addClass('active');
+        } else if (window.location.href.includes("docs")) {
+          $("#data").addClass('active'); 
+          $("#data").parents('li').addClass('active');
+        }
+        else {
           $("#home").addClass('active'); 
           $("#home").parents('li').addClass('active');
         }

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
-from opsml.app.routes.utils import error_to_500, get_runcard_from_model, list_team_name_info
+from opsml.app.routes.utils import error_to_500, get_runcard_from_model, list_team_name_info, get_model_versions
 from opsml.app.routes.pydantic_models import (
     CardRequest,
     CompareMetricRequest,
@@ -42,21 +42,6 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:
-    """Returns a list of model versions for a given team and model
-
-    Args:
-        registry:
-            The registry to query
-        model:
-            The model to query
-    Returns:
-        A list of model versions
-    """
-
-    return [card["version"] for card in registry.list_cards(name=model, team=team, as_dataframe=False)]
-
-
 @router.get("/models/list/")
 @error_to_500
 async def model_list_homepage(request: Request, team: Optional[str] = None):
@@ -77,7 +62,7 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
         "models.html",
         {
             "request": request,
-            "all_teams": info.all_teams,
+            "all_teams": info.teams,
             "selected_team": info.selected_team,
             "models": info.names,
         },
@@ -125,9 +110,8 @@ async def list_model(
     model: Optional[str] = None,
     team: Optional[str] = None,
 ):
-    teams = request.app.state.registries.model.list_teams()
-
     if all(attr is None for attr in [uid, version, model, team]):
+        teams = request.app.state.registries.model.list_teams()
         return templates.TemplateResponse(
             "metadata.html",
             {

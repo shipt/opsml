@@ -33,9 +33,16 @@
     </a>
   
     <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
-      {% for team in all_teams %}
-        <a class="dropdown-item" href="/opsml/models/list/?team={{team}}">{{team}}</a>
-      {% endfor %}
+      {% if all_teams is not none %}
+
+        {% for team in all_teams %}
+          <a class="dropdown-item" href="/opsml/models/list/?team={{team}}">{{team}}</a>
+        {% endfor %}
+        
+      {% else %}
+      <a class="dropdown-item" href="#">No Team Found</a>
+      {% endif %}
+
     </div>
   </div>
 </div>

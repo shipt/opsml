@@ -7,11 +7,6 @@
 {% block content %}
 <body id="ModelAuditPage">
 
-  <div class="container" style="padding-top:65px;">
-  </div>
-    
-  {% include "include/model/model_subnav.html" %}
-    
   
 <br>
 <div class="container" style="padding-top:50px;">
@@ -19,7 +14,7 @@
 
 <!---- Form for selecting team -------->
   <div class="btn-group">
-      <div class="dropdown" id="TeamSelect">
+      <div class="dropdown" id="MetadataTeamSelect">
         <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
           
           {% if selected_team is not none %}
@@ -31,9 +26,15 @@
         </a>
       
         <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
-          {% for team in teams %}
-            <a class="dropdown-item" href="/opsml/models/metadata/?team={{team}}">{{team}}</a>
-          {% endfor %}
+          {% if teams is not none %}
+
+            {% for team in teams %}
+              <a class="dropdown-item" href="/opsml/audit/?team={{team}}">{{team}}</a>
+            {% endfor %}
+          
+            {% else %}
+            <a class="dropdown-item" href="#">No Team Found</a>
+            {% endif %}
         </div>
       </div>
 
@@ -50,7 +51,7 @@
         <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
           {% if models is not none %}
             {% for model in models %}
-              <a class="dropdown-item" href="/opsml/models/metadata/?team={{selected_team}}&model={{model}}">{{model}}</a>
+              <a class="dropdown-item" href="/opsml/audit/?team={{selected_team}}&model={{model}}">{{model}}</a>
             {% endfor %}
           {% endif %}
         </div>
