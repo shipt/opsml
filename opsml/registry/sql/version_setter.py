@@ -3,6 +3,7 @@ from semver import VersionInfo
 from opsml.registry.cards import ArtifactCard
 from opsml.helpers.exceptions import VersionError
 from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
+from opsml.registry.sql.mixins import ServerMixin, ClientMixin
 
 
 class CardVersionSetter:
@@ -122,7 +123,7 @@ class CardVersionSetter:
         return None
 
 
-class CardVersionSetterServer(CardVersionSetter):
+class CardVersionSetterServer(ServerMixin, CardVersionSetter):
     def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
         """Query versions from Card Database
 
@@ -136,7 +137,12 @@ class CardVersionSetterServer(CardVersionSetter):
         Returns:
             List of versions
         """
-        query = query_creator.create_version_query(table=self._table, name=name, version=version_to_search)
+
+        query = self.query_engine.create_version_query(
+            table=self._table,
+            name=name,
+            version=version_to_search,
+        )
 
         with self.session() as sess:
             results = sess.scalars(query).all()  # type: ignore[attr-defined]
@@ -148,3 +154,7 @@ class CardVersionSetterServer(CardVersionSetter):
             versions = [result.version for result in results]
             return SemVerUtils.sort_semvers(versions=versions)
         return []
+
+
+class CardVersionSetterClient(ClientMixin, CardVersionSetter):
+    pass

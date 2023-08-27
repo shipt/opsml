@@ -23,7 +23,7 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
-from opsml.registry.sql.utils import card_validator
+from opsml.registry.sql.card_validator import card_validator
 
 logger = ArtifactLogger.get_logger(__name__)
 

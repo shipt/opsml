@@ -26,7 +26,7 @@ from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
 from opsml.helpers.exceptions import VersionError
 from opsml.registry.storage.types import ArtifactStorageSpecs
-from opsml.registry.sql.utils import card_validator, CardValidatorServer
+from opsml.registry.sql.card_validator import card_validator, CardValidatorServer
 
 logger = ArtifactLogger.get_logger(__name__)
 

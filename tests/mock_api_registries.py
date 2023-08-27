@@ -19,7 +19,7 @@ from opsml.registry.sql.records import (
 from opsml.registry.cards.types import CardInfo, CardType
 from opsml.registry.sql.registry_base import ClientRegistry, SQLRegistryBase, VersionType
 from opsml.registry.sql.sql_schema import RegistryTableNames
-from opsml.registry.sql.utils import card_validator
+from opsml.registry.sql.card_validator import card_validator
 
 logger = ArtifactLogger.get_logger(__name__)
 
