@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from semver import VersionInfo
 from opsml.registry.cards import ArtifactCard
 from opsml.helpers.exceptions import VersionError
@@ -59,7 +59,7 @@ class CardVersionSetter:
                     if record["version"] == version.version:
                         raise VersionError("Version combination already exists. %s" % version.version)
 
-    def _set_card_version(
+    def set_card_version(
         self,
         card: ArtifactCard,
         version_type: VersionType,
@@ -122,6 +122,19 @@ class CardVersionSetter:
 
         return None
 
+    @staticmethod
+    def sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        versions = [record["version"] for record in records]
+        sorted_versions = SemVerUtils.sort_semvers(versions)
+
+        sorted_records = []
+        for version in sorted_versions:
+            for record in records:
+                if record["version"] == version:
+                    sorted_records.append(record)
+
+        return sorted_records
+
 
 class CardVersionSetterServer(ServerMixin, CardVersionSetter):
     def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
@@ -155,6 +168,73 @@ class CardVersionSetterServer(ServerMixin, CardVersionSetter):
             return SemVerUtils.sort_semvers(versions=versions)
         return []
 
+    def set_version(
+        self,
+        name: str,
+        team: str,
+        pre_tag: str,
+        build_tag: str,
+        version_type: VersionType,
+        supplied_version: Optional[CardVersion] = None,
+    ) -> str:
+        """
+        Sets a version following semantic version standards
+
+        Args:
+            name:
+                Card name
+            partial_version:
+                Validated partial version to set. If None, will increment the latest version
+            version_type:
+                Type of version increment. Values are "major", "minor" and "patch
+
+        Returns:
+            Version string
+        """
+
+        ver_validator = SemVerRegistryValidator(
+            version_type=version_type,
+            version=supplied_version,
+            name=name,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
+        )
+
+        versions = self._get_versions_from_db(
+            name=name,
+            team=team,
+            version_to_search=ver_validator.version_to_search,
+        )
+
+        return ver_validator.set_version(versions=versions)
+
 
 class CardVersionSetterClient(ClientMixin, CardVersionSetter):
-    pass
+    def set_version(
+        self,
+        name: str,
+        team: str,
+        pre_tag: str,
+        build_tag: str,
+        version_type: VersionType = VersionType.MINOR,
+        supplied_version: Optional[CardVersion] = None,
+    ) -> str:
+        if supplied_version is not None:
+            version_to_send = supplied_version.model_dump()
+        else:
+            version_to_send = None
+
+        data = self._session.post_request(
+            route=self.routes.VERSION,
+            json={
+                "name": name,
+                "team": team,
+                "version": version_to_send,
+                "version_type": version_type,
+                "table_name": self.table_name,
+                "pre_tag": pre_tag,
+                "build_tag": build_tag,
+            },
+        )
+
+        return data.get("version")

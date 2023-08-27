@@ -30,16 +30,17 @@ from opsml.registry.sql.card_validator import card_validator, CardValidatorServe
 
 logger = ArtifactLogger.get_logger(__name__)
 
-if TYPE_CHECKING:
-    card_validator = CardValidatorServer()
+
+USE_CLIENT_CLASS = bool(settings.request_client)
+
+
+if USE_CLIENT_CLASS:
+    from opsml.registry.sql.card_validator import CardValidatorClient as CardValidator
+    from opsml.registry.sql.version_setter import CardVersionSetterClient as CardVersionSetter
+
 else:
-    card_validator = card_validator
-
-
-SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
-
-# initialize tables
-if settings.request_client is None:
+    from opsml.registry.sql.card_validator import CardValidatorServer as CardValidator
+    from opsml.registry.sql.version_setter import CardVersionSetterServer as CardVersionSetter
     from opsml.registry.sql.db_initializer import DBInitializer
 
     initializer = DBInitializer(
@@ -48,7 +49,11 @@ if settings.request_client is None:
     )
     initializer.initialize()
 
-query_creator = QueryEngine()
+card_validator = CardValidator()
+card_version = CardVersionSetter()
+
+SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
+
 
 table_name_card_map = {
     RegistryTableNames.DATA.value: DataCard,
@@ -101,18 +106,6 @@ class SQLRegistryBase:
         self.storage_client = settings.storage_client
 
         self._table = TableSchema.get_table(table_name=table_name)
-
-    # TODO: refactor
-    def set_version(
-        self,
-        name: str,
-        team: str,
-        pre_tag: str,
-        build_tag: str,
-        version_type: VersionType,
-        supplied_version: Optional[CardVersion] = None,
-    ) -> str:
-        raise NotImplementedError
 
     # TODO: refactor
     def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
@@ -171,12 +164,13 @@ class SQLRegistryBase:
         """
 
         card_validator.validate_card_type(table_name=self.table_name, card=card)
-        self._set_card_version(
+        card_version.set_card_version(
             card=card,
             version_type=version_type,
             pre_tag=pre_tag,
             build_tag=build_tag,
         )
+
         card_validator.set_card_uid(card=card)
         self._set_artifact_storage_spec(card=card)
         self._create_registry_record(card=card)
@@ -205,18 +199,6 @@ class SQLRegistryBase:
         ignore_release_candidates: bool = False,
     ) -> List[Dict[str, Any]]:
         raise NotImplementedError
-
-    def _sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        versions = [record["version"] for record in records]
-        sorted_versions = SemVerUtils.sort_semvers(versions)
-
-        sorted_records = []
-        for version in sorted_versions:
-            for record in records:
-                if record["version"] == version:
-                    sorted_records.append(record)
-
-        return sorted_records
 
     def load_card(
         self,
@@ -254,86 +236,6 @@ class ServerRegistry(SQLRegistryBase):
         super().__init__(table_name)
         self.table_name = self._table.__tablename__
 
-    def _get_engine(self):
-        return settings.connection_client.get_engine()
-
-    @contextmanager  # type: ignore
-    def session(self) -> Iterator[Session]:
-        engine = self._get_engine()
-
-        with Session(engine) as sess:  # type: ignore
-            yield sess
-
-    def _create_table_if_not_exists(self):
-        engine = self._get_engine()
-        self._table.__table__.create(bind=engine, checkfirst=True)
-
-    def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
-        """Query versions from Card Database
-
-        Args:
-            name:
-                Card name
-            team:
-                Card team
-            version_to_search:
-                Version to search for
-        Returns:
-            List of versions
-        """
-        query = query_creator.create_version_query(table=self._table, name=name, version=version_to_search)
-
-        with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
-
-        if bool(results):
-            if results[0].team != team:
-                raise ValueError("""Model name already exists for a different team. Try a different name.""")
-
-            versions = [result.version for result in results]
-            return SemVerUtils.sort_semvers(versions=versions)
-        return []
-
-    def set_version(
-        self,
-        name: str,
-        team: str,
-        pre_tag: str,
-        build_tag: str,
-        version_type: VersionType,
-        supplied_version: Optional[CardVersion] = None,
-    ) -> str:
-        """
-        Sets a version following semantic version standards
-
-        Args:
-            name:
-                Card name
-            partial_version:
-                Validated partial version to set. If None, will increment the latest version
-            version_type:
-                Type of version increment. Values are "major", "minor" and "patch
-
-        Returns:
-            Version string
-        """
-
-        ver_validator = SemVerRegistryValidator(
-            version_type=version_type,
-            version=supplied_version,
-            name=name,
-            pre_tag=pre_tag,
-            build_tag=build_tag,
-        )
-
-        versions = self._get_versions_from_db(
-            name=name,
-            team=team,
-            version_to_search=ver_validator.version_to_search,
-        )
-
-        return ver_validator.set_version(versions=versions)
-
     @log_card_change
     def _add_and_commit(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         sql_record = self._table(**card)
@@ -354,46 +256,6 @@ class ServerRegistry(SQLRegistryBase):
             sess.commit()
 
         return card, "updated"
-
-    def _parse_sql_results(self, results: Any) -> List[Dict[str, Any]]:
-        """
-        Helper for parsing sql results
-
-        Args:
-            results:
-                Returned object sql query
-
-        Returns:
-            List of dictionaries
-        """
-        records: List[Dict[str, Any]] = []
-
-        for row in results:
-            result_dict = row[0].__dict__
-            result_dict.pop("_sa_instance_state")
-            records.append(result_dict)
-
-        return records
-
-    def _get_sql_records(self, query: Select) -> List[Dict[str, Any]]:
-        """
-        Gets sql records from database given a query
-
-        Args:
-            query:
-                sql query
-        Returns:
-            List of records
-        """
-
-        with self.session() as sess:
-            results = sess.execute(query).all()
-
-        records = self._parse_sql_results(results=results)
-
-        sorted_records = self._sort_by_version(records=records)
-
-        return sorted_records
 
     def list_cards(
         self,
@@ -434,7 +296,7 @@ class ServerRegistry(SQLRegistryBase):
         cleaned_name = clean_string(name)
         cleaned_team = clean_string(team)
 
-        query = query_creator.record_from_table_query(
+        query = card_validator.query_engine.record_from_table_query(
             table=self._table,
             name=cleaned_name,
             team=cleaned_team,
@@ -444,7 +306,8 @@ class ServerRegistry(SQLRegistryBase):
             tags=tags,
         )
 
-        sorted_records = self._get_sql_records(query=query)
+        records = card_validator.get_sql_records(query=query)
+        sorted_records = card_version.sort_by_version(records=records)
 
         if version is not None:
             if ignore_release_candidates:
@@ -470,41 +333,6 @@ class ServerRegistry(SQLRegistryBase):
 class ClientRegistry(SQLRegistryBase):
     def __init__(self, table_name: str):
         super().__init__(table_name)
-
-        self._session = self._get_session()
-
-    def _get_session(self):
-        """Gets the requests session for connecting to the opsml api"""
-        return settings.request_client
-
-    def set_version(
-        self,
-        name: str,
-        team: str,
-        pre_tag: str,
-        build_tag: str,
-        version_type: VersionType = VersionType.MINOR,
-        supplied_version: Optional[CardVersion] = None,
-    ) -> str:
-        if supplied_version is not None:
-            version_to_send = supplied_version.model_dump()
-        else:
-            version_to_send = None
-
-        data = self._session.post_request(
-            route=api_routes.VERSION,
-            json={
-                "name": name,
-                "team": team,
-                "version": version_to_send,
-                "version_type": version_type,
-                "table_name": self.table_name,
-                "pre_tag": pre_tag,
-                "build_tag": build_tag,
-            },
-        )
-
-        return data.get("version")
 
     def list_cards(
         self,
@@ -539,8 +367,9 @@ class ClientRegistry(SQLRegistryBase):
         Returns:
             Dictionary of card records
         """
-        data = self._session.post_request(
-            route=api_routes.LIST_CARDS,
+
+        data = card_validator.session.post_request(
+            route=card_validator.routes.LIST_CARDS,
             json={
                 "name": name,
                 "team": team,
