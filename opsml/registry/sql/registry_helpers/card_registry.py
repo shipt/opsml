@@ -92,7 +92,7 @@ class _RegistryHelper:
         record = card.create_registry_record()
         self._add_and_commit(table=table, card=record.model_dump())
 
-    def _validate_semver(self, name: str, team: str, version: CardVersion) -> None:
+    def _validate_semver(self, table: type[REGISTRY_TABLES], name: str, team: str, version: CardVersion) -> None:
         """
         Validates version if version is manually passed to Card
 
@@ -107,7 +107,7 @@ class _RegistryHelper:
             `CardVersion`
         """
         if version.is_full_semver:
-            records = self.list_cards(name=name, version=version.valid_version)
+            records = self.list_cards(table=table, name=name, version=version.valid_version)
             if len(records) > 0:
                 if records[0]["team"] != team:
                     raise ValueError("""Model name already exists for a different team. Try a different name.""")
@@ -122,7 +122,6 @@ class _RegistryHelper:
 
                     if record["version"] == version.version:
                         raise VersionError("Version combination already exists. %s" % version.version)
-
 
     def set_card_version(
         self,

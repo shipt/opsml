@@ -146,7 +146,7 @@ class QueryEngine:
 
     def uid_exists_query(self, uid: str, table_to_check: str) -> Select:
         table = TableSchema.get_table(table_name=table_to_check)
-        query = self._get_base_select_query(table=table.uid)  # type: ignore
+        query = self._get_base_select_query(table=table)  # type: ignore
         query = query.filter(table.uid == uid)
 
         return cast(Select, query)

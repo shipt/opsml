@@ -100,7 +100,7 @@ class Registry:
                 build tag to add to card version
         """
 
-        registry_helper.validator.validate_card_type(table_name=self.table_name, card=card)
+        registry_helper.validator.validate_card_type(table=self._table, card=card)
         registry_helper.card_ver.set_card_version(
             table=self._table,
             card=card,
