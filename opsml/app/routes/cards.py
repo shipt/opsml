@@ -56,7 +56,7 @@ def set_version(
     payload: VersionRequest = Body(...),
 ) -> Union[VersionResponse, UidExistsResponse]:
     """Sets the version for an artifact card"""
-    table_for_registry = payload.table_name.split("_")[1].lower()
+    payload.table_name.split("_")[1].lower()
 
     version = card_version.set_version(
         name=payload.name,

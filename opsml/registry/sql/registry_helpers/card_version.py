@@ -4,7 +4,6 @@ from opsml.registry.cards import ArtifactCard
 from opsml.helpers.exceptions import VersionError
 from opsml.registry.sql.sql_schema import REGISTRY_TABLES
 from opsml.registry.sql.registry_helpers.semver import (
-    SemVerSymbols,
     CardVersion,
     VersionType,
     SemVerUtils,
