@@ -454,7 +454,7 @@ def mock_local_engine():
 def db_registries():
     # force opsml to use CardRegistry with SQL connection (non-proxy)
     from opsml.registry.sql.registry import CardRegistry
-    from opsml.registry.sql.mixins import ServerMixin
+    from opsml.registry.sql.registry_helpers.mixins import ServerMixin
 
     model_registry = CardRegistry(registry_name="model")
     data_registry = CardRegistry(registry_name="data")

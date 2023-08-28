@@ -10,7 +10,7 @@ from pytest_lazyfixture import lazy_fixture
 from opsml.registry.cards import DataCard, RunCard, PipelineCard, ModelCard, DataSplit
 from opsml.registry.cards.pipeline_loader import PipelineLoader
 from opsml.registry.sql.registry import CardRegistry
-from opsml.registry.sql.semver import SemVerUtils
+from opsml.registry.sql.registry_helpers.semver import SemVerUtils
 from opsml.helpers.exceptions import VersionError
 from sklearn import linear_model
 from sklearn.pipeline import Pipeline

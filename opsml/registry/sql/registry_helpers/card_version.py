@@ -25,7 +25,7 @@ class CardVersionSetter:
     ) -> str:
         raise NotImplementedError
 
-    def _validate_pre_build_version(self, version: Optional[str] = None) -> CardVersion:
+    def validate_pre_build_version(self, version: Optional[str] = None) -> CardVersion:
         if version is None:
             raise ValueError("Cannot set pre-release or build tag without a version")
         card_version = CardVersion(version=version)
@@ -35,7 +35,7 @@ class CardVersionSetter:
 
         return card_version
 
-    def _validate_semver(self, name: str, team: str, version: CardVersion) -> None:
+    def validate_semver(self, name: str, team: str, version: CardVersion) -> None:
         """
         Validates version if version is manually passed to Card
 

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, model_validator
 from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
 from opsml.registry.sql.registry_base import VersionType
-from opsml.registry.sql.semver import CardVersion
+from opsml.registry.sql.registry_helpers.semver import CardVersion
 
 
 class StorageUri(BaseModel):
