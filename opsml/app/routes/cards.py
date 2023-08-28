@@ -23,8 +23,9 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
-from opsml.registry.sql.card_validator import CardValidatorServer
-from opsml.registry.sql.version_setter import CardVersionSetter
+from opsml.registry.sql.registry_helpers.card_validator import CardValidatorServer
+from opsml.registry.sql.registry_helpers.card_version import CardVersionSetter
+from opsml.registry.sql.sql_schema import TableSchema
 
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -56,9 +57,10 @@ def set_version(
     payload: VersionRequest = Body(...),
 ) -> Union[VersionResponse, UidExistsResponse]:
     """Sets the version for an artifact card"""
-    payload.table_name.split("_")[1].lower()
 
+    table = TableSchema.get_table(table_name=payload.table_name)
     version = card_version.set_version(
+        table=table,
         name=payload.name,
         team=payload.team,
         supplied_version=payload.version,

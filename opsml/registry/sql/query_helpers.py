@@ -15,7 +15,7 @@ from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.registry_helpers.semver import get_version_to_search
-from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
+from opsml.registry.sql.sql_schema import REGISTRY_TABLES
 from opsml.registry.sql.settings import settings
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -144,8 +144,7 @@ class QueryEngine:
         sql_table = cast(SqlTableType, table)
         return cast(Select, select(sql_table))
 
-    def uid_exists_query(self, uid: str, table_to_check: str) -> Select:
-        table = TableSchema.get_table(table_name=table_to_check)
+    def uid_exists_query(self, uid: str, table: Type[REGISTRY_TABLES]) -> Select:
         query = self._get_base_select_query(table=table)  # type: ignore
         query = query.filter(table.uid == uid)
 

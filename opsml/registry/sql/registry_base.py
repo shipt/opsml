@@ -14,9 +14,10 @@ from opsml.registry.cards import (
     PipelineCard,
     RunCard,
 )
+from opsml.registry.sql.settings import settings
 from opsml.registry.sql.records import LoadedRecordType, load_record
 from opsml.registry.sql.registry_helpers.semver import VersionType
-from opsml.registry.sql.registry_helpers.card_registry import registry_helper
+from opsml.registry.sql.registry_helpers import registry_helper
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -30,6 +31,16 @@ table_name_card_map = {
     RegistryTableNames.RUN.value: RunCard,
     RegistryTableNames.PIPELINE.value: PipelineCard,
 }
+
+# initialize tables
+if settings.request_client is None:
+    from opsml.registry.sql.db_initializer import DBInitializer
+
+    initializer = DBInitializer(
+        engine=settings.connection_client.get_engine(),
+        registry_tables=list(RegistryTableNames),
+    )
+    initializer.initialize()
 
 
 ###################### Attention ######################
@@ -70,8 +81,6 @@ class Registry:
             table_name:
                 CardRegistry table name
         """
-
-        self.supported_card = f"{table_name.split('_')[1]}Card"
         self._table = TableSchema.get_table(table_name=table_name)
 
     @property
@@ -100,8 +109,8 @@ class Registry:
                 build tag to add to card version
         """
 
-        registry_helper.validator.validate_card_type(table=self._table, card=card)
-        registry_helper.card_ver.set_card_version(
+        registry_helper.validate_card_type(table=self._table, card=card)
+        registry_helper.set_card_version(
             table=self._table,
             card=card,
             version_type=version_type,
@@ -109,12 +118,12 @@ class Registry:
             build_tag=build_tag,
         )
 
-        registry_helper.validator.set_card_uid(card=card)
-        registry_helper.storage.set_artifact_storage_spec(table_name=self.table_name, card=card)
+        registry_helper.set_card_uid(card=card)
+        registry_helper.set_artifact_storage_spec(table_name=self.table_name, card=card)
         registry_helper.create_registry_record(
             table=self._table,
             card=card,
-            storage_client=registry_helper.storage.storage_client,
+            storage_client=registry_helper.storage_client,
         )
 
     def update_card(self, card: ArtifactCard) -> None:
@@ -127,7 +136,7 @@ class Registry:
         """
         card = save_card_artifacts(
             card=card,
-            storage_client=registry_helper.storage.storage_client,
+            storage_client=registry_helper.storage_client,
         )
         record = card.create_registry_record()
         registry_helper.update_card_record(
@@ -226,7 +235,7 @@ class Registry:
         loaded_record = load_record(
             table_name=self.table_name,
             record_data=record[0],
-            storage_client=registry_helper.storage.storage_client,
+            storage_client=registry_helper.storage_client,
         )
 
         return load_card_from_record(

@@ -146,7 +146,7 @@ class CardRegistry:
         self._registry = self._set_registry(registry_name=registry_name)
         self.table_name = self._registry._table.__tablename__
 
-    def __new__(cls, registry_name: str):
+    def __new__(cls, registry_name: str) -> Registry:
         return set_registry(registry_name=registry_name)
 
 
