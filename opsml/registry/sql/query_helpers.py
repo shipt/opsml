@@ -5,16 +5,16 @@
 
 import datetime
 from functools import wraps
-from typing import Any, Dict, Iterable, Optional, Type, Union, cast, Iterator
+from typing import Any, Dict, Iterable, Optional, Type, Union, cast
 
-from contextlib import contextmanager
+from contextlib import contextmanager, _GeneratorContextManager
 from sqlalchemy.orm.session import Session
 from sqlalchemy import select
 from sqlalchemy.sql import FromClause, Select
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.sql.semver import get_version_to_search
+from opsml.registry.sql.registry_helpers.semver import get_version_to_search
 from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
 from opsml.registry.sql.settings import settings
 
@@ -29,7 +29,7 @@ class QueryEngine:
         return settings.connection_client.get_engine()
 
     @contextmanager  # type: ignore
-    def session(self) -> Iterator[Session]:
+    def session(self) -> _GeneratorContextManager[Session]:
         engine = self._get_engine()
 
         with Session(engine) as sess:  # type: ignore
