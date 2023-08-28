@@ -1,13 +1,9 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-import uuid
-from contextlib import contextmanager
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast, Iterator, TYPE_CHECKING
-import pandas as pd
-from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.expression import ColumnElement, FromClause, Select
-from semver import VersionInfo
+
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
+from sqlalchemy.sql.expression import ColumnElement, FromClause
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.request_helpers import api_routes
 from opsml.helpers.utils import clean_string
@@ -19,14 +15,13 @@ from opsml.registry.cards import (
     PipelineCard,
     RunCard,
 )
-from opsml.registry.sql.query_helpers import QueryEngine, log_card_change  # type: ignore
+from opsml.registry.sql.query_helpers import log_card_change  # type: ignore
 from opsml.registry.sql.records import LoadedRecordType, load_record
-from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
+from opsml.registry.sql.registry_helpers.semver import SemVerSymbols, VersionType, SemVerUtils
+from opsml.registry.sql.registry_helpers.card_storage import CardStorageClient
 from opsml.registry.sql.settings import settings
 from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
-from opsml.helpers.exceptions import VersionError
 from opsml.registry.storage.types import ArtifactStorageSpecs
-from opsml.registry.sql.card_validator import card_validator, CardValidatorServer
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -34,13 +29,16 @@ logger = ArtifactLogger.get_logger(__name__)
 USE_CLIENT_CLASS = bool(settings.request_client)
 
 
+# Set up client and server classes
 if USE_CLIENT_CLASS:
-    from opsml.registry.sql.card_validator import CardValidatorClient as CardValidator
-    from opsml.registry.sql.version_setter import CardVersionSetterClient as CardVersionSetter
+    from opsml.registry.sql.registry_helpers.card_validator import CardValidatorClient as CardValidator
+    from opsml.registry.sql.registry_helpers.card_version import CardVersionSetterClient as CardVersionSetter
+    from opsml.registry.sql.registry_helpers.card_registry import CardRegistryHelperClient as CardRegistryHelper
 
 else:
-    from opsml.registry.sql.card_validator import CardValidatorServer as CardValidator
-    from opsml.registry.sql.version_setter import CardVersionSetterServer as CardVersionSetter
+    from opsml.registry.sql.registry_helpers.card_validator import CardValidatorServer as CardValidator
+    from opsml.registry.sql.registry_helpers.card_version import CardVersionSetterServer as CardVersionSetter
+    from opsml.registry.sql.registry_helpers.card_registry import CardRegistryHelperServer as CardRegistryHelper
     from opsml.registry.sql.db_initializer import DBInitializer
 
     initializer = DBInitializer(
@@ -51,9 +49,12 @@ else:
 
 card_validator = CardValidator()
 card_version = CardVersionSetter()
+card_storage = CardStorageClient()
+card_registry_helper = CardRegistryHelper()
 
+
+# Set up sql
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
-
 
 table_name_card_map = {
     RegistryTableNames.DATA.value: DataCard,
@@ -90,6 +91,53 @@ def load_card_from_record(
 
     card = table_name_card_map[table_name]
     return card(**record.model_dump())
+
+
+class Registry:
+    def __init__(self, table_name: str):
+        """
+        Base class for SQL Registries to inherit from
+
+        Args:
+            table_name:
+                CardRegistry table name
+        """
+
+        self.table_name = table_name
+        self.supported_card = f"{table_name.split('_')[1]}Card"
+        self.storage_client = settings.storage_client
+
+        self._table = TableSchema.get_table(table_name=table_name)
+
+    def register_card(
+        self,
+        card: ArtifactCard,
+        version_type: VersionType = VersionType.MINOR,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
+    ) -> None:
+        """
+        Adds new record to registry.
+
+        Args:
+            card:
+                Card to register
+            version_type:
+                Version type for increment. Options are "major", "minor" and "patch". Defaults to "minor"
+        """
+
+        card_validator.validate_card_type(table_name=self.table_name, card=card)
+        card_version.set_card_version(
+            table=self._table,
+            card=card,
+            version_type=version_type,
+            pre_tag=pre_tag,
+            build_tag=build_tag,
+        )
+
+        card_validator.set_card_uid(card=card)
+        card_storage.set_artifact_storage_spec(table_name=self.table_name, card=card)
+        self._create_registry_record(card=card)
 
 
 class SQLRegistryBase:
@@ -165,6 +213,7 @@ class SQLRegistryBase:
 
         card_validator.validate_card_type(table_name=self.table_name, card=card)
         card_version.set_card_version(
+            table=self._table,
             card=card,
             version_type=version_type,
             pre_tag=pre_tag,
@@ -344,7 +393,7 @@ class ClientRegistry(SQLRegistryBase):
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
         ignore_release_candidates: bool = False,
-    ) -> pd.DataFrame:
+    ) -> List[Dict[str, str]]:
         """
         Retrieves records from registry
 
@@ -367,7 +416,6 @@ class ClientRegistry(SQLRegistryBase):
         Returns:
             Dictionary of card records
         """
-
         data = card_validator.session.post_request(
             route=card_validator.routes.LIST_CARDS,
             json={

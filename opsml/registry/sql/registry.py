@@ -10,10 +10,9 @@ from sqlalchemy.sql.expression import ColumnElement, FromClause
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards import ArtifactCard, ModelCard
 from opsml.registry.cards.types import CardInfo, CardType
-from opsml.registry.sql.registry_base import OpsmlRegistry, ServerRegistry, VersionType
+from opsml.registry.sql.registry_base import OpsmlRegistry, ServerRegistry, VersionType, card_validator
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.storage_system import StorageClientType
-from opsml.registry.sql.card_validator import card_validator, CardValidatorServer
 
 logger = ArtifactLogger.get_logger(__name__)
 
@@ -22,10 +21,8 @@ SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
 
 if TYPE_CHECKING:
     Registry = ServerRegistry
-    card_type_validator = CardValidatorServer()
 else:
     Registry = OpsmlRegistry
-    card_type_validator = card_validator
 
 
 class DataCardRegistry(Registry):
@@ -40,7 +37,7 @@ class ModelCardRegistry(Registry):
 
     def _validate_datacard_uid(self, uid: str) -> None:
         table_to_check = self._get_data_table_name()
-        exists = card_type_validator.check_uid_exists(uid=uid, table_to_check=table_to_check)
+        exists = card_validator.check_uid_exists(uid=uid, table_to_check=table_to_check)
         if not exists:
             raise ValueError("ModelCard must be associated with a valid DataCard uid")
 

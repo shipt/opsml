@@ -1,7 +1,7 @@
 import uuid
 
 from opsml.registry.cards import ArtifactCard
-from opsml.registry.sql.mixins import ClientMixin, ServerMixin
+from opsml.registry.sql.registry_helpers.mixins import ClientMixin, ServerMixin
 
 
 class CardValidator:
@@ -70,13 +70,3 @@ class CardValidatorClient(ClientMixin, CardValidator):
         )
 
         return bool(data.get("uid_exists"))
-
-
-# mypy not happy with dynamic classes
-# def get_card_validator():
-#    if settings.request_client is not None:
-#        return CardValidatorClient()
-#    return CardValidatorServer()
-#
-#
-# card_validator = get_card_validator()

@@ -454,13 +454,14 @@ def mock_local_engine():
 def db_registries():
     # force opsml to use CardRegistry with SQL connection (non-proxy)
     from opsml.registry.sql.registry import CardRegistry
+    from opsml.registry.sql.mixins import ServerMixin
 
     model_registry = CardRegistry(registry_name="model")
     data_registry = CardRegistry(registry_name="data")
     run_registry = CardRegistry(registry_name="run")
     pipeline_registry = CardRegistry(registry_name="pipeline")
 
-    engine = model_registry._registry._get_engine()
+    engine = ServerMixin().query_engine._get_engine()
 
     initializer = DBInitializer(engine=engine, registry_tables=list(RegistryTableNames))
     # tables are created when settings are called.

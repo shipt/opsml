@@ -1,14 +1,22 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Type
 from semver import VersionInfo
 from opsml.registry.cards import ArtifactCard
 from opsml.helpers.exceptions import VersionError
-from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
-from opsml.registry.sql.mixins import ServerMixin, ClientMixin
+from opsml.registry.sql.sql_schema import REGISTRY_TABLES
+from opsml.registry.sql.registry_helpers.semver import (
+    SemVerSymbols,
+    CardVersion,
+    VersionType,
+    SemVerUtils,
+    SemVerRegistryValidator,
+)
+from opsml.registry.sql.registry_helpers.mixins import ServerMixin, ClientMixin
 
 
 class CardVersionSetter:
     def set_version(
         self,
+        table: Type[REGISTRY_TABLES],
         name: str,
         team: str,
         pre_tag: str,
@@ -61,6 +69,7 @@ class CardVersionSetter:
 
     def set_card_version(
         self,
+        table: Type[REGISTRY_TABLES],
         card: ArtifactCard,
         version_type: VersionType,
         pre_tag: str,
@@ -102,6 +111,7 @@ class CardVersionSetter:
                 return None
 
         version = self.set_version(
+            table=table,
             name=card.name,
             supplied_version=card_version,
             team=card.team,
@@ -137,7 +147,13 @@ class CardVersionSetter:
 
 
 class CardVersionSetterServer(ServerMixin, CardVersionSetter):
-    def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
+    def _get_versions_from_db(
+        self,
+        table: Type[REGISTRY_TABLES],
+        name: str,
+        team: str,
+        version_to_search: Optional[str] = None,
+    ) -> List[str]:
         """Query versions from Card Database
 
         Args:
@@ -152,7 +168,7 @@ class CardVersionSetterServer(ServerMixin, CardVersionSetter):
         """
 
         query = self.query_engine.create_version_query(
-            table=self._table,
+            table=table,
             name=name,
             version=version_to_search,
         )
@@ -170,6 +186,7 @@ class CardVersionSetterServer(ServerMixin, CardVersionSetter):
 
     def set_version(
         self,
+        table: Type[REGISTRY_TABLES],
         name: str,
         team: str,
         pre_tag: str,
@@ -201,6 +218,7 @@ class CardVersionSetterServer(ServerMixin, CardVersionSetter):
         )
 
         versions = self._get_versions_from_db(
+            table=table,
             name=name,
             team=team,
             version_to_search=ver_validator.version_to_search,
@@ -212,6 +230,7 @@ class CardVersionSetterServer(ServerMixin, CardVersionSetter):
 class CardVersionSetterClient(ClientMixin, CardVersionSetter):
     def set_version(
         self,
+        table: Type[REGISTRY_TABLES],
         name: str,
         team: str,
         pre_tag: str,
@@ -231,7 +250,7 @@ class CardVersionSetterClient(ClientMixin, CardVersionSetter):
                 "team": team,
                 "version": version_to_send,
                 "version_type": version_type,
-                "table_name": self.table_name,
+                "table_name": table.__tablename__,
                 "pre_tag": pre_tag,
                 "build_tag": build_tag,
             },
