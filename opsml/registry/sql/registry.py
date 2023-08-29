@@ -316,4 +316,6 @@ class CardRegistries:
         self.project = CardRegistry(registry_name=CardType.PROJECTCARD.value)
 
     def set_storage_client(self, storage_client: StorageClientType):
-        registry_helper.storage_client = storage_client
+        for registry in ["data", "model", "run", "pipeline", "project"]:
+            _registry: CardRegistry = getattr(self, registry)
+            _registry._registry._helper.storage_client = storage_client

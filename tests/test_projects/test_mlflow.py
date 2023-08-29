@@ -268,6 +268,7 @@ def test_lgb_model(
             datacard_uid=data_card.uid,
         )
         run.register_card(card=model_card)
+
         info.run_id = run.run_id
     proj = conftest.mock_mlflow_project(info)
     loaded_card: ModelCard = proj.load_card(

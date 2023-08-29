@@ -49,12 +49,12 @@ def test_error(test_app: TestClient):
 @pytest.mark.parametrize(
     "data_splits, test_data",
     [
-        lazy_fixture("test_split_array"),
+        (lazy_fixture("test_split_array"), lazy_fixture("test_df")),
     ],
 )
 def test_register_data(
     api_registries: CardRegistries,
-    test_data: NDArray,
+    test_data: Tuple[pd.DataFrame, NDArray],
     data_splits: List[Dict[str, str]],
 ):
     # create data card
