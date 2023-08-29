@@ -11,6 +11,7 @@ from opsml.registry.cards import DataCard, RunCard, PipelineCard, ModelCard, Dat
 from opsml.registry.cards.pipeline_loader import PipelineLoader
 from opsml.registry.sql.registry import CardRegistry
 from opsml.registry.sql.registry_helpers.semver import SemVerUtils
+from opsml.registry.sql.registry_helpers import registry_helper
 from opsml.helpers.exceptions import VersionError
 from sklearn import linear_model
 from sklearn.pipeline import Pipeline
@@ -179,7 +180,10 @@ def test_datacard_sql_register_date(db_registries: Dict[str, CardRegistry]):
 
     # add card with a timestamp from 14 days ago
     record.timestamp = FOURTEEN_DAYS_TS
-    registry._registry.update_card_record(record.model_dump())
+    registry_helper.update_card_record(
+        table=registry._registry._table,
+        card=record.model_dump(),
+    )
 
     cards = registry.list_cards()
     assert len(cards) >= 1

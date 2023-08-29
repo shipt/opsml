@@ -288,15 +288,27 @@ def mock_registries(test_client: TestClient) -> CardRegistries:
         settings.opsml_tracking_uri = "http://testserver"
         registries = CardRegistries()
 
-        engine = registries.model._registry._get_engine()
+        from opsml.registry.sql.registry_helpers import registry_helper
+        from opsml.registry.sql.registry_helpers.client import _ClientRegistryHelper
+
+        engine = registry_helper.query_engine._get_engine()
         initializer = DBInitializer(engine=engine, registry_tables=list(RegistryTableNames))
         initializer.initialize()
 
         registries.data = ClientCardRegistry(registry_name="data")
+        registries.data._registry._helper = _ClientRegistryHelper()
+
         registries.model = ClientCardRegistry(registry_name="model")
+        registries.model._registry._helper = _ClientRegistryHelper()
+
         registries.pipeline = ClientCardRegistry(registry_name="pipeline")
+        registries.pipeline._registry._helper = _ClientRegistryHelper()
+
         registries.run = ClientCardRegistry(registry_name="run")
+        registries.run._registry._helper = _ClientRegistryHelper()
+
         registries.project = ClientCardRegistry(registry_name="project")
+        registries.project._registry._helper = _ClientRegistryHelper()
 
         return registries
 

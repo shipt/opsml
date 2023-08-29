@@ -82,6 +82,7 @@ class Registry:
                 CardRegistry table name
         """
         self._table = TableSchema.get_table(table_name=table_name)
+        self._helper = registry_helper
 
     @property
     def table_name(self) -> str:
@@ -109,8 +110,8 @@ class Registry:
                 build tag to add to card version
         """
 
-        registry_helper.validate_card_type(table=self._table, card=card)
-        registry_helper.set_card_version(
+        self._helper.validate_card_type(table=self._table, card=card)
+        self._helper.set_card_version(
             table=self._table,
             card=card,
             version_type=version_type,
@@ -118,12 +119,12 @@ class Registry:
             build_tag=build_tag,
         )
 
-        registry_helper.set_card_uid(card=card)
-        registry_helper.set_artifact_storage_spec(table_name=self.table_name, card=card)
-        registry_helper.create_registry_record(
+        self._helper.set_card_uid(card=card)
+        self._helper.set_artifact_storage_spec(table_name=self.table_name, card=card)
+        self._helper.create_registry_record(
             table=self._table,
             card=card,
-            storage_client=registry_helper.storage_client,
+            storage_client=self._helper.storage_client,
         )
 
     def update_card(self, card: ArtifactCard) -> None:
@@ -136,10 +137,10 @@ class Registry:
         """
         card = save_card_artifacts(
             card=card,
-            storage_client=registry_helper.storage_client,
+            storage_client=self._helper.storage_client,
         )
         record = card.create_registry_record()
-        registry_helper.update_card_record(
+        self._helper.update_card_record(
             table=self._table,
             card=record.model_dump(),
         )
@@ -179,10 +180,10 @@ class Registry:
                 CardInfo object. If present, the info object takes precedence
 
         Returns:
-            pandas dataframe of records or list of dictionaries
+            list of dictionaries
         """
 
-        return registry_helper.list_cards(
+        return self._helper.list_cards(
             table=self._table,
             uid=uid,
             name=name,
@@ -235,7 +236,7 @@ class Registry:
         loaded_record = load_record(
             table_name=self.table_name,
             record_data=record[0],
-            storage_client=registry_helper.storage_client,
+            storage_client=self._helper.storage_client,
         )
 
         return load_card_from_record(
@@ -256,7 +257,7 @@ class Registry:
         Returns:
             Dictionary of column, values pairs
         """
-        results = registry_helper.list_cards(uid=uid)[0]
+        results = self._helper.list_cards(uid=uid)[0]
         return {col: results[col] for col in columns}
 
     @staticmethod

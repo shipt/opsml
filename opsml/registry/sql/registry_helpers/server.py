@@ -14,6 +14,9 @@ from opsml.registry.sql.query_helpers import log_card_change  # type: ignore
 
 
 class _ServerRegistryHelper(ServerMixin, _RegistryHelper):
+    def __init__(self):
+        super().__init__()
+
     def list_cards(
         self,
         table: Type[REGISTRY_TABLES],
@@ -64,8 +67,8 @@ class _ServerRegistryHelper(ServerMixin, _RegistryHelper):
             tags=tags,
         )
 
-        records = self.query_engine.get_sql_records(query=query)
-        sorted_records = self.card_ver.sort_by_version(records=records)
+        records = self.get_sql_records(query=query)
+        sorted_records = self.sort_by_version(records=records)
 
         if version is not None:
             if ignore_release_candidates:

@@ -8,20 +8,22 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import Select
 from opsml.registry.sql.settings import settings
 from opsml.registry.sql.query_helpers import QueryEngine  # type: ignore
-from opsml.helpers.request_helpers import api_routes
+from opsml.helpers.request_helpers import api_routes, ApiRoutes
 
 
 class ClientMixin:
-    def __init__(self):
-        self.routes = api_routes
-
     @property
     def session(self):
         return settings.request_client
 
+    @property
+    def routes(self) -> ApiRoutes:
+        return api_routes
+
 
 class ServerMixin:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.query_engine = QueryEngine()
 
     def session(self) -> _GeneratorContextManager[Session]:

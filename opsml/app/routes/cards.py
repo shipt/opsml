@@ -23,17 +23,12 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import replace_proxy_root
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
-from opsml.registry.sql.registry_helpers.card_validator import CardValidatorServer
-from opsml.registry.sql.registry_helpers.card_version import CardVersionSetter
-from opsml.registry.sql.sql_schema import TableSchema
+from opsml.registry.sql.registry_helpers import registry_helper
 
 
 logger = ArtifactLogger.get_logger(__name__)
 
 router = APIRouter()
-
-card_validator = CardValidatorServer()
-card_version = CardVersionSetter()
 
 
 @router.post("/cards/uid", response_model=UidExistsResponse, name="check_uid")
@@ -43,9 +38,12 @@ def check_uid(
 ) -> UidExistsResponse:
     """Checks if a uid already exists in the database"""
 
-    if card_validator.check_uid_exists(
+    table_for_registry = payload.table_name.split("_")[1].lower()
+    registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
+
+    if registry_helper.check_uid_exists(
         uid=payload.uid,
-        table_to_check=payload.table_name,
+        table=registry._registry._table,
     ):
         return UidExistsResponse(uid_exists=True)
     return UidExistsResponse(uid_exists=False)
@@ -58,9 +56,11 @@ def set_version(
 ) -> Union[VersionResponse, UidExistsResponse]:
     """Sets the version for an artifact card"""
 
-    table = TableSchema.get_table(table_name=payload.table_name)
-    version = card_version.set_version(
-        table=table,
+    table_for_registry = payload.table_name.split("_")[1].lower()
+    registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
+
+    version = registry_helper.set_version(
+        table=registry._registry._table,
         name=payload.name,
         team=payload.team,
         supplied_version=payload.version,
@@ -129,10 +129,9 @@ def add_card(
 
     table_for_registry = payload.table_name.split("_")[1].lower()
     registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
+    logger.info("Creating card: %s", payload.model_dump())
 
-    logger.info("Creating card: %s", payload.dict())
-
-    registry._registry._add_and_commit(card=payload.card)
+    registry_helper._add_and_commit(registry._registry._table, payload.card)
     return AddCardResponse(registered=True)
 
 
@@ -149,8 +148,8 @@ def update_card(
     """Updates a specific artifact card"""
     table_for_registry = payload.table_name.split("_")[1].lower()
     registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
-    registry._registry.update_card_record(card=payload.card)
+    registry_helper.update_card_record(table=registry._registry._table, card=payload.card)
 
-    logger.info("Updated card: %s", payload.dict())
+    logger.info("Updated card: %s", payload.model_dump())
 
     return UpdateCardResponse(updated=True)

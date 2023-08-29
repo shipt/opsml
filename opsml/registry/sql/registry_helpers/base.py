@@ -142,7 +142,7 @@ class _RegistryHelper:
                 Card to create a registry record from
         """
 
-        card = save_card_artifacts(card=card, storage_client=self.storage)
+        card = save_card_artifacts(card=card, storage_client=self.storage_client)
         record = card.create_registry_record()
         self._add_and_commit(table=table, card=record.model_dump())
 
@@ -198,7 +198,7 @@ class _RegistryHelper:
 
         # validate pre-release and/or build tag
         if version_type in [VersionType.PRE, VersionType.BUILD, VersionType.PRE_BUILD]:
-            card_version = self.card_ver.validate_pre_build_version(version=card.version)
+            card_version = self.validate_pre_build_version(version=card.version)
 
         # if DS specifies version and not release candidate
         if card.version is not None and version_type not in [VersionType.PRE, VersionType.PRE_BUILD]:
@@ -206,7 +206,8 @@ class _RegistryHelper:
             if version_type == VersionType.BUILD:
                 # check whether DS-supplied version has a build tag already
                 if VersionInfo.parse(card.version).build is None:
-                    card.version = self.card_ver.set_version(
+                    card.version = self.set_version(
+                        table=table,
                         name=card.name,
                         supplied_version=card_version,
                         team=card.team,
@@ -225,7 +226,7 @@ class _RegistryHelper:
                 )
                 return None
 
-        version = self.card_ver.set_version(
+        version = self.set_version(
             table=table,
             name=card.name,
             supplied_version=card_version,
