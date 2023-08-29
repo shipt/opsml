@@ -87,17 +87,17 @@ class _ServerRegistryHelper(ServerMixin, _RegistryHelper):
         return sorted_records[:limit]
 
     @log_card_change
-    def _add_and_commit(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def _add_and_commit(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str, str]:
         sql_record = table(**card)
 
         with self.session() as sess:
             sess.add(sql_record)
             sess.commit()
 
-        return card, "registered"
+        return card, "registered", table.__tablename__
 
     @log_card_change
-    def update_card_record(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def update_card_record(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str, str]:
         record_uid = cast(str, card.get("uid"))
 
         with self.session() as sess:
@@ -105,7 +105,7 @@ class _ServerRegistryHelper(ServerMixin, _RegistryHelper):
             query.update(card)
             sess.commit()
 
-        return card, "updated"
+        return card, "updated", table.__tablename__
 
     def check_uid_exists(self, uid: str, table: Type[REGISTRY_TABLES]) -> bool:
         query = self.query_engine.uid_exists_query(uid=uid, table=table)

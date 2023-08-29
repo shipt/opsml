@@ -59,7 +59,7 @@ class _ClientRegistryHelper(ClientMixin, _RegistryHelper):
         return data["cards"]
 
     @log_card_change
-    def _add_and_commit(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def _add_and_commit(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str, str]:
         data = self.session.post_request(
             route=self.routes.CREATE_CARD,
             json={
@@ -69,11 +69,12 @@ class _ClientRegistryHelper(ClientMixin, _RegistryHelper):
         )
 
         if bool(data.get("registered")):
-            return card, "registered"
+            return card, "registered", table.__tablename__
+
         raise ValueError("Failed to register card")
 
     @log_card_change
-    def update_card_record(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+    def update_card_record(self, table: Type[REGISTRY_TABLES], card: Dict[str, Any]) -> Tuple[Dict[str, Any], str, str]:
         data = self.session.post_request(
             route=self.routes.UPDATE_CARD,
             json={
@@ -83,7 +84,7 @@ class _ClientRegistryHelper(ClientMixin, _RegistryHelper):
         )
 
         if bool(data.get("updated")):
-            return card, "updated"
+            return card, "updated", table.__tablename__
         raise ValueError("Failed to update card")
 
     def check_uid_exists(self, uid: str, table: Type[REGISTRY_TABLES]) -> bool:
