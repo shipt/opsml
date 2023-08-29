@@ -53,12 +53,12 @@ def test_error(test_app: TestClient):
     ],
 )
 def test_register_data(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     test_data: Tuple[pd.DataFrame, NDArray],
     data_splits: List[Dict[str, str]],
 ):
     # create data card
-    registry = api_registries.data
+    registry = mock_api_registries.data
 
     data_card = DataCard(
         data=test_data,
@@ -83,9 +83,9 @@ def test_register_data(
         registry._registry.table_name = "no_table"
 
 
-def test_register_major_minor(api_registries: CardRegistries, test_array: NDArray):
+def test_register_major_minor(mock_api_registries: CardRegistries, test_array: NDArray):
     # create data card
-    registry = api_registries.data
+    registry = mock_api_registries.data
 
     data_card = DataCard(
         data=test_array,
@@ -120,9 +120,9 @@ def test_register_major_minor(api_registries: CardRegistries, test_array: NDArra
     assert data_card.version == "3.2.0"
 
 
-def test_semver_registry_list(api_registries: CardRegistries, test_array: NDArray):
+def test_semver_registry_list(mock_api_registries: CardRegistries, test_array: NDArray):
     # create data card
-    registry = api_registries.data
+    registry = mock_api_registries.data
 
     data_card = DataCard(
         data=test_array,
@@ -176,9 +176,9 @@ def test_semver_registry_list(api_registries: CardRegistries, test_array: NDArra
 
 def test_run_card(
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
 ):
-    registry = api_registries.run
+    registry = mock_api_registries.run
 
     run = RunCard(
         name="test_df",
@@ -201,12 +201,12 @@ def test_run_card(
 
 
 def test_register_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     sklearn_pipeline: Tuple[pipeline.Pipeline, pd.DataFrame],
 ):
     model, data = sklearn_pipeline
     # create data card
-    data_registry = api_registries.data
+    data_registry = mock_api_registries.data
 
     data_card = DataCard(
         data=data,
@@ -226,7 +226,7 @@ def test_register_model(
         datacard_uid=data_card.uid,
     )
 
-    model_registry = api_registries.model
+    model_registry = mock_api_registries.model
     model_registry.register_card(model_card1)
 
     loaded_card = model_registry.load_card(uid=model_card1.uid)
@@ -294,12 +294,12 @@ def test_register_model(
 
 
 @pytest.mark.parametrize("test_data", [lazy_fixture("test_df")])
-def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame):
+def test_load_data_card(mock_api_registries: CardRegistries, test_data: pd.DataFrame):
     data_name = "test_df"
     team = "mlops"
     user_email = "mlops.com"
 
-    registry = api_registries.data
+    registry = mock_api_registries.data
 
     data_split = [
         {"label": "train", "column": "year", "column_value": 2020},
@@ -354,7 +354,7 @@ def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame)
         datacardv12.load_data()
 
 
-def test_pipeline_registry(api_registries: CardRegistry):
+def test_pipeline_registry(mock_api_registries: CardRegistry):
     pipeline_card = PipelineCard(
         name="test_df",
         team="mlops",
@@ -365,7 +365,7 @@ def test_pipeline_registry(api_registries: CardRegistry):
         pipeline_card.add_card_uid(uid=uuid.uuid4().hex, card_type=card_type)
 
     # register
-    registry = api_registries.pipeline
+    registry = mock_api_registries.pipeline
     registry.register_card(card=pipeline_card)
     loaded_card: PipelineCard = registry.load_card(uid=pipeline_card.uid)
     loaded_card.add_card_uid(uid="updated_uid", card_type="data")
@@ -379,7 +379,7 @@ def test_pipeline_registry(api_registries: CardRegistry):
 
 
 def test_full_pipeline_with_loading(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
 ):
     from opsml.registry.cards.pipeline_loader import PipelineLoader
@@ -387,10 +387,10 @@ def test_full_pipeline_with_loading(
     team = "mlops"
     user_email = "mlops.com"
     pipeline_code_uri = "test_pipe_uri"
-    data_registry = api_registries.data
-    model_registry = api_registries.model
-    run_registry = api_registries.run
-    pipeline_registry = api_registries.pipeline
+    data_registry = mock_api_registries.data
+    model_registry = mock_api_registries.model
+    run_registry = mock_api_registries.run
+    pipeline_registry = mock_api_registries.pipeline
     model, data = linear_regression
 
     #### Create DataCard
@@ -446,7 +446,7 @@ def test_full_pipeline_with_loading(
 
 def test_metadata_download_and_registration(
     test_app: TestClient,
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
 ):
     team = "mlops"
@@ -454,8 +454,8 @@ def test_metadata_download_and_registration(
 
     model, data = linear_regression
 
-    data_registry = api_registries.data
-    model_registry = api_registries.model
+    data_registry = mock_api_registries.data
+    model_registry = mock_api_registries.model
 
     data_card = DataCard(
         data=data,
@@ -604,7 +604,7 @@ def test_app_with_login(test_app_login: TestClient):
 
 def test_model_metrics(
     test_app: TestClient,
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     sklearn_pipeline: tuple[pipeline.Pipeline, pd.DataFrame],
 ) -> None:
     """ify that we can read artifacts / metrics / cards without making a run
@@ -623,11 +623,11 @@ def test_model_metrics(
     runcard.log_metric(key="mape", value=2, step=1)
     runcard.log_metric(key="mape", value=2, step=2)
     runcard.log_parameter(key="m1", value="apple")
-    api_registries.run.register_card(runcard)
+    mock_api_registries.run.register_card(runcard)
 
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     #### Create ModelCard
     modelcard = ModelCard(
@@ -637,7 +637,7 @@ def test_model_metrics(
         datacard_uid=datacard.uid,
         runcard_uid=runcard.uid,
     )
-    api_registries.model.register_card(modelcard)
+    mock_api_registries.model.register_card(modelcard)
 
     ### create second ModelCard
     #### Create ModelCard
@@ -648,7 +648,7 @@ def test_model_metrics(
         datacard_uid=datacard.uid,
         runcard_uid=runcard.uid,
     )
-    api_registries.model.register_card(modelcard_2)
+    mock_api_registries.model.register_card(modelcard_2)
 
     response = test_app.post(url=f"/opsml/{ApiRoutes.MODEL_METRICS}", json={"uid": modelcard.uid})
 
@@ -669,7 +669,7 @@ def test_model_metrics(
 
 def test_model_metric_failure(
     test_app: TestClient,
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     sklearn_pipeline: Tuple[pipeline.Pipeline, pd.DataFrame],
 ):
     model, data = sklearn_pipeline
@@ -681,7 +681,7 @@ def test_model_metric_failure(
 
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     #### Create ModelCard
     modelcard = ModelCard(
@@ -690,14 +690,14 @@ def test_model_metric_failure(
         info=card_info,
         datacard_uid=datacard.uid,
     )
-    api_registries.model.register_card(modelcard)
+    mock_api_registries.model.register_card(modelcard)
 
     response = test_app.post(url=f"/opsml/{ApiRoutes.MODEL_METRICS}", json={"uid": modelcard.uid})
     assert response.status_code == 500
 
 
 def test_token_fail(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     monkeypatch: pytest.MonkeyPatch,
 ):
     monkeypatch.setattr(config.config, "PROD_TOKEN", "fail")
@@ -713,4 +713,4 @@ def test_token_fail(
         ValueError,
         match="Cannot perform write operation on prod resource without token",
     ):
-        api_registries.run.register_card(card=run)
+        mock_api_registries.run.register_card(card=run)

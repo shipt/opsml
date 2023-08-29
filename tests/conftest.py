@@ -378,7 +378,7 @@ def mlflow_project(mock_api_registries: CardRegistries) -> Iterator[MlflowProjec
 
 
 @pytest.fixture(scope="function")
-def opsml_project(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
+def opsml_project(mock_api_registries: CardRegistries) -> Iterator[OpsmlProject]:
     opsml_run = OpsmlProject(
         info=ProjectInfo(
             name="test_exp",
@@ -387,7 +387,7 @@ def opsml_project(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
             tracking_uri=SQL_PATH,
         )
     )
-    opsml_run._run_mgr.registries = api_registries
+    opsml_run._run_mgr.registries = mock_api_registries
     return opsml_run
 
 

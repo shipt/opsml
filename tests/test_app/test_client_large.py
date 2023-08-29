@@ -12,12 +12,12 @@ from opsml.registry import DataCard, ModelCard, CardRegistries
 
 
 @pytest.mark.large
-def test_register_large_data(api_registries: CardRegistries):
+def test_register_large_data(mock_api_registries: CardRegistries):
     # create a numpy 1d-array
     x = np.random.rand(500000, 100)
 
     # create data card
-    registry = api_registries.data
+    registry = mock_api_registries.data
 
     data_card = DataCard(
         data=x,
@@ -37,7 +37,7 @@ def test_register_large_data(api_registries: CardRegistries):
 # test opsml storage client
 @pytest.mark.large
 def test_register_large_whisper_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     huggingface_whisper: Tuple[Any, Dict[str, np.ndarray]],
 ) -> None:
     """An example of saving a large, pretrained seq2seq model to opsml.
@@ -52,7 +52,7 @@ def test_register_large_whisper_model(
         team="mlops",
         user_email="test@mlops.com",
     )
-    api_registries.data.register_card(data_card)
+    mock_api_registries.data.register_card(data_card)
 
     model_card = ModelCard(
         trained_model=model,
@@ -64,13 +64,13 @@ def test_register_large_whisper_model(
         datacard_uid=data_card.uid,
         to_onnx=False,  # seq2seq need to be handled differently
     )
-    api_registries.model.register_card(model_card)
+    mock_api_registries.model.register_card(model_card)
     assert model_card.data_schema.model_data_schema.output_features["outputs"].shape == [1, 26]
 
 
 @pytest.mark.large
 def test_register_large_gpt_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     huggingface_openai_gpt: Tuple[Any, Dict[str, torch.Tensor]],
 ) -> None:
     """An example of saving a large, pretrained gpt model to opsml"""
@@ -82,7 +82,7 @@ def test_register_large_gpt_model(
         team="mlops",
         user_email="test@mlops.com",
     )
-    api_registries.data.register_card(data_card)
+    mock_api_registries.data.register_card(data_card)
 
     model_card = ModelCard(
         trained_model=model,
@@ -93,12 +93,12 @@ def test_register_large_gpt_model(
         tags={"id": "model1"},
         datacard_uid=data_card.uid,
     )
-    api_registries.model.register_card(model_card)
+    mock_api_registries.model.register_card(model_card)
 
 
 @pytest.mark.large
 def test_register_large_bart_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     huggingface_bart: Tuple[Any, Dict[str, torch.Tensor]],
 ) -> None:
     """An example of saving a large, pretrained  bart model to opsml"""
@@ -110,7 +110,7 @@ def test_register_large_bart_model(
         team="mlops",
         user_email="test@mlops.com",
     )
-    api_registries.data.register_card(data_card)
+    mock_api_registries.data.register_card(data_card)
 
     model_card = ModelCard(
         trained_model=model,
@@ -122,12 +122,12 @@ def test_register_large_bart_model(
         datacard_uid=data_card.uid,
     )
 
-    api_registries.model.register_card(model_card)
+    mock_api_registries.model.register_card(model_card)
 
 
 @pytest.mark.large
 def test_register_large_vit_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     huggingface_vit: Tuple[Any, Dict[str, torch.Tensor]],
 ) -> None:
     """An example of saving a large, pretrained image model to opsml"""
@@ -139,7 +139,7 @@ def test_register_large_vit_model(
         team="mlops",
         user_email="test@mlops.com",
     )
-    api_registries.data.register_card(data_card)
+    mock_api_registries.data.register_card(data_card)
 
     model_card = ModelCard(
         trained_model=model,
@@ -152,4 +152,4 @@ def test_register_large_vit_model(
         # to_onnx=False,  # onnx conversion fails w/ this model - not sure why
     )
 
-    api_registries.model.register_card(model_card)
+    mock_api_registries.model.register_card(model_card)

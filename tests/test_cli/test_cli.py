@@ -12,7 +12,7 @@ runner = CliRunner()
 
 
 def test_download_model(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
 ):
@@ -21,8 +21,8 @@ def test_download_model(
 
     model, data = linear_regression
 
-    data_registry = api_registries.data
-    model_registry = api_registries.model
+    data_registry = mock_api_registries.data
+    model_registry = mock_api_registries.model
 
     #### Create DataCard
     data_card = DataCard(
@@ -54,7 +54,7 @@ def test_download_model(
 
 
 def test_download_model_metadata(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
 ):
@@ -63,8 +63,8 @@ def test_download_model_metadata(
 
     model, data = linear_regression
 
-    data_registry = api_registries.data
-    model_registry = api_registries.model
+    data_registry = mock_api_registries.data
+    model_registry = mock_api_registries.model
 
     #### Create DataCard
     data_card = DataCard(
@@ -96,7 +96,7 @@ def test_download_model_metadata(
 
 
 def test_list_cards(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
 ):
@@ -105,8 +105,8 @@ def test_list_cards(
 
     model, data = linear_regression
 
-    data_registry = api_registries.data
-    model_registry = api_registries.model
+    data_registry = mock_api_registries.data
+    model_registry = mock_api_registries.model
 
     #### Create DataCard
     data_card = DataCard(
@@ -153,7 +153,7 @@ def test_launch_uvicorn(mock_opsml_app_run):
 
 
 def test_model_metrics(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     sklearn_pipeline: tuple[pipeline.Pipeline, pd.DataFrame],
 ) -> None:
@@ -173,11 +173,11 @@ def test_model_metrics(
     runcard.log_metric(key="mape", value=2, step=1)
     runcard.log_metric(key="mape", value=2, step=2)
     runcard.log_parameter(key="m1", value="apple")
-    api_registries.run.register_card(runcard)
+    mock_api_registries.run.register_card(runcard)
 
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     #### Create ModelCard
     modelcard = ModelCard(
@@ -187,7 +187,7 @@ def test_model_metrics(
         datacard_uid=datacard.uid,
         runcard_uid=runcard.uid,
     )
-    api_registries.model.register_card(modelcard)
+    mock_api_registries.model.register_card(modelcard)
 
     result = runner.invoke(app, ["get-model-metrics", "--uid", modelcard.uid])
     assert result.exit_code == 0
@@ -202,11 +202,11 @@ def test_model_metrics(
     runcard.log_metric(key="mape", value=2, step=1)
     runcard.log_metric(key="mape", value=2, step=2)
     runcard.log_parameter(key="m1", value="apple")
-    api_registries.run.register_card(runcard)
+    mock_api_registries.run.register_card(runcard)
 
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     #### Create ModelCard
     challenger = ModelCard(
@@ -216,7 +216,7 @@ def test_model_metrics(
         datacard_uid=datacard.uid,
         runcard_uid=runcard.uid,
     )
-    api_registries.model.register_card(challenger)
+    mock_api_registries.model.register_card(challenger)
 
     # test compare metrics
     result = runner.invoke(
@@ -236,7 +236,7 @@ def test_model_metrics(
 
 
 def test_download_data_profile(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     sklearn_pipeline: tuple[pipeline.Pipeline, pd.DataFrame],
 ) -> None:
@@ -250,7 +250,7 @@ def test_download_data_profile(
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
     datacard.create_data_profile()
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
     with tempfile.TemporaryDirectory() as tmpdirname:
         result = runner.invoke(app, ["download-data-profile", "--uid", datacard.uid, "--write-dir", tmpdirname])
 
@@ -266,7 +266,7 @@ def test_download_data_profile(
 
 
 def test_compare_data_profile(
-    api_registries: CardRegistries,
+    mock_api_registries: CardRegistries,
     mock_cli_property,
     sklearn_pipeline: tuple[pipeline.Pipeline, pd.DataFrame],
 ) -> None:
@@ -280,7 +280,7 @@ def test_compare_data_profile(
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
     datacard.create_data_profile()
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         result = runner.invoke(
@@ -300,7 +300,7 @@ def test_compare_data_profile(
     # Not data profile fail
     #### Create DataCard
     datacard = DataCard(data=data, info=card_info)
-    api_registries.data.register_card(datacard)
+    mock_api_registries.data.register_card(datacard)
 
     # failure
     with tempfile.TemporaryDirectory() as tmpdirname:
