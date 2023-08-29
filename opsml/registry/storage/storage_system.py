@@ -342,6 +342,7 @@ class LocalStorageClient(StorageClient):
             shutil.copytree(local_path, write_path, dirs_exist_ok=True)
 
         else:
+            print(write_path)
             write_dir = Path(write_path).parents[0]
             write_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy(local_path, write_path)
