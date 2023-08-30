@@ -250,6 +250,38 @@ class QueryEngine:
             query.update(card)
             sess.commit()
 
+    def get_unique_teams(self, table: Type[REGISTRY_TABLES]) -> List[str]:
+        """Retrieves unique teams in a registry
+
+        Args:
+            table:
+                Registry table to query
+
+        Returns:
+            List of unique teams
+        """
+
+        query = select(table.team).distinct()
+
+        with self.session() as sess:
+            results = sess.scalars(query).all()
+
+        return results
+
+    def get_unique_card_names(self, team: Optional[str], table: Type[REGISTRY_TABLES]) -> List[str]:
+        """Returns a list of unique card names"""
+        query = select(table.name)
+
+        if team is not None:
+            query = query.filter(table.team == team).distinct()
+        else:
+            query = query.distinct()
+
+        with self.session() as sess:
+            results = sess.scalars(query).all()
+
+        return results
+
 
 def log_card_change(func):
     """Decorator for logging card changes"""

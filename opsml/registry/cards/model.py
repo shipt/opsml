@@ -33,16 +33,14 @@ from opsml.registry.sql.records import (
     RegistryRecord,
 )
 from opsml.registry.cards.audit_deco import auditable
-from opsml.registry.sql.settings import settings
+from opsml.registry.utils.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs, ArtifactStorageType
 
 logger = ArtifactLogger.get_logger(__name__)
 storage_client = settings.storage_client
 
-SampleModelData = Optional[
-    Union[pd.DataFrame, np.ndarray, Dict[str, np.ndarray], pl.DataFrame]
-]
+SampleModelData = Optional[Union[pd.DataFrame, np.ndarray, Dict[str, np.ndarray], pl.DataFrame]]
 
 
 @auditable
@@ -166,14 +164,9 @@ class ModelCard(ArtifactCard):
 
     @property
     def input_data_schema(self) -> Dict[str, Feature]:
-        if (
-            self.data_schema is not None
-            and self.data_schema.input_data_schema is not None
-        ):
+        if self.data_schema is not None and self.data_schema.input_data_schema is not None:
             return self.data_schema.input_data_schema
-        raise ValueError(
-            "Model input data schema has not been set or is not needed for this model"
-        )
+        raise ValueError("Model input data schema has not been set or is not needed for this model")
 
     def load_sample_data(self):
         """Loads sample data associated with original non-onnx model"""
@@ -191,9 +184,7 @@ class ModelCard(ArtifactCard):
     def load_trained_model(self):
         """Loads original trained model"""
 
-        if not all(
-            [bool(self.uris.trained_model_uri), bool(self.uris.sample_data_uri)]
-        ):
+        if not all([bool(self.uris.trained_model_uri), bool(self.uris.sample_data_uri)]):
             raise ValueError(
                 """Trained model uri and sample data uri must both be set to load a trained model""",
             )
@@ -244,9 +235,7 @@ class ModelCard(ArtifactCard):
         """Loads the onnx model definition"""
 
         if self.uris.model_metadata_uri is None:
-            raise ValueError(
-                "No model metadata exists. Please check the registry or register a new model"
-            )
+            raise ValueError("No model metadata exists. Please check the registry or register a new model")
 
         metadata = self.model_metadata
         onnx_model = self._load_onnx_model(metadata=metadata)
@@ -266,9 +255,7 @@ class ModelCard(ArtifactCard):
 
     def _set_version_for_predictor(self) -> str:
         if self.version is None:
-            logger.warning(
-                """ModelCard has no version (not registered). Defaulting to 1 (for testing only)"""
-            )
+            logger.warning("""ModelCard has no version (not registered). Defaulting to 1 (for testing only)""")
             version = "1.0.0"
         else:
             version = self.version

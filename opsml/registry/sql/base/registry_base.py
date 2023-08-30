@@ -71,6 +71,13 @@ class SQLRegistryBase:
         self._table = TableSchema.get_table(table_name=table_name)
 
     @property
+    def unique_teams(self) -> List[str]:
+        raise NotImplementedError
+
+    def get_unique_card_names(self, team: Optional[str] = None):
+        raise NotImplementedError
+
+    @property
     def table_name(self) -> str:
         return self._table.__tablename__
 

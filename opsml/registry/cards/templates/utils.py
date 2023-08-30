@@ -10,7 +10,7 @@ AUDIT_TEMPLATE_HTML_FILE = "report-copy.html"
 
 
 def render_audit_template(models: List[ModelCard], data: List[DataCard], runs: List[RunCard]):
-    from opsml.registry.sql.settings import settings
+    from opsml.registry.utils.settings import settings
 
     template_env = Environment(
         loader=FileSystemLoader(searchpath=DIR_PATH),
