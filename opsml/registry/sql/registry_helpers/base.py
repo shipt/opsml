@@ -29,9 +29,6 @@ class _RegistryHelper:
 
     def update_storage_client_metadata(self, storage_specdata: ArtifactStorageSpecs):
         """Updates storage metadata"""
-
-        print(self.storage_client)
-        a
         self.storage_client.storage_spec = storage_specdata
 
     ##### Card validation helpers
