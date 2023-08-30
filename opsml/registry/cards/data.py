@@ -29,7 +29,7 @@ from opsml.registry.sql.records import (
     RegistryRecord,
 )
 from opsml.registry.cards.audit_deco import auditable
-from opsml.registry.sql.settings import settings
+from opsml.registry.utils.settings import settings
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.types import ArtifactStorageSpecs
 
@@ -114,7 +114,9 @@ class DataCard(ArtifactCard):
 
         if info.data.get("data") is None and not bool(info.data.get("sql_logic")):
             if data_uri is None:
-                raise ValueError("Data or sql logic must be supplied when no data_uri is present")
+                raise ValueError(
+                    "Data or sql logic must be supplied when no data_uri is present"
+                )
 
         return uris
 
@@ -149,7 +151,9 @@ class DataCard(ArtifactCard):
                     sql_logic[name] = query_
 
                 except Exception as error:
-                    raise ValueError(f"Could not load sql file {query}. {error}") from error
+                    raise ValueError(
+                        f"Could not load sql file {query}. {error}"
+                    ) from error
 
         return sql_logic
 

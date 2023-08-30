@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
-from opsml.registry.sql.registry_base import VersionType
+from opsml.registry.sql.base.registry_base import VersionType
 from opsml.registry.sql.semver import CardVersion
 
 

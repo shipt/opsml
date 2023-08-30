@@ -2,4 +2,4 @@ from opsml.registry.cards import AuditCard, DataCard, ModelCard, PipelineCard, R
 from opsml.registry.cards.types import CardInfo
 from opsml.registry.data.splitter import DataSplit
 from opsml.registry.sql.registry import CardRegistries, CardRegistry
-from opsml.registry.sql.registry_base import VersionType
+from opsml.registry.sql.semver import VersionType
