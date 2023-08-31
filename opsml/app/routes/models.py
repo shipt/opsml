@@ -110,8 +110,8 @@ async def list_model(
     model: Optional[str] = None,
     team: Optional[str] = None,
 ):
+    teams = request.app.state.registries.model.list_teams()
     if all(attr is None for attr in [uid, version, model, team]):
-        teams = request.app.state.registries.model.list_teams()
         return templates.TemplateResponse(
             "metadata.html",
             {
