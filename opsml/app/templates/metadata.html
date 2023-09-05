@@ -14,12 +14,11 @@
   
 
 <br>
-<div class="container" style="padding-top:50px;">
-
+<div class="container" style="padding-top:50px; margin-left: 8%;">
 
 <!---- Model version table -------->
 {% if metadata is not none %}
-<div class="container">
+<div class="container" id="PageHeader">
     <div class="page-header">
       <h2>{{metadata.model_name}}:{{metadata.model_version}}</h2>
     </div>
@@ -30,7 +29,7 @@
 
 
 <!---- Form for selecting team -------->
-<div class="btn-group">
+<div class="btn-group" >
     <div class="dropdown" id="MetadataTeamSelect">
       <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
         
@@ -89,10 +88,11 @@
 </div>
 
 {% if metadata is not none %}
-<hr>
+
+<hr style="width: 110%;">
 
 
-<div style="width: 100%;">
+<div style="width: 130%;">
   <div style="width: 12%; float: left;"> 
 
     <div class="form-check form-switch" style="width:15%;">
@@ -114,6 +114,11 @@
       {% if params|length > 0  %}
       <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Params">
       <label class="form-check-label" for="flexSwitchCheckDefault">Parameters</label>
+      {% endif %}
+
+      {% if artifacts|length > 0  %}
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" data-bs-toggle="collapse" data-bs-target="#Artifacts">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Artifacts</label>
       {% endif %}
 
       {% if tags|length > 0  %}
@@ -212,6 +217,28 @@
     </div>
     {% endif %}
 
+    {% if artifacts|length > 0 %}
+    <div class="collapse" id="Artifacts" style="width:85%; float:right;">
+      <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
+          <caption>Artifacts</caption>
+          <thead style="background:white;">
+            <tr>
+              <th class="text-center" scope="col">Name</th>
+              <th class="text-center" scope="col">Uri</th>
+            </tr>
+          </thead>
+          <tbody>
+                {% for name, uri in artifacts.items() %}
+                  <tr>
+                    <td class="text-center">{{name}}</td>
+                    <td class="text-center">{{uri}}</td>
+                  </tr>
+                {% endfor %}
+          </tbody>
+        </table>
+    </div>
+    {% endif %}
+
     {% if tags|length > 0 %}
     <div class="collapse" id="Tags" style="width:85%; float:right;">
       <table class="table table-striped table-hover table-sm" id="feature-table" style="float:right; z-index:10;">
@@ -268,5 +295,8 @@ print(onnx_model.predict(onnx_model.sample_api_data))
   <div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
   </div>
 </body>
+
+
+
 
 {% endblock %}

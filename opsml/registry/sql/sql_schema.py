@@ -55,6 +55,7 @@ class DataMixin:
     runcard_uid = Column("runcard_uid", String(2048))
     pipelinecard_uid = Column("pipelinecard_uid", String(2048))
     datacard_uri = Column("datacard_uri", String(2048))
+    uris = Column("uris", JSON)
 
 
 class DataSchema(Base, BaseMixin, DataMixin):  # type: ignore

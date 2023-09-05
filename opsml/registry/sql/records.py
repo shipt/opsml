@@ -36,6 +36,7 @@ class DataRegistryRecord(SaveRecord):
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
     datacard_uri: str
+    uris: Dict[str, Optional[str]]
 
     @model_validator(mode="before")
     def set_uris(cls, values):

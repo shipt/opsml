@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 from opsml.registry import AuditCard, DataCard, ModelCard, CardRegistry, PipelineCard
-from opsml.registry.sql.query_helpers import QueryCreator
+from opsml.registry.sql.base.query_engine import QueryEngine
 from sklearn import linear_model
 import pandas as pd
 import pytest
@@ -85,17 +85,3 @@ def test_audit_card_add_uids(
     with pytest.raises(ValueError):
         pipe = PipelineCard(name="pipe", team="team", user_email="test")
         auditcard.add_card(pipe)
-
-    query_creator = QueryCreator()
-
-    query = query_creator.query_audit_by_model(
-        table=audit_registry._registry._table,
-        model_name=modelcard.name,
-        model_version=modelcard.version,
-    )
-
-    with audit_registry._registry.session() as sess:
-        results = sess.execute(query).all()
-
-    print(results)
-    a

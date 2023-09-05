@@ -10,7 +10,12 @@ from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
-from opsml.app.routes.utils import error_to_500, get_runcard_from_model, list_team_name_info, get_model_versions
+from opsml.app.routes.utils import (
+    error_to_500,
+    get_runcard_from_model,
+    list_team_name_info,
+    get_model_versions,
+)
 from opsml.app.routes.pydantic_models import (
     CardRequest,
     CompareMetricRequest,
@@ -162,11 +167,6 @@ async def list_model(
         )
 
         runcard = get_runcard_from_model(request.app.state.registries, metadata.model_name, metadata.model_version)
-        metrics = getattr(runcard, "metrics", None)
-        params = getattr(runcard, "parameters", None)
-        tags = getattr(runcard, "tags", None)
-        artifacts = getattr(runcard, "artifacts", None)
-
         versions = get_model_versions(request.app.state.registries.model, metadata.model_name, metadata.model_team)
         models = request.app.state.registries.model.list_card_names(team=metadata.model_team)
 
@@ -192,9 +192,10 @@ async def list_model(
                 "selected_model": metadata.model_name,
                 "versions": versions,
                 "version": metadata.model_version,
-                "metrics": metrics,
-                "params": params,
-                "tags": tags,
+                "metrics": getattr(runcard, "metrics", None),
+                "params": getattr(runcard, "parameters", None),
+                "tags": getattr(runcard, "tags", None),
+                "artifacts": getattr(runcard, "artifact_uris", None),
             },
         )
 

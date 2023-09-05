@@ -378,7 +378,7 @@ class LocalStorageClient(StorageClient):
         return shutil.copyfile(read_path, write_path)
 
     def download(self, rpath: str, lpath: str, recursive: bool = False, **kwargs) -> Optional[str]:
-        files = kwargs.get("files", None)
+        files = kwargs.get("files", [])
 
         if len(files) == 1:
             filename = os.path.basename(files[0])
