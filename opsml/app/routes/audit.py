@@ -21,7 +21,8 @@ from opsml.app.routes.pydantic_models import (
 )
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.challenger import ModelChallenger
-from opsml.registry import CardInfo, CardRegistries, CardRegistry, ModelCard, RunCard
+from opsml.registry import CardInfo, CardRegistries, CardRegistry, ModelCard, RunCard, AuditCard
+from opsml.registry.cards.audit import AuditSections
 from opsml.registry.cards.model import ModelMetadata
 from opsml.registry.model.registrar import (
     ModelRegistrar,
@@ -63,27 +64,30 @@ async def audit_list_homepage(
     teams = request.app.state.registries.model.list_teams()
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
-            "audits.html",
+            "audit.html",
             {
                 "request": request,
                 "teams": teams,
                 "models": None,
                 "selected_team": None,
                 "selected_model": None,
+                "version": None,
             },
         )
 
     elif team is not None and all(attr is None for attr in [version, model]):
         models = request.app.state.registries.model.list_card_names(team=team)
         return templates.TemplateResponse(
-            "metadata.html",
+            "audit.html",
             {
                 "request": request,
                 "teams": teams,
                 "selected_team": team,
-                "metadata": None,
                 "models": models,
-                "selected_model": model,
+                "versions": None,
+                "selected_model": None,
+                "version": None,
+                "audit_report": None,
             },
         )
 
@@ -92,7 +96,7 @@ async def audit_list_homepage(
         models = request.app.state.registries.model.list_card_names(team=team)
 
         return templates.TemplateResponse(
-            "metadata.html",
+            "audit.html",
             {
                 "request": request,
                 "teams": teams,
@@ -100,9 +104,54 @@ async def audit_list_homepage(
                 "models": models,
                 "selected_model": model,
                 "versions": versions,
+                "version": None,
+                "audit_report": None,
             },
         )
 
-    # create sql query that can search auditcards by associated modelcard uid
+    elif all(attr is not None for attr in [version, model, team]) or uid is not None:
+        versions = get_model_versions(request.app.state.registries.model, model, team)
+        models = request.app.state.registries.model.list_card_names(team=team)
+        model_record = request.app.state.registries.model.list_cards(
+            name=model,
+            version=version,
+            uid=uid,
+        )[0]
+
+        auditcard_uid = model_record.get("auditcard_uid")
+
+        if auditcard_uid is None:
+            audit_report = {
+                "name": None,
+                "team": None,
+                "user_email": None,
+                "version": None,
+                "uid": None,
+                "audit": AuditSections().model_dump(),
+            }
+
+        audit_report = {
+            "name": None,
+            "team": None,
+            "user_email": None,
+            "version": None,
+            "uid": None,
+            "audit": AuditSections().model_dump(),
+        }
+
+        # create sql query that can search auditcards by associated modelcard uid
+        return templates.TemplateResponse(
+            "audit.html",
+            {
+                "request": request,
+                "teams": teams,
+                "selected_team": team,
+                "models": models,
+                "selected_model": model,
+                "versions": versions,
+                "version": version,
+                "audit_report": audit_report,
+            },
+        )
 
     return RedirectResponse(url="/opsml/audit/")

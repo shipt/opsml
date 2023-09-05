@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}
+  <title>Model Audit</title>
+{% endblock %}
+
+{% block content %}
+<body id="ModelAuditPage">
+
+  
+<br>
+<div class="container" style="padding-top:60px; margin-left: 8%;">
+
+<!---- Form for selecting team -------->
+  <div class="btn-group">
+      <div class="dropdown" id="MetadataTeamSelect">
+        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+          
+          {% if selected_team is not none %}
+            {{selected_team}}
+          {% else %}
+            Select Team
+          {% endif %}
+
+        </a>
+      
+        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+          {% if teams is not none %}
+
+            {% for team in teams %}
+              <a class="dropdown-item" href="/opsml/audit/?team={{team}}">{{team}}</a>
+            {% endfor %}
+          
+            {% else %}
+            <a class="dropdown-item" href="#">No Team Found</a>
+            {% endif %}
+        </div>
+      </div>
+
+      <div class="dropdown" id="MetadataTeamSelect">
+        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+          
+          {% if selected_model is not none %}
+            {{selected_model}}
+          {% else %}
+            Select Model
+          {% endif %}
+    
+        </a>
+        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+          {% if models is not none %}
+            {% for model in models %}
+              <a class="dropdown-item" href="/opsml/audit/?team={{selected_team}}&model={{model}}">{{model}}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+
+      <div class="dropdown" id="MetadataTeamSelect">
+        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+          {% if version is not none %}
+            {{version}}
+          {% else %}
+            Select Version
+          {% endif %}
+        </a>
+      
+        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+          {% if versions is not none %}
+            {% for version in versions %}
+              <a class="dropdown-item" href="/opsml/audit/?team={{selected_team}}&model={{selected_model}}&version={{version}}">{{version}}</a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+  </div>
+
+  {% if audit_report is not none %}
+
+<br>
+<br>
+<div class="container" id="PageHeader">
+    <div class="page-header">
+      <h2>AuditCard for {{selected_model}}:{{version}}</h2>
+    </div>
+</div>
+<br>
+
+  <form>
+    <div class="form-group row">
+      <div class="col-md-4 mb-3">
+        <label for="InputName">Name</label>
+        <input name="name" type="text" class="form-control" id="InputName" placeholder="Name" value={{audit_report["name"]}} required>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="InputTeam">Team</label>
+        <input name="team" type="text" class="form-control" id="InputTeam" placeholder="Team" value={{audit_report["name"]}} required>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="InputEmail">User Email</label>
+        <input name="email" type="text" class="form-control" id="InputEmail" placeholder="Email" value={{audit_report["name"]}} required>
+      </div>
+    </div>
+
+    <div class="form-group row">
+    
+      <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+              Accordion Item #1
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+              <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+
+  </form>
+
+
+  {% endif %}
+
+
+</div>
+
+
+<div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
+</div>
+</body>
+
+{% endblock %}
+

@@ -27,9 +27,14 @@ def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid:
         )
 
         audit_registry = CardRegistry(registry_name="audit")
-        card: AuditCard = audit_registry.load_card(uid=auditcard_uid)
-        card.add_card(card=self)
-        return audit_registry.update_card(card=card)
+        auditcard: AuditCard = audit_registry.load_card(uid=auditcard_uid)
+        auditcard.add_card(card=self)
+        audit_registry.update_card(card=auditcard)
+
+        if self.card_type in [CardType.DATACARD, CardType.MODELCARD]:
+            self.auditcard_uid = auditcard.uid
+
+        return None
 
     if auditcard is not None:
         return auditcard.add_card(card=self)

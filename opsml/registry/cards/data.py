@@ -99,6 +99,7 @@ class DataCard(ArtifactCard):
     sql_logic: Dict[Optional[str], Optional[str]] = {}
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
     data_profile: Optional[ProfileReport] = None
     uris: DataCardUris = DataCardUris()
 
@@ -111,9 +112,7 @@ class DataCard(ArtifactCard):
 
         if info.data.get("data") is None and not bool(info.data.get("sql_logic")):
             if data_uri is None:
-                raise ValueError(
-                    "Data or sql logic must be supplied when no data_uri is present"
-                )
+                raise ValueError("Data or sql logic must be supplied when no data_uri is present")
 
         return uris
 
@@ -148,9 +147,7 @@ class DataCard(ArtifactCard):
                     sql_logic[name] = query_
 
                 except Exception as error:
-                    raise ValueError(
-                        f"Could not load sql file {query}. {error}"
-                    ) from error
+                    raise ValueError(f"Could not load sql file {query}. {error}") from error
 
         return sql_logic
 

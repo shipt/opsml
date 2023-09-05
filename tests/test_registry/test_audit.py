@@ -73,6 +73,7 @@ def test_audit_card_add_uids(
     modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
     auditcard = audit_registry.load_card(uid=auditcard.uid)
     assert auditcard.modelcards[0].version == modelcard.version
+    assert modelcard.auditcard_uid == auditcard.uid
 
     ### These should fail
     with pytest.raises(ValueError):

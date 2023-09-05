@@ -35,6 +35,7 @@ class DataRegistryRecord(SaveRecord):
     timestamp: int = get_timestamp()
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
     datacard_uri: str
     uris: Dict[str, Optional[str]]
 
@@ -58,6 +59,7 @@ class ModelRegistryRecord(SaveRecord):
     timestamp: int = get_timestamp()
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
 
     model_config = ConfigDict(protected_namespaces=("protect_",))
 
@@ -145,6 +147,7 @@ class LoadedDataRecord(LoadRecord):
     additional_info: Optional[Dict[str, Union[float, int, str]]] = None
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
 
     @model_validator(mode="before")
     def load_attributes(cls, values):
@@ -214,6 +217,7 @@ class LoadedModelRecord(LoadRecord):
     model_type: str
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
     uris: ModelCardUris
 
     model_config = ConfigDict(protected_namespaces=("protect_",))

@@ -107,6 +107,7 @@ class ModelCard(ArtifactCard):
     data_schema: Optional[ApiDataSchemas] = None
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
     to_onnx: bool = True
     uris: ModelCardUris = ModelCardUris()
 
