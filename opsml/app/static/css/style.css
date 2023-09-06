@@ -363,5 +363,15 @@ p {
       margin-top:20px;
     }
   }
+
+.accordion-button:not(.collapsed) {
+    color: black;
+    background-color: #5d0fb745;
+    box-shadow: none;
+}
+
+.accordion-button.collapsed {
+  box-shadow: none;
+}
   
  

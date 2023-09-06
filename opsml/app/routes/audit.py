@@ -72,6 +72,7 @@ async def audit_list_homepage(
                 "selected_team": None,
                 "selected_model": None,
                 "version": None,
+                "audit_report": None,
             },
         )
 
@@ -127,6 +128,7 @@ async def audit_list_homepage(
                 "user_email": None,
                 "version": None,
                 "uid": None,
+                "status": False,
                 "audit": AuditSections().model_dump(),
             }
 
@@ -136,6 +138,7 @@ async def audit_list_homepage(
             "user_email": None,
             "version": None,
             "uid": None,
+            "status": False,
             "audit": AuditSections().model_dump(),
         }
 
