@@ -45,8 +45,14 @@ class AuditSections(BaseModel):
 
     @model_validator(mode="before")
     def load_sections(cls, values):
-        """Loads audit sections from template"""
+        """Loads audit sections from template if no values are provided"""
 
+        if any(values):
+            return values
+        return cls.load_yaml_template()
+
+    @staticmethod
+    def load_yaml_template() -> Dict[str, Dict[int, Dict[str, str]]]:
         with open(AUDIT_TEMPLATE_PATH, "r", encoding="utf-8") as stream:
             try:
                 audit_sections = yaml.safe_load(stream)

@@ -100,21 +100,26 @@
 </div>
 <br>
 
-  <form>
+  <form action="/opsml/audit/save" method="POST" id="AuditForm" name="AuditForm">
     <div class="form-group row">
-      <div class="col-md-4 mb-3">
+      <div class="col">
         <label for="InputName">Name</label>
-        <input name="name" type="text" class="form-control" id="InputName" placeholder="Name" value={{audit_report["name"]}} required>
+        <input name="name" type="text" class="form-control" id="InputName" placeholder="Name" {% if audit_report["name"] is not none %} value={{audit_report["name"]}} {% endif %} required>
       </div>
-      <div class="col-md-4 mb-3">
+      <div class="col">
         <label for="InputTeam">Team</label>
-        <input name="team" type="text" class="form-control" id="InputTeam" placeholder="Team" value={{audit_report["name"]}} required>
+        <input name="team" type="text" class="form-control" id="InputTeam" placeholder="Team" {% if audit_report["team"] is not none %} value={{audit_report["team"]}} {% endif %} required>
       </div>
-      <div class="col-md-4 mb-3">
+      <div class="col">
         <label for="InputEmail">User Email</label>
-        <input name="email" type="text" class="form-control" id="InputEmail" placeholder="Email" value={{audit_report["name"]}} required>
+        <input name="email" type="text" class="form-control" id="InputEmail" placeholder="Email" {% if audit_report["user_email"] is not none %} value={{audit_report["user_email"]}} {% endif %} required>
+      </div>
+      <div class="col">
+        <label for="InputUid">UID</label>
+          <input name="uid" type="text" class="form-control" id="InputUid" placeholder="Uid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
       </div>
     </div>
+    <br>
 
     
     <div class="accordion accordion-flush" id="AuditAccordion">
@@ -126,6 +131,8 @@
         {% endwith %}
     {% endfor %}
     </div>
+
+
 
     <br>
     <button type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Save AuditCard</button>

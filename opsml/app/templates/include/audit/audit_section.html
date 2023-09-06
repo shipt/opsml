@@ -23,7 +23,8 @@
               <div class="form-group row">
                 <label>Response</label>
               </div>
-              <textarea id="{{num}}-{{section}}" name="{{num}}-{{section}}" rows="5" style="width:100%;">{{question["response"]}}</textarea>
+              
+              <textarea form="AuditForm" id="{{section}}_{{num}}" name="{{section}}_{{num}}" rows="5" style="width:100%;">{% if question["response"] is not none %} {{question["response"]}} {% endif %}</textarea>
               <hr>
 
             {% endfor %}
