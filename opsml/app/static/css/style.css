@@ -239,6 +239,12 @@ p {
 }
 
 
+#comment-card {
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
+}
+
+
+
 #homepage-cards {
 
     background: url(static/images/opsml-logo.png);

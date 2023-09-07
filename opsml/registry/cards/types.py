@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Union
-
+import datetime
 from pydantic import BaseModel, ConfigDict
 from opsml.helpers.logging import ArtifactLogger
 
@@ -44,6 +44,12 @@ class Param(BaseModel):
 
 METRICS = Dict[str, List[Metric]]
 PARAMS = Dict[str, List[Param]]
+
+
+class Comment(BaseModel):
+    name: str
+    comment: str
+    timestamp: str = str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
 
 
 @dataclass

@@ -7,6 +7,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Union
 from typing import Annotated
+import datetime
 from fastapi import APIRouter, Body, HTTPException, Request, status, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
@@ -124,19 +125,24 @@ async def audit_list_homepage(
                 "uid": "",
                 "status": False,
                 "audit": AuditSections().model_dump(),
+                "timestamp": None,
+                "comments": [],
             }
 
-        audit_report = {
-            "name": None,
-            "team": None,
-            "user_email": None,
-            "version": None,
-            "uid": None,
-            "status": False,
-            "audit": AuditSections().model_dump(),
-        }
+        else:
+            audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=auditcard_uid)
+            audit_report = {
+                "name": audit_card.name,
+                "team": audit_card.team,
+                "user_email": audit_card.user_email,
+                "version": audit_card.version,
+                "uid": audit_card.uid,
+                "status": audit_card.approved,
+                "audit": audit_card.audit.model_dump(),
+                "timestamp": None,
+                "comments": audit_card.comments,
+            }
 
-        # create sql query that can search auditcards by associated modelcard uid
         return templates.TemplateResponse(
             "audit.html",
             {
@@ -155,31 +161,32 @@ async def audit_list_homepage(
 
 
 class AuditFormParser:
-    def __init__(self, audit_dict: Dict[str, str], audit_registry: CardRegistry):
+    def __init__(self, audit_form_dict: Dict[str, str], registries: CardRegistries):
         """Instantiates parse for audit form data
 
         Args:
             audit_dict:
                 Dictionary of audit form data
-            audit_registry:
-                AuditCard registry
+            registries:
+                `CardRegistries`
         """
-        self.audit_dict = audit_dict
-        self.registry = audit_registry
-        self.section_template = AuditSections.load_yaml_template()
+        self.audit_form_dict = audit_form_dict
+        self.registries = registries
 
-    def _pop_audit_attr(self) -> Dict[str, str]:
-        """Pops attributes associated with audit form data
+    def _add_auditcard_to_modelcard(self, auditcard_uid: str) -> None:
+        """Adds registered AuditCard uid to ModelCard
 
         Args:
-            audit_dict:
-                Dictionary of audit form data
-
-        Returns:
-            Dictionary of audit form data with attributes popped
+            auditcard_uid:
+                AuditCard uid to add to ModelCard
         """
-        for attr in ["request", "team", "name", "email", "uid"]:
-            self.audit_dict.pop(attr)
+        model_record = self.registries.model.list_cards(
+            name=self.audit_form_dict["selected_model_name"],
+            version=self.audit_form_dict["selected_model_version"],
+        )[0]
+
+        model_record["auditcard_uid"] = auditcard_uid
+        self.registries.model._registry.update_card_record(card=model_record)
 
     def register_update_audit_card(self, audit_card: AuditCard) -> None:
         """Register or update an AuditCard. This will always use server-side registration,
@@ -196,8 +203,9 @@ class AuditFormParser:
         """
         # register/update audit
         if audit_card.uid is not None:
-            return self.registry.update_card(card=audit_card)
-        return self.registry.register_card(card=audit_card)
+            return self.registries.audit.update_card(card=audit_card)
+        self.registries.audit.register_card(card=audit_card)
+        self._add_auditcard_to_modelcard(auditcard_uid=audit_card.uid)
 
     def get_audit_card(self) -> AuditCard:
         """Gets or creates AuditCard to use with Form data
@@ -205,47 +213,58 @@ class AuditFormParser:
         Returns:
             `AuditCard`
         """
-        if self.audit_dict["uid"] is not None:
+        if self.audit_form_dict["uid"] is not None:
             # check first
-            records = self.registry.list_cards(uid=self.audit_dict["uid"])
+            records = self.registries.audit.list_cards(uid=self.audit_form_dict["uid"])
 
             if bool(records):
-                audit_card: AuditCard = self.registry.load_card(uid=self.audit_dict["uid"])
-
-                # update section template
-                self.section_template = audit_card.audit.model_dump()
+                audit_card: AuditCard = self.registries.audit.load_card(uid=self.audit_form_dict["uid"])
 
             else:
                 logger.info("Invalid uid specified, defaulting to new AuditCard")
                 audit_card = AuditCard(
-                    name=self.audit_dict["name"],
-                    team=self.audit_dict["team"],
-                    user_email=self.audit_dict["email"],
+                    name=self.audit_form_dict["name"],
+                    team=self.audit_form_dict["team"],
+                    user_email=self.audit_form_dict["email"],
                 )
         else:
             audit_card = AuditCard(
-                name=self.audit_dict["name"],
-                team=self.audit_dict["team"],
-                user_email=self.audit_dict["email"],
+                name=self.audit_form_dict["name"],
+                team=self.audit_form_dict["team"],
+                user_email=self.audit_form_dict["email"],
             )
 
-        # pop base attr
-        self._pop_audit_attr()
         return audit_card
 
-    def parse_form_sections(self):
-        for question_key, response in self.audit_dict.items():
-            if response is not None:
+    def parse_form_sections(self, audit_card: AuditCard) -> AuditCard:
+        """Parses form data into AuditCard
+
+        Args:
+            audit_card:
+                `AuditCard`
+
+        Returns:
+            `AuditCard`
+        """
+        audit_section = audit_card.audit.model_dump()
+        for question_key, response in self.audit_form_dict.items():
+            if bool(re.search(r"\d", question_key)) and response is not None:
                 splits = question_key.split("_")
                 section = "_".join(splits[:-1])
                 number = int(splits[-1])  # this will always be an int
-                self.section_template[section][number]["response"] = response
+                audit_section[section][number]["response"] = response
 
-    def parse_form(self):
+        # recreate section
+        audit_card.audit = AuditSections(**audit_section)
+        return audit_card
+
+    def parse_form(self) -> AuditCard:
+        """Parses form data into AuditCard"""
         audit_card = self.get_audit_card()
-        self.parse_form_sections()
-        audit_card.audit = AuditSections(**self.section_template)
+        audit_card = self.parse_form_sections(audit_card=audit_card)
         self.register_update_audit_card(audit_card=audit_card)
+
+        return audit_card
 
 
 @router.post("/audit/save")
@@ -256,6 +275,9 @@ async def audit_list_homepage(
     email: str = Form(...),
     team: str = Form(...),
     uid: Optional[str] = Form(None),
+    selected_model_name: str = Form(...),
+    selected_model_team: str = Form(...),
+    selected_model_version: str = Form(...),
     business_understanding_1: Optional[str] = Form(None),
     business_understanding_2: Optional[str] = Form(None),
     business_understanding_3: Optional[str] = Form(None),
@@ -336,12 +358,46 @@ async def audit_list_homepage(
     misc_10: Optional[str] = Form(None),
 ):
     # collect all function arguments into a dictionary
-    audit_dict = locals()
-    parser = AuditFormParser(
-        audit_dict=audit_dict,
-        audit_registry=request.app.state.registries.audit,
-    )
 
+    model_name = selected_model_name
+    model_team = selected_model_team
+    model_version = selected_model_version
+
+    # base attr needed for html
+    teams = request.app.state.registries.model.list_teams()
+    versions = get_model_versions(request.app.state.registries.model, model_name, model_team)
+    models = request.app.state.registries.model.list_card_names(team=model_team)
+
+    parser = AuditFormParser(
+        audit_form_dict=locals(),
+        registries=request.app.state.registries,
+    )
     audit_card = parser.parse_form()
 
-    return
+    print(audit_card.comments)
+
+    audit_report = {
+        "name": audit_card.name,
+        "team": audit_card.team,
+        "user_email": audit_card.user_email,
+        "version": audit_card.version,
+        "uid": audit_card.uid,
+        "status": audit_card.approved,
+        "audit": audit_card.audit.model_dump(),
+        "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+        "comments": audit_card.comments,
+    }
+
+    return templates.TemplateResponse(
+        "audit.html",
+        {
+            "request": request,
+            "teams": teams,
+            "selected_team": team,
+            "models": models,
+            "selected_model": model_name,
+            "versions": versions,
+            "version": model_version,
+            "audit_report": audit_report,
+        },
+    )

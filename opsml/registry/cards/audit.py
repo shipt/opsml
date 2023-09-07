@@ -15,7 +15,7 @@ from rich.table import Table
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, CardVersion
+from opsml.registry.cards.types import CardType, CardVersion, Comment
 from opsml.registry.sql.records import AuditRegistryRecord, RegistryRecord
 
 
@@ -118,6 +118,19 @@ class AuditCard(ArtifactCard):
     runcards: List[CardVersion] = []
     attached_cards: List[CardVersion] = []
     approved: bool = False
+    comments: List[Comment] = []
+
+    def add_comment(self, name: str, comment: str) -> None:
+        """Adds comment to AuditCard
+
+        Args:
+            name:
+                Name of person making comment
+            comment:
+                Comment to add
+
+        """
+        self.comments.append(Comment(name=name, comment=comment))
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a audit"""

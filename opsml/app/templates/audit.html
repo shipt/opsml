@@ -77,14 +77,22 @@
 
   </div>
 
+
+
   {% if audit_report is not none %}
 
 <br>
 <br>
 <div class="container" id="PageHeader">
     <div class="page-header">
-      <h2>AuditCard for {{selected_model}}:{{version}}</h2>
-      <hr>
+      <div style="clear: both">
+        <h2  style="display: inline-block">AuditCard for {{selected_model}}:{{version}}</h2>
+
+        {% if audit_report["timestamp"] is not none %}
+          <h5  style="display: inline-block; float:right;">Updated at: {{audit_report["timestamp"]}}</h5>
+        {% endif %}
+      </div>
+    <hr>
 
       {% if audit_report["status"] == true %}
 
@@ -97,13 +105,16 @@
       {% endif %}
  
     </div>
+
+
 </div>
+
 <br>
 
   <form action="/opsml/audit/save" method="POST" id="AuditForm" name="AuditForm">
     <div class="form-group row">
       <div class="col">
-        <label for="InputName">Name</label>
+        <label for="InputName">Audit Name</label>
         <input name="name" type="text" class="form-control" id="InputName" placeholder="Name" {% if audit_report["name"] is not none %} value={{audit_report["name"]}} {% endif %} required>
       </div>
       <div class="col">
@@ -114,10 +125,10 @@
         <label for="InputEmail">User Email</label>
         <input name="email" type="text" class="form-control" id="InputEmail" placeholder="Email" {% if audit_report["user_email"] is not none %} value={{audit_report["user_email"]}} {% endif %} required>
       </div>
-      <div class="col">
-        <label for="InputUid">UID</label>
-          <input name="uid" type="text" class="form-control" id="InputUid" placeholder="Uid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
-      </div>
+          <input name="selected_model_name" type="hidden" class="form-control" id="InputModelName" value={{selected_model}}>
+          <input name="selected_model_team" type="hidden" class="form-control" id="InputModelTeam" value={{selected_team}}>
+          <input name="selected_model_version" type="hidden" class="form-control" id="InputModelVersion" value={{version}}>
+          <input name="uid" type="hidden" class="form-control" id="InputUid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
     </div>
     <br>
 
@@ -135,20 +146,55 @@
 
 
     <br>
-    <button type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Save AuditCard</button>
+      <button id="AuditSubmit" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Save AuditCard</button>
+
   </form>
 
+  <div class="container">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-0 border" style="background-color: #f0f2f5;">
+        <div class="comment-block">
+          <h4 class="comments-title">Comments</h4>
+  
+          <form class="form-block">
+            <div class="row">
+              <div class="col-md-8 col-lg-6">
+                <div class="form-group fl_icon">
+                  <div class="icon"><i class="fa fa-user"></i></div>
+                  <input class="form-input" type="text" placeholder="Your name">
+                </div>
+              </div>
+              <div class="col-md-8">									
+                <div class="form-group">
+                  <textarea class="form-input" required="" placeholder="Your text"></textarea>
+                </div>
+              </div>
+              <a class="btn btn-primary pull-right">submit</a>
+            </div>
+          </form>
+  
+          {% if audit_report["comments"]|length > 0 %}
+            {% for comment in audit_report["comments"] %}
+              {% with comment = comment %}
+              {% include "include/audit/comment_card.html" %}
+              {% endwith %}
+            {% endfor %}
+          {% endif %}
+    
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
   {% endif %}
 
 
+
 </div>
 
 
-
-
-<div class="spacer" id="container-spacer" style="padding-bottom: 30px;">
-</div>
 </body>
 
 {% endblock %}
