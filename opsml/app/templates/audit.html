@@ -81,8 +81,26 @@
 
   {% if audit_report is not none %}
 
+
+
 <br>
 <br>
+
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Enable body scrolling</button>
+
+<div class="offcanvas offcanvas-end" style="background-color:#f0f2f5;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasRightLabel">Comments</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    {% with audit_report =  audit_report %}
+    {% include "include/audit/comment_card.html" %}
+    {% endwith %}
+  </div>
+</div>
+
+
 <div class="container" id="PageHeader">
     <div class="page-header">
       <div style="clear: both">
@@ -150,43 +168,7 @@
 
   </form>
 
-  <div class="container">
-    <div class="col-md-8 col-lg-6">
-      <div class="card shadow-0 border" style="background-color: #f0f2f5;">
-        <div class="comment-block">
-          <h4 class="comments-title">Comments</h4>
-  
-          <form class="form-block">
-            <div class="row">
-              <div class="col-md-8 col-lg-6">
-                <div class="form-group fl_icon">
-                  <div class="icon"><i class="fa fa-user"></i></div>
-                  <input class="form-input" type="text" placeholder="Your name">
-                </div>
-              </div>
-              <div class="col-md-8">									
-                <div class="form-group">
-                  <textarea class="form-input" required="" placeholder="Your text"></textarea>
-                </div>
-              </div>
-              <a class="btn btn-primary pull-right">submit</a>
-            </div>
-          </form>
-  
-          {% if audit_report["comments"]|length > 0 %}
-            {% for comment in audit_report["comments"] %}
-              {% with comment = comment %}
-              {% include "include/audit/comment_card.html" %}
-              {% endwith %}
-            {% endfor %}
-          {% endif %}
-    
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
+
 
   {% endif %}
 
