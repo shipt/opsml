@@ -5,14 +5,17 @@
 # LICENSE file in the root directory of this source tree.
 import os
 import re
-from typing import Dict, Optional
+import csv
+import tempfile
+from typing import Dict, Optional, List, Union, Tuple
 import datetime
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi.responses import FileResponse
+from fastapi import APIRouter, Request, Depends, UploadFile, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
 from opsml.app.routes.utils import error_to_500, get_names_teams_versions
-from opsml.app.routes.pydantic_models import CommentSaveRequest
+from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormRequest
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistries, AuditCard
 from opsml.registry.cards.audit import AuditSections
@@ -24,7 +27,7 @@ logger = ArtifactLogger.get_logger(__name__)
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
-
+AUDIT_FILE = "audit_file.csv"
 
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
@@ -121,7 +124,7 @@ async def audit_list_homepage(
                 "team": None,
                 "user_email": None,
                 "version": None,
-                "uid": "",
+                "uid": None,
                 "status": False,
                 "audit": AuditSections().model_dump(),
                 "timestamp": None,
@@ -269,106 +272,20 @@ class AuditFormParser:
 
 @router.post("/audit/save")
 @error_to_500
-async def save_audit_form(
-    request: Request,
-    name: str = Form(...),
-    email: str = Form(...),
-    team: str = Form(...),
-    uid: Optional[str] = Form(None),
-    selected_model_name: str = Form(...),
-    selected_model_team: str = Form(...),
-    selected_model_version: str = Form(...),
-    business_understanding_1: Optional[str] = Form(None),
-    business_understanding_2: Optional[str] = Form(None),
-    business_understanding_3: Optional[str] = Form(None),
-    business_understanding_4: Optional[str] = Form(None),
-    business_understanding_5: Optional[str] = Form(None),
-    business_understanding_6: Optional[str] = Form(None),
-    business_understanding_7: Optional[str] = Form(None),
-    business_understanding_8: Optional[str] = Form(None),
-    business_understanding_9: Optional[str] = Form(None),
-    business_understanding_10: Optional[str] = Form(None),
-    data_understanding_1: Optional[str] = Form(None),
-    data_understanding_2: Optional[str] = Form(None),
-    data_understanding_3: Optional[str] = Form(None),
-    data_understanding_4: Optional[str] = Form(None),
-    data_understanding_5: Optional[str] = Form(None),
-    data_understanding_6: Optional[str] = Form(None),
-    data_understanding_7: Optional[str] = Form(None),
-    data_understanding_8: Optional[str] = Form(None),
-    data_understanding_9: Optional[str] = Form(None),
-    data_preparation_1: Optional[str] = Form(None),
-    data_preparation_2: Optional[str] = Form(None),
-    data_preparation_3: Optional[str] = Form(None),
-    data_preparation_4: Optional[str] = Form(None),
-    data_preparation_5: Optional[str] = Form(None),
-    data_preparation_6: Optional[str] = Form(None),
-    data_preparation_7: Optional[str] = Form(None),
-    data_preparation_8: Optional[str] = Form(None),
-    data_preparation_9: Optional[str] = Form(None),
-    data_preparation_10: Optional[str] = Form(None),
-    modeling_1: Optional[str] = Form(None),
-    modeling_2: Optional[str] = Form(None),
-    modeling_3: Optional[str] = Form(None),
-    modeling_4: Optional[str] = Form(None),
-    modeling_5: Optional[str] = Form(None),
-    modeling_6: Optional[str] = Form(None),
-    modeling_7: Optional[str] = Form(None),
-    modeling_8: Optional[str] = Form(None),
-    modeling_9: Optional[str] = Form(None),
-    modeling_10: Optional[str] = Form(None),
-    modeling_11: Optional[str] = Form(None),
-    modeling_12: Optional[str] = Form(None),
-    evaluation_1: Optional[str] = Form(None),
-    evaluation_2: Optional[str] = Form(None),
-    evaluation_3: Optional[str] = Form(None),
-    evaluation_4: Optional[str] = Form(None),
-    evaluation_5: Optional[str] = Form(None),
-    deployment_ops_1: Optional[str] = Form(None),
-    deployment_ops_2: Optional[str] = Form(None),
-    deployment_ops_3: Optional[str] = Form(None),
-    deployment_ops_4: Optional[str] = Form(None),
-    deployment_ops_5: Optional[str] = Form(None),
-    deployment_ops_6: Optional[str] = Form(None),
-    deployment_ops_7: Optional[str] = Form(None),
-    deployment_ops_8: Optional[str] = Form(None),
-    deployment_ops_9: Optional[str] = Form(None),
-    deployment_ops_10: Optional[str] = Form(None),
-    deployment_ops_11: Optional[str] = Form(None),
-    deployment_ops_12: Optional[str] = Form(None),
-    deployment_ops_13: Optional[str] = Form(None),
-    deployment_ops_14: Optional[str] = Form(None),
-    deployment_ops_15: Optional[str] = Form(None),
-    deployment_ops_16: Optional[str] = Form(None),
-    deployment_ops_17: Optional[str] = Form(None),
-    deployment_ops_18: Optional[str] = Form(None),
-    deployment_ops_19: Optional[str] = Form(None),
-    deployment_ops_20: Optional[str] = Form(None),
-    deployment_ops_21: Optional[str] = Form(None),
-    deployment_ops_22: Optional[str] = Form(None),
-    misc_1: Optional[str] = Form(None),
-    misc_2: Optional[str] = Form(None),
-    misc_3: Optional[str] = Form(None),
-    misc_4: Optional[str] = Form(None),
-    misc_5: Optional[str] = Form(None),
-    misc_6: Optional[str] = Form(None),
-    misc_7: Optional[str] = Form(None),
-    misc_8: Optional[str] = Form(None),
-    misc_9: Optional[str] = Form(None),
-    misc_10: Optional[str] = Form(None),
-    audit_card: Optional[AuditCard] = None,
-):
+async def save_audit_form(request: Request, form: AuditFormRequest = Depends(AuditFormRequest)):
     # collect all function arguments into a dictionary
+
+    print(form.audit_file)
 
     # base attr needed for html
     model_names, teams, versions = get_names_teams_versions(
         registry=request.app.state.registries.model,
-        name=selected_model_name,
-        team=selected_model_team,
+        name=form.selected_model_name,
+        team=form.selected_model_team,
     )
 
     parser = AuditFormParser(
-        audit_form_dict=locals(),
+        audit_form_dict=form.model_dump(),
         registries=request.app.state.registries,
     )
     audit_card = parser.parse_form()
@@ -390,17 +307,17 @@ async def save_audit_form(
         {
             "request": request,
             "teams": teams,
-            "selected_team": selected_model_team,
+            "selected_team": form.selected_model_team,
             "models": model_names,
-            "selected_model": selected_model_name,
+            "selected_model": form.selected_model_name,
             "versions": versions,
-            "version": selected_model_version,
+            "version": form.selected_model_version,
             "audit_report": audit_report,
         },
     )
 
 
-@router.post("/audit/comment/save", response_model=CommentSaveRequest)
+@router.post("/audit/comment/save")
 @error_to_500
 async def save_audit_comment(request: Request, comment: CommentSaveRequest = Depends(CommentSaveRequest)):
     """Save comment to AuditCard
@@ -411,10 +328,8 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
         comment:
             `CommentSaveRequest`
     """
-    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
 
-    print("before")
-    print(audit_card.comments)
+    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
 
     # most recent first
     audit_card.add_comment(
@@ -427,10 +342,8 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
         name=comment.selected_model_name,
         team=comment.selected_model_team,
     )
-    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
 
-    print("after update")
-    print(audit_card.comments)
+    request.app.state.registries.audit.update_card(card=audit_card)
 
     audit_report = {
         "name": audit_card.name,
@@ -457,3 +370,86 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
             "audit_report": audit_report,
         },
     )
+
+
+@router.post("/audit/upload")
+@error_to_500
+async def upload_audit_data(request: Request, file_upload: UploadFile, audit_uid: Optional[str] = None):
+    """Uploads audit data form file. If an audit_uid is provided, only the audit section will be updated."""
+    data = await file_upload.read()
+
+    print(data)
+
+
+def remove_file(path: str) -> None:
+    """Removes file from disk"""
+    os.unlink(path)
+
+
+def write_audit_to_csv(
+    audit_records: List[Dict[str, Optional[Union[str, int]]]],
+    field_names: List[str],
+) -> Tuple[FileResponse, str]:
+    """Writes audit data to csv and returns FileResponse
+
+    Args:
+        audit_records:
+            List of audit records
+        field_names:
+            List of field names for csv header
+
+    Returns:
+        FileResponse
+    """
+    csv_file, path = tempfile.mkstemp(suffix=".csv")
+    with open(suffix=csv_file, mode="w") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=field_names)
+        writer.writeheader()
+        writer.writerows(audit_records)
+    response = FileResponse(AUDIT_FILE, media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=audit_file.csv"
+
+    return response, path
+
+
+@router.post("/audit/download", response_class=FileResponse)
+@error_to_500
+async def download_audit_data(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    form: AuditFormRequest = Depends(AuditFormRequest),
+):
+    """Downloads Audit Form data to csv"""
+
+    field_names = ["topic", "number", "question", "purpose", "response"]
+
+    parser = AuditFormParser(
+        audit_form_dict=form.model_dump(),
+        registries=request.app.state.registries,
+    )
+    audit_card = parser.parse_form()
+
+    # unnest audit section into list of dicts and save to csv
+    audit_section = audit_card.audit.model_dump()
+    audit_records = []
+
+    for section, questions in audit_section.items():
+        for question_nbr, question in questions.items():
+            audit_records.append(
+                {
+                    "topic": section,
+                    "number": question_nbr,
+                    "question": question["question"],
+                    "purpose": question["purpose"],
+                    "response": question["response"],
+                }
+            )
+
+    response, path = write_audit_to_csv(
+        audit_records=audit_records,
+        field_names=field_names,
+    )
+
+    background_tasks.add_task(remove_file, path)
+
+    return response

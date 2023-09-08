@@ -46,6 +46,8 @@ body {
     box-shadow: 0px 10px 20px rgba(150, 79, 201, 0.469);
 }
 
+
+
 #opsml-card {
   background-color: #241239;
   display: flex;
@@ -379,5 +381,3 @@ p {
 .accordion-button.collapsed {
   box-shadow: none;
 }
-  
- 

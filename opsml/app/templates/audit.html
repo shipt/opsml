@@ -79,26 +79,13 @@
 
 
 
-  {% if audit_report is not none %}
-
-
+{% if audit_report is not none %}
 
 <br>
 <br>
 
-<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Enable body scrolling</button>
+<!-- Dont want to show comments unless card already exists -->
 
-<div class="offcanvas offcanvas-end" style="background-color:#f0f2f5;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasRightLabel">Comments</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    {% with audit_report =  audit_report %}
-    {% include "include/audit/comment_card.html" %}
-    {% endwith %}
-  </div>
-</div>
 
 
 <div class="container" id="PageHeader">
@@ -112,6 +99,28 @@
       </div>
     <hr>
 
+      <div class="dropdown" id="MetadataTeamSelect">
+        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style="background:#038767; color:#fffefe; border:none; display: inline-block; float:right;">Comments</button>
+        <div class="offcanvas offcanvas-end" style="background-color:#f0f2f5;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Comments</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+
+          {% if audit_report["uid"] is not none %}
+            <div class="offcanvas-body">
+              {% with audit_report =  audit_report %}
+              {% include "include/audit/comment_card.html" %}
+              {% endwith %}
+            </div>
+          {% else %}
+
+            <div class="offcanvas-body">
+              <h5>Save AuditForm to enable comments</h5>
+            </div>
+          {% endif %}
+      </div>
+
       {% if audit_report["status"] == true %}
 
       <h3>Status: <font color="green">Approved</font></h3>
@@ -121,11 +130,23 @@
       <h3>Status: <font color="red">Not Approved</font></h3>
 
       {% endif %}
- 
     </div>
-
-
 </div>
+
+<br>
+
+<form action="/opsml/audit/upload" method="POST" id="AuditUpload" name="AuditUpload" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="btn btn-primary" style="background:gray; color:#fffefe; border:none">
+      <input name="file_upload" id="file_upload" type="file" style="display:none" 
+      onchange="$('#upload-file-info').text(this.files[0].name)">
+      Choose Audit File
+    </label>
+    <span class='label label-info' id="upload-file-info"></span>
+    <button id="AuditUpload" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Upload</button>
+    <input name="uid" type="hidden" class="form-control" id="InputUid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
+  </div>
+</form>
 
 <br>
 
@@ -143,18 +164,22 @@
         <label for="InputEmail">User Email</label>
         <input name="email" type="text" class="form-control" id="InputEmail" placeholder="Email" {% if audit_report["user_email"] is not none %} value={{audit_report["user_email"]}} {% endif %} required>
       </div>
+    </div>
+    <br>
+
+    <div class="form-group row">
+
+
+
           <input name="selected_model_name" type="hidden" class="form-control" id="InputModelName" value={{selected_model}}>
           <input name="selected_model_team" type="hidden" class="form-control" id="InputModelTeam" value={{selected_team}}>
           <input name="selected_model_version" type="hidden" class="form-control" id="InputModelVersion" value={{version}}>
           <input name="uid" type="hidden" class="form-control" id="InputUid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
     </div>
-    <br>
 
     
     <div class="accordion accordion-flush" id="AuditAccordion">
     {% for section, section_data in audit_report["audit"].items() %}
-
-
         {% with section=section, section_data=section_data %}
         {% include "include/audit/audit_section.html" %}
         {% endwith %}
@@ -165,8 +190,11 @@
 
     <br>
       <button id="AuditSubmit" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Save AuditCard</button>
+      <button id="DownloadAudit" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none; float:right;" formaction="/opsml/audit/download">Download Audit</button>
+
 
   </form>
+
 
 
 
@@ -176,6 +204,7 @@
 
 </div>
 
+<br>
 
 </body>
 

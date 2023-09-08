@@ -51,6 +51,9 @@ class Comment(BaseModel):
     comment: str
     timestamp: str = str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 @dataclass
 class StoragePath:

@@ -6,10 +6,12 @@
             <label for="CommentName">Name</label>
             <input name="comment_name" type="text" class="form-control" id="CommentName" placeholder="Enter name">
           </div>
-
+          <br>
           <div class="form-group">
-            <label for="CommenText">Name</label>
-            <input name="comment_text" type="text" class="form-control" id="CommentText" placeholder="Enter message">
+            <div class="form-group row">
+              <label>Message</label>
+            </div>
+            <textarea form="CommentForm" id="CommentText" name="comment_text" style="width:100%;"></textarea>
           </div>
           <br>
             <div class="vertical-center" style="text-align:center">
@@ -30,12 +32,14 @@
         <div class="overflow-auto">
           {% if audit_report["comments"]|length > 0 %}
             {% for comment in audit_report["comments"] %}
-                <div class="card" id="comment-card">
-                  <div class="card-body">
+                <div class="card mt-1" id="comment-card" style="margin-left:.25;">
+                  <div class="card-header" style="background-color:rgba(26, 255, 163, 0.24);">
                     <a>{{comment["name"]}}</a>
-                    <i class="fa fa-clock-o"></i>
+                    <i class="bi bi-clock"></i>
                     {{comment["timestamp"]}}
-                    <p class="be-comment-text">
+                  </div>
+                  <div class="card-body">
+                    <p class="comment-text" style="color:black;">
                       {{comment["comment"]}}
                     </p>
                   </div>

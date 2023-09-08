@@ -130,7 +130,12 @@ class AuditCard(ArtifactCard):
                 Comment to add
 
         """
-        self.comments.insert(0, Comment(name=name, comment=comment))
+        comment = Comment(name=name, comment=comment)
+
+        if any(comment == _comment for _comment in self.comments):
+            return  # Exit early if comment already exists
+
+        self.comments.insert(0, comment)
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a audit"""
