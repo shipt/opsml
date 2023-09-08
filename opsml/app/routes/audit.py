@@ -371,7 +371,7 @@ async def save_audit_form(
         audit_form_dict=locals(),
         registries=request.app.state.registries,
     )
-    audit_card = parser.parse_form(audit_card)
+    audit_card = parser.parse_form()
 
     audit_report = {
         "name": audit_card.name,

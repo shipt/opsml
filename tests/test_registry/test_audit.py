@@ -26,6 +26,10 @@ def test_audit_card(
 
     audit_registry.register_card(card=card)
 
+    # test loading card
+    card = audit_registry.load_card(uid=card.uid)
+    assert card.business[1].response == "response"
+
 
 def test_audit_card_failure():
     card = AuditCard(name="audit_card", team="team", user_email="test")

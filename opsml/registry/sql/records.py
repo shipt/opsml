@@ -8,7 +8,6 @@ from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
 from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris, CardVersion, Comment
-from opsml.registry.cards.audit import AuditSections
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
@@ -276,7 +275,7 @@ class LoadedAuditRecord(LoadRecord):
     datacards: List[CardVersion]
     modelcards: List[CardVersion]
     runcards: List[CardVersion]
-    audit: AuditSections
+    audit: Dict[str, Dict[int, Dict[str, Optional[str]]]]
     comments: List[Comment]
 
     @model_validator(mode="before")

@@ -24,7 +24,7 @@
                 <label>Response</label>
               </div>
               
-              <textarea form="AuditForm" id="{{section}}_{{num}}" name="{{section}}_{{num}}" rows="5" style="width:100%;">{% if question["response"] is not none %} {{question["response"]}} {% endif %}</textarea>
+              <textarea form="AuditForm" id="{{section}}_{{num}}" name="{{section}}_{{num}}" rows="5" style="width:100%;">{%-  if question["response"] is not none %} {{question["response"]}} {% endif %}</textarea>
               <hr>
 
             {% endfor %}
