@@ -394,7 +394,7 @@ class AuditCardArtifactSaver(CardArtifactSaver):
         )
 
         storage_path = save_record_artifact_to_storage(
-            artifact=self.card.audit.model_dump(),
+            artifact=self.card.model_dump(),
             storage_client=self.storage_client,
         )
 

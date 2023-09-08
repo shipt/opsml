@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Optional, Union, cast
 from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
-from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris, CardVersion
+from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris, CardVersion, Comment
+from opsml.registry.cards.audit import AuditSections
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
@@ -275,17 +276,20 @@ class LoadedAuditRecord(LoadRecord):
     datacards: List[CardVersion]
     modelcards: List[CardVersion]
     runcards: List[CardVersion]
+    audit: AuditSections
+    comments: List[Comment]
 
     @model_validator(mode="before")
     def load_audit_attr(cls, values) -> Dict[str, Any]:
         storage_client = cast(StorageClientType, values["storage_client"])
 
-        values["audit"] = cls._load_audit(
+        audit = cls._load_audit(
             audit_uri=values.get("audit_uri"),
             storage_client=storage_client,
         )
+        audit["audit_uri"] = values.get("audit_uri")
 
-        return values
+        return audit
 
     @classmethod
     def _load_audit(

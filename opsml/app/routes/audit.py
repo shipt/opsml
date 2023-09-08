@@ -402,7 +402,7 @@ async def save_audit_form(
 
 @router.post("/audit/comment/save", response_model=CommentSaveRequest)
 @error_to_500
-def save_audit_comment(request: Request, comment: CommentSaveRequest = Depends(CommentSaveRequest)):
+async def save_audit_comment(request: Request, comment: CommentSaveRequest = Depends(CommentSaveRequest)):
     """Save comment to AuditCard
 
     Args:
@@ -413,18 +413,24 @@ def save_audit_comment(request: Request, comment: CommentSaveRequest = Depends(C
     """
     audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
 
+    print("before")
+    print(audit_card.comments)
+
     # most recent first
-    audit_card.comments.insert(
-        0,
-        Comment(name=comment.comment_name, comment=comment.comment_text),
+    audit_card.add_comment(
+        name=comment.comment_name,
+        comment=comment.comment_text,
     )
-    request.app.state.registries.audit.update_card(card=audit_card)
 
     model_names, teams, versions = get_names_teams_versions(
         registry=request.app.state.registries.model,
         name=comment.selected_model_name,
         team=comment.selected_model_team,
     )
+    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
+
+    print("after update")
+    print(audit_card.comments)
 
     audit_report = {
         "name": audit_card.name,
