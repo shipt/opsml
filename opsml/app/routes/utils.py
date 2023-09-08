@@ -1,7 +1,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, Optional, Union, List, Tuple
 import os
 from functools import wraps
 from streaming_form_data.targets import FileTarget
@@ -18,6 +18,26 @@ TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
 
 
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
+
+
+def get_names_teams_versions(registry: CardRegistry, team: str, name: str) -> Tuple[List[str], List[str], List[str]]:
+    """Helper functions to get the names, teams, and versions for a given registry
+
+    Args:
+        registry:
+            The registry to query
+        team:
+            The team to query
+        name:
+            The name to query
+    Returns:
+        A tuple of names, teams, and versions
+    """
+
+    teams = registry.list_teams()
+    versions = get_model_versions(registry, name, team)
+    names = registry.list_card_names(team=team)
+    return names, teams, versions
 
 
 def get_runcard_from_model(

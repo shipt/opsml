@@ -2,7 +2,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, List, Optional, Union
-
+from fastapi import Form
 from pydantic import BaseModel, Field
 
 from opsml.model.challenger import BattleReport
@@ -190,86 +190,21 @@ class CompareMetricResponse(BaseModel):
     report: Dict[str, List[BattleReport]]
 
 
-class AuditSaveRequest(BaseModel):
+def form_body(cls):
+    cls.__signature__ = cls.__signature__.replace(
+        parameters=[arg.replace(default=Form(...)) for arg in cls.__signature__.parameters.values()]
+    )
+    return cls
+
+
+@form_body
+class CommentSaveRequest(BaseModel):
     uid: str
     name: str
     email: str
     team: str
-    business_understanding_1: Optional[str] = None
-    business_understanding_2: Optional[str] = None
-    business_understanding_3: Optional[str] = None
-    business_understanding_4: Optional[str] = None
-    business_understanding_5: Optional[str] = None
-    business_understanding_6: Optional[str] = None
-    business_understanding_7: Optional[str] = None
-    business_understanding_8: Optional[str] = None
-    business_understanding_9: Optional[str] = None
-    business_understanding_10: Optional[str] = None
-    data_understanding_1: Optional[str] = None
-    data_understanding_2: Optional[str] = None
-    data_understanding_3: Optional[str] = None
-    data_understanding_4: Optional[str] = None
-    data_understanding_5: Optional[str] = None
-    data_understanding_6: Optional[str] = None
-    data_understanding_7: Optional[str] = None
-    data_understanding_8: Optional[str] = None
-    data_understanding_9: Optional[str] = None
-    data_preparation_1: Optional[str] = None
-    data_preparation_2: Optional[str] = None
-    data_preparation_3: Optional[str] = None
-    data_preparation_4: Optional[str] = None
-    data_preparation_5: Optional[str] = None
-    data_preparation_6: Optional[str] = None
-    data_preparation_7: Optional[str] = None
-    data_preparation_8: Optional[str] = None
-    data_preparation_9: Optional[str] = None
-    data_preparation_10: Optional[str] = None
-    modeling_1: Optional[str] = None
-    modeling_2: Optional[str] = None
-    modeling_3: Optional[str] = None
-    modeling_4: Optional[str] = None
-    modeling_5: Optional[str] = None
-    modeling_6: Optional[str] = None
-    modeling_7: Optional[str] = None
-    modeling_8: Optional[str] = None
-    modeling_9: Optional[str] = None
-    modeling_10: Optional[str] = None
-    modeling_11: Optional[str] = None
-    modeling_12: Optional[str] = None
-    evaluation_1: Optional[str] = None
-    evaluation_2: Optional[str] = None
-    evaluation_3: Optional[str] = None
-    evaluation_4: Optional[str] = None
-    evaluation_5: Optional[str] = None
-    deployment_ops_1: Optional[str] = None
-    deployment_ops_2: Optional[str] = None
-    deployment_ops_3: Optional[str] = None
-    deployment_ops_4: Optional[str] = None
-    deployment_ops_5: Optional[str] = None
-    deployment_ops_6: Optional[str] = None
-    deployment_ops_7: Optional[str] = None
-    deployment_ops_8: Optional[str] = None
-    deployment_ops_9: Optional[str] = None
-    deployment_ops_10: Optional[str] = None
-    deployment_ops_11: Optional[str] = None
-    deployment_ops_12: Optional[str] = None
-    deployment_ops_13: Optional[str] = None
-    deployment_ops_14: Optional[str] = None
-    deployment_ops_15: Optional[str] = None
-    deployment_ops_16: Optional[str] = None
-    deployment_ops_17: Optional[str] = None
-    deployment_ops_18: Optional[str] = None
-    deployment_ops_19: Optional[str] = None
-    deployment_ops_20: Optional[str] = None
-    deployment_ops_21: Optional[str] = None
-    deployment_ops_22: Optional[str] = None
-    misc_1: Optional[str] = None
-    misc_2: Optional[str] = None
-    misc_3: Optional[str] = None
-    misc_4: Optional[str] = None
-    misc_5: Optional[str] = None
-    misc_6: Optional[str] = None
-    misc_7: Optional[str] = None
-    misc_8: Optional[str] = None
-    misc_9: Optional[str] = None
-    misc_10: Optional[str] = None
+    selected_model_name: str
+    selected_model_team: str
+    selected_model_version: str
+    comment_name: str
+    comment_text: str

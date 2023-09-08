@@ -5,25 +5,18 @@
 # LICENSE file in the root directory of this source tree.
 import os
 import re
-from typing import Any, Dict, List, Optional, Union
-from typing import Annotated
+from typing import Dict, Optional
 import datetime
-from fastapi import APIRouter, Body, HTTPException, Request, status, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
-from opsml.app.routes.utils import error_to_500, get_runcard_from_model, list_team_name_info, get_model_versions
-from opsml.app.routes.pydantic_models import AuditSaveRequest
+from opsml.app.routes.utils import error_to_500, get_names_teams_versions
+from opsml.app.routes.pydantic_models import CommentSaveRequest
 from opsml.helpers.logging import ArtifactLogger
-from opsml.model.challenger import ModelChallenger
-from opsml.registry import CardInfo, CardRegistries, CardRegistry, ModelCard, RunCard, AuditCard
+from opsml.registry import CardRegistries, AuditCard
 from opsml.registry.cards.audit import AuditSections
-from opsml.registry.cards.model import ModelMetadata
-from opsml.registry.model.registrar import (
-    ModelRegistrar,
-    RegistrationError,
-    RegistrationRequest,
-)
+from opsml.registry.cards.types import Comment
 
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -56,13 +49,12 @@ async def audit_list_homepage(
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
     """
-    teams = request.app.state.registries.model.list_teams()
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
             "audit.html",
             {
                 "request": request,
-                "teams": teams,
+                "teams": request.app.state.registries.model.list_teams(),
                 "models": None,
                 "selected_team": None,
                 "selected_model": None,
@@ -72,14 +64,15 @@ async def audit_list_homepage(
         )
 
     elif team is not None and all(attr is None for attr in [version, model]):
-        models = request.app.state.registries.model.list_card_names(team=team)
+        teams = request.app.state.registries.model.list_teams()
+        model_names = request.app.state.registries.model.list_card_names(team=team)
         return templates.TemplateResponse(
             "audit.html",
             {
                 "request": request,
                 "teams": teams,
                 "selected_team": team,
-                "models": models,
+                "models": model_names,
                 "versions": None,
                 "selected_model": None,
                 "version": None,
@@ -88,8 +81,11 @@ async def audit_list_homepage(
         )
 
     elif team is not None and model is not None and version is None:
-        versions = get_model_versions(request.app.state.registries.model, model, team)
-        models = request.app.state.registries.model.list_card_names(team=team)
+        model_names, teams, versions = get_names_teams_versions(
+            registry=request.app.state.registries.model,
+            name=model,
+            team=team,
+        )
 
         return templates.TemplateResponse(
             "audit.html",
@@ -97,7 +93,7 @@ async def audit_list_homepage(
                 "request": request,
                 "teams": teams,
                 "selected_team": team,
-                "models": models,
+                "models": model_names,
                 "selected_model": model,
                 "versions": versions,
                 "version": None,
@@ -106,8 +102,11 @@ async def audit_list_homepage(
         )
 
     elif all(attr is not None for attr in [version, model, team]) or uid is not None:
-        versions = get_model_versions(request.app.state.registries.model, model, team)
-        models = request.app.state.registries.model.list_card_names(team=team)
+        model_names, teams, versions = get_names_teams_versions(
+            registry=request.app.state.registries.model,
+            name=model,
+            team=team,
+        )
         model_record = request.app.state.registries.model.list_cards(
             name=model,
             version=version,
@@ -149,7 +148,7 @@ async def audit_list_homepage(
                 "request": request,
                 "teams": teams,
                 "selected_team": team,
-                "models": models,
+                "models": model_names,
                 "selected_model": model,
                 "versions": versions,
                 "version": version,
@@ -260,6 +259,7 @@ class AuditFormParser:
 
     def parse_form(self) -> AuditCard:
         """Parses form data into AuditCard"""
+
         audit_card = self.get_audit_card()
         audit_card = self.parse_form_sections(audit_card=audit_card)
         self.register_update_audit_card(audit_card=audit_card)
@@ -269,7 +269,7 @@ class AuditFormParser:
 
 @router.post("/audit/save")
 @error_to_500
-async def audit_list_homepage(
+async def save_audit_form(
     request: Request,
     name: str = Form(...),
     email: str = Form(...),
@@ -356,25 +356,22 @@ async def audit_list_homepage(
     misc_8: Optional[str] = Form(None),
     misc_9: Optional[str] = Form(None),
     misc_10: Optional[str] = Form(None),
+    audit_card: Optional[AuditCard] = None,
 ):
     # collect all function arguments into a dictionary
 
-    model_name = selected_model_name
-    model_team = selected_model_team
-    model_version = selected_model_version
-
     # base attr needed for html
-    teams = request.app.state.registries.model.list_teams()
-    versions = get_model_versions(request.app.state.registries.model, model_name, model_team)
-    models = request.app.state.registries.model.list_card_names(team=model_team)
+    model_names, teams, versions = get_names_teams_versions(
+        registry=request.app.state.registries.model,
+        name=selected_model_name,
+        team=selected_model_team,
+    )
 
     parser = AuditFormParser(
         audit_form_dict=locals(),
         registries=request.app.state.registries,
     )
-    audit_card = parser.parse_form()
-
-    print(audit_card.comments)
+    audit_card = parser.parse_form(audit_card)
 
     audit_report = {
         "name": audit_card.name,
@@ -393,11 +390,64 @@ async def audit_list_homepage(
         {
             "request": request,
             "teams": teams,
-            "selected_team": team,
-            "models": models,
-            "selected_model": model_name,
+            "selected_team": selected_model_team,
+            "models": model_names,
+            "selected_model": selected_model_name,
             "versions": versions,
-            "version": model_version,
+            "version": selected_model_version,
+            "audit_report": audit_report,
+        },
+    )
+
+
+@router.post("/audit/comment/save", response_model=CommentSaveRequest)
+@error_to_500
+def save_audit_comment(request: Request, comment: CommentSaveRequest = Depends(CommentSaveRequest)):
+    """Save comment to AuditCard
+
+    Args:
+        request:
+            The incoming HTTP request.
+        comment:
+            `CommentSaveRequest`
+    """
+    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
+
+    # most recent first
+    audit_card.comments.insert(
+        0,
+        Comment(name=comment.comment_name, comment=comment.comment_text),
+    )
+    request.app.state.registries.audit.update_card(card=audit_card)
+
+    model_names, teams, versions = get_names_teams_versions(
+        registry=request.app.state.registries.model,
+        name=comment.selected_model_name,
+        team=comment.selected_model_team,
+    )
+
+    audit_report = {
+        "name": audit_card.name,
+        "team": audit_card.team,
+        "user_email": audit_card.user_email,
+        "version": audit_card.version,
+        "uid": audit_card.uid,
+        "status": audit_card.approved,
+        "audit": audit_card.audit.model_dump(),
+        "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+        "comments": audit_card.comments,
+    }
+
+    return templates.TemplateResponse(
+        "audit.html",
+        {
+            "request": request,
+            "teams": teams,
+            "selected_team": comment.selected_model_team,
+            "models": model_names,
+            "selected_model": comment.selected_model_name,
+            "versions": versions,
+            "version": comment.selected_model_version,
             "audit_report": audit_report,
         },
     )
