@@ -2,7 +2,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Dict, Optional, Union, Protocol
+from typing import Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ from opsml.helpers.utils import (
     validate_name_team_pattern,
 )
 
-from opsml.registry.cards.types import CardInfo, CardType
+from opsml.registry.cards.types import CardInfo
 from opsml.registry.sql.records import (
     RegistryRecord,
 )

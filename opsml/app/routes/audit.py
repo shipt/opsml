@@ -19,7 +19,6 @@ from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormReques
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistries, AuditCard
 from opsml.registry.cards.audit import AuditSections
-from opsml.registry.cards.types import Comment
 
 
 logger = ArtifactLogger.get_logger(__name__)

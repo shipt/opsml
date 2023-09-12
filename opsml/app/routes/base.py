@@ -8,8 +8,6 @@ from fastapi import APIRouter, Request
 
 from fastapi.responses import RedirectResponse
 from opsml.helpers.logging import ArtifactLogger
-from opsml.model.challenger import ModelChallenger
-from opsml.registry import CardInfo, CardRegistries, CardRegistry, ModelCard, RunCard
 
 
 logger = ArtifactLogger.get_logger(__name__)

@@ -35,10 +35,8 @@ body {
 #mlflow-card {
     display: flex;
     justify-content: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: -100px 0 0 -100px;
+    position: relative;
+
   }
 
 #mlflow-card:hover{
@@ -52,10 +50,7 @@ body {
   background-color: #241239;
   display: flex;
   justify-content: center;
-  position: absolute;
-  top: 70%;
-  left: 50%;
-  margin: -100px 0 0 -100px;
+  position: relative;
 }
 
 #opsml-card:hover{
@@ -85,6 +80,7 @@ body {
     background: #fafafa;
     background-image: url(/static/images/homepage_background.jpg);
     background-attachment:fixed;
+    background-size: cover;
     background-position: right center;
     background-repeat: no-repeat;
 }
@@ -137,6 +133,7 @@ p {
     width: 100%;
     position: fixed;
     z-index: 4;
+    
     
 }
 
