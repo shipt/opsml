@@ -87,7 +87,6 @@
 <!-- Dont want to show comments unless card already exists -->
 
 
-
 <div class="container" id="PageHeader">
     <div class="page-header">
       <div style="clear: both">
@@ -138,14 +137,27 @@
 <form action="/opsml/audit/upload" method="POST" id="AuditUpload" name="AuditUpload" enctype="multipart/form-data">
   <div class="mb-3">
     <label class="btn btn-primary" style="background:gray; color:#fffefe; border:none">
-      <input name="file_upload" id="file_upload" type="file" style="display:none" 
+      <input name="audit_file" id="audit_file" type="file" style="display:none" 
       onchange="$('#upload-file-info').text(this.files[0].name)">
       Choose Audit File
     </label>
-    <span class='label label-info' id="upload-file-info"></span>
-    <button id="AuditUpload" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Upload</button>
-    <input name="uid" type="hidden" class="form-control" id="InputUid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
+    <span class='label label-info' id="upload-file-info"></span>  
+    <div class="form-group row">
+      <!--Hidden fields-->
+      <input name="name" type="hidden" class="form-control" id="InputName" placeholder="Name" {% if audit_report["name"] is not none %} value={{audit_report["name"]}} {% endif %}>
+      <input name="team" type="hidden" class="form-control" id="InputTeam" placeholder="Team" {% if audit_report["team"] is not none %} value={{audit_report["team"]}} {% endif %}>
+      <input name="email" type="hidden" class="form-control" id="InputEmail" placeholder="Email" {% if audit_report["user_email"] is not none %} value={{audit_report["user_email"]}} {% endif %}>
+      <input name="uid" type="hidden" class="form-control" id="InputUid" {% if audit_report["uid"] is not none %} value={{audit_report["uid"]}} {% endif %}>
+      <input name="selected_model_name" type="hidden" class="form-control" id="InputModelName" value={{selected_model}}>
+      <input name="selected_model_team" type="hidden" class="form-control" id="InputModelTeam" value={{selected_team}}>
+      <input name="selected_model_version" type="hidden" class="form-control" id="InputModelVersion" value={{version}}>
+    </div>
   </div>
+  <button id="AuditUpload" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Upload</button>
+
+
+
+
 </form>
 
 <br>
@@ -168,9 +180,6 @@
     <br>
 
     <div class="form-group row">
-
-
-
           <input name="selected_model_name" type="hidden" class="form-control" id="InputModelName" value={{selected_model}}>
           <input name="selected_model_team" type="hidden" class="form-control" id="InputModelTeam" value={{selected_team}}>
           <input name="selected_model_version" type="hidden" class="form-control" id="InputModelVersion" value={{version}}>

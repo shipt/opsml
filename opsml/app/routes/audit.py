@@ -6,11 +6,12 @@
 import os
 import re
 import csv
+import codecs
 import tempfile
-from typing import Dict, Optional, List, Union, Tuple
+from typing import Dict, Optional, List, Union, Tuple, Any
 import datetime
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, Request, Depends, UploadFile, BackgroundTasks
+from fastapi import APIRouter, Request, Depends, UploadFile, BackgroundTasks, File, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from fastapi.responses import RedirectResponse
@@ -18,7 +19,7 @@ from opsml.app.routes.utils import error_to_500, get_names_teams_versions
 from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormRequest
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistries, AuditCard
-from opsml.registry.cards.audit import AuditSections
+from opsml.registry.cards.audit import AuditSections, Comment
 
 
 logger = ArtifactLogger.get_logger(__name__)
@@ -53,7 +54,7 @@ async def audit_list_homepage(
     """
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
-            "audit.html",
+            "include/audit/audit.html",
             {
                 "request": request,
                 "teams": request.app.state.registries.model.list_teams(),
@@ -69,7 +70,7 @@ async def audit_list_homepage(
         teams = request.app.state.registries.model.list_teams()
         model_names = request.app.state.registries.model.list_card_names(team=team)
         return templates.TemplateResponse(
-            "audit.html",
+            "include/audit/audit.html",
             {
                 "request": request,
                 "teams": teams,
@@ -90,7 +91,7 @@ async def audit_list_homepage(
         )
 
         return templates.TemplateResponse(
-            "audit.html",
+            "include/audit/audit.html",
             {
                 "request": request,
                 "teams": teams,
@@ -132,6 +133,7 @@ async def audit_list_homepage(
 
         else:
             audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=auditcard_uid)
+
             audit_report = {
                 "name": audit_card.name,
                 "team": audit_card.team,
@@ -145,7 +147,7 @@ async def audit_list_homepage(
             }
 
         return templates.TemplateResponse(
-            "audit.html",
+            "include/audit/audit.html",
             {
                 "request": request,
                 "teams": teams,
@@ -274,8 +276,6 @@ class AuditFormParser:
 async def save_audit_form(request: Request, form: AuditFormRequest = Depends(AuditFormRequest)):
     # collect all function arguments into a dictionary
 
-    print(form.audit_file)
-
     # base attr needed for html
     model_names, teams, versions = get_names_teams_versions(
         registry=request.app.state.registries.model,
@@ -302,7 +302,7 @@ async def save_audit_form(request: Request, form: AuditFormRequest = Depends(Aud
     }
 
     return templates.TemplateResponse(
-        "audit.html",
+        "include/audit/audit.html",
         {
             "request": request,
             "teams": teams,
@@ -357,7 +357,7 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
     }
 
     return templates.TemplateResponse(
-        "audit.html",
+        "include/audit/audit.html",
         {
             "request": request,
             "teams": teams,
@@ -373,11 +373,69 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
 
 @router.post("/audit/upload")
 @error_to_500
-async def upload_audit_data(request: Request, file_upload: UploadFile, audit_uid: Optional[str] = None):
+async def upload_audit_data(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    form: AuditFormRequest = Depends(AuditFormRequest),
+):
     """Uploads audit data form file. If an audit_uid is provided, only the audit section will be updated."""
-    data = await file_upload.read()
+    data = form.audit_file.file
+    csv_reader = csv.DictReader(codecs.iterdecode(data, "utf-8"))
+    background_tasks.add_task(data.close)
+    records = list(csv_reader)
+    audit_sections = AuditSections().model_dump()
 
-    print(data)
+    for record in records:
+        section = record["topic"]
+        number = int(record["number"])
+        audit_sections[section][number]["response"] = record["response"]
+
+    if form.uid is not None:
+        audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=form.uid)
+        audit_report = {
+            "name": audit_card.name,
+            "team": audit_card.team,
+            "user_email": audit_card.user_email,
+            "version": audit_card.version,
+            "uid": audit_card.uid,
+            "status": audit_card.approved,
+            "audit": audit_sections,  # using updated section
+            "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+            "comments": audit_card.comments,
+        }
+    else:
+        audit_report = {
+            "name": form.name,
+            "team": form.team,
+            "user_email": form.email,
+            "version": form.version,
+            "uid": form.uid,
+            "status": form.status,
+            "audit": audit_sections,
+            "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+            "comments": [],
+        }
+
+    # base attr needed for html
+    model_names, teams, versions = get_names_teams_versions(
+        registry=request.app.state.registries.model,
+        name=form.selected_model_name,
+        team=form.selected_model_team,
+    )
+
+    return templates.TemplateResponse(
+        "include/audit/audit.html",
+        {
+            "request": request,
+            "teams": teams,
+            "selected_team": form.selected_model_team,
+            "models": model_names,
+            "selected_model": form.selected_model_name,
+            "versions": versions,
+            "version": form.selected_model_version,
+            "audit_report": audit_report,
+        },
+    )
 
 
 def remove_file(path: str) -> None:

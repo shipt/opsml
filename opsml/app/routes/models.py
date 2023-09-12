@@ -64,7 +64,7 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
     info = list_team_name_info(registry, team)
 
     return templates.TemplateResponse(
-        "models.html",
+        "include/model/models.html",
         {
             "request": request,
             "all_teams": info.teams,
@@ -96,7 +96,7 @@ async def model_versions_page(request: Request, model: Optional[str] = None):
         project_num = None
 
     return templates.TemplateResponse(
-        "model_version.html",
+        "include/model/model_version.html",
         {
             "request": request,
             "versions": models,
@@ -118,7 +118,7 @@ async def list_model(
     teams = request.app.state.registries.model.list_teams()
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
-            "metadata.html",
+            "include/model/metadata.html",
             {
                 "request": request,
                 "teams": teams,
@@ -133,7 +133,7 @@ async def list_model(
     elif team is not None and all(attr is None for attr in [version, model]):
         models = request.app.state.registries.model.list_card_names(team=team)
         return templates.TemplateResponse(
-            "metadata.html",
+            "include/model/metadata.html",
             {
                 "request": request,
                 "teams": teams,
@@ -150,7 +150,7 @@ async def list_model(
         models = request.app.state.registries.model.list_card_names(team=team)
 
         return templates.TemplateResponse(
-            "metadata.html",
+            "include/model/metadata.html",
             {
                 "request": request,
                 "teams": teams,
@@ -185,7 +185,7 @@ async def list_model(
             metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
 
         return templates.TemplateResponse(
-            "metadata.html",
+            "include/model/metadata.html",
             {
                 "request": request,
                 "teams": teams,

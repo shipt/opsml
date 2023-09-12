@@ -270,16 +270,16 @@
         <h3 id="Example">Load Model</h3>
         <pre><code class="python">from opsml.registry import CardRegistry
         
-  model_registry = CardRegistry("model")
-  modelcard = model_registry.load_card(name="{{metadata.model_name}}", version="{{metadata.model_version}}")
-  modelcard.load_trained_model() # load the train model
-  
-  # run predictions on trained model
-  print(modelcard.trained_model.predict(modelcard.sample_input_data))
-  
-  # onnx version of model (if converted to onnx) if you want to play around with it
-  onnx_model = modelcard.onnx_model()
-  print(onnx_model.predict(onnx_model.sample_api_data))
+model_registry = CardRegistry("model")
+modelcard = model_registry.load_card(name="{{metadata.model_name}}", version="{{metadata.model_version}}")
+modelcard.load_trained_model() # load the train model
+
+# run predictions on trained model
+print(modelcard.trained_model.predict(modelcard.sample_input_data))
+
+# onnx version of model (if converted to onnx) if you want to play around with it
+onnx_model = modelcard.onnx_model()
+print(onnx_model.predict(onnx_model.sample_api_data))
         </code></pre>
         {% endif %}
 
@@ -287,10 +287,6 @@
 
   </div>
 </div>
-
-
-
-
 
 
 

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+  <title>Version</title>
+{% endblock %}
+
+{% block content %}
+<body id="DataVersionPage">
+  <div class="container" style="padding-top:65px;">
+</div>
+
+{% include "include/data/data_subnav.html" %}
+
+<br>
+<div class="container" style="padding-top:50px;">
+    <div class="row">
+      <h5 class="display-8">Available Data Versions</h5>
+</div>
+
+<!---- Model version table -------->
+<div class="container">
+    <div class="page-header">
+      <h2>{{selected_model}}</h2>
+    </div>
+</div>
+<br>
+
+<div class="data-version-table" id="DataVersionTable">
+    <table class="table table-striped table-dark">
+        <thead>
+          <tr>
+            <th class="text-center" scope="col">Date</th>
+            <th class="text-center" scope="col">Name</th>
+            <th class="text-center" scope="col">Team</th>
+            <th class="text-center" scope="col">Version</th>
+            <th class="text-center" scope="col">Email</th>
+            <th class="text-center" scope="col">Metadata</th>
+            <th class="text-center" scope="col">Run Link</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for version in versions %}
+                {% with version=version %}
+                {% include "include/data/version_table.html" %}
+                {% endwith %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+{% endblock %}
+

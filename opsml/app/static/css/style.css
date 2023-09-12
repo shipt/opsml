@@ -176,6 +176,15 @@ p {
 
 }
 
+#DataSubnav {
+  background: #fafafa;
+  color: black !important;
+  width: 100%;
+  position: fixed;
+  z-index: 4;
+
+}
+
 
 #MetadataTeamSelect .dropdown-toggle {
     background:#038767;

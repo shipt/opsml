@@ -225,10 +225,13 @@ class AuditFormRequest(BaseModel):
     email: str
     team: str
     uid: Optional[str] = None
+    version: Optional[str] = None
+    status: Optional[str] = None
     selected_model_name: str
     selected_model_team: str
     selected_model_version: str
     audit_file: Optional[UploadFile] = None
+    comments: Optional[str] = None
     business_understanding_1: Optional[str] = None
     business_understanding_2: Optional[str] = None
     business_understanding_3: Optional[str] = None
@@ -307,3 +310,8 @@ class AuditFormRequest(BaseModel):
     misc_8: Optional[str] = None
     misc_9: Optional[str] = None
     misc_10: Optional[str] = None
+
+
+@form_body
+class AuditUploadRequest(BaseModel):
+    file_upload: UploadFile = (File(),)

@@ -120,6 +120,7 @@ class AuditCard(ArtifactCard):
     approved: bool = False
     comments: List[Comment] = []
 
+    @property
     def add_comment(self, name: str, comment: str) -> None:
         """Adds comment to AuditCard
 
