@@ -401,7 +401,7 @@ def write_audit_to_csv(
         FileResponse
     """
     csv_file, path = tempfile.mkstemp(suffix=".csv")
-    with open(suffix=csv_file, mode="w") as csv_file:
+    with open(file=path, mode="w") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=field_names)
         writer.writeheader()
         writer.writerows(audit_records)

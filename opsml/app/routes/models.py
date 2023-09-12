@@ -126,6 +126,7 @@ async def list_model(
                 "models": None,
                 "selected_team": None,
                 "selected_model": None,
+                "version": None,
             },
         )
 
@@ -140,6 +141,7 @@ async def list_model(
                 "metadata": None,
                 "models": models,
                 "selected_model": model,
+                "version": None,
             },
         )
 
@@ -157,6 +159,7 @@ async def list_model(
                 "models": models,
                 "selected_model": model,
                 "versions": versions,
+                "version": None,
             },
         )
 
