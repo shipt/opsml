@@ -1,6 +1,6 @@
 from opsml.registry.cards import ArtifactCard
 from opsml.registry.cards.types import CardInfo
-from opsml.helpers.utils import validate_name_team_pattern
+from opsml.helpers.utils import clean_string, validate_name
 import pytest
 
 card_info = CardInfo(name="test", team="opsml", user_email="opsml@email.com")
@@ -26,17 +26,17 @@ def test_artifact_card_without_args():
 
 
 def test_artifact_card_with_both():
-    card = ArtifactCard(name="override_name", info=card_info)
+    card = ArtifactCard(name="override-name", info=card_info)
 
-    assert card.name == "override-name"  # string cleaning
+    assert card.name == "override_name"  # string cleaning
     assert card.team == card_info.team
     assert card.user_email == card_info.user_email
 
 
 def test_artifact_card_name_team_fail():
     card_info = CardInfo(
-        name="i_am_longer_than_53_characters",
-        team="team_i_am_longer_than_53_characters",
+        name="i_am_longer_than_53_characters_team_i_am_longer_than_53_characters",
+        team="foo",
         user_email="opsml@email.com",
     )
 
@@ -50,7 +50,4 @@ def test_artifact_card_name_team_fail():
     # cards will auto clean name and team, so we need to test the other validation logic with
     # the util func directly
     with pytest.raises(ValueError):
-        validate_name_team_pattern(
-            name="_invalid_character",
-            team="_invalid_character",
-        )
+        validate_name("_invalid_name")

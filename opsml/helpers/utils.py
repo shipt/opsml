@@ -19,7 +19,9 @@ logger = ArtifactLogger.get_logger(__name__)
 
 PUNCTUATION = string.punctuation.replace("_", "").replace("-", "")
 REMOVE_CHARS = re.escape(PUNCTUATION)
-NAME_TEAM_PATTERN = r"^[a-z0-9]+([-a-z0-9]+)*:[-a-z0-9]+$"
+NAME_PATTERN = (
+    r"^[a-z][a-z0-9_]*$"  # first letter must be a letter, then any number of letters or numbers, matches underscores
+)
 
 
 def experimental_feature(func):
@@ -44,35 +46,26 @@ def clean_string(name: Optional[str] = None) -> Optional[str]:
             String to clean
 
     """
-    if name is not None:
-        _name = name.strip()
-        _name = _name.lower()
-        _name = re.sub("[" + REMOVE_CHARS + "]", "", _name)
-        _name = _name.replace("_", "-")
 
-        return _name
-    return None
+    if name is None:
+        return None
+
+    _name = name.strip()
+    _name = _name.lower()
+    _name = re.sub("[" + REMOVE_CHARS + "]", "", _name)
+    _name = _name.replace("-", "_")
+
+    return _name
 
 
-def validate_name_team_pattern(name: str, team: str) -> None:
-    """
-    Validates name and team combination
-
-    Args:
-        name:
-            Card name
-        team:
-            Team associated with card
-
-    """
-    name_team = f"{name}:{team}"
-    pattern_match = bool(re.match(NAME_TEAM_PATTERN, name_team))
+def validate_name(name: str) -> None:
+    pattern_match = bool(re.match(NAME_PATTERN, name))
 
     if not pattern_match:
-        raise ValueError(f"Name and team failed to match the required pattern. Pattern: {NAME_TEAM_PATTERN}")
+        raise ValueError(f"Failed to match the required pattern for {name}. Pattern: {NAME_PATTERN}")
 
-    if len(name_team) > 53:
-        raise ValueError("Name and team combination must be 53 characters or less")
+    if len(name) > 53:
+        raise ValueError("Value must be 53 characters or less")
 
 
 class TypeChecker:

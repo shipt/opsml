@@ -247,7 +247,7 @@ def test_register_model(
     )
 
     model_registry.register_card(card=model_card_custom)
-    assert "pipeline-model" in model_card_custom.uris.trained_model_uri
+    assert "pipeline_model" in model_card_custom.uris.trained_model_uri
 
     model_card2 = ModelCard(
         trained_model=model,
@@ -498,7 +498,7 @@ def test_metadata_download_and_registration(
     # as they do *not* use the response text, rather they assume the URL is in
     # the correct format.
     uri = response.json()
-    assert re.search(rf"/model_registry/test-model/v{model_card.version}$", uri, re.IGNORECASE) is not None
+    assert re.search(rf"/model_registry/test_model/v{model_card.version}$", uri, re.IGNORECASE) is not None
 
     # test register model (native)
     response = test_app.post(

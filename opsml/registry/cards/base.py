@@ -11,10 +11,7 @@ from pydantic import BaseModel, model_validator, ConfigDict
 
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import (
-    clean_string,
-    validate_name_team_pattern,
-)
+from opsml.helpers.utils import clean_string, validate_name
 
 from opsml.registry.cards.types import (
     CardInfo,
@@ -62,14 +59,9 @@ class ArtifactCard(BaseModel):
             if key in ["name", "team"]:
                 if val is not None:
                     val = clean_string(val)
+                    validate_name(val)
 
             env_vars[key] = val
-
-        # validate name and team for pattern
-        validate_name_team_pattern(
-            name=env_vars["name"],
-            team=env_vars["team"],
-        )
 
         return env_vars
 
