@@ -510,7 +510,7 @@ def test_metadata_download_and_registration(
         },
     )
     uri = response.json()
-    assert re.search(rf"/model_registry/test-model/v{model_card.version}$", uri, re.IGNORECASE) is not None
+    assert re.search(rf"/model_registry/test_model/v{model_card.version}$", uri, re.IGNORECASE) is not None
 
     # test register model - latest patch given latest major.minor
     minor = model_card.version[0 : model_card.version.rindex(".")]
@@ -523,7 +523,7 @@ def test_metadata_download_and_registration(
     )
 
     uri = response.json()
-    assert re.search(rf"/model_registry/test-model/v{minor}$", uri, re.IGNORECASE) is not None
+    assert re.search(rf"/model_registry/test_model/v{minor}$", uri, re.IGNORECASE) is not None
 
     # test register model - latest minor / patch given major only
     major = model_card.version[0 : model_card.version.index(".")]
@@ -535,7 +535,7 @@ def test_metadata_download_and_registration(
         },
     )
     uri = response.json()
-    assert re.search(rf"/model_registry/test-model/v{major}$", uri, re.IGNORECASE) is not None
+    assert re.search(rf"/model_registry/test_model/v{major}$", uri, re.IGNORECASE) is not None
 
     # test version fail - invalid name
     response = test_app.post(
