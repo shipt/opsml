@@ -5,7 +5,6 @@
 from typing import Any, Dict, List, Optional, Tuple
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import clean_string
 from opsml.registry.sql.base.registry_base import SQLRegistryBase
 from opsml.registry.sql.base.query_engine import QueryEngine, log_card_change  # type: ignore
 from opsml.registry.sql.semver import SemVerSymbols, CardVersion, VersionType, SemVerUtils, SemVerRegistryValidator
@@ -133,13 +132,10 @@ class ServerRegistry(SQLRegistryBase):
             Dictionary of records
         """
 
-        cleaned_name = clean_string(name)
-        cleaned_team = clean_string(team)
-
         records = self.engine.get_records_from_table(
             table=self._table,
-            name=cleaned_name,
-            team=cleaned_team,
+            name=name,
+            team=team,
             version=version,
             uid=uid,
             max_date=max_date,

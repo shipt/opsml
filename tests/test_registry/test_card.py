@@ -1,6 +1,6 @@
 from opsml.registry.cards import ArtifactCard
 from opsml.registry.cards.types import CardInfo
-from opsml.helpers.utils import clean_string, validate_name
+from opsml.helpers.utils import validate_name
 import pytest
 
 card_info = CardInfo(name="test", team="opsml", user_email="opsml@email.com")

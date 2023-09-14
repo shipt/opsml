@@ -6,7 +6,6 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 from semver import VersionInfo
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import clean_string
 from opsml.registry.cards.card_saver import save_card_artifacts
 from opsml.registry.cards import (
     ArtifactCard,
@@ -336,10 +335,8 @@ class SQLRegistryBase:
         uid: Optional[str] = None,
         ignore_release_candidates: bool = False,
     ) -> ArtifactCard:
-        cleaned_name = clean_string(name)
-
         record = self.list_cards(
-            name=cleaned_name,
+            name=name,
             version=version,
             uid=uid,
             limit=1,

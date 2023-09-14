@@ -7,7 +7,6 @@ from typing import Any, Dict, Iterable, List, Optional, Union, cast, TYPE_CHECKI
 import pandas as pd
 from sqlalchemy.sql.expression import ColumnElement, FromClause
 
-from opsml.helpers.utils import clean_string
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards import ArtifactCard, ModelCard
 from opsml.registry.cards.types import CardInfo, CardType
@@ -205,11 +204,9 @@ class CardRegistry:
 
         if name is not None:
             name = name.lower()
-            name = clean_string(name)
 
         if team is not None:
             team = team.lower()
-            team = clean_string(team)
 
         card_list = self._registry.list_cards(
             uid=uid,
