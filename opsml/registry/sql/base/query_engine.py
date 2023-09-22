@@ -23,7 +23,7 @@ YEAR_MONTH_DATE = "%Y-%m-%d"
 
 class QueryEngine:
     def __init__(self):
-        self.engine = settings.connection_client.get_engine()
+        self.engine = settings.sql_engine
 
     @contextmanager
     def session(self) -> Iterator[Session]:
@@ -228,8 +228,8 @@ class QueryEngine:
         """Add card record to table
 
         Args:
-            table_record:
-                table record to add
+            table:
+                table to add card to
             card:
                 card to add
         """

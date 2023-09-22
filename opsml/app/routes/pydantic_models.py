@@ -3,7 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, List, Optional, Union
 from fastapi import Form, File, UploadFile
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
@@ -46,8 +46,8 @@ class VersionRequest(BaseModel):
     version: Optional[CardVersion] = None
     version_type: VersionType
     table_name: str
-    pre_tag: str
-    build_tag: str
+    pre_tag: str = "rc"
+    build_tag: str = "build"
 
 
 class VersionResponse(BaseModel):
@@ -81,6 +81,12 @@ class ListCardRequest(BaseModel):
     tags: Optional[Dict[str, str]] = None
     ignore_release_candidates: bool = False
     table_name: str
+
+    @model_validator(mode="before")
+    def update_limit(cls, env_vars: Dict[str, Optional[Union[str, int]]]):
+        if not any((env_vars.get(key) for key in ["name", "team", "limit"])):
+            env_vars["limit"] = 20
+        return env_vars
 
 
 class ListCardResponse(BaseModel):

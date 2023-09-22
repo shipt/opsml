@@ -4,9 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 
 from typing import Any, Dict, Optional
-
+import textwrap
 import numpy as np
-
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.model_converters import OnnxModelConverter
 from opsml.model.model_info import ModelInfo, get_model_data
@@ -135,7 +134,7 @@ class TrainedModelMetadataCreator(ModelCreator):
             return self._get_prediction_type(predictions=predictions)
 
         except TypeError as error:
-            logger.error("%s. Falling back to model functional call", error)
+            logger.error("%s. Falling back to model functional call", str(error))
 
         return self._functional_prediction()
 
@@ -173,7 +172,7 @@ class TrainedModelMetadataCreator(ModelCreator):
             return self._functional_prediction()
 
         except Exception as error:
-            logger.error("Failed to determine prediction output. Defaulting to placeholder. %s", error)
+            logger.error("Failed to determine prediction output. Defaulting to placeholder. %s", str(error))
 
         return {"placeholder": Feature(feature_type="str", shape=[1])}
 
@@ -262,26 +261,39 @@ class OnnxModelCreator(ModelCreator):
             `ModelReturn`
         """
 
-        model_data = get_model_data(
-            data_type=self.input_data_type,
-            input_data=self.input_data,
-        )
-        model_info = ModelInfo(
-            model=self.model,
-            model_data=model_data,
-            model_type=self.model_type,
-            model_class=self.model_class,
-            data_type=self.input_data_type,
-            additional_model_args=self.additional_model_args,
-            onnx_model_def=self.onnx_model_def,
-        )
+        try:
+            model_data = get_model_data(
+                data_type=self.input_data_type,
+                input_data=self.input_data,
+            )
+            model_info = ModelInfo(
+                model=self.model,
+                model_data=model_data,
+                model_type=self.model_type,
+                model_class=self.model_class,
+                data_type=self.input_data_type,
+                additional_model_args=self.additional_model_args,
+                onnx_model_def=self.onnx_model_def,
+            )
 
-        onnx_model_return = OnnxModelConverter(model_info=model_info).convert_model()
-        onnx_model_return.model_type = self.model_type
-        onnx_model_return.api_data_schema.model_data_schema.data_type = self.onnx_data_type
+            onnx_model_return = OnnxModelConverter(model_info=model_info).convert_model()
+            onnx_model_return.model_type = self.model_type
+            onnx_model_return.api_data_schema.model_data_schema.data_type = self.onnx_data_type
 
-        # add onnx version
-        return onnx_model_return
+            # add onnx version
+            return onnx_model_return
+        except Exception as exc:
+            logger.error("Failed to convert model to onnx. %s", str(exc))
+            raise ValueError(
+                textwrap.dedent(
+                    f"""
+                Failed to convert model to onnx format. If you'd like to turn onnx conversion off
+                set to_onnx=False in the ModelCard. If you wish to provide your own onnx definition, 
+                please refer to https://github.com/shipt/opsml/blob/main/docs/docs/cards/onnx.md. 
+                Error: {exc}
+                """
+                )
+            ) from exc
 
     @staticmethod
     def validate(to_onnx: bool) -> bool:

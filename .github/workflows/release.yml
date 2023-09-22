@@ -1,0 +1,41 @@
+name: Publish-PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  Unit-Lint:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          python-version: ["3.11",]
+          poetry-version: ["1.5.1"]
+
+      steps:
+        - uses: actions/checkout@v3
+        - name: Install poetry
+          run: pipx install poetry==${{ matrix.poetry-version }}
+
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ matrix.python-version }}
+            cache: 'poetry'
+
+        - run : |
+                make setup.project
+                pip install -U twine
+                make lints.ci
+                make test.unit
+                make setup.project
+                test "v$(poetry version --short)" "=" "$GITHUB_REF_NAME"
+                poetry build
+                twine check --strict dist/*
+                
+        - name: upload to pypi
+          run: twine upload dist/*
+          env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+

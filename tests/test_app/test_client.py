@@ -328,6 +328,19 @@ def test_register_model(
 
     assert cards[0]["tags"] == {"id": "model1"}
 
+    # try registering model to different team
+    model_card_dup = ModelCard(
+        trained_model=model,
+        sample_input_data=data[0:1],
+        name="pipeline_model",
+        team="new-team",
+        user_email="mlops.com",
+        datacard_uid=data_card.uid,
+    )
+    with pytest.raises(ValueError) as ve:
+        model_registry.register_card(card=model_card_dup)
+    assert ve.match("Failed to set version. Model name already exists for a different team")
+
 
 @pytest.mark.parametrize("test_data", [lazy_fixture("test_df")])
 def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame):
@@ -412,72 +425,6 @@ def test_pipeline_registry(api_registries: CardRegistry):
         columns=["datacard_uids"],
     )
     assert bool(values["datacard_uids"])
-
-
-def test_full_pipeline_with_loading(
-    api_registries: CardRegistries,
-    linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame],
-):
-    from opsml.registry.cards.pipeline_loader import PipelineLoader
-
-    team = "mlops"
-    user_email = "mlops.com"
-    pipeline_code_uri = "test_pipe_uri"
-    data_registry = api_registries.data
-    model_registry = api_registries.model
-    run_registry = api_registries.run
-    pipeline_registry = api_registries.pipeline
-    model, data = linear_regression
-
-    #### Create DataCard
-    data_card = DataCard(
-        data=data,
-        name="test_data",
-        team=team,
-        user_email=user_email,
-    )
-
-    data_registry.register_card(card=data_card)
-    ###### ModelCard
-    model_card = ModelCard(
-        trained_model=model,
-        sample_input_data=data[:1],
-        name="test_model",
-        team=team,
-        user_email=user_email,
-        datacard_uid=data_card.uid,
-    )
-
-    model_registry.register_card(model_card)
-
-    ##### RunCard
-    run = RunCard(
-        name="test_experiment",
-        team=team,
-        user_email=user_email,
-        datacard_uids=[data_card.uid],
-        modelcard_uids=[model_card.uid],
-    )
-    run.log_metric("test_metric", 10)
-    run_registry.register_card(card=run)
-    #### PipelineCard
-    pipeline_card = PipelineCard(
-        name="test_pipeline",
-        team=team,
-        user_email=user_email,
-        pipeline_code_uri=pipeline_code_uri,
-        datacard_uids=[data_card.uid],
-        modelcard_uids=[model_card.uid],
-        runcard_uids=[run.uid],
-    )
-    pipeline_registry.register_card(card=pipeline_card)
-
-    loader = PipelineLoader(pipelinecard_uid=pipeline_card.uid)
-    uids = loader.card_uids
-
-    assert uids["data"][0] == data_card.uid
-    assert uids["run"][0] == run.uid
-    assert uids["model"][0] == model_card.uid
 
 
 def test_metadata_download_and_registration(

@@ -17,7 +17,7 @@ from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.storage_system import StorageClientType
 
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger("registry")
 
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
@@ -125,19 +125,13 @@ class CardRegistry:
 
         Args:
             registry_name:
-                Name of the registry to connect to. Options are "pipeline",
-                "model", "data" and "experiment".
+                Name of the registry to connect to. Options are "model", "data" and "run".
 
         Returns:
             Instantiated connection to specific Card registry
 
         Example:
-            # With connection type cloud_sql = CloudSQLConnection(...)
-            data_registry = CardRegistry(registry_name="data",
-            connection_client=cloud_sql)
-
-            # With connection client data_registry =
-            CardRegistry(registry_name="data", connection_type="gcp")
+            data_registry = CardRegistry(registry_name="data")
         """
 
         self._registry = self._set_registry(registry_name=registry_name)
@@ -199,6 +193,8 @@ class CardRegistry:
                 If True, returns a pandas dataframe. If False, returns a list of records
             info:
                 CardInfo object. If present, the info object takes precedence
+            ignore_release_candidates:
+                If True, ignores release candidates
 
         Returns:
             pandas dataframe of records or list of dictionaries
@@ -257,6 +253,8 @@ class CardRegistry:
                 most recent version will be used
             info:
                 Optional CardInfo object. If present, the info takes precedence
+            ignore_release_candidates:
+                If True, ignores release candidates
 
         Returns
             ArtifactCard

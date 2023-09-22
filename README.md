@@ -1,19 +1,24 @@
 <h1 align="center">
   <br>
-  <img src="images/opsml-logo.png"  width="400" height="400" alt="opsml logo"/>
+  <img src="https://github.com/shipt/opsml/blob/main/images/opsml-logo.png?raw=true"  width="400" height="400" alt="opsml logo"/>
   <br>
 </h1>
 
 <h2 align="center">Tooling for machine learning workflows</h2>
 
-<h1 align="center"><a href="https://didactic-bassoon-l5emw7m.pages.github.io/">OpsML Documentation</h1>
+<h1 align="center"><a href="https://thorrester.github.io/opsml-ghpages/">OpsML Documentation</h1>
 
 <p align="center">
 
+   <a alt="Tests" href="https://github.com/shipt/opsml/actions/workflows/lint-unit-tests.yml">
+      <img src="https://github.com/shipt/opsml/actions/workflows/lint-unit-tests.yml/badge.svg?branch=main">
+  </a>
+  <img alt="Code Style" src="https://img.shields.io/badge/  code%20style-black-000000.svg" />
   <a href="https://www.python.org/downloads/release/python-390/">
-  <img alt="Python" src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Blue_Python_3.9_Shield_Badge.svg" />
-
-  <img alt="Code Style" src="https://img.shields.io/badge/code%20style-black-000000.svg" />
+  </a>
+  <a href="https://pypi.org/project/opsml" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/opsml.svg?color=%2334D058" alt="Supported Python versions">
+  </a>
 
 </p>
 
@@ -86,7 +91,7 @@ export OPSML_TRACKING_URI=${YOUR_TRACKING_URI}
 
 Now that `opsml` is installed, you're ready to start using it!
 
-It's time to point you to the official [Documentation Website](https://didactic-bassoon-l5emw7m.pages.github.io/) for more information on how to use `opsml`
+It's time to point you to the official [Documentation Website](https://thorrester.github.io/opsml-ghpages/) for more information on how to use `opsml`
 
 
 ## Advanced Installation Scenarios
@@ -118,4 +123,8 @@ Types of extras that can be installed:
 ## Contributing
 If you'd like to contribute, be sure to check out our [contributing guide](./CONTRIBUTING.md)! If you'd like to work on any outstanding items, check out the `roadmap` section in the docs and get started :smiley:
 
-Thanks goes to these phenomenal [projects and people](./ATTRIBUTIONS.md) for creating a great foundation to build from!
+Thanks goes to these phenomenal [projects and people](./ATTRIBUTIONS.md) and people for creating a great foundation to build from!
+
+<a href="https://github.com/shipt/opsml/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=shipt/opsml" />
+</a>
