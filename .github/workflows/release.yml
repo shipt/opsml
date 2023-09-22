@@ -28,7 +28,6 @@ jobs:
                 pip install -U twine
                 make lints.ci
                 make test.unit
-                make setup.project
                 test "v$(poetry version --short)" "=" "$GITHUB_REF_NAME"
                 poetry build
                 twine check --strict dist/*
