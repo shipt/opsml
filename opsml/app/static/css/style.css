@@ -115,12 +115,26 @@ body {
     float: left;
   }
 
+.model-metadata {
+  margin-left: 1%;
+}
+
 p {
     font-family: Scandia;
     font-size: 1.1em;
     font-weight: 300;
     line-height: 1.7em;
     color: #999;
+    margin:0;
+}
+
+#VersionTable td {
+  border: none;
+}
+
+#VersionTable.no-spacing {
+  border-spacing:0; /* Removes the cell spacing via CSS */
+  border-collapse: collapse;  /* Optional - if you don't want to have double border where cells touch */
 }
 
   
@@ -185,6 +199,22 @@ p {
 
 }
 
+#download-button.btn-success {
+  font-size: 13px;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#download-button.btn-success:hover {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
 
 #MetadataTeamSelect .dropdown-toggle {
     background:#038767;
@@ -291,6 +321,12 @@ p {
     background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255,255,255,1.0)'/></svg>");
 }
 
+.list-group .active {
+    background-color: #5d0fb778;
+    border-color: #5e0fb7;
+    border: none;
+    color: white;
+}
 
 /* ---------------------------------------------------
     CONTENT STYLE

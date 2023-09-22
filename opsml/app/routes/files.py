@@ -102,10 +102,10 @@ async def upload_file(request: Request):
     }
 
 
-@router.post("/files/download", name="download_file")
+@router.get("/files/download", name="download_file")
 def download_file(
     request: Request,
-    payload: DownloadFileRequest,
+    read_path: str,
 ) -> StreamingResponse:
     """Downloads a file
 
@@ -123,7 +123,7 @@ def download_file(
         storage_client = request.app.state.storage_client
         return StreamingResponse(
             storage_client.iterfile(
-                file_path=payload.read_path,
+                file_path=read_path,
                 chunk_size=CHUNK_SIZE,
             ),
             media_type="application/octet-stream",

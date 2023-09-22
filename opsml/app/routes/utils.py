@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import os
 from functools import wraps
 from streaming_form_data.targets import FileTarget
+from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from opsml.app.routes.pydantic_models import ListTeamNameInfo
 from opsml.registry import CardRegistries, ModelCard, RunCard, CardRegistry
@@ -76,11 +77,11 @@ def get_runcard_from_model(
 
 def error_to_500(func):
     @wraps(func)
-    async def wrapper(request, *args, **kwargs):
+    async def wrapper(request: Request, *args, **kwargs):
         try:
             return await func(request, *args, **kwargs)
         except Exception as exc:
-            logger.error(exc)
+            request.app.state.logger.error(str(exc))
             return templates.TemplateResponse(
                 "include/500.html",
                 {

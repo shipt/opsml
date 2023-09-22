@@ -76,32 +76,61 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
 
 @router.get("/models/versions/")
 @error_to_500
-async def model_versions_page(request: Request, model: Optional[str] = None):
+async def model_versions_page(
+    request: Request,
+    model: Optional[str] = None,
+    selected_version: Optional[str] = None,
+):
     if model is None:
         return RedirectResponse(url="/opsml/models/list/")
 
     registry: CardRegistry = request.app.state.registries.model
-    models = registry.list_cards(name=model, as_dataframe=False)
-    runs = list(set(model["runcard_uid"] for model in models))
+    versions = registry.list_cards(name=model, as_dataframe=False)
 
-    if len(runs) >= 0:
-        run = request.app.state.registries.run.list_cards(uid=runs[0], as_dataframe=False)
-        project_id = run[0]["project_id"]
-    else:
-        project_id = None
+    metadata = post_model_metadata(
+        request=request,
+        payload=CardRequest(name=model, version=selected_version),
+    )
 
-    if project_id is not None:
-        project_num = request.app.state.mlflow_client.get_experiment_by_name(name=project_id).experiment_id
+    if selected_version is None:
+        selected_model = versions[0]
     else:
+        selected_model = registry.list_cards(name=model, version=selected_version)[0]
+
+    if selected_model.get("runcard_uid") is not None:
+        runcard = request.app.state.registries.run.load_card(uid=selected_model.get("runcard_uid"))
+        project_num = request.app.state.mlflow_client.get_experiment_by_name(name=runcard.project_id).experiment_id
+
+    else:
+        runcard = None
         project_num = None
+
+    max_dim = 0
+    if metadata.data_schema.model_data_schema.data_type == "NUMPY_ARRAY":
+        features = metadata.data_schema.model_data_schema.input_features
+        inputs = features.get("inputs")
+        if inputs is not None:
+            max_dim = max(inputs.shape)
+
+    # capping amount of sample data shown
+    if max_dim > 200:
+        metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
 
     return templates.TemplateResponse(
         "include/model/model_version.html",
         {
             "request": request,
-            "versions": models,
+            "versions": versions,
             "selected_model": model,
+            "selected_version": selected_version,
             "project_num": project_num,
+            "metadata": metadata,
+            "runcard": runcard,
+            "model_id": selected_model.get("uid"),
+            # "metrics": getattr(runcard, "metrics", None),
+            # "params": getattr(runcard, "parameters", None),
+            # "tags": getattr(runcard, "tags", None),
+            # "artifacts": getattr(runcard, "artifact_uris", None),
         },
     )
 

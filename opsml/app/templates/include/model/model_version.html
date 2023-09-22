@@ -25,30 +25,95 @@
 </div>
 <br>
 
-<div class="model-version-table" id="ModelVersionTable">
-    <table class="table table-striped table-dark">
-        <thead>
-          <tr>
-            <th class="text-center" scope="col">Date</th>
-            <th class="text-center" scope="col">Name</th>
-            <th class="text-center" scope="col">Team</th>
-            <th class="text-center" scope="col">Version</th>
-            <th class="text-center" scope="col">Email</th>
-            <th class="text-center" scope="col">Data Uid</th>
-            <th class="text-center" scope="col">Metadata</th>
-            <th class="text-center" scope="col">Run Link</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for version in versions %}
-                {% with version=version %}
-                {% include "include/model/version_table.html" %}
-                {% endwith %}
-            {% endfor %}
-            </tbody>
-        </table>
+<!---Create vesion tables ------>
+<div style="width: 120%;">
+  <div style="width: 16%; float: left;"> 
+    <div class="list-group">
+      {% for version in versions %}
+        <a href="/opsml/models/versions/?model={{ selected_model }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
+      {% endfor %}
     </div>
-</body>
+  </div>
+
+  <div style="width: 79%;"> 
+
+    <div class="card" id="Metadata" style="width:79%; float:right;"s>
+      <div class="card-body">
+        <h4>Model </h4>
+
+        <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+          <colgroup>
+            <col span="1" style="width: 5%;">
+            <col span="1" style="width: 15%;">
+            <col span="1" style="width: 59%;">
+         </colgroup>
+          <tbody>
+            <tr>
+              <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
+              <td><font color="#999">ID:</font></td>
+              <td>{{ model_id }}</td>
+            </tr>
+
+            <tr>
+              <td><i class="fa fa-users" style="color:#04b78a"></i></td>
+              <td><font color="#999">Team:</font></td>
+              <td>{{ metadata["model_team"] }}</td>
+            </tr>
+
+            <tr>
+              <td><i class="fa fa-file" style="color:#04b78a"></i></td>
+              <td><font color="#999">Type:</font></td>
+              <td>{{metadata["model_type"]}}</td>
+            </tr>
+
+            {% if metadata["onnx_uri"] is not none %}
+              <tr>
+                <td><i class="fa fa-file" style="color:#04b78a"></i></td>
+                <td><font color="#999">Onnx Model:</font></td>
+                <td><button id="download-button" type="button" class="btn btn-success">Download</button></td>
+              </tr>
+            {% endif %}
+
+            <tr>
+              <td><i class="fa fa-file" style="color:#04b78a"></i></td>
+              <td><font color="#999">Trained Model:</font></td>
+              <td><button id="download-button" type="button" class="btn btn-success">Download</button></td>
+            </tr>
+
+          </tbody>
+        </table>
+
+    
+      </div>
+    </div>
+
+
+</div>
+
+<!--<div class="model-version-table" id="ModelVersionTable">-->
+<!--    <table class="table table-striped table-dark">-->
+<!--        <thead>-->
+<!--          <tr>-->
+<!--            <th class="text-center" scope="col">Date</th>-->
+<!--            <th class="text-center" scope="col">Name</th>-->
+<!--            <th class="text-center" scope="col">Team</th>-->
+<!--            <th class="text-center" scope="col">Version</th>-->
+<!--            <th class="text-center" scope="col">Email</th>-->
+<!--            <th class="text-center" scope="col">Data Uid</th>-->
+<!--            <th class="text-center" scope="col">Metadata</th>-->
+<!--            <th class="text-center" scope="col">Run Link</th>-->
+<!--          </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--            {% for version in versions %}-->
+<!--                {% with version=version %}-->
+<!--                {% include "include/model/version_table.html" %}-->
+<!--                {% endwith %}-->
+<!--            {% endfor %}-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--    </div>-->
+<!--</body>-->
 
 
 {% endblock %}
@@ -57,6 +122,19 @@
 <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 <!-- JavaScript Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script>
+  $('.list-group-item').click(function() {
+    $('.list-group-item').removeClass('active');
+    $(this).addClass('active');
+    var version_uid = $(this).attr('id');
+    alert(id);
+    // write javscript that will take the value of the active div on click and pass that value to another div
+    
+ });
+
+</script>
+
+
 {% endblock %}
 
 

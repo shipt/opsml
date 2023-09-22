@@ -142,9 +142,8 @@ class ApiClient:
         read_path = os.path.join(read_dir, filename)
         with open(os.path.join(local_dir, filename), "wb") as local_file:
             with self.client.stream(
-                method="POST",
-                url=f"{self._base_url}/{route}",
-                json={"read_path": read_path},
+                method="GET",
+                url=f"{self._base_url}/{route}?read_path={read_path}",
             ) as response:
                 for data in response.iter_bytes():
                     local_file.write(data)

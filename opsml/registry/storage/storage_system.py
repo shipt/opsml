@@ -563,7 +563,7 @@ class ApiStorageClient(LocalStorageClient):
 
     def store(self, storage_uri: str, **kwargs):
         """Wrapper method needed for working with data artifacts (zarr)"""
-        return storage_uri
+        return stsorage_uri
 
     @staticmethod
     def validate(storage_backend: str) -> bool:
