@@ -14,6 +14,7 @@ import pandas as pd
 import polars as pl
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field, ConfigDict  # pylint: disable=no-name-in-module
+from opsml.model.onnx_data_types import ExtraOnnxArgs
 
 InputData = Union[pd.DataFrame, NDArray, Dict[str, NDArray]]
 
@@ -127,6 +128,30 @@ class ModelReturn(BaseModel):
     model_type: str = "placeholder"
 
     model_config = ConfigDict(frozen=False, protected_namespaces=("protect_",))
+
+
+@dataclass
+class ModelCardUris:
+    modelcard_uri: Optional[str] = None
+    trained_model_uri: Optional[str] = None
+    onnx_model_uri: Optional[str] = None
+    model_metadata_uri: Optional[str] = None
+    sample_data_uri: Optional[str] = None
+
+    model_config = ConfigDict(protected_namespaces=("protect_",))
+
+
+class ModelCardMetadata(BaseModel):
+    onnx_model_data: Optional[DataDict] = None
+    onnx_model_def: Optional[OnnxModelDefinition] = None
+    sample_data_type: Optional[str] = None
+    model_type: Optional[str] = None
+    additional_onnx_args: Optional[ExtraOnnxArgs] = None
+    data_schema: Optional[ApiDataSchemas] = None
+    runcard_uid: Optional[str] = None
+    pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
+    uris: ModelCardUris = ModelCardUris()
 
 
 class Base(BaseModel):

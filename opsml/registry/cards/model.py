@@ -16,18 +16,15 @@ from opsml.model.predictor import OnnxModelPredictor
 from opsml.model.types import (
     ApiDataSchemas,
     DataDict,
-    ExtraOnnxArgs,
     Feature,
     InputDataType,
     ModelMetadata,
     ModelReturn,
     OnnxModelDefinition,
+    ModelCardMetadata,
 )
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import (
-    CardType,
-    ModelCardUris,
-)
+from opsml.registry.cards.types import CardType
 from opsml.registry.sql.records import (
     ModelRegistryRecord,
     RegistryRecord,
@@ -99,17 +96,8 @@ class ModelCard(ArtifactCard):
     trained_model: Optional[Any] = None
     sample_input_data: SampleModelData = None
     datacard_uid: Optional[str] = None
-    onnx_model_data: Optional[DataDict] = None
-    onnx_model_def: Optional[OnnxModelDefinition] = None
-    sample_data_type: Optional[str] = None
-    model_type: Optional[str] = None
-    additional_onnx_args: Optional[ExtraOnnxArgs] = None
-    data_schema: Optional[ApiDataSchemas] = None
-    runcard_uid: Optional[str] = None
-    pipelinecard_uid: Optional[str] = None
-    auditcard_uid: Optional[str] = None
+    metadata: ModelCardMetadata = ModelCardMetadata()
     to_onnx: bool = True
-    uris: ModelCardUris = ModelCardUris()
 
     @model_validator(mode="before")
     def check_args(cls, values: Dict[str, Any]):
@@ -160,13 +148,13 @@ class ModelCard(ArtifactCard):
     @property
     def model_data_schema(self) -> DataDict:
         if self.data_schema is not None:
-            return self.data_schema.model_data_schema
+            return self.metadata.data_schema.model_data_schema
         raise ValueError("Model data schema has not been set")
 
     @property
     def input_data_schema(self) -> Dict[str, Feature]:
-        if self.data_schema is not None and self.data_schema.input_data_schema is not None:
-            return self.data_schema.input_data_schema
+        if self.metadata.data_schema is not None and self.metadata.data_schema.input_data_schema is not None:
+            return self.metadata.data_schema.input_data_schema
         raise ValueError("Model input data schema has not been set or is not needed for this model")
 
     def load_sample_data(self):
