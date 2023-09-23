@@ -133,7 +133,7 @@ p {
 }
 
 #VersionTable.no-spacing {
-  border-spacing:0; /* Removes the cell spacing via CSS */
+  border-spacing:2; /* Removes the cell spacing via CSS */
   border-collapse: collapse;  /* Optional - if you don't want to have double border where cells touch */
 }
 
@@ -221,7 +221,10 @@ p {
     color:#fffefe !important;
   }
 
-
+#version-spacer {
+  padding: 0px;
+  margin: 0px;  
+}
 #metadata-table.table-striped>tbody>tr:nth-child(odd)>td, 
 #metadata-table.table-striped>tbody>tr:nth-child(odd)>th {
    background-color: white; 

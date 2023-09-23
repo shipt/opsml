@@ -68,23 +68,61 @@
 
             {% if metadata["onnx_uri"] is not none %}
               <tr>
-                <td><i class="fa fa-file" style="color:#04b78a"></i></td>
+                <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
                 <td><font color="#999">Onnx Model:</font></td>
-                <td><button id="download-button" type="button" class="btn btn-success">Download</button></td>
+                <td>
+                  <a href="/opsml/files/download?read_path={{metadata["onnx_uri"]}}" download={{metadata["onnx_uri"].split("/")[-1]}}>
+                    <button id="download-button" type="submit" class="btn btn-success" >Download</button>
+                  </a>
+              </td>
               </tr>
             {% endif %}
 
             <tr>
-              <td><i class="fa fa-file" style="color:#04b78a"></i></td>
+              <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
               <td><font color="#999">Trained Model:</font></td>
-              <td><button id="download-button" type="button" class="btn btn-success">Download</button></td>
+              <td>
+                  <a href="/opsml/files/download?read_path={{metadata["model_uri"]}}" download={{metadata["model_uri"].split("/")[-1]}}>
+                    <button id="download-button" type="submit" class="btn btn-success" >Download</button>
+                  </a>
+              </td>
             </tr>
-
           </tbody>
         </table>
-
-    
       </div>
+      <hr id="version-spacer">
+
+      {% if runcard["tags"]|length > 0 %}
+        <div class="card-body">
+          <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+            <colgroup>
+              <col span="1" style="width: 4%;">
+              <col span="1" style="width: 15%;">
+              <col span="1" style="width: 59%;">
+     
+          </colgroup>
+            <tbody>
+              {% for tag_name, tag_value in runcard["tags"].items() %}
+                  <tr>
+                    <td><i class="fa-solid fa-tag" style="color:#04b78a"></i></td>
+                    <td><font color="#999">{{tag_name}}:</font></td>
+                    <td>{{tag_value}}</td>
+                  </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+          <hr id="version-spacer">
+        </div>
+      {% endif %}
+
+      <hr id="version-spacer">
+      <div class="card-body">
+        <button id="download-button" type="submit" class="btn btn-success" >Metrics</button>
+        <button id="download-button" type="submit" class="btn btn-success" >Sample Data</button>
+        <button id="download-button" type="submit" class="btn btn-success" >Params</button>
+        <button id="download-button" type="submit" class="btn btn-success" >Artifacts</button>
+      </div>
+     
     </div>
 
 

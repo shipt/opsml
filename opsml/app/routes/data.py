@@ -8,11 +8,9 @@ from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
 from opsml.app.routes.pydantic_models import CardRequest, CompareCardRequest
-from opsml.helpers.logging import ArtifactLogger
 from opsml.profile.profile_data import DataProfiler
 from opsml.registry import CardRegistry, DataCard
 
-logger = ArtifactLogger.get_logger(__name__)
 
 router = APIRouter()
 CHUNK_SIZE = 31457280
