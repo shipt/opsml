@@ -195,7 +195,6 @@ class DataCardArtifactSaver(CardArtifactSaver):
             artifact=profile_bytes,
             storage_client=self.storage_client,
         )
-
         self.card.metadata.uris.profile_uri = storage_path.uri
 
     def _save_profile_html(self):

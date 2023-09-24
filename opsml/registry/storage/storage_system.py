@@ -237,6 +237,9 @@ class StorageClient:
         """Method that does post processing. Mainly used for mlflow work"""
         return storage_uri
 
+    def get_signed_url(self, uri: str) -> str:
+        raise NotImplementedError
+
     @staticmethod
     def validate(storage_backend: str) -> bool:
         raise NotImplementedError
@@ -301,6 +304,9 @@ class GCSFSStorageClient(StorageClient):
             file_ = os.path.basename(rpath)
             return os.path.join(lpath, file_)
         return loadable_path
+
+    def get_signed_url(self, uri: str) -> str:
+        return uri.replace("gs://", "https://storage.cloud.google.com/")
 
     @staticmethod
     def validate(storage_backend: str) -> bool:
@@ -401,6 +407,9 @@ class LocalStorageClient(StorageClient):
                 Path to delete
         """
         return self.client.delete_dir(read_path)
+
+    def get_signed_url(self, uri: str) -> str:
+        return uri
 
     @staticmethod
     def validate(storage_backend: str) -> bool:

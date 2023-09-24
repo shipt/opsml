@@ -20,6 +20,7 @@ body {
     font-family: Boing;
     font-weight: normal;
     background: #fafafa;
+
 }
 
 #metadata-table {
@@ -94,6 +95,7 @@ body {
     background-attachment:fixed;
     background-position: right center;
     background-repeat: no-repeat;
+    padding-bottom: 50%;
 }
 
 #ModelMetadataPage {
@@ -120,7 +122,7 @@ body {
 }
 
 p {
-    font-family: Scandia;
+    font-family: Boing;
     font-size: 1.1em;
     font-weight: 300;
     line-height: 1.7em;
@@ -215,6 +217,27 @@ p {
   background: #04b78a;
   border: 2px solid #04b78a;
 }
+
+
+#metric-button.btn-success {
+  font-size: 13px;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#metric-button.btn-success:hover {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+
+
 
 #MetadataTeamSelect .dropdown-toggle {
     background:#038767;
@@ -322,6 +345,11 @@ p {
     border-color: #5e0fb7;
     border: none;
     background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255,255,255,1.0)'/></svg>");
+}
+
+.list-group {
+  overflow:scroll;
+  max-height: 10%;
 }
 
 .list-group .active {

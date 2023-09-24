@@ -50,6 +50,7 @@ def load_card_from_record(
     """
 
     card = table_name_card_map[table_name]
+
     return card(**record.model_dump())
 
 

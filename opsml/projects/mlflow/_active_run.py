@@ -2,10 +2,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 from typing import Dict, Optional, Union, cast
-
+from pathlib import Path
 from opsml.projects.base._active_run import ActiveRun
 from opsml.projects.mlflow.mlflow_utils import MlflowRunInfo
 from opsml.registry.cards.types import METRICS, PARAMS
+from opsml.registry.storage.types import MlflowInfo
 
 
 class MlflowActiveRun(ActiveRun):
@@ -118,16 +119,20 @@ class MlflowActiveRun(ActiveRun):
         if artifact_path is not None:
             _artifact_path = f"{_artifact_path}/{artifact_path}"
 
-        self.info.mlflow_client.log_artifact(
-            run_id=self.run_id,
-            local_path=local_path,
-            artifact_path=_artifact_path,
+        # log using opsml storage client
+        filename = Path(local_path).name
+        write_path = f"{self.info.storage_client.artifact_path}/{_artifact_path}/{filename}"
+        write_path = self.info.storage_client.swap_mlflow_root(
+            base_path_prefix=self.info.storage_client.base_path_prefix,
+            rpath=write_path,
         )
 
-        filename = local_path.split("/")[-1]
-        artifact_uri = f"{self.info.base_artifact_path}/{_artifact_path}/{filename}"
+        self.info.storage_client.opsml_storage_client.upload(
+            local_path=local_path,
+            write_path=write_path,
+        )
 
-        self.runcard.add_artifact_uri(name=filename, uri=artifact_uri)
+        self.runcard.add_artifact_uri(name=filename, uri=write_path)
 
     @property
     def run_data(self):

@@ -174,6 +174,9 @@ class LoadedDataRecord(LoadRecord):
         )
 
         datacard_definition["storage_client"] = storage_client
+        if datacard_definition.get("metadata") is None:
+            datacard_definition["metadata"] = cls.convert_data_metadata(datacard_definition)
+
         datacard_definition["metadata"]["uris"]["datacard_uri"] = values.get("datacard_uri")
         datacard_definition["metadata"]["auditcard_uid"] = values.get("auditcard_uid")
 
@@ -186,6 +189,11 @@ class LoadedDataRecord(LoadRecord):
             )
 
         return datacard_definition
+
+    @classmethod
+    def convert_data_metadata(cls, card_def: Dict[str, Any]) -> ModelCardMetadata:
+        """This classmethod is used for backward compatibility"""
+        return DataCardMetadata(**card_def).model_dump()
 
     @staticmethod
     def load_data_profile(data_profile_uri: str, storage_client: StorageClientType) -> ProfileReport:
@@ -241,6 +249,9 @@ class LoadedModelRecord(LoadRecord):
             storage_client=storage_client,
         )
 
+        if modelcard_definition.get("metadata") is None:
+            modelcard_definition["metadata"] = cls.convert_model_metadata(modelcard_definition)
+
         modelcard_definition["metadata"]["auditcard_uid"] = values.get("auditcard_uid")
         modelcard_definition["metadata"]["sample_data_type"] = values.get("sample_data_type")
         modelcard_definition["metadata"]["model_type"] = values.get("model_type")
@@ -275,6 +286,11 @@ class LoadedModelRecord(LoadRecord):
         )
 
         return model_card_definition
+
+    @classmethod
+    def convert_model_metadata(cls, card_def: Dict[str, Any]) -> Dict[str, Any]:
+        """This classmethod is used for backward compatibility"""
+        return ModelCardMetadata(**card_def).model_dump()
 
     @staticmethod
     def validate_table(table_name: str) -> bool:

@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 import os
 from typing import Any, Dict, List, Optional
-
+import json
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
@@ -115,6 +115,13 @@ async def model_versions_page(
     # capping amount of sample data shown
     if max_dim > 200:
         metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
+
+    metadata.sample_data = json.dumps(metadata.sample_data, indent=4)
+
+    if bool(runcard.artifact_uris):
+        for key, uri in runcard.artifact_uris.items():
+            if uri.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")):
+                runcard.artifact_uris[key] = request.app.state.storage_client.get_signed_url(uri)
 
     return templates.TemplateResponse(
         "include/model/model_version.html",
@@ -299,7 +306,6 @@ def post_model_metadata(
         ModelMetadata or HTTP_404_NOT_FOUND if the model is not found.
     """
     registry: CardRegistry = request.app.state.registries.model
-
     try:
         model_card: ModelCard = registry.load_card(  # type:ignore
             name=payload.name,
