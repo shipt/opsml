@@ -14,7 +14,6 @@ import pandas as pd
 import polars as pl
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field, ConfigDict  # pylint: disable=no-name-in-module
-from opsml.model.onnx_data_types import ExtraOnnxArgs
 
 InputData = Union[pd.DataFrame, NDArray, Dict[str, NDArray]]
 

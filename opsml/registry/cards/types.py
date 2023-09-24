@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Union
-
+import datetime
 from pydantic import BaseModel
 from opsml.helpers.logging import ArtifactLogger
 
@@ -95,6 +95,13 @@ class CardVersion(BaseModel):
     name: str
     version: str
     card_type: CardType
+
+
+class AuditCardMetadata(BaseModel):
+    audit_uri: Optional[str] = None
+    datacards: List[CardVersion] = []
+    modelcards: List[CardVersion] = []
+    runcards: List[CardVersion] = []
 
 
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]

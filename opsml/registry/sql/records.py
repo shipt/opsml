@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
-from opsml.registry.cards.types import METRICS, PARAMS, Comment
+from opsml.registry.cards.types import METRICS, PARAMS, Comment, CardVersion, AuditCardMetadata
 from opsml.model.types import ModelCardMetadata, ModelCardUris
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
@@ -39,10 +39,9 @@ class DataRegistryRecord(SaveRecord):
     pipelinecard_uid: Optional[str] = None
     auditcard_uid: Optional[str] = None
     datacard_uri: str
-    uris: Dict[str, Optional[str]]
 
     @model_validator(mode="before")
-    def set_uris(cls, values):
+    def set_metadata(cls, values):
         metadata = values.get("metadata")
         uris = metadata.get("uris")
 
@@ -51,6 +50,7 @@ class DataRegistryRecord(SaveRecord):
         values["data_type"] = metadata["data_type"]
         values["runcard_uid"] = metadata["runcard_uid"]
         values["pipelinecard_uid"] = metadata["pipelinecard_uid"]
+        values["auditcard_uid"] = metadata["auditcard_uid"]
 
         return values
 
@@ -81,6 +81,7 @@ class ModelRegistryRecord(SaveRecord):
         values["model_type"] = metadata["model_type"]
         values["runcard_uid"] = metadata["runcard_uid"]
         values["pipelinecard_uid"] = metadata["pipelinecard_uid"]
+        values["auditcard_uid"] = metadata["auditcard_uid"]
 
         return values
 
@@ -122,6 +123,16 @@ class AuditRegistryRecord(SaveRecord):
     runcards: List[CardVersion]
     timestamp: int = get_timestamp()
 
+    @model_validator(mode="before")
+    def set_metadata(cls, values):
+        metadata = values.get("metadata")
+        values["audit_uri"] = metadata["audit_uri"]
+        values["datacards"] = metadata["datacards"]
+        values["modelcards"] = metadata["modelcards"]
+        values["runcards"] = metadata["runcards"]
+
+        return values
+
 
 RegistryRecord = Union[
     DataRegistryRecord,
@@ -151,7 +162,6 @@ class LoadRecord(BaseModel):
 
 class LoadedDataRecord(LoadRecord):
     dependent_vars: Optional[List[Union[int, str]]] = None
-    auditcard_uid: Optional[str] = None
     metadata: DataCardMetadata
 
     @model_validator(mode="before")
@@ -165,6 +175,7 @@ class LoadedDataRecord(LoadRecord):
 
         datacard_definition["storage_client"] = storage_client
         datacard_definition["metadata"]["uris"]["datacard_uri"] = values.get("datacard_uri")
+        datacard_definition["metadata"]["auditcard_uid"] = values.get("auditcard_uid")
 
         if datacard_definition["metadata"]["uris"]["profile_uri"] is not None:
             profile_uri = datacard_definition["metadata"]["uris"]["profile_uri"]
@@ -218,7 +229,6 @@ class LoadedDataRecord(LoadRecord):
 
 class LoadedModelRecord(LoadRecord):
     datacard_uid: str
-    auditcard_uid: Optional[str] = None
     metadata: ModelCardMetadata
 
     model_config = ConfigDict(protected_namespaces=("protect_",))
@@ -231,6 +241,7 @@ class LoadedModelRecord(LoadRecord):
             storage_client=storage_client,
         )
 
+        modelcard_definition["metadata"]["auditcard_uid"] = values.get("auditcard_uid")
         modelcard_definition["metadata"]["sample_data_type"] = values.get("sample_data_type")
         modelcard_definition["metadata"]["model_type"] = values.get("model_type")
         modelcard_definition["storage_client"] = values.get("storage_client")
@@ -271,13 +282,10 @@ class LoadedModelRecord(LoadRecord):
 
 
 class LoadedAuditRecord(LoadRecord):
-    audit_uri: str
     approved: bool
-    datacards: List[CardVersion]
-    modelcards: List[CardVersion]
-    runcards: List[CardVersion]
     audit: Dict[str, Dict[int, Dict[str, Optional[str]]]]
     comments: List[Comment]
+    metadata: AuditCardMetadata
 
     @model_validator(mode="before")
     def load_audit_attr(cls, values) -> Dict[str, Any]:
@@ -287,7 +295,7 @@ class LoadedAuditRecord(LoadRecord):
             audit_uri=values.get("audit_uri"),
             storage_client=storage_client,
         )
-        audit["audit_uri"] = values.get("audit_uri")
+        audit["metadata"]["audit_uri"] = values.get("audit_uri")
 
         return audit
 

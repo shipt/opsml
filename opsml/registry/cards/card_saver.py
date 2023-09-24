@@ -392,7 +392,7 @@ class AuditCardArtifactSaver(CardArtifactSaver):
     def _save_audit(self):
         self._set_storage_spec(
             filename=SaveName.AUDIT,
-            uri=self.card.audit_uri,
+            uri=self.card.metadata.audit_uri,
         )
 
         storage_path = save_record_artifact_to_storage(
@@ -400,7 +400,7 @@ class AuditCardArtifactSaver(CardArtifactSaver):
             storage_client=self.storage_client,
         )
 
-        self.card.audit_uri = storage_path.uri
+        self.card.metadata.audit_uri = storage_path.uri
 
     def save_artifacts(self) -> ArtifactCard:
         self._save_audit()

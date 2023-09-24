@@ -32,7 +32,7 @@ def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid:
         audit_registry.update_card(card=auditcard)
 
         if self.card_type in [CardType.DATACARD, CardType.MODELCARD]:
-            self.auditcard_uid = auditcard.uid
+            self.metadata.auditcard_uid = auditcard.uid
 
         return None
 

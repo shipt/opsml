@@ -84,6 +84,7 @@ class DataCardMetadata(BaseModel):
     additional_info: Dict[str, Union[float, int, str]] = {}
     runcard_uid: Optional[str] = None
     pipelinecard_uid: Optional[str] = None
+    auditcard_uid: Optional[str] = None
     uris: DataCardUris = DataCardUris()
 
     @field_validator("feature_descriptions", mode="before")

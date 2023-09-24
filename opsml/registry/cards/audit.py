@@ -15,7 +15,7 @@ from rich.table import Table
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, CardVersion, Comment
+from opsml.registry.cards.types import CardType, CardVersion, Comment, AuditCardMetadata
 from opsml.registry.sql.records import AuditRegistryRecord, RegistryRecord
 
 
@@ -112,13 +112,9 @@ class AuditCard(ArtifactCard):
     """
 
     audit: AuditSections = AuditSections()
-    audit_uri: Optional[str] = None
-    datacards: List[CardVersion] = []
-    modelcards: List[CardVersion] = []
-    runcards: List[CardVersion] = []
-    attached_cards: List[CardVersion] = []
     approved: bool = False
     comments: List[Comment] = []
+    metadata: AuditCardMetadata = AuditCardMetadata()
 
     @property
     def add_comment(self, name: str, comment: str) -> None:
@@ -171,7 +167,7 @@ class AuditCard(ArtifactCard):
 
         if card.card_type.lower() == CardType.DATACARD.value:
             if audit_registry.validate_uid(card.uid, RegistryTableNames.DATA.value):
-                self.datacards.append(
+                self.metadata.datacards.append(
                     CardVersion(
                         name=card.name,
                         version=card.version,
@@ -182,7 +178,7 @@ class AuditCard(ArtifactCard):
 
         elif card.card_type.lower() == CardType.MODELCARD:
             if audit_registry.validate_uid(card.uid, RegistryTableNames.MODEL.value):
-                self.modelcards.append(
+                self.metadata.modelcards.append(
                     CardVersion(
                         name=card.name,
                         version=card.version,
@@ -193,7 +189,7 @@ class AuditCard(ArtifactCard):
 
         elif card.card_type.lower() == CardType.RUNCARD:
             # RunCard does not get a validation because registration will occur at end of run
-            self.runcards.append(
+            self.metadata.runcards.append(
                 CardVersion(
                     name=card.name,
                     version=card.version,
@@ -298,7 +294,7 @@ class AuditCard(ArtifactCard):
         try:
             _section[question_nbr].response = response
         except KeyError as exc:
-            logger.error("Question %s not found in section %s", question_nbr, section)
+            logger.error("Question %s not found in section %s", str(question_nbr), str(section))
             raise exc
 
     def create_report(self, save_path: str) -> None:

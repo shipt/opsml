@@ -56,7 +56,7 @@ def test_audit_card_add_uids(
     # test 1st path to add uid
     datacard.add_to_auditcard(auditcard=auditcard)
 
-    assert auditcard.datacards[0].name == datacard.name
+    assert auditcard.metadata.datacards[0].name == datacard.name
 
     # register card
     audit_registry.register_card(card=auditcard)
@@ -76,8 +76,8 @@ def test_audit_card_add_uids(
     # test 2nd path to add uid
     modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
     auditcard = audit_registry.load_card(uid=auditcard.uid)
-    assert auditcard.modelcards[0].version == modelcard.version
-    assert modelcard.auditcard_uid == auditcard.uid
+    assert auditcard.metadata.modelcards[0].version == modelcard.version
+    assert modelcard.metadata.auditcard_uid == auditcard.uid
 
     ### These should fail
     with pytest.raises(ValueError):
