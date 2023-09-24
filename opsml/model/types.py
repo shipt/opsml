@@ -130,8 +130,40 @@ class ModelReturn(BaseModel):
     model_config = ConfigDict(frozen=False, protected_namespaces=("protect_",))
 
 
+class ExtraOnnxArgs(BaseModel):
+    """
+    input_names (List[str]): Optional list containing input names for model inputs.
+    This is a PyTorch-specific attribute
+    output_names (List[str]): Optional list containing output names for model outputs.
+    This is a PyTorch-specific attribute
+    dynamic_axes (Dictionary): Optional PyTorch attribute that defines dynamic axes
+    constant_folding (bool): Whether to use constant folding optimization. Default is True
+    """
+
+    input_names: List[str]
+    output_names: List[str]
+    dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None
+    do_constant_folding: bool = True
+    export_params: bool = True
+    verbose: bool = False
+    options: Optional[Dict[str, Any]] = None
+
+
 @dataclass
 class ModelCardUris:
+    """Uri holder for ModelCardMetadata
+
+    Args:
+        modelcard_uri:
+            URI of modelcard
+        trained_model_uri:
+            URI where model is stored
+        sample_data_uri:
+            URI of trained model sample data
+        model_metadata_uri:
+            URI where model metadata is stored
+    """
+
     modelcard_uri: Optional[str] = None
     trained_model_uri: Optional[str] = None
     onnx_model_uri: Optional[str] = None
@@ -142,6 +174,30 @@ class ModelCardUris:
 
 
 class ModelCardMetadata(BaseModel):
+    """Create modelcard metadata
+
+    Args:
+        description:
+            Description for your model
+        onnx_model_data:
+            Pydantic model containing onnx data schema
+        onnx_model_def:
+            Pydantic model containing OnnxModel definition
+        model_type:
+            Type of model
+        data_schema:
+            Optional dictionary of the data schema used in model training
+        additional_onnx_args:
+            Optional pydantic model containing Torch args for model conversion to onnx.
+        runcard_uid:
+            RunCard associated with the ModelCard
+        pipelinecard_uid:
+            Associated PipelineCard
+        uris:
+            ModelCardUris object containing all uris associated with ModelCard
+    """
+
+    description: Optional[str] = None
     onnx_model_data: Optional[DataDict] = None
     onnx_model_def: Optional[OnnxModelDefinition] = None
     sample_data_type: Optional[str] = None
@@ -274,25 +330,6 @@ class PydanticDataTypes(Enum):
     INTEGER = int
     STRING = str
     ANY = Any
-
-
-class ExtraOnnxArgs(BaseModel):
-    """
-    input_names (List[str]): Optional list containing input names for model inputs.
-    This is a PyTorch-specific attribute
-    output_names (List[str]): Optional list containing output names for model outputs.
-    This is a PyTorch-specific attribute
-    dynamic_axes (Dictionary): Optional PyTorch attribute that defines dynamic axes
-    constant_folding (bool): Whether to use constant folding optimization. Default is True
-    """
-
-    input_names: List[str]
-    output_names: List[str]
-    dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None
-    do_constant_folding: bool = True
-    export_params: bool = True
-    verbose: bool = False
-    options: Optional[Dict[str, Any]] = None
 
 
 @dataclass

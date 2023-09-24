@@ -12,7 +12,17 @@ from numpy.typing import NDArray
 from pydantic import ValidationError
 from requests.auth import HTTPBasicAuth
 
-from opsml.registry import DataCard, ModelCard, RunCard, PipelineCard, CardRegistry, CardRegistries, CardInfo
+from opsml.registry import (
+    DataCard,
+    ModelCard,
+    RunCard,
+    PipelineCard,
+    CardRegistry,
+    CardRegistries,
+    CardInfo,
+    DataCardMetadata,
+    ModelCardMetadata,
+)
 from opsml.app.routes.utils import list_team_name_info
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
@@ -283,7 +293,7 @@ def test_register_model(
     )
 
     model_registry.register_card(card=model_card_custom)
-    assert "pipeline-model" in model_card_custom.uris.trained_model_uri
+    assert "pipeline-model" in model_card_custom.metadata.uris.trained_model_uri
 
     model_card2 = ModelCard(
         trained_model=model,
@@ -361,7 +371,7 @@ def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame)
         team=team,
         user_email=user_email,
         data_splits=data_split,
-        additional_info={"input_metadata": 20},
+        metadata=DataCardMetadata(additional_info={"input_metadata": 20}),
         dependent_vars=[200, "test"],
     )
 
@@ -371,8 +381,8 @@ def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame)
 
     loaded_data.load_data()
 
-    assert int(loaded_data.additional_info["input_metadata"]) == 20
-    assert int(loaded_data.additional_info["added_metadata"]) == 10
+    assert int(loaded_data.metadata.additional_info["input_metadata"]) == 20
+    assert int(loaded_data.metadata.additional_info["added_metadata"]) == 10
     assert isinstance(loaded_data.dependent_vars[0], int)
     assert isinstance(loaded_data.dependent_vars[1], str)
     assert bool(loaded_data)
@@ -391,13 +401,13 @@ def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame)
             team=team,
             user_email=user_email,
             data_splits=data_split,
-            additional_info={"input_metadata": 20},
+            metadata=DataCardMetadata(additional_info={"input_metadata": 20}),
             dependent_vars=[200, "test"],
         )
 
     # load card again
     datacardv12: DataCard = registry.load_card(name=data_name, version="1.2.0")
-    datacardv12.uris.data_uri = "fail"
+    datacardv12.metadata.uris.data_uri = "fail"
 
     with pytest.raises(FileNotFoundError):
         datacardv12.load_data()
@@ -618,7 +628,7 @@ def test_model_metrics(
         sample_input_data=data[0:1],
         info=card_info,
         datacard_uid=datacard.uid,
-        runcard_uid=runcard.uid,
+        metadata=ModelCardMetadata(runcard_uid=runcard.uid),
     )
     api_registries.model.register_card(modelcard)
 
@@ -629,7 +639,7 @@ def test_model_metrics(
         sample_input_data=data[0:1],
         info=card_info,
         datacard_uid=datacard.uid,
-        runcard_uid=runcard.uid,
+        metadata=ModelCardMetadata(runcard_uid=runcard.uid),
     )
     api_registries.model.register_card(modelcard_2)
 

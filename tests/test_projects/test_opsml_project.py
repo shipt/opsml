@@ -50,7 +50,7 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         run.log_artifact(name="array", artifact=array)
         info.run_id = run.run_id
 
-        assert data_card.runcard_uid == run.run_id
+        assert data_card.metadata.runcard_uid == run.run_id
 
         auditcard = AuditCard(name="audit_card", team="team", user_email="test")
         auditcard.add_card_uid(card_type="data", uid=data_card.uid)
@@ -85,7 +85,7 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
     )
     assert loaded_data_card.uid is not None
     assert loaded_data_card.uid == data_card.uid
-    assert loaded_data_card.runcard_uid == proj.run_id
+    assert loaded_data_card.metadata.runcard_uid == proj.run_id
 
     # load data
     assert loaded_data_card.data is None

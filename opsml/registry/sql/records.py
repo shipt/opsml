@@ -7,11 +7,13 @@ from typing import Any, Dict, List, Optional, Union, cast
 from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
-from opsml.registry.cards.types import METRICS, PARAMS, DataCardUris, ModelCardUris, CardVersion, Comment
+from opsml.registry.cards.types import METRICS, PARAMS, Comment
+from opsml.model.types import ModelCardMetadata, ModelCardUris
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
 from opsml.registry.storage.types import ArtifactStorageSpecs
+from opsml.registry.data.types import DataCardMetadata
 
 ARBITRARY_ARTIFACT_TYPE = "dict"
 
@@ -41,9 +43,14 @@ class DataRegistryRecord(SaveRecord):
 
     @model_validator(mode="before")
     def set_uris(cls, values):
-        uris = values.get("uris")
+        metadata = values.get("metadata")
+        uris = metadata.get("uris")
+
         values["data_uri"] = uris["data_uri"]
         values["datacard_uri"] = uris["datacard_uri"]
+        values["data_type"] = metadata["data_type"]
+        values["runcard_uid"] = metadata["runcard_uid"]
+        values["pipelinecard_uid"] = metadata["pipelinecard_uid"]
 
         return values
 
@@ -64,12 +71,16 @@ class ModelRegistryRecord(SaveRecord):
     model_config = ConfigDict(protected_namespaces=("protect_",))
 
     @model_validator(mode="before")
-    def set_uris(cls, values):
-        uris = values.get("uris")
-        values["trained_model_uri"] = uris["trained_model_uri"]
-        values["model_metadata_uri"] = uris["model_metadata_uri"]
-        values["sample_data_uri"] = uris["sample_data_uri"]
-        values["modelcard_uri"] = uris["modelcard_uri"]
+    def set_metadata(cls, values):
+        metadata = values.get("metadata")
+        values["modelcard_uri"] = metadata["uris"]["modelcard_uri"]
+        values["trained_model_uri"] = metadata["uris"]["trained_model_uri"]
+        values["model_metadata_uri"] = metadata["uris"]["model_metadata_uri"]
+        values["sample_data_uri"] = metadata["uris"]["sample_data_uri"]
+        values["sample_data_type"] = metadata["sample_data_type"]
+        values["model_type"] = metadata["model_type"]
+        values["runcard_uid"] = metadata["runcard_uid"]
+        values["pipelinecard_uid"] = metadata["pipelinecard_uid"]
 
         return values
 
@@ -139,15 +150,9 @@ class LoadRecord(BaseModel):
 
 
 class LoadedDataRecord(LoadRecord):
-    uris: DataCardUris
-    data_type: Optional[str] = None
-    feature_map: Optional[Dict[str, Any]] = None
-    feature_descriptions: Optional[Dict[str, str]] = None
     dependent_vars: Optional[List[Union[int, str]]] = None
-    additional_info: Optional[Dict[str, Union[float, int, str]]] = None
-    runcard_uid: Optional[str] = None
-    pipelinecard_uid: Optional[str] = None
     auditcard_uid: Optional[str] = None
+    metadata: DataCardMetadata
 
     @model_validator(mode="before")
     def load_attributes(cls, values):
@@ -159,10 +164,10 @@ class LoadedDataRecord(LoadRecord):
         )
 
         datacard_definition["storage_client"] = storage_client
-        datacard_definition["uris"]["datacard_uri"] = values.get("datacard_uri")
+        datacard_definition["metadata"]["uris"]["datacard_uri"] = values.get("datacard_uri")
 
-        if datacard_definition["uris"]["profile_uri"] is not None:
-            profile_uri = datacard_definition["uris"]["profile_uri"]
+        if datacard_definition["metadata"]["uris"]["profile_uri"] is not None:
+            profile_uri = datacard_definition["metadata"]["uris"]["profile_uri"]
 
             datacard_definition["data_profile"] = LoadedDataRecord.load_data_profile(
                 data_profile_uri=profile_uri,
@@ -213,12 +218,8 @@ class LoadedDataRecord(LoadRecord):
 
 class LoadedModelRecord(LoadRecord):
     datacard_uid: str
-    sample_data_type: str
-    model_type: str
-    runcard_uid: Optional[str] = None
-    pipelinecard_uid: Optional[str] = None
     auditcard_uid: Optional[str] = None
-    uris: ModelCardUris
+    metadata: ModelCardMetadata
 
     model_config = ConfigDict(protected_namespaces=("protect_",))
 
@@ -230,10 +231,10 @@ class LoadedModelRecord(LoadRecord):
             storage_client=storage_client,
         )
 
-        modelcard_definition["sample_data_type"] = values.get("sample_data_type")
-        modelcard_definition["model_type"] = values.get("model_type")
+        modelcard_definition["metadata"]["sample_data_type"] = values.get("sample_data_type")
+        modelcard_definition["metadata"]["model_type"] = values.get("model_type")
         modelcard_definition["storage_client"] = values.get("storage_client")
-        modelcard_definition["uris"] = ModelCardUris(
+        modelcard_definition["metadata"]["uris"] = ModelCardUris(
             model_metadata_uri=values.get("model_metadata_uri"),
             trained_model_uri=values.get("trained_model_uri"),
             modelcard_uri=values.get("modelcard_uri"),
