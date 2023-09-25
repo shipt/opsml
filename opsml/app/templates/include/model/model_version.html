@@ -22,24 +22,24 @@
 <!---- Model version table -------->
 <div class="container">
   <div class="page-header">
-    <h2>{{selected_model}}</h2>
+    <h2>{{selected_model["name"]}}</h2>
   </div>
 </div>
 <br>
 
 <!---Create vesion tables ------>
 <div class = "container" style="width: 120%; padding-bottom: 10%;">
-  <div style="width: 16%; float: left;"> 
+  <div style="width: 25%; float: left;"> 
     <div class="list-group">
       {% for version in versions %}
-        <a href="/opsml/models/versions/?model={{ selected_model }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
+        <a href="/opsml/models/versions/?model={{ selected_model["name"] }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
       {% endfor %}
     </div>
   </div>
 
-  <div style="width: 79%;"> 
+  <div style="width: 85%;"> 
 
-    <div class="card" id="Metadata" style="width:79%; float:right;"s>
+    <div class="card" id="Metadata" style="width:68%; float:right;"s>
       <div class="card-body">
         <h4>Model</h4>
 
@@ -53,7 +53,19 @@
             <tr>
               <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
               <td><font color="#999">ID:</font></td>
-              <td>{{ model_id }}</td>
+              <td>{{ selected_model["uid"] }}</td>
+            </tr>
+
+            <tr>
+              <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
+              <td><font color="#999">Name:</font></td>
+              <td>{{ metadata["model_name"] }}</td>
+            </tr>
+
+            <tr>
+              <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
+              <td><font color="#999">Version:</font></td>
+              <td>{{ metadata["model_version"] }}</td>
             </tr>
 
             <tr>
@@ -78,6 +90,8 @@
                   </a>
               </td>
               </tr>
+
+
             {% endif %}
 
             <tr>
@@ -89,6 +103,18 @@
                   </a>
               </td>
             </tr>
+
+            <tr>
+              <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
+              <td><font color="#999">AuditCard:</font></td>
+              <td>
+                <a href="/opsml/files/download?read_path={{metadata["onnx_uri"]}}" download={{metadata["onnx_uri"].split("/")[-1]}}>
+                  <button id="download-button" type="submit" class="btn btn-success" >Link</button>
+                </a>
+            </td>
+            </tr>
+
+
           </tbody>
         </table>
       </div>
@@ -96,18 +122,16 @@
 
       {% if runcard["tags"]|length > 0 %}
         <div class="card-body">
-          <h5><font color="#999">Tags</font></h5>
+          <h5><i class="fa-solid fa-tag" style="color:#04b78a"></i> <font color="#999">Tags</font></h5>
           <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
             <colgroup>
-              <col span="1" style="width: 4%;">
               <col span="1" style="width: 15%;">
               <col span="1" style="width: 59%;">
      
           </colgroup>
             <tbody>
               {% for tag_name, tag_value in runcard["tags"].items() %}
-                  <tr>
-                    <td><i class="fa-solid fa-tag" style="color:#04b78a"></i></td>
+                  <tr>  
                     <td><font color="#999">{{tag_name}}:</font></td>
                     <td>{{tag_value}}</td>
                   </tr>
@@ -121,20 +145,20 @@
       <hr id="version-spacer">
       <div class="card-body" id="toggle">
 
-          <span><button id="download-button" type="submit" class="btn btn-success" >Metrics</button></span>
-          <span><button id="download-button" type="submit" class="btn btn-success" >Sample Data</button></span>
-          <span><button id="download-button" type="submit" class="btn btn-success" >Params</button></span>
-          <span><button id="download-button" type="submit" class="btn btn-success" >Artifacts</button></span>
+          <span><button id="version-button" type="submit" class="btn btn-success" >Metrics</button></span>
+          <span><button id="version-button" type="submit" class="btn btn-success" >Sample Data</button></span>
+          <span><button id="version-button" type="submit" class="btn btn-success" >Params</button></span>
+          <span><button id="version-button" type="submit" class="btn btn-success" >Artifacts</button></span>
+          <span><button id="version-button" type="submit" class="btn btn-success" >Metadata</button></span>
   
       </div>
 
       {% if runcard["metrics"]|length > 0 %}
         <div class="card-body" id="Metrics" style="display:none">
           <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-
+            <h5><i class="fa-solid fa-chart-simple" style="color:#04b78a"></i> <font color="#999">Metrics</font></h5>
             <thead style="background:white;">
               <tr>
-                <th scope="col"></th>
                 <th scope="col">Name</th>
                 <th scope="col">Value</th>
                 <th scope="col">Step</th>
@@ -143,7 +167,6 @@
             </thead>
             
             <colgroup>
-              <col span="1" style="width: 4%;">
               <col span="1" style="width: 15%;">
               <col span="1" style="width: 15%;">
               <col span="1" style="width: 15%;">
@@ -153,8 +176,7 @@
             <tbody>
               {% for metric_name, metric_values in runcard["metrics"].items() %}
                   <tr>
-                    <td><i class="fa-solid fa-tag" style="color:#04b78a"></i></td>
-                    <td><font color="#999">{{metric_name}}:</font></td>
+                    <td><font color="#999">{{metric_name}}</font></td>
                     <td>{{metric_values[-1].value}}</td>
                     <td>{{metric_values[-1].step}}</td>
                     <td>{{metric_values[-1].timestamp}}</td>
@@ -166,23 +188,23 @@
       {% endif %}
 
       <div class="card-body" id="SampleData" style="display:none">
+        <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Sample Data</font></h5>
           <pre><code class="json">{{metadata["sample_data"]}}</code></pre>
       </div>
 
       {% if runcard["parameters"]|length > 0 %}
       <div class="card-body" id="Params" style="display:none">
+        <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
         <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
 
           <thead style="background:white;">
             <tr>
-              <th scope="col"></th>
               <th scope="col">Name</th>
               <th scope="col">Value</th>
             </tr>
           </thead>
 
           <colgroup>
-            <col span="1" style="width: 4%;">
             <col span="1" style="width: 15%;">
             <col span="1" style="width: 15%;">
           </colgroup>
@@ -190,8 +212,7 @@
           <tbody>
             {% for param_name, param_value in runcard["parameters"].items() %}
               <tr>
-                <td><i class="fa-solid fa-tag" style="color:#04b78a"></i></td>
-                <td><font color="#999">{{param_name}}:</font></td>
+                <td><font color="#999">{{param_name}}</font></td>
                 <td>{{param_value[0]["value"]}}</td>
               </tr>
             {% endfor %}
@@ -202,34 +223,22 @@
 
       {% if runcard["artifact_uris"]|length > 0 %}
       <div class="card-body" id="Artifacts" style="display:none">
+        <h5><i class="fa-solid fa-floppy-disk" style="color:#04b78a"></i> <font color="#999">Artifacts</font></h5>
         <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-
-          <thead style="background:white;">
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">Name</th>
-              <th scope="col">Uri</th>
-            </tr>
-          </thead>
-
           <colgroup>
-            <col span="1" style="width: 4%;">
             <col span="1" style="width: 15%;">
-            <col span="1" style="width: 59%%;">
+            <col span="1" style="width: 50%;">
           </colgroup>
 
           <tbody>
             {% for name, uri in runcard["artifact_uris"].items() %}
               <tr>
-                <td><i class="fa-solid fa-tag" style="color:#04b78a"></i></td>
-                <td><font color="#999">{{name}}:</font></td>
-
-                {% if uri.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))%}
-                  <td><img src="{{uri}}"/></td>
-                {% else %}
-                  <td>{{uri}}</td>
-                {% endif %}
-                
+                <td><font color="#999">{{name}}</font></td>
+                <td>
+                  <a href="/opsml/files/download?read_path={{uri}}" download={{uri.split("/")[-1]}}>
+                    <button id="download-button" type="submit" class="btn btn-success">Download</button>
+                  </a>
+                </td>
               </tr>
             {% endfor %}
           </tbody>
@@ -237,7 +246,10 @@
       </div>
       {% endif %}
 
-
+      <div class="card-body" id="MetadataJson" style="display:none">
+        <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Metadata</font></h5>
+          <pre><code class="json">{{metadata_json}}</code></pre>
+      </div>
       
     </div>
   </div>
@@ -269,6 +281,7 @@
   $('#SampleData').toggle( ix === 1 );
   $('#Params').toggle( ix === 2 );
   $('#Artifacts').toggle( ix === 3 );
+  $('#MetadataJson').toggle( ix === 4 );
 });
 
 </script>

@@ -219,6 +219,30 @@ p {
 }
 
 
+#version-button.btn-success {
+  font-size: 13px;
+  color: #5e0fb7;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #5e0fb7;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#version-button.btn-success:hover {
+  color: #FFF;
+  background: #5e0fb7;
+  border: 2px solid #5e0fb7;
+}
+
+#version-button.btn-success:focus {
+  color: #FFF;
+  background: #5e0fb7;
+  border: 2px solid #5e0fb7;
+}
+
+
 #metric-button.btn-success {
   font-size: 13px;
   color: #04b78a;

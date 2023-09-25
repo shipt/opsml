@@ -116,28 +116,20 @@ async def model_versions_page(
     if max_dim > 200:
         metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
 
+    metadata_json = json.dumps(metadata.model_dump(), indent=4)
     metadata.sample_data = json.dumps(metadata.sample_data, indent=4)
-
-    if bool(runcard.artifact_uris):
-        for key, uri in runcard.artifact_uris.items():
-            if uri.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")):
-                runcard.artifact_uris[key] = request.app.state.storage_client.get_signed_url(uri)
 
     return templates.TemplateResponse(
         "include/model/model_version.html",
         {
             "request": request,
             "versions": versions,
-            "selected_model": model,
+            "selected_model": selected_model,
             "selected_version": selected_version,
             "project_num": project_num,
             "metadata": metadata,
             "runcard": runcard,
-            "model_id": selected_model.get("uid"),
-            # "metrics": getattr(runcard, "metrics", None),
-            # "params": getattr(runcard, "parameters", None),
-            # "tags": getattr(runcard, "tags", None),
-            # "artifacts": getattr(runcard, "artifact_uris", None),
+            "metadata_json": metadata_json,
         },
     )
 
