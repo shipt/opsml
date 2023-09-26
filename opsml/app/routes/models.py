@@ -93,12 +93,13 @@ async def model_versions_page(
     )
 
     if selected_version is None:
-        selected_model = versions[0]
+        selected_model: ModelCard = registry.load_card(uid=versions[0]["uid"])
+        selected_version = selected_model.version
     else:
-        selected_model = registry.list_cards(name=model, version=selected_version)[0]
+        selected_model: ModelCard = registry.load_card(name=model, version=selected_version)
 
-    if selected_model.get("runcard_uid") is not None:
-        runcard = request.app.state.registries.run.load_card(uid=selected_model.get("runcard_uid"))
+    if selected_model.metadata.runcard_uid is not None:
+        runcard = request.app.state.registries.run.load_card(uid=selected_model.metadata.runcard_uid)
         project_num = request.app.state.mlflow_client.get_experiment_by_name(name=runcard.project_id).experiment_id
 
     else:

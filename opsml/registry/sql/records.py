@@ -7,13 +7,19 @@ from typing import Any, Dict, List, Optional, Union, cast
 from pydantic import BaseModel, model_validator, ConfigDict
 
 from opsml.profile.profile_data import DataProfiler, ProfileReport
-from opsml.registry.cards.types import METRICS, PARAMS, Comment, CardVersion, AuditCardMetadata
-from opsml.model.types import ModelCardMetadata, ModelCardUris
+from opsml.registry.cards.types import (
+    METRICS,
+    PARAMS,
+    Comment,
+    CardVersion,
+    AuditCardMetadata,
+)
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
 from opsml.registry.storage.types import ArtifactStorageSpecs
-from opsml.registry.data.types import DataCardMetadata
+from opsml.registry.cards.types import ModelCardMetadata, ModelCardUris, DataCardMetadata
+
 
 ARBITRARY_ARTIFACT_TYPE = "dict"
 
@@ -248,7 +254,6 @@ class LoadedModelRecord(LoadRecord):
             values=values,
             storage_client=storage_client,
         )
-
         if modelcard_definition.get("metadata") is None:
             modelcard_definition["metadata"] = cls.convert_model_metadata(modelcard_definition)
 

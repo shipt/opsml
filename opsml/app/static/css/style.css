@@ -20,6 +20,7 @@ body {
     font-family: Boing;
     font-weight: normal;
     background: #fafafa;
+    padding-bottom: 500px;
 
 }
 
@@ -130,6 +131,37 @@ p {
     margin:0;
 }
 
+
+#SummaryText {
+  font-family: Boing;
+  font-weight: 100;
+ 
+  color: #000000;
+  margin:0;
+}
+
+#VersionBox {
+  float:left;
+  width:20%;
+  padding-right: 1%;
+}
+
+#CardBox{
+  float:left;
+  width:70%;
+}
+
+#SummaryBox{
+  float:left;
+  width:70%;
+}
+
+#VersionTabBox {
+  float:left;
+}
+
+
+
 #VersionTable td {
   border: none;
 }
@@ -201,6 +233,21 @@ p {
 
 }
 
+#label-button.btn-success {
+  font-family: Boing;
+  font-size: 15px;
+  font-weight: 300;
+  color: #000000;
+  background: #cacaca;
+  border: 2px solid #cacaca;
+  letter-spacing: 0.5px;
+  border-radius: 40px;
+  transition: all 0.3s ease 0s;
+  line-height: 10px;
+  margin-bottom: 10px;
+}
+
+
 #download-button.btn-success {
   font-size: 13px;
   color: #04b78a;
@@ -218,6 +265,27 @@ p {
   border: 2px solid #04b78a;
 }
 
+#download-button.btn-success:focus {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#version-tab-button {
+  color: #FFF;
+  background: #5e0fb7;
+  border: 2px solid #5e0fb7;
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border-radius: 40px;
+  transition: all 0.3s ease 0s;
+
+}
+
+#cardbox-button {
+  border-radius: 4px;
+}
 
 #version-button.btn-success {
   font-size: 13px;
@@ -272,6 +340,21 @@ p {
   padding: 0px;
   margin: 0px;  
 }
+
+
+#VersionContainer {
+  padding-left: 10%;
+  padding-right: 10%;
+
+}
+
+#VersionTabContainer {
+  padding-left: 10%;
+  padding-right: 10%;
+  margin-bottom: 1.7%;
+
+}
+
 #metadata-table.table-striped>tbody>tr:nth-child(odd)>td, 
 #metadata-table.table-striped>tbody>tr:nth-child(odd)>th {
    background-color: white; 
