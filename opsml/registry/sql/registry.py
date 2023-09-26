@@ -330,26 +330,6 @@ class CardRegistry:
         results = self._registry.list_cards(uid=uid)[0]
         return {col: results[col] for col in columns}
 
-    def list_card_names(self, team: Optional[str] = None) -> List[str]:
-        """Returns a list of unique card names
-
-        Args:
-            team:
-                Team to query
-
-        Returns:
-            List of unique card names
-        """
-        return self._registry.get_unique_card_names(team=team)
-
-    def list_teams(self) -> List[str]:
-        """Returns a list of unique teams
-
-        Returns:
-            List of unique teams
-        """
-        return self._registry.unique_teams
-
 
 class CardRegistries:
     def __init__(self):

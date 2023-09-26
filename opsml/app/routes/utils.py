@@ -167,7 +167,7 @@ class ExternalFileTarget(FileTarget):
 def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> ListTeamNameInfo:
     """Returns dictionary of items"""
 
-    all_teams = registry.list_teams()
+    all_teams = registry._registry.unique_teams
 
     if not bool(all_teams):
         default_team = None
@@ -175,7 +175,7 @@ def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> L
         default_team = all_teams[0]
 
     team = team or default_team
-    names = registry.list_card_names(team=team)
+    names = registry._registry.get_unique_card_names(team=team)
 
     return ListTeamNameInfo(
         teams=all_teams,
