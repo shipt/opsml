@@ -29,271 +29,56 @@
 </div>
 <br>
 
-
-
-
-
 <!---Create vesion tables ------>
 <div class="boxes" id="VersionContainer">
 
-    <div id="VersionBox">
-      <div class="list-group">
-        {% for version in versions %}
-          <a href="/opsml/data/versions/?data={{ selected_data.name }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
-        {% endfor %}
+  <div id="VersionColumn">
+    <div class="list-group">
+      {% for version in versions %}
+        <a href="/opsml/data/versions/?data={{ selected_data.name }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="MetadataColumn">
+
+    <div class="card border-0" style="width:100%; border-radius: 0%">
+      <div class="card-body">
+        <h4 >Data  </h4>
+        <div id="CardTabBox">
+          <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
+          <span><button id="download-button" type="submit" class="btn btn-success" >Summary</button></span>
+          <span><button id="download-button" type="submit" class="btn btn-success focus" >Data Profile</button></span>
+        </div>
       </div>
     </div>
 
-    <div id="CardBox" {% if load_profile == true %} style="display: None;" {% endif %}>
-     
-
-      <div class="card" id="Metadata">
-
-        <div class="card-body">
-
-          <h4 >Data  </h4>
-          <div id="CardTabBox" style="padding-top:10px; margin-botton:0px;">
-            <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
-            <span><button id="download-button" type="submit" class="btn btn-success" >Summary</button></span>
-            <span><button id="download-button" type="submit" class="btn btn-success" >Data Profile</button></span>
-           </div>
-        </div>
-        <hr id="version-spacer">
-
-        <div class="card-body">
-
-          <div class="table-responsive">
-            <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-              <colgroup>
-                <col span="1" style="width: 5%;">
-                <col span="1" style="width: 15%;">
-                <col span="1" style="width: 59%;">
-            </colgroup>
-              <tbody>
-                <tr>
-                  <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
-                  <td><font color="#999">ID:</font></td>
-                  <td>{{ selected_data.uid }}</td>
-                </tr>
-    
-                <tr>
-                  <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
-                  <td><font color="#999">Name:</font></td>
-                  <td>{{ selected_data.name }}</td>
-                </tr>
-    
-                <tr>
-                  <td><i class="fa fa-id-card" style="color:#04b78a"></i></td>
-                  <td><font color="#999">Version:</font></td>
-                  <td>{{ selected_data.version }}</td>
-                </tr>
-    
-                <tr>
-                  <td><i class="fa fa-users" style="color:#04b78a"></i></td>
-                  <td><font color="#999">Team:</font></td>
-                  <td>{{ selected_data.team }}</td>
-                </tr>
-    
-                <tr>
-                  <td><i class="fa fa-file" style="color:#04b78a"></i></td>
-                  <td><font color="#999">Type:</font></td>
-                  <td>{{selected_data.metadata.data_type}}</td>
-                </tr>
-    
-                <tr>
-                  <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
-                  <td><font color="#999">Data:</font></td>
-                  <td>
-                      <a href="/opsml/files/download?read_path={{selected_data.metadata.uris.data_uri}}" download={{selected_data.metadata.uris.data_uri.split("/")[-1]}}>
-                        <button id="download-button" type="submit" class="btn btn-success" >Download</button>
-                      </a>
-                  </td>
-                </tr>
-
-                {% if selected_data.metadata.uris.profile_html_uri is not none %}
-                  <tr>
-                    <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
-                    <td><font color="#999">Data Profile:</font></td>
-                    <td>
-                      <a href="/opsml/files/download?read_path={{selected_data.metadata.uris.profile_html_uri}}" download={{selected_data.metadata.uris.profile_html_uri.split("/")[-1]}}>
-                        <button id="download-button" type="submit" class="btn btn-success" >Download</button>
-                      </a>
-                  </td>
-                  </tr>
-    
-    
-                {% endif %}
-    
-                {% if selected_data.metadata.auditcard_uid is not none %}
-                <tr>
-                  <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
-                  <td><font color="#999">AuditCard:</font></td>
-                  <td>
-                    <a href="/opsml/audit/?uid={{selected_data.metadata.auditcard_uid}}">
-                      <button id="download-button" type="submit" class="btn btn-success" >Link</button>
-                    </a>
-                </td>
-              </tr>
-                {% endif %}
-    
-    
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <hr id="version-spacer">
-  
-        {% if selected_data.tags |length > 0 %}
-          <div class="card-body">
-            <h5><i class="fa-solid fa-tag" style="color:#04b78a"></i> <font color="#999">Tags</font></h5>
-            <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-              <colgroup>
-                <col span="1" style="width: 30%;">
-                <col span="1" style="width: 60%;">
-       
-            </colgroup>
-              <tbody>
-                {% for tag_name, tag_value in runcard["tags"].items() %}
-                    <tr>  
-                      <td><font color="#999">{{tag_name}}:</font></td>
-                      <td>{{tag_value}}</td>
-                    </tr>
-                  {% endfor %}
-              </tbody>
-            </table>
-            
-          </div>
-        {% endif %}
-  
-        <hr id="version-spacer">
-        <div class="card-body" id="toggle">
-  
-            <span><button id="version-button" type="submit" class="btn btn-success" >Splits</button></span>
-            <span><button id="version-button" type="submit" class="btn btn-success" >Dependent Vars</button></span>
-            <span><button id="version-button" type="submit" class="btn btn-success" >Feature Map</button></span>
-            <span><button id="version-button" type="submit" class="btn btn-success" >Feature Descriptions</button></span>
-            <span><button id="version-button" type="submit" class="btn btn-success" >SQL</button></span>
-
-        </div>
-  
-        {% if data_splits is not none %}
-        <div class="card-body" id="Splits" style="display:none">
-          <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Data Splits</font></h5>
-            <pre style="max-height: 500px; overflow: scroll;"><code class="json">{{data_splits}}</code></pre>
-        </div>
-        {% endif %}
-
-        {% if selected_data.dependent_vars is not none %}
-        <div class="card-body" id="DependentVars" style="display:none">
-          <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Dependent Vars</font></h5>
-          <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-  
-            <thead style="background:white;">
-              <tr>
-                <th scope="col">Name</th>
-              </tr>
-            </thead>
-  
-            <colgroup>
-              <col span="1" style="width: 15%;">
-              <col span="1" style="width: 15%;">
-            </colgroup>
-  
-            <tbody>
-              {% for depen_var in selected_data.dependent_vars %}
-                <tr>
-                  <td>{{depen_var}}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% endif %}
-
-
-        {% if selected_data.metadata.feature_map is not none %}
-        <div class="card-body" id="FeatureMap" style="display:none">
-          <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Map</font></h5>
-          <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-  
-            <thead style="background:white;">
-              <tr>
-                <th scope="col">Feature</th>
-                <th scope="col">Type</th>
-              </tr>
-            </thead>
-  
-            <colgroup>
-              <col span="1" style="width: 15%;">
-              <col span="1" style="width: 15%;">
-            </colgroup>
-  
-            <tbody>
-              {% for name, type_ in selected_data.metadata.feature_map.items() %}
-                <tr>
-                  <td><font color="#999">{{name}}</font></td>
-                  <td>{{type_}}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% endif %}
-
-        {% if selected_data.metadata.feature_descriptions |length > 0 %}
-        <div class="card-body" id="FeatureDescriptions" style="display:none">
-          <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Descriptions</font></h5>
-          <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-  
-            <thead style="background:white;">
-              <tr>
-                <th scope="col">Feature</th>
-                <th scope="col">Description</th>
-              </tr>
-            </thead>
-  
-            <colgroup>
-              <col span="1" style="width: 15%;">
-              <col span="1" style="width: 50%;">
-            </colgroup>
-  
-            <tbody>
-              {% for name, description in selected_data.metadata.feature_descriptions.items() %}
-                <tr>
-                  <td><font color="#999">{{name}}</font></td>
-                  <td>{{description}}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% endif %}
-
-        {% if selected_data.sql_logic |length > 0 %}
-        <div class="card-body" id="SQL" style="display:none">
-          <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">SQL</font></h5>
-            <pre style="max-height: 500px; overflow: scroll;"><code class="sql">{{selected_data.sql_logic}}</code></pre>
-        </div>
-        {% endif %}
-
-      </div>
+    <div id="CardBox" class="card border-0" {% if load_profile == true %} style="display: None; width: 100%; border-radius: 0%;" {% else %} style="width: 100%; border-radius: 0%;" {% endif %}>
+      {% include "include/data/data_metadata.html" %}
     </div>
 
-  <div id="SummaryBox" style="display: None;">
+    {% if selected_data.tags|length > 0 %}
+    <div id="TagBox" class="card border-0" {% if load_profile == true %} style="display: None; width: 100%; border-radius: 0%;" {% else %} style="width: 100%; border-radius: 0%;" {% endif %}>
+      {% include "include/data/data_tags.html" %}
+    </div>
+    {% endif %}
+    
+    <div id="ExtraBox" class="card border-0" {% if load_profile == true %} style="display: None; width: 100%; border-radius: 0%;" {% else %} style="width: 100%; border-radius: 0%;" {% endif %}>
+      {% include "include/data/data_extras.html" %}
+    </div>
+
+    <div id="SummaryBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
+        {% with data=selected_data %}
+        {% include "include/data/data_summary.html" %}
+        {% endwith %}
+    </div>
+
+    <div id="ProfileBox" class="card border-0"  {% if load_profile == false %} style="display: None; width: 100%; border-radius: 0%;" {% else %} style="width: 100%; border-radius: 0%;" {% endif %}>
       {% with data=selected_data %}
-      {% include "include/data/data_summary.html" %}
+      {% include "include/data/data_profile.html" %}
       {% endwith %}
+    </div>
   </div>
-
-
-  <div id="ProfileBox" {% if load_profile == false %} style="display: None;"  {% endif %}>
-    {% with data=selected_data %}
-    {% include "include/data/data_profile.html" %}
-    {% endwith %}
-  </div>
-
-
-
 </div>
 
 
@@ -319,6 +104,8 @@
   var ix = $(this).index();
   
   $('#CardBox').toggle( ix === 0 );
+  $('#TagBox').toggle( ix === 0 );
+  $('#ExtraBox').toggle( ix === 0 );
   $('#SummaryBox').toggle( ix === 1 );
   $('#ProfileBox').toggle( ix === 2 );
 });

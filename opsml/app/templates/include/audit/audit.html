@@ -99,11 +99,11 @@
     <hr>
 
       <div class="dropdown" id="MetadataTeamSelect">
-        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style="background:#038767; color:#fffefe; border:none; display: inline-block; float:right;">Comments</button>
+        <button id="audit-upload-button" class="btn btn-success" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style="float:right;">Comments</button>
         <div class="offcanvas offcanvas-end" style="background-color:#f0f2f5;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
           <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="offcanvasRightLabel">Comments</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <button id="audit-upload-button" type="button" class="btn-success" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
 
           {% if audit_report["uid"] is not none %}
@@ -202,8 +202,8 @@
 
 
     <br>
-      <button id="AuditSubmit" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none">Save AuditCard</button>
-      <button id="DownloadAudit" type="submit" class="btn btn-primary" style="background:#038767; color:#fffefe; border:none; float:right;" formaction="/opsml/audit/download">Download Audit</button>
+      <button id="audit-upload-button" type="submit" class="btn btn-success" >Save AuditCard</button>
+      <button id="audit-upload-button" type="submit" class="btn btn-success" style="float:right;" formaction="/opsml/audit/download">Download Audit</button>
 
 
   </form>

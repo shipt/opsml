@@ -149,9 +149,15 @@ p {
   margin:0;
 }
 
-#VersionBox {
+#VersionColumn {
   float:left;
   width:20%;
+  padding-right: 1%;
+}
+
+#MetadataColumn {
+  float:left;
+  width:80%;
   padding-right: 1%;
 }
 
@@ -285,6 +291,64 @@ p {
 
 }
 
+#metadata-button.btn-success {
+  font-size: 13px;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#metadata-button.btn-success:hover {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#metadata-button.btn-success:active {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#metadata-button.btn-success:focus {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+
+#summary-button.btn-success {
+  font-size: 13px;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#summary-button.btn-success:hover {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#summary-button.btn-success:active {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#summary-button.btn-success:focus {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
 
 
 #download-button.btn-success {
@@ -379,15 +443,31 @@ p {
 
 #version-spacer {
   padding: 0px;
-  margin: 0px;  
+  margin: 0px;
+}
+
+#version-spacer-metadata {
+  padding: 0px;
+  margin: 0px;
 }
 
 
 #VersionContainer {
   padding-left: 2.5%;
   padding-right: 2.5%;
-
 }
+
+#VersionColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 20%;
+}
+
+#VersionRow {
+  flex: 1;
+}
+
 
 #VersionTabContainer {
   padding-left: 10%;
