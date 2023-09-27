@@ -116,7 +116,6 @@ class AuditCard(ArtifactCard):
     comments: List[Comment] = []
     metadata: AuditCardMetadata = AuditCardMetadata()
 
-    @property
     def add_comment(self, name: str, comment: str) -> None:
         """Adds comment to AuditCard
 

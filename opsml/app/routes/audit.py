@@ -40,6 +40,7 @@ async def audit_list_homepage(
     request: Request,
     team: Optional[str] = None,
     model: Optional[str] = None,
+    email: Optional[str] = None,
     version: Optional[str] = None,
     uid: Optional[str] = None,
 ):
@@ -52,12 +53,13 @@ async def audit_list_homepage(
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
     """
+
     if all(attr is None for attr in [uid, version, model, team]):
         return templates.TemplateResponse(
             "include/audit/audit.html",
             {
                 "request": request,
-                "teams": request.app.state.registries.model.list_teams(),
+                "teams": request.app.state.registries.model._registry.unique_teams,
                 "models": None,
                 "selected_team": None,
                 "selected_model": None,
@@ -67,8 +69,8 @@ async def audit_list_homepage(
         )
 
     elif team is not None and all(attr is None for attr in [version, model]):
-        teams = request.app.state.registries.model.list_teams()
-        model_names = request.app.state.registries.model.list_card_names(team=team)
+        teams = request.app.state.registries.model._registry.unique_teams
+        model_names = request.app.state.registries.model._registry.get_unique_card_names(team=team)
         return templates.TemplateResponse(
             "include/audit/audit.html",
             {
@@ -116,6 +118,8 @@ async def audit_list_homepage(
             uid=uid,
         )[0]
 
+        email = model_record.get("user_email") if email is None else email
+
         auditcard_uid = model_record.get("auditcard_uid")
 
         if auditcard_uid is None:
@@ -154,6 +158,7 @@ async def audit_list_homepage(
                 "selected_team": team,
                 "models": model_names,
                 "selected_model": model,
+                "selected_email": email,
                 "versions": versions,
                 "version": version,
                 "audit_report": audit_report,
@@ -364,6 +369,7 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
             "selected_team": comment.selected_model_team,
             "models": model_names,
             "selected_model": comment.selected_model_name,
+            "selected_email": comment.selected_model_email,
             "versions": versions,
             "version": comment.selected_model_version,
             "audit_report": audit_report,
@@ -405,9 +411,9 @@ async def upload_audit_data(
         }
     else:
         audit_report = {
-            "name": form.name,
-            "team": form.team,
-            "user_email": form.email,
+            "name": form.name or form.selected_model_name,
+            "team": form.team or form.selected_model_team,
+            "user_email": form.email or form.selected_model_email,
             "version": form.version,
             "uid": form.uid,
             "status": form.status,
@@ -431,6 +437,7 @@ async def upload_audit_data(
             "selected_team": form.selected_model_team,
             "models": model_names,
             "selected_model": form.selected_model_name,
+            "selected_email": form.selected_model_name,
             "versions": versions,
             "version": form.selected_model_version,
             "audit_report": audit_report,

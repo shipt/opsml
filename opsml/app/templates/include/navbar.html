@@ -41,10 +41,12 @@
         if (window.location.href.includes("opsml/models")) {
             $("#models").addClass('active'); 
             $("#models").parents('li').addClass('active');
+
         } else if (window.location.href.includes("opsml/audit")) {
           $("#audit").addClass('active'); 
           $("#audit").parents('li').addClass('active');
-        } else if (window.location.href.includes("docs")) {
+
+        } else if (window.location.href.includes("opsml/data")) {
           $("#data").addClass('active'); 
           $("#data").parents('li').addClass('active');
         }

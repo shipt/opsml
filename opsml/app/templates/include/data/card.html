@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-sm-8">
           <h5 class="card-title">{{datum}}</h5>
-          <a href="/opsml/data/versions/?data={{datum}}" class="stretched-link" name="model" value={{datum}}></a>
+          <a href="/opsml/data/versions/?name={{datum}}" class="stretched-link" name="model" value={{datum}}></a>
         </div>
         <div class="col-sm-4" id="model-card-img">
           <img src="{{ url_for('static', path='/images/chip.png') }}" alt="" width="40" height="40"  class="center-block">

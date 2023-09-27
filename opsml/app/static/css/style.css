@@ -75,6 +75,15 @@ body {
     background-repeat: no-repeat;
 }
 
+#DataPage {
+  font-family: Boing;
+  font-weight: medium;
+  background: #fafafa;
+  background-image: url(/static/images/machine-learning.png);
+  background-attachment:fixed;
+  background-position: right center;
+  background-repeat: no-repeat;
+}
 
 #HomePage {
     font-family: Boing;
@@ -148,12 +157,17 @@ p {
 
 #CardBox{
   float:left;
-  width:70%;
+  width:80%;
 }
 
 #SummaryBox{
   float:left;
-  width:70%;
+  width:80%;
+}
+
+#ProfileBox{
+  float:left;
+  width:80%;
 }
 
 #VersionTabBox {
@@ -247,6 +261,31 @@ p {
   margin-bottom: 10px;
 }
 
+#audit-choose-button.btn-success {
+  color: #FFF;
+  background: #5e0fb7;
+  border: 2px solid #5e0fb7;
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border-radius: 40px;
+  transition: all 0.3s ease 0s;
+
+}
+
+#audit-upload-button.btn-success {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border-radius: 40px;
+  transition: all 0.3s ease 0s;
+
+}
+
+
 
 #download-button.btn-success {
   font-size: 13px;
@@ -260,6 +299,12 @@ p {
 }
 
 #download-button.btn-success:hover {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+
+#download-button.btn-success:active {
   color: #FFF;
   background: #04b78a;
   border: 2px solid #04b78a;
@@ -281,10 +326,6 @@ p {
   border-radius: 40px;
   transition: all 0.3s ease 0s;
 
-}
-
-#cardbox-button {
-  border-radius: 4px;
 }
 
 #version-button.btn-success {
@@ -343,8 +384,8 @@ p {
 
 
 #VersionContainer {
-  padding-left: 10%;
-  padding-right: 10%;
+  padding-left: 2.5%;
+  padding-right: 2.5%;
 
 }
 

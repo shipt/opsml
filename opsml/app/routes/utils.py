@@ -35,9 +35,9 @@ def get_names_teams_versions(registry: CardRegistry, team: str, name: str) -> Tu
         A tuple of names, teams, and versions
     """
 
-    teams = registry.list_teams()
+    teams = registry._registry.unique_teams
     versions = get_model_versions(registry, name, team)
-    names = registry.list_card_names(team=team)
+    names = registry._registry.get_unique_card_names(team=team)
     return names, teams, versions
 
 

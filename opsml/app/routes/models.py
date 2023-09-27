@@ -9,7 +9,6 @@ import json
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from fastapi.responses import RedirectResponse
 from opsml.app.routes.utils import (
     error_to_500,
     get_runcard_from_model,
@@ -85,7 +84,7 @@ async def model_versions_page(
         return RedirectResponse(url="/opsml/models/list/")
 
     registry: CardRegistry = request.app.state.registries.model
-    versions = registry.list_cards(name=model, as_dataframe=False)
+    versions = registry.list_cards(name=model, as_dataframe=False, limit=50)
 
     metadata = post_model_metadata(
         request=request,

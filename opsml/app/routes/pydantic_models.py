@@ -221,21 +221,23 @@ class CommentSaveRequest(BaseModel):
     selected_model_name: str
     selected_model_team: str
     selected_model_version: str
+    selected_model_email: str
     comment_name: str
     comment_text: str
 
 
 @form_body
 class AuditFormRequest(BaseModel):
-    name: str
-    email: str
-    team: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    team: Optional[str] = None
     uid: Optional[str] = None
     version: Optional[str] = None
     status: Optional[str] = None
     selected_model_name: str
     selected_model_team: str
     selected_model_version: str
+    selected_model_email: str
     audit_file: Optional[UploadFile] = None
     comments: Optional[str] = None
     business_understanding_1: Optional[str] = None
