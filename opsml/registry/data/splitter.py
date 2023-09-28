@@ -25,11 +25,11 @@ class Data:
 
 
 class DataSplit(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     label: str
     column_name: Optional[str] = None
-    column_value: Optional[Any] = None
+    column_value: Optional[Union[str, float, int]] = None
     inequality: Optional[str] = None
     start: Optional[int] = None
     stop: Optional[int] = None

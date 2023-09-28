@@ -115,6 +115,44 @@ async def data_versions_page(
     )
 
 
+@router.get("/data/versions/uid/")
+@error_to_500
+async def data_versions_page(
+    request: Request,
+    uid: str,
+):
+    registry: CardRegistry = request.app.state.registries.data
+
+    selected_data: DataCard = registry.load_card(uid=uid)
+    selected_version = selected_data.version
+    versions = registry.list_cards(name=selected_data.name, as_dataframe=False, limit=50)
+
+    if len(selected_data.data_splits) > 0:
+        data_splits = json.dumps(
+            [split.model_dump() for split in selected_data.data_splits],
+            indent=4,
+        )
+    else:
+        data_splits = None
+
+    data_profile = None
+    render_profile = False
+
+    return templates.TemplateResponse(
+        "include/data/data_version.html",
+        {
+            "request": request,
+            "versions": versions,
+            "selected_data": selected_data,
+            "selected_version": selected_version,
+            "data_splits": data_splits,
+            "data_profile": data_profile,
+            "render_profile": render_profile,
+            "load_profile": False,
+        },
+    )
+
+
 @router.get("/data/profile/view/")
 @error_to_500
 async def data_versions_page(

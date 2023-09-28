@@ -35,7 +35,7 @@
   <div id="VersionColumn">
     <div class="list-group">
       {% for version in versions %}
-        <a href="/opsml/data/versions/?data={{ selected_data.name }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
+        <a href="/opsml/data/versions/?name={{ selected_data.name }}&selected_version={{ version["version"] }}" class="list-group-item list-group-item-action {% if selected_version ==  version["version"] %}active {% endif %}">v{{ version["version"] }} -- {{ version["date"] }}</a>
       {% endfor %}
     </div>
   </div>
@@ -62,7 +62,7 @@
       {% include "include/data/data_tags.html" %}
     </div>
     {% endif %}
-    
+
     <div id="ExtraBox" class="card border-0" {% if load_profile == true %} style="display: None; width: 100%; border-radius: 0%;" {% else %} style="width: 100%; border-radius: 0%;" {% endif %}>
       {% include "include/data/data_extras.html" %}
     </div>
