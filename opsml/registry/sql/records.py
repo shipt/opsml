@@ -13,13 +13,14 @@ from opsml.registry.cards.types import (
     Comment,
     CardVersion,
     AuditCardMetadata,
+    ModelCardMetadata,
+    ModelCardUris,
+    DataCardMetadata,
 )
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
 from opsml.registry.storage.types import ArtifactStorageSpecs
-from opsml.registry.cards.types import ModelCardMetadata, ModelCardUris, DataCardMetadata
-
 
 ARBITRARY_ARTIFACT_TYPE = "dict"
 
@@ -180,7 +181,8 @@ class LoadedDataRecord(LoadRecord):
         )
 
         datacard_definition["storage_client"] = storage_client
-        if datacard_definition.get("metadata") is None:
+
+        if datacard_definition.get("metadata") is None:  # this is None for previous v1 cards
             datacard_definition["metadata"] = cls.convert_data_metadata(datacard_definition)
 
         datacard_definition["metadata"]["uris"]["datacard_uri"] = values.get("datacard_uri")
@@ -197,7 +199,7 @@ class LoadedDataRecord(LoadRecord):
         return datacard_definition
 
     @classmethod
-    def convert_data_metadata(cls, card_def: Dict[str, Any]) -> ModelCardMetadata:
+    def convert_data_metadata(cls, card_def: Dict[str, Any]) -> Dict[str, Any]:
         """This classmethod is used for backward compatibility"""
         return DataCardMetadata(**card_def).model_dump()
 

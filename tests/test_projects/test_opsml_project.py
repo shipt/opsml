@@ -5,7 +5,7 @@ import pytest
 from sklearn import pipeline
 import os
 import numpy as np
-from opsml.registry import DataCard, ModelCard, AuditCard
+from opsml.registry import DataCard, ModelCard, AuditCard, CardRegistry
 from opsml.registry.cards.types import CardInfo
 from opsml.projects.base._active_run import ActiveRun
 from opsml.projects import OpsmlProject, ProjectInfo
@@ -111,6 +111,16 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
     with pytest.raises(ValueError):
         info.run_id = "run_id_fail"
         proj = conftest.mock_opsml_project(info)
+
+    proj_reg = CardRegistry("project")
+
+    with pytest.raises(ValueError) as ve:
+        proj_reg.delete_card(data_card)
+    ve.match("ProjectCardRegistry does not support delete_card")
+
+    with pytest.raises(ValueError) as ve:
+        proj_reg.load_card("test-exp")
+    ve.match("ProjectCardRegistry does not support load_card")
 
 
 def test_opsml_continue_run(opsml_project: OpsmlProject) -> None:
