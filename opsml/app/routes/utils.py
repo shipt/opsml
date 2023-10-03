@@ -3,6 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, Optional, List, Tuple
 import os
+from pathlib import Path
 import traceback
 from functools import wraps
 from streaming_form_data.targets import FileTarget
@@ -160,7 +161,7 @@ class ExternalFileTarget(FileTarget):
 
     def _create_base_path(self):
         if isinstance(self.storage_client, LocalStorageClient):
-            self.storage_client._make_path(folder_path=self.write_path)  # pylint: disable=protected-access
+            Path(self.write_path).mkdir(parents=True, exist_ok=True)
 
     def on_start(self):
         self._fd = self.storage_client.open(self.filepath, self._mode)
