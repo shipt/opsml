@@ -88,7 +88,7 @@ def test_register_data(
 def test_list_teams(db_registries: Dict[str, CardRegistry]):
     # create data card
     registry = db_registries["data"]
-    teams = registry.list_teams()
+    teams = registry._registry.unique_teams
     assert len(teams) == 1
     assert teams[0] == "mlops"
 
@@ -96,11 +96,11 @@ def test_list_teams(db_registries: Dict[str, CardRegistry]):
 def test_list_card_names(db_registries: Dict[str, CardRegistry]):
     # create data card
     registry = db_registries["data"]
-    names = registry.list_card_names(team="mlops")
+    names = registry._registry.get_unique_card_names(team="mlops")
     assert len(names) == 1
     assert names[0] == "test-df"
 
-    names = registry.list_card_names()
+    names = registry._registry.get_unique_card_names()
     assert len(names) == 1
     assert names[0] == "test-df"
 
