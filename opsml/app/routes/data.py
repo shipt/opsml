@@ -57,7 +57,7 @@ async def data_list_homepage(request: Request, team: Optional[str] = None):
 async def data_versions_page(
     request: Request,
     name: Optional[str] = None,
-    selected_version: Optional[str] = None,
+    version: Optional[str] = None,
     load_profile: Optional[bool] = False,
 ):
     if name is None:
@@ -66,11 +66,11 @@ async def data_versions_page(
     registry: CardRegistry = request.app.state.registries.data
     versions = registry.list_cards(name=name, as_dataframe=False, limit=50)
 
-    if selected_version is None:
+    if version is None:
         selected_data: DataCard = registry.load_card(uid=versions[0]["uid"])
-        selected_version = selected_data.version
+        version = selected_data.version
     else:
-        selected_data: DataCard = registry.load_card(name=name, version=selected_version)
+        selected_data: DataCard = registry.load_card(name=name, version=version)
 
     if len(selected_data.data_splits) > 0:
         data_splits = json.dumps(
@@ -106,7 +106,7 @@ async def data_versions_page(
             "request": request,
             "versions": versions,
             "selected_data": selected_data,
-            "selected_version": selected_version,
+            "selected_version": version,
             "data_splits": data_splits,
             "data_profile": data_profile,
             "render_profile": render_profile,
@@ -117,45 +117,23 @@ async def data_versions_page(
 
 @router.get("/data/versions/uid/")
 @error_to_500
-async def data_versions_page(
+async def data_versions_uid_page(
     request: Request,
     uid: str,
 ):
     registry: CardRegistry = request.app.state.registries.data
+    selected_data: DataCard = registry.list_cards(uid=uid)[0]
 
-    selected_data: DataCard = registry.load_card(uid=uid)
-    selected_version = selected_data.version
-    versions = registry.list_cards(name=selected_data.name, as_dataframe=False, limit=50)
-
-    if len(selected_data.data_splits) > 0:
-        data_splits = json.dumps(
-            [split.model_dump() for split in selected_data.data_splits],
-            indent=4,
-        )
-    else:
-        data_splits = None
-
-    data_profile = None
-    render_profile = False
-
-    return templates.TemplateResponse(
-        "include/data/data_version.html",
-        {
-            "request": request,
-            "versions": versions,
-            "selected_data": selected_data,
-            "selected_version": selected_version,
-            "data_splits": data_splits,
-            "data_profile": data_profile,
-            "render_profile": render_profile,
-            "load_profile": False,
-        },
+    return await data_versions_page(
+        request=request,
+        name=selected_data["name"],
+        version=selected_data["version"],
     )
 
 
 @router.get("/data/profile/view/")
 @error_to_500
-async def data_versions_page(
+async def data_versions_profile_page(
     request: Request,
     name: str,
     version: str,

@@ -60,15 +60,6 @@
         </tr>
         {% endif %}
 
-        <tr>
-          <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
-          <td><font color="#999">DataCard:</font></td>
-          <td>
-              <a href="/opsml/data/versions/uid/?uid={{selected_data.datacard_uid}}">
-              <button id="download-button" type="submit" class="btn btn-success" >Link</button>
-              </a>
-          </td>
-        </tr>
 
         {% if selected_data.metadata.auditcard_uid is not none %}
         <tr>
