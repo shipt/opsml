@@ -12,8 +12,11 @@
 
 {% if data_splits is not none %}
 <div class="card-body" id="Splits" style="display:none">
-<h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Data Splits</font></h5>
-    <pre style="max-height: 500px; overflow: scroll;"><code class="json">{{data_splits}}</code></pre>
+<h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Data Splits</font>
+  <button id="copy-button" class="btn btn-success" onclick="copyToClipboard('#DataSplitCode')">Copy</i> </button>
+
+</h5>
+    <pre style="max-height: 500px; overflow: scroll;"><code id="DataSplitCode" class="json">{{data_splits}}</code></pre>
 </div>
 {% endif %}
 
@@ -108,8 +111,10 @@
 <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">SQL</font></h5>
     {% for name, query in selected_data.sql_logic.items() %}
 
-    <h6><i style="color:#04b78a"></i> <font color="#999">{{name}}</font></h6>
-    <pre style="max-height: 500px; overflow: scroll;"><code class="sql">{{query}}</code></pre>
+    <h6><i style="color:#04b78a"></i> <font color="#999">{{name}}</font>
+      <button id="copy-button" class="btn btn-success" onclick="copyToClipboard('#{{name}}Code')">Copy</i> </button>
+    </h6>
+    <pre style="max-height: 500px; overflow: scroll;"><code id="{{name}}Code" class="sql">{{query}}</code></pre>
 
     {% endfor %}
 </div>
