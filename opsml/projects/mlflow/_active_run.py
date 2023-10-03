@@ -100,14 +100,14 @@ class MlflowActiveRun(ActiveRun):
         super().log_parameter(key, value)
         self.info.mlflow_client.log_param(run_id=self.run_id, key=key, value=value)
 
-    def log_artifact_from_file(self, local_path: str, artifact_path: Optional[str] = None) -> None:
+    def log_artifact_from_file(self, local_path: Union[Path, str], artifact_path: Optional[str] = None) -> None:
         """
         Logs an artifact for the current run. All artifacts are loaded
         to a parent directory named "misc".
 
         Args:
             local_path:
-                Local path to object
+                Local path to object. Can be a string of `Path` object
             artifact_path:
                 Artifact directory path in Mlflow to log to. This path will be appended
                 to parent directory "misc"
@@ -127,12 +127,16 @@ class MlflowActiveRun(ActiveRun):
             rpath=write_path,
         )
 
-        self.info.storage_client.opsml_storage_client.upload(
+        self.info.mlflow_client.log_artifact(
+            run_id=self.run_id,
             local_path=local_path,
-            write_path=write_path,
+            artifact_path=_artifact_path,
         )
 
-        self.runcard.add_artifact_uri(name=filename, uri=write_path)
+        filename = local_path.name if isinstance(local_path, Path) else Path(local_path).name
+        artifact_uri = f"{self.info.base_artifact_path}/{_artifact_path}/{filename}"
+
+        self.runcard.add_artifact_uri(name=filename, uri=artifact_uri)
 
     @property
     def run_data(self):
