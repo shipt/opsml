@@ -11,9 +11,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from opsml.app.routes.utils import (
     error_to_500,
-    get_runcard_from_model,
     list_team_name_info,
-    get_model_versions,
 )
 from opsml.app.routes.pydantic_models import (
     CardRequest,
@@ -78,7 +76,7 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
 async def model_versions_page(
     request: Request,
     model: Optional[str] = None,
-    selected_version: Optional[str] = None,
+    version: Optional[str] = None,
 ):
     if model is None:
         return RedirectResponse(url="/opsml/models/list/")
@@ -88,14 +86,14 @@ async def model_versions_page(
 
     metadata = post_model_metadata(
         request=request,
-        payload=CardRequest(name=model, version=selected_version),
+        payload=CardRequest(name=model, version=version),
     )
 
-    if selected_version is None:
+    if version is None:
         selected_model: ModelCard = registry.load_card(uid=versions[0]["uid"])
-        selected_version = selected_model.version
+        version = selected_model.version
     else:
-        selected_model: ModelCard = registry.load_card(name=model, version=selected_version)
+        selected_model: ModelCard = registry.load_card(name=model, version=version)
 
     if selected_model.metadata.runcard_uid is not None:
         runcard = request.app.state.registries.run.load_card(uid=selected_model.metadata.runcard_uid)
@@ -125,7 +123,7 @@ async def model_versions_page(
             "request": request,
             "versions": versions,
             "selected_model": selected_model,
-            "selected_version": selected_version,
+            "selected_version": version,
             "project_num": project_num,
             "metadata": metadata,
             "runcard": runcard,

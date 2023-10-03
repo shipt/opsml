@@ -619,7 +619,13 @@ def test_model_metrics(
     api_registries.run.register_card(runcard)
 
     #### Create DataCard
-    datacard = DataCard(data=data, info=card_info)
+    datacard = DataCard(
+        data=data,
+        name="profile_data",
+        team="mlops",
+        user_email="mlops.com",
+    )
+    datacard.create_data_profile()
     api_registries.data.register_card(datacard)
 
     #### Create ModelCard
@@ -759,3 +765,58 @@ def test_card_list_fail(test_app: TestClient):
     )
 
     assert response.status_code == 500
+
+
+##### Test ui routes
+def test_homepage(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml")
+    assert response.status_code == 200
+
+
+##### Test list models
+def test_model_list(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml/models/list/")
+    assert response.status_code == 200
+
+
+##### Test list models
+def test_model_version(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml/models/versions/")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/models/versions/?name=pipeline_model")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/models/versions/?name=pipeline_model&version=1.0.0")
+    assert response.status_code == 200
+
+
+##### Test list models
+def test_data_list(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml/data/list/")
+    assert response.status_code == 200
+
+
+##### Test list data
+def test_data_version(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml/data/versions/")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/data/versions/?name=test_data")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/models/versions/?name=test_data&version=1.0.0")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/models/versions/?name=profile_data&version=1.0.0&load_data=true")
+    assert response.status_code == 200
