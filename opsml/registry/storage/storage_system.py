@@ -229,9 +229,6 @@ class StorageClient:
     def delete(self, read_path: str):
         raise ValueError("Storage class does not implement a delete method")
 
-    def _make_path(self, folder_path: str):
-        Path(folder_path).mkdir(parents=True, exist_ok=True)
-
     def post_process(self, storage_uri: str) -> str:
         """Method that does post processing. Mainly used for mlflow work"""
         return storage_uri
@@ -323,7 +320,7 @@ class LocalStorageClient(StorageClient):
             extra_path=extra_path,
         )
 
-        self._make_path("/".join(save_path.split("/")[:-1]))
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
 
         return save_path, filename
 
@@ -358,11 +355,10 @@ class LocalStorageClient(StorageClient):
         return write_path
 
     def list_files(self, storage_uri: str) -> FilePath:
-        if os.path.isdir(storage_uri):
-            paths = []
-            for path, _, files in os.walk(storage_uri):
-                for filename in files:
-                    paths.append(os.path.join(path, filename))
+        path = Path(storage_uri)
+
+        if path.is_dir(storage_uri):
+            paths = [str(p) for p in path.rglob("*")]
             return paths
 
         return [storage_uri]

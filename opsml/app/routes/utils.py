@@ -81,7 +81,7 @@ def error_to_500(func):
         try:
             return await func(request, *args, **kwargs)
         except Exception as exc:
-            request.app.state.logger.error(str(exc))
+            logger.error(str(exc))
             return templates.TemplateResponse(
                 "include/500.html",
                 {
