@@ -97,8 +97,8 @@ def test_register_data(
 def test_list_teams(
     api_registries: CardRegistries,
 ):
-    registry = api_registries.data
-    teams = registry.list_teams()
+    registry: CardRegistry = api_registries.data
+    teams = registry._registry.unique_teams
     assert len(teams) == 1
     assert teams[0] == "mlops"
 
@@ -108,11 +108,11 @@ def test_list_card_names(
 ):
     # create data card
     registry = api_registries.data
-    names = registry.list_card_names(team="mlops")
+    names = registry._registry.get_unique_card_names(team="mlops")
     assert len(names) == 1
     assert names[0] == "test-df"
 
-    names = registry.list_card_names()
+    names = registry._registry.get_unique_card_names()
     assert len(names) == 1
     assert names[0] == "test-df"
 
@@ -361,8 +361,8 @@ def test_load_data_card(api_registries: CardRegistries, test_data: pd.DataFrame)
     registry = api_registries.data
 
     data_split = [
-        {"label": "train", "column": "year", "column_value": 2020},
-        {"label": "test", "column": "year", "column_value": 2021},
+        {"label": "train", "column_name": "year", "column_value": 2020},
+        {"label": "test", "column_name": "year", "column_value": 2021},
     ]
 
     data_card = DataCard(

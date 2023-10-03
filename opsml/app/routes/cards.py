@@ -70,7 +70,7 @@ def card_teams(
     table_for_registry = table_name.split("_")[1].lower()
     registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
 
-    teams = registry.list_teams()
+    teams = registry._registry.unique_teams
 
     return TeamsResponse(teams=teams)
 
@@ -96,7 +96,7 @@ def card_names(
     """
     table_for_registry = table_name.split("_")[1].lower()
     registry: CardRegistry = getattr(request.app.state.registries, table_for_registry)
-    names = registry.list_card_names(team=team)
+    names = registry._registry.get_unique_card_names(team=team)
 
     return NamesResponse(names=names)
 
