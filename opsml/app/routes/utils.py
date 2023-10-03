@@ -3,6 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, Optional, List, Tuple
 import os
+import traceback
 from functools import wraps
 from streaming_form_data.targets import FileTarget
 from fastapi import Request
@@ -81,7 +82,8 @@ def error_to_500(func):
         try:
             return await func(request, *args, **kwargs)
         except Exception as exc:
-            logger.error(str(exc))
+            tb = traceback.format_exc()
+            logger.error("exceptions: %s %s", str(exc), tb)
             return templates.TemplateResponse(
                 "include/500.html",
                 {

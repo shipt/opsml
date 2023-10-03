@@ -357,7 +357,7 @@ class LocalStorageClient(StorageClient):
     def list_files(self, storage_uri: str) -> FilePath:
         path = Path(storage_uri)
 
-        if path.is_dir(storage_uri):
+        if path.is_dir():
             paths = [str(p) for p in path.rglob("*")]
             return paths
 
@@ -383,15 +383,23 @@ class LocalStorageClient(StorageClient):
         return shutil.copyfile(read_path, write_path)
 
     def download(self, rpath: str, lpath: str, recursive: bool = False, **kwargs) -> Optional[str]:
+        local_path = Path(lpath)
+        read_path = Path(rpath)
+
+        # check if files have been passed (used with downloading artifacts)
         files = kwargs.get("files", [])
-
         if len(files) == 1:
-            filename = os.path.basename(files[0])
+            filepath = Path(files[0])
 
-            if os.path.isdir(lpath):
-                lpath = os.path.join(lpath, filename)
+            if local_path.is_dir():
+                lpath = str(local_path / filepath.name)
+            return self.copy(read_path=str(filepath), write_path=lpath)
 
-            return self.copy(read_path=files[0], write_path=lpath)
+        # check if trying to copy single file to directory
+        if read_path.is_file():
+            lpath = str(local_path / read_path.name)
+            return self.copy(read_path=rpath, write_path=lpath)
+
         return self.copy(read_path=rpath, write_path=lpath)
 
     def delete(self, read_path: str) -> None:
