@@ -23,7 +23,8 @@ from opsml.registry import (
     DataCardMetadata,
     ModelCardMetadata,
 )
-from opsml.app.routes.utils import list_team_name_info
+from opsml.app.routes.utils import list_team_name_info, error_to_500
+from opsml.app.routes.pydantic_models import AuditFormRequest
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
 from tests.conftest import TODAY_YMD
@@ -820,3 +821,42 @@ def test_data_version(test_app: TestClient):
 
     response = test_app.get(f"/opsml/models/versions/?name=profile_data&version=1.0.0&load_data=true")
     assert response.status_code == 200
+
+
+##### Test audit
+def test_audit(test_app: TestClient):
+    """Test settings"""
+
+    response = test_app.get(f"/opsml/audit/")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/audit/?team=mlops")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/audit/?team=mlops&?model=pipeline_model")
+    assert response.status_code == 200
+
+    response = test_app.get(f"/opsml/audit/?team=mlops&?model=pipeline_model&version=1.0.0")
+    assert response.status_code == 200
+
+    audit_form = AuditFormRequest(
+        selected_model_name="pipeline_model",
+        selected_model_team="mlops",
+        selected_model_version="1.0.0",
+        selected_model_email="mlops.com",
+    )
+
+    response = test_app.post(
+        f"/opsml/audit/save",
+        data=audit_form.model_dump(),
+    )
+
+    assert response.status_code == 200
+
+
+def test_error_wrapper():
+    @error_to_500
+    async def fail(request):
+        raise ValueError("Fail")
+
+    fail("fail")
