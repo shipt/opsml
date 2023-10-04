@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from requests.auth import HTTPBasicAuth
 
 from opsml.registry import (
+    AuditCard,
     DataCard,
     ModelCard,
     RunCard,
@@ -24,7 +25,7 @@ from opsml.registry import (
     ModelCardMetadata,
 )
 from opsml.app.routes.utils import list_team_name_info, error_to_500
-from opsml.app.routes.pydantic_models import AuditFormRequest
+from opsml.app.routes.pydantic_models import AuditFormRequest, CommentSaveRequest
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
 from tests.conftest import TODAY_YMD
@@ -639,6 +640,10 @@ def test_model_metrics(
     )
     api_registries.model.register_card(modelcard)
 
+    auditcard = AuditCard(name="audit_card", team="team", user_email="test")
+    auditcard.add_card_uid(card_type="model", uid=modelcard.uid)
+    api_registries.audit.register_card(auditcard)
+
     ### create second ModelCard
     #### Create ModelCard
     modelcard_2 = ModelCard(
@@ -665,6 +670,23 @@ def test_model_metrics(
     )
 
     assert response.status_code == 500
+
+    comment = CommentSaveRequest(
+        uid=auditcard.uid,
+        name=auditcard.name,
+        team=auditcard.team,
+        user_email=auditcard.user_email,
+        selected_model_name=modelcard.name,
+        selected_model_version=modelcard.version,
+        selected_model_team=modelcard.team,
+        selected_model_email=modelcard.user_email,
+        comment_name="test",
+        comment_text="test",
+    )
+
+    # test auditcard comment
+    response = test_app.post(f"/audit/comment/save/", data=comment)
+    assert response.status_code == 200
 
 
 def test_model_metric_failure(
