@@ -340,7 +340,6 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
         name=comment.comment_name,
         comment=comment.comment_text,
     )
-
     model_names, teams, versions = get_names_teams_versions(
         registry=request.app.state.registries.model,
         name=comment.selected_model_name,

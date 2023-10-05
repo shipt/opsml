@@ -25,6 +25,7 @@ from opsml.registry import (
     ModelCardMetadata,
 )
 from opsml.app.routes.utils import list_team_name_info, error_to_500
+from opsml.app.routes.audit import save_audit_comment
 from opsml.app.routes.pydantic_models import AuditFormRequest, CommentSaveRequest
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
@@ -641,7 +642,7 @@ def test_model_metrics(
     api_registries.model.register_card(modelcard)
 
     auditcard = AuditCard(name="audit_card", team="team", user_email="test")
-    auditcard.add_card_uid(card_type="model", uid=modelcard.uid)
+    auditcard.add_card(card=modelcard)
     api_registries.audit.register_card(auditcard)
 
     ### create second ModelCard
@@ -675,7 +676,7 @@ def test_model_metrics(
         uid=auditcard.uid,
         name=auditcard.name,
         team=auditcard.team,
-        user_email=auditcard.user_email,
+        email=auditcard.user_email,
         selected_model_name=modelcard.name,
         selected_model_version=modelcard.version,
         selected_model_team=modelcard.team,
@@ -685,7 +686,10 @@ def test_model_metrics(
     )
 
     # test auditcard comment
-    response = test_app.post(f"/audit/comment/save/", data=comment)
+    response = test_app.post(
+        f"/opsml/audit/comment/save",
+        data=comment.model_dump(),
+    )
     assert response.status_code == 200
 
 
