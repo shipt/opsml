@@ -15,7 +15,7 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.semver import get_version_to_search
 from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 
 SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
 YEAR_MONTH_DATE = "%Y-%m-%d"
@@ -303,7 +303,7 @@ def log_card_change(func):
         name = str(card.get("name"))
         version = str(card.get("version"))
         logger.info(
-            "%s: %s, version:%s %s", self._table.__tablename__, name, version, state  # pylint: disable=protected-access
+            "{}: {}, version:{} {}", self._table.__tablename__, name, version, state  # pylint: disable=protected-access
         )
 
     return wrapper

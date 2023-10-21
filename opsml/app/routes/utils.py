@@ -14,7 +14,7 @@ from opsml.registry import CardRegistries, ModelCard, RunCard, CardRegistry
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))

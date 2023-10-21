@@ -15,7 +15,7 @@ from opsml.registry.sql.connectors.base import (
 )
 from opsml.helpers.logging import ArtifactLogger
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 
 
 class SqlType(str, Enum):
@@ -96,9 +96,9 @@ class LocalSQLConnection(BaseSQLConnection):
             }
 
         logger.info(
-            "Default pool size: %s, overflow: %s",
-            str(kwargs.get("pool_size", DEFAULT_POOL_SIZE)),
-            str(kwargs.get("max_overflow", DEFAULT_OVERFLOW)),
+            "Default pool size: {}, overflow: {}",
+            kwargs.get("pool_size", DEFAULT_POOL_SIZE),
+            kwargs.get("max_overflow", DEFAULT_OVERFLOW),
         )
         return kwargs
 

@@ -21,7 +21,7 @@ from opsml.model.types import (
     OnnxModelDefinition,
 )
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 
 
 class ModelCreator:
@@ -74,7 +74,6 @@ class ModelCreator:
                 if model_type.validate(model_class_name=self.model_class)
             )
         )
-
         return model_type.get_type()
 
     def create_model(self) -> ModelReturn:
@@ -134,7 +133,7 @@ class TrainedModelMetadataCreator(ModelCreator):
             return self._get_prediction_type(predictions=predictions)
 
         except TypeError as error:
-            logger.error("%s. Falling back to model functional call", str(error))
+            logger.error("{}. Falling back to model functional call", error)
 
         return self._functional_prediction()
 
@@ -172,13 +171,16 @@ class TrainedModelMetadataCreator(ModelCreator):
             return self._functional_prediction()
 
         except Exception as error:
-            logger.error("Failed to determine prediction output. Defaulting to placeholder. %s", str(error))
+            logger.error("Failed to determine prediction output. Defaulting to placeholder. {}", error)
 
         return {"placeholder": Feature(feature_type="str", shape=[1])}
 
     def create_model(self) -> ModelReturn:
-        input_features = self._get_input_schema()
+        # make predictions first in case of column type switching for input cols
         output_features = self._get_output_schema()
+
+        # this will convert categorical to string
+        input_features = self._get_input_schema()
 
         api_schema = ApiDataSchemas(
             model_data_schema=DataDict(
@@ -283,7 +285,7 @@ class OnnxModelCreator(ModelCreator):
             # add onnx version
             return onnx_model_return
         except Exception as exc:
-            logger.error("Failed to convert model to onnx. %s", str(exc))
+            logger.error("Failed to convert model to onnx. {}", exc)
             raise ValueError(
                 textwrap.dedent(
                     f"""

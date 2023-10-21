@@ -32,7 +32,7 @@ from opsml.registry.sql.records import (
 from opsml.registry.cards.audit_deco import auditable
 from opsml.registry.utils.settings import settings
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 storage_client = settings.storage_client
 
 ValidData = Union[np.ndarray, pd.DataFrame, Table, pl.DataFrame, ImageDataset]

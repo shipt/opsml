@@ -61,6 +61,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectPercentile, chi2
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn import ensemble
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
@@ -71,7 +72,7 @@ import lightgbm as lgb
 from opsml.registry import ModelCard, DataSplit
 from opsml.helpers.gcp_utils import GcpCreds, GCSStorageClient
 from opsml.helpers.request_helpers import ApiClient
-from opsml.registry.storage.types import StorageClientSettings, GcsStorageClientSettings
+from opsml.registry.storage.types import StorageClientSettings, GcsStorageClientSettings, S3StorageClientSettings
 from opsml.registry.sql.sql_schema import BaseMixin, Base, RegistryTableNames
 from opsml.registry.sql.db_initializer import DBInitializer
 from opsml.registry.sql.connectors.connector import LocalSQLConnection
@@ -191,6 +192,16 @@ def gcp_storage_client(mock_gcp_vars):
 
 
 @pytest.fixture(scope="function")
+def s3_storage_client():
+    s3_settings = S3StorageClientSettings(
+        storage_type="s3",
+        storage_uri="s3://test",
+    )
+    storage_client = StorageClientGetter.get_storage_client(storage_settings=s3_settings)
+    return storage_client
+
+
+@pytest.fixture(scope="function")
 def local_storage_client():
     storage_client = StorageClientGetter.get_storage_client(storage_settings=StorageClientSettings())
     return storage_client
@@ -206,6 +217,18 @@ def mock_gcsfs():
         rm=MagicMock(return_value=None),
     ) as mocked_gcsfs:
         yield mocked_gcsfs
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_s3fs():
+    with patch.multiple(
+        "s3fs.S3FileSystem",
+        ls=MagicMock(return_value=["test"]),
+        upload=MagicMock(return_value=True),
+        download=MagicMock(return_value="s3://test"),
+        rm=MagicMock(return_value=None),
+    ) as mocked_s3fs:
+        yield mocked_s3fs
 
 
 @pytest.fixture(scope="function")
@@ -876,6 +899,37 @@ def lgb_classifier(drift_dataframe):
     )
     reg.fit(X_train.to_numpy(), y_train)
     return reg, X_train[:100]
+
+
+@pytest.fixture(scope="function")
+def lgb_classifier_calibrated(drift_dataframe):
+    X_train, y_train, X_test, y_test = drift_dataframe
+    reg = lgb.LGBMClassifier(
+        n_estimators=3,
+        max_depth=3,
+        num_leaves=5,
+    )
+    reg.fit(X_train.to_numpy(), y_train)
+
+    calibrated_model = CalibratedClassifierCV(reg, method="isotonic", cv="prefit")
+    calibrated_model.fit(X_test, y_test)
+
+    return calibrated_model, X_test[:10]
+
+
+@pytest.fixture(scope="function")
+def lgb_classifier_calibrated_pipeline(drift_dataframe):
+    X_train, y_train, X_test, y_test = drift_dataframe
+    reg = lgb.LGBMClassifier(
+        n_estimators=3,
+        max_depth=3,
+        num_leaves=5,
+    )
+
+    pipe = Pipeline([("preprocess", StandardScaler()), ("clf", CalibratedClassifierCV(reg, method="isotonic", cv=3))])
+    pipe.fit(X_train, y_train)
+
+    return pipe, X_test[:10]
 
 
 @pytest.fixture(scope="function")
