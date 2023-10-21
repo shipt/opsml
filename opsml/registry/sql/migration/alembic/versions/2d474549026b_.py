@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from opsml.registry.sql.sql_schema import RegistryTableNames
 from opsml.helpers.logging import ArtifactLogger
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 
 
 # revision identifiers, used by Alembic.

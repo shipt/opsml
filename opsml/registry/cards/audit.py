@@ -19,7 +19,7 @@ from opsml.registry.cards.types import CardType, CardVersion, Comment, AuditCard
 from opsml.registry.sql.records import AuditRegistryRecord, RegistryRecord
 
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 DIR_PATH = os.path.dirname(__file__)
 AUDIT_TEMPLATE_PATH = os.path.join(DIR_PATH, "templates/audit_card.yaml")
 AUDIT_TEMPLATE_HTML_FILE = "templates/report-copy.html"
@@ -293,7 +293,7 @@ class AuditCard(ArtifactCard):
         try:
             _section[question_nbr].response = response
         except KeyError as exc:
-            logger.error("Question %s not found in section %s", str(question_nbr), str(section))
+            logger.error("Question {} not found in section {}", question_nbr, section)
             raise exc
 
     def create_report(self, save_path: str) -> None:

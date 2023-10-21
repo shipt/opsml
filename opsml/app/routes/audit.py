@@ -22,7 +22,7 @@ from opsml.registry import CardRegistries, AuditCard
 from opsml.registry.cards.audit import AuditSections, Comment
 
 
-logger = ArtifactLogger.get_logger(__name__)
+logger = ArtifactLogger.get_logger()
 
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

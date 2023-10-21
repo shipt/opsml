@@ -7,10 +7,6 @@
 from fastapi import APIRouter, Request
 
 from fastapi.responses import RedirectResponse
-from opsml.helpers.logging import ArtifactLogger
-
-
-logger = ArtifactLogger.get_logger(__name__)
 
 router = APIRouter()
 
