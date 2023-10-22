@@ -376,6 +376,30 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
     )
 
 
+class AuditFormUploader:
+    def __init__(self, form: AuditFormRequest, background_tasks: BackgroundTasks):
+        self.form = form
+        self.background_tasks = background_tasks
+
+    def read_file(self) -> List[Dict[str, Any]]:
+        """Reads an audit file to dictionary"""
+        data = self.form.audit_file.file
+        csv_reader = csv.DictReader(codecs.iterdecode(data, "utf-8"))
+        self.background_tasks.add_task(data.close)
+        records = list(csv_reader)
+        return records
+
+    def upload_audit(self) -> Dict[str, Any]:
+        """Uploads audit data from file to AuditCard"""
+        audit_sections = AuditSections().model_dump()
+        records = self.read_file()
+        for record in records:
+            section = record["topic"]
+            number = int(record["number"])
+            audit_sections[section][number]["response"] = record["response"]
+        return audit_sections
+
+
 @router.post("/audit/upload")
 @error_to_500
 async def upload_audit_data(
@@ -384,16 +408,11 @@ async def upload_audit_data(
     form: AuditFormRequest = Depends(AuditFormRequest),
 ):
     """Uploads audit data form file. If an audit_uid is provided, only the audit section will be updated."""
-    data = form.audit_file.file
-    csv_reader = csv.DictReader(codecs.iterdecode(data, "utf-8"))
-    background_tasks.add_task(data.close)
-    records = list(csv_reader)
-    audit_sections = AuditSections().model_dump()
-
-    for record in records:
-        section = record["topic"]
-        number = int(record["number"])
-        audit_sections[section][number]["response"] = record["response"]
+    uploader = AuditFormUploader(
+        form=form,
+        background_tasks=background_tasks,
+    )
+    audit_sections = uploader.upload_audit()
 
     if form.uid is not None:
         audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=form.uid)

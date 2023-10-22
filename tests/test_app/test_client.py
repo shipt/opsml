@@ -1,12 +1,15 @@
 from typing import Dict, List, Tuple
 
 import re
+import csv
+import codecs
 import uuid
 import pathlib
 import pandas as pd
 import pytest
 from pytest_lazyfixture import lazy_fixture
 from starlette.testclient import TestClient
+from fastapi import UploadFile
 from sklearn import linear_model, pipeline
 from numpy.typing import NDArray
 from pydantic import ValidationError
@@ -25,7 +28,7 @@ from opsml.registry import (
     ModelCardMetadata,
 )
 from opsml.app.routes.utils import list_team_name_info, error_to_500
-from opsml.app.routes.audit import save_audit_comment
+from opsml.app.routes.audit import upload_audit_data
 from opsml.app.routes.pydantic_models import AuditFormRequest, CommentSaveRequest
 from opsml.helpers.request_helpers import ApiRoutes
 from opsml.app.core import config
@@ -886,3 +889,25 @@ def test_error_wrapper():
         raise ValueError("Fail")
 
     fail("fail")
+
+
+def test_audit_upload(test_app: TestClient):
+    file_ = "tests/assets/audit_file.csv"
+
+    audit_form = AuditFormRequest(
+        selected_model_name="pipeline_model",
+        selected_model_team="mlops",
+        selected_model_version="1.0.0",
+        selected_model_email="mlops.com",
+    )
+
+    csv_reader = csv.DictReader(open(file_))
+    records = list(csv_reader)
+
+    with patch.multiple(
+        "opsml.app.routes.audit.AuditFormUploader",
+        read_file=MagicMock(return_value=records),
+    ) as mock_uploader:
+        response = test_app.post(f"/opsml/audit/upload", data=audit_form.model_dump())
+
+    assert response.status_code == 200
