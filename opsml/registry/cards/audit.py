@@ -143,10 +143,8 @@ class AuditCard(ArtifactCard):
         Adds a card uid to the appropriate card uid list for tracking
 
         Args:
-            card_type:
-                ArtifactCard class name. Can be "data", "model" or "run"
-            uid:
-                Uid of registered ArtifactCard
+            card:
+                Card to add to AuditCard
         """
         from opsml.registry.sql.registry import (  # pylint: disable=cyclic-import
             AuditCardRegistry,

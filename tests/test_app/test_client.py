@@ -891,23 +891,83 @@ def test_error_wrapper():
     fail("fail")
 
 
-def test_audit_upload(test_app: TestClient):
+def test_audit_upload(
+    test_app: TestClient,
+    api_registries: CardRegistries,
+    sklearn_pipeline: Tuple[pipeline.Pipeline, pd.DataFrame],
+):
+    model, data = sklearn_pipeline
+
+    #### Create DataCard
+    datacard = DataCard(
+        data=data,
+        name="pipeline_data",
+        team="mlops",
+        user_email="mlops.com",
+    )
+    api_registries.data.register_card(datacard)
+
+    #### Create ModelCard
+    modelcard = ModelCard(
+        name="pipeline_model",
+        team="mlops",
+        user_email="mlops.com",
+        trained_model=model,
+        sample_input_data=data[0:1],
+        datacard_uid=datacard.uid,
+    )
+    api_registries.model.register_card(modelcard)
+
     file_ = "tests/assets/audit_file.csv"
 
     audit_form = AuditFormRequest(
+        name="pipeline_audit",
+        team="mlops",
+        email="mlops.com",
         selected_model_name="pipeline_model",
         selected_model_team="mlops",
         selected_model_version="1.0.0",
         selected_model_email="mlops.com",
     )
 
-    csv_reader = csv.DictReader(open(file_))
-    records = list(csv_reader)
+    # save audit card
+    response = test_app.post(
+        f"/opsml/audit/save",
+        data=audit_form.model_dump(),
+    )
+    auditcard = api_registries.audit.list_cards()[0]
 
-    with patch.multiple(
-        "opsml.app.routes.audit.AuditFormUploader",
-        read_file=MagicMock(return_value=records),
-    ) as mock_uploader:
-        response = test_app.post(f"/opsml/audit/upload", data=audit_form.model_dump())
+    # without uid
+    response = test_app.post(
+        f"/opsml/audit/upload",
+        data=audit_form.model_dump(),
+        files={"audit_file": open(file_, "rb")},
+    )
+    assert response.status_code == 200
 
+    # with uid
+
+    audit_form = AuditFormRequest(
+        name="pipeline_audit",
+        team="mlops",
+        email="mlops.com",
+        selected_model_name="pipeline_model",
+        selected_model_team="mlops",
+        selected_model_version="1.0.0",
+        selected_model_email="mlops.com",
+        uid=auditcard["uid"],
+    )
+
+    response = test_app.post(
+        f"/opsml/audit/upload",
+        data=audit_form.model_dump(),
+        files={"audit_file": open(file_, "rb")},
+    )
+    assert response.status_code == 200
+
+    # test downloading audit file
+    response = test_app.post(
+        f"/opsml/audit/download",
+        data=audit_form.model_dump(),
+    )
     assert response.status_code == 200

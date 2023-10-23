@@ -13,7 +13,6 @@ from streaming_form_data.validators import MaxSizeValidator
 
 from opsml.app.core.dependencies import verify_token
 from opsml.app.routes.pydantic_models import (
-    DownloadFileRequest,
     ListFileRequest,
     ListFileResponse,
     DeleteFileResponse,
@@ -114,8 +113,9 @@ def download_file(
     Args:
         request:
             request object
-        payload:
-            `DownloadFileRequest`
+        read_path:
+            path to file
+
 
     Returns:
         Streaming file response

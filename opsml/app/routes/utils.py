@@ -37,9 +37,9 @@ def get_names_teams_versions(registry: CardRegistry, team: str, name: str) -> Tu
         A tuple of names, teams, and versions
     """
 
-    teams = registry._registry.unique_teams
+    teams = registry._registry.unique_teams  # pylint: disable=protected-access
     versions = get_model_versions(registry, name, team)
-    names = registry._registry.get_unique_card_names(team=team)
+    names = registry._registry.get_unique_card_names(team=team)  # pylint: disable=protected-access
     return names, teams, versions
 
 
@@ -82,9 +82,9 @@ def error_to_500(func):
     async def wrapper(request: Request, *args, **kwargs):
         try:
             return await func(request, *args, **kwargs)
-        except Exception as exc:
-            tb = traceback.format_exc()
-            logger.error("exceptions: {} {}", exc, tb)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            trace_back = traceback.format_exc()
+            logger.error("exceptions: {} {}", exc, trace_back)
             return templates.TemplateResponse(
                 "include/500.html",
                 {
@@ -170,7 +170,7 @@ class ExternalFileTarget(FileTarget):
 def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> ListTeamNameInfo:
     """Returns dictionary of items"""
 
-    all_teams = registry._registry.unique_teams
+    all_teams = registry._registry.unique_teams  # pylint: disable=protected-access
 
     if not bool(all_teams):
         default_team = None
@@ -178,7 +178,7 @@ def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> L
         default_team = all_teams[0]
 
     team = team or default_team
-    names = registry._registry.get_unique_card_names(team=team)
+    names = registry._registry.get_unique_card_names(team=team)  # pylint: disable=protected-access
 
     return ListTeamNameInfo(
         teams=all_teams,
@@ -195,6 +195,8 @@ def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[st
             The registry to query
         model:
             The model to query
+        team:
+            The team to query
     Returns:
         A list of model versions
     """

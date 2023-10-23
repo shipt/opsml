@@ -7,7 +7,6 @@ import os
 from opsml.projects.base._active_run import ActiveRun
 from opsml.projects.mlflow.mlflow_utils import MlflowRunInfo
 from opsml.registry.cards.types import METRICS, PARAMS
-from opsml.registry.storage.types import MlflowInfo
 
 
 class MlflowActiveRun(ActiveRun):

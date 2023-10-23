@@ -51,6 +51,8 @@ async def model_list_homepage(request: Request, team: Optional[str] = None):
     Args:
         request:
             The incoming HTTP request.
+        team:
+            The team to query
     Returns:
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
@@ -134,7 +136,7 @@ async def model_versions_page(
 
 @router.post("/models/register", name="model_register")
 def post_model_register(request: Request, payload: RegisterModelRequest) -> str:
-    """Registers a model to a known GCS location.
+    """Registers a model to a known cloud storage location.
 
        This is used from within our CI/CD infrastructure to ensure a known good
        GCS location exists for the onnx model.

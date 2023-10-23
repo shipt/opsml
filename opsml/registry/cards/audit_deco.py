@@ -1,10 +1,10 @@
 from typing import Optional
 
 from opsml.registry.cards.types import CardType
-from opsml.registry.cards import AuditCard
+from opsml.registry.cards.base import ArtifactCard
 
 
-def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
+def add_to_auditcard(self, auditcard: Optional[ArtifactCard] = None, auditcard_uid: Optional[str] = None) -> None:
     """Add card uid to auditcard
 
     Args:
@@ -27,7 +27,7 @@ def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid:
         )
 
         audit_registry = CardRegistry(registry_name="audit")
-        auditcard: AuditCard = audit_registry.load_card(uid=auditcard_uid)
+        auditcard = audit_registry.load_card(uid=auditcard_uid)
         auditcard.add_card(card=self)
         audit_registry.update_card(card=auditcard)
 
@@ -38,6 +38,8 @@ def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid:
 
     if auditcard is not None:
         return auditcard.add_card(card=self)
+
+    return None
 
 
 def auditable(cls_):

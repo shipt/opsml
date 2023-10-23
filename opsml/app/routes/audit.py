@@ -4,22 +4,20 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import os
+import io
 import re
 import csv
 import codecs
-import tempfile
 from typing import Dict, Optional, List, Union, Tuple, Any
 import datetime
-from fastapi.responses import FileResponse
-from fastapi import APIRouter, Request, Depends, UploadFile, BackgroundTasks, File, Form
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse
-from fastapi.responses import RedirectResponse
 from opsml.app.routes.utils import error_to_500, get_names_teams_versions
 from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormRequest
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistries, AuditCard
-from opsml.registry.cards.audit import AuditSections, Comment
+from opsml.registry.cards.audit import AuditSections
 
 
 logger = ArtifactLogger.get_logger()
@@ -49,6 +47,16 @@ async def audit_list_homepage(
     Args:
         request:
             The incoming HTTP request.
+        team:
+            Team name
+        model:
+            Model name
+        email:
+            User email
+        version:
+            Model version
+        uid:
+            AuditCard uid
     Returns:
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
@@ -68,7 +76,7 @@ async def audit_list_homepage(
             },
         )
 
-    elif team is not None and all(attr is None for attr in [version, model]):
+    if team is not None and all(attr is None for attr in [version, model]):
         teams = request.app.state.registries.model._registry.unique_teams
         model_names = request.app.state.registries.model._registry.get_unique_card_names(team=team)
         return templates.TemplateResponse(
@@ -85,7 +93,7 @@ async def audit_list_homepage(
             },
         )
 
-    elif team is not None and model is not None and version is None:
+    if team is not None and model is not None and version is None:
         model_names, teams, versions = get_names_teams_versions(
             registry=request.app.state.registries.model,
             name=model,
@@ -106,66 +114,63 @@ async def audit_list_homepage(
             },
         )
 
-    elif all(attr is not None for attr in [version, model, team]) or uid is not None:
-        model_names, teams, versions = get_names_teams_versions(
-            registry=request.app.state.registries.model,
-            name=model,
-            team=team,
-        )
-        model_record = request.app.state.registries.model.list_cards(
-            name=model,
-            version=version,
-            uid=uid,
-        )[0]
+    model_names, teams, versions = get_names_teams_versions(
+        registry=request.app.state.registries.model,
+        name=model,
+        team=team,
+    )
+    model_record = request.app.state.registries.model.list_cards(
+        name=model,
+        version=version,
+        uid=uid,
+    )[0]
 
-        email = model_record.get("user_email") if email is None else email
+    email = model_record.get("user_email") if email is None else email
 
-        auditcard_uid = model_record.get("auditcard_uid")
+    auditcard_uid = model_record.get("auditcard_uid")
 
-        if auditcard_uid is None:
-            audit_report = {
-                "name": None,
-                "team": None,
-                "user_email": None,
-                "version": None,
-                "uid": None,
-                "status": False,
-                "audit": AuditSections().model_dump(),
-                "timestamp": None,
-                "comments": [],
-            }
+    if auditcard_uid is None:
+        audit_report = {
+            "name": None,
+            "team": None,
+            "user_email": None,
+            "version": None,
+            "uid": None,
+            "status": False,
+            "audit": AuditSections().model_dump(),
+            "timestamp": None,
+            "comments": [],
+        }
 
-        else:
-            audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=auditcard_uid)
+    else:
+        audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=auditcard_uid)
 
-            audit_report = {
-                "name": audit_card.name,
-                "team": audit_card.team,
-                "user_email": audit_card.user_email,
-                "version": audit_card.version,
-                "uid": audit_card.uid,
-                "status": audit_card.approved,
-                "audit": audit_card.audit.model_dump(),
-                "timestamp": None,
-                "comments": audit_card.comments,
-            }
+        audit_report = {
+            "name": audit_card.name,
+            "team": audit_card.team,
+            "user_email": audit_card.user_email,
+            "version": audit_card.version,
+            "uid": audit_card.uid,
+            "status": audit_card.approved,
+            "audit": audit_card.audit.model_dump(),
+            "timestamp": None,
+            "comments": audit_card.comments,
+        }
 
-        return templates.TemplateResponse(
-            "include/audit/audit.html",
-            {
-                "request": request,
-                "teams": teams,
-                "selected_team": team,
-                "models": model_names,
-                "selected_model": model,
-                "selected_email": email,
-                "versions": versions,
-                "version": version,
-                "audit_report": audit_report,
-            },
-        )
-
-    return RedirectResponse(url="/opsml/audit/")
+    return templates.TemplateResponse(
+        "include/audit/audit.html",
+        {
+            "request": request,
+            "teams": teams,
+            "selected_team": team,
+            "models": model_names,
+            "selected_model": model,
+            "selected_email": email,
+            "versions": versions,
+            "version": version,
+            "audit_report": audit_report,
+        },
+    )
 
 
 class AuditFormParser:
@@ -201,8 +206,6 @@ class AuditFormParser:
         as the auditcard_uid is created/updated via form data
 
         Args:
-            registry:
-                CardRegistry
             audit_card:
                 `AuditCard`
 
@@ -214,6 +217,7 @@ class AuditFormParser:
             return self.registries.audit.update_card(card=audit_card)
         self.registries.audit.register_card(card=audit_card)
         self._add_auditcard_to_modelcard(auditcard_uid=audit_card.uid)
+        return None
 
     def get_audit_card(self) -> AuditCard:
         """Gets or creates AuditCard to use with Form data
@@ -314,6 +318,7 @@ async def save_audit_form(request: Request, form: AuditFormRequest = Depends(Aud
             "selected_team": form.selected_model_team,
             "models": model_names,
             "selected_model": form.selected_model_name,
+            "selected_email": form.selected_model_email,
             "versions": versions,
             "version": form.selected_model_version,
             "audit_report": audit_report,
@@ -463,11 +468,6 @@ async def upload_audit_data(
     )
 
 
-def remove_file(path: str) -> None:
-    """Removes file from disk"""
-    os.unlink(path)
-
-
 def write_audit_to_csv(
     audit_records: List[Dict[str, Optional[Union[str, int]]]],
     field_names: List[str],
@@ -483,22 +483,22 @@ def write_audit_to_csv(
     Returns:
         FileResponse
     """
-    csv_file, path = tempfile.mkstemp(suffix=".csv")
-    with open(file=path, mode="w") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=field_names)
-        writer.writeheader()
-        writer.writerows(audit_records)
-    response = FileResponse(AUDIT_FILE, media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=audit_file.csv"
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=field_names)
+    writer.writeheader()
+    writer.writerows(audit_records)
 
-    return response, path
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "filename=audit_file.csv"},
+    )
 
 
 @router.post("/audit/download", response_class=FileResponse)
 @error_to_500
 async def download_audit_data(
     request: Request,
-    background_tasks: BackgroundTasks,
     form: AuditFormRequest = Depends(AuditFormRequest),
 ):
     """Downloads Audit Form data to csv"""
@@ -527,11 +527,9 @@ async def download_audit_data(
                 }
             )
 
-    response, path = write_audit_to_csv(
+    response = write_audit_to_csv(
         audit_records=audit_records,
         field_names=field_names,
     )
-
-    background_tasks.add_task(remove_file, path)
 
     return response

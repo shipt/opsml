@@ -4,6 +4,7 @@
 import os
 from typing import cast, Optional
 import json
+import tempfile
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -12,7 +13,6 @@ from opsml.app.routes.pydantic_models import CardRequest, CompareCardRequest
 from opsml.profile.profile_data import DataProfiler
 from opsml.registry import CardRegistry, DataCard
 from opsml.app.routes.utils import error_to_500, list_team_name_info
-import tempfile
 
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -33,6 +33,8 @@ async def data_list_homepage(request: Request, team: Optional[str] = None):
     Args:
         request:
             The incoming HTTP request.
+        team:
+            The team to query
     Returns:
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
@@ -92,9 +94,9 @@ async def data_versions_page(
 
                 stats = os.stat(filepath)
                 if stats.st_size / (1024 * 1024) <= 50:
-                    HTMLFile = open(filepath, "r")
-                    data_profile = HTMLFile.read()
-                    render_profile = True
+                    with open(filepath, "r", encoding="utf-8") as html_file:
+                        data_profile = html_file.read()
+                        render_profile = True
 
                 else:
                     data_profile = "Data profile too large to display. Please download to view."
@@ -149,9 +151,9 @@ async def data_versions_profile_page(
             stats = os.stat(filepath)
 
             if stats.st_size / (1024 * 1024) <= 50:
-                HTMLFile = open(filepath, "r")
-                data_profile = HTMLFile.read()
-                render = True
+                with open(filepath, "r", encoding="utf-8") as html_file:
+                    data_profile = html_file.read()
+                    render = True
 
             else:
                 data_profile = "Data profile too large to display. Please download to view."
