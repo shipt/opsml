@@ -8,13 +8,13 @@ import io
 import re
 import csv
 import codecs
-from typing import Dict, Optional, List, Union, Tuple, Any
+from typing import Dict, Optional, List, Union, Any, BinaryIO
 import datetime
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from opsml.app.routes.utils import error_to_500, get_names_teams_versions
-from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormRequest
+from opsml.app.routes.pydantic_models import CommentSaveRequest, AuditFormRequest, AuditReport
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistries, AuditCard
 from opsml.registry.cards.audit import AuditSections
@@ -116,8 +116,8 @@ async def audit_list_homepage(
 
     model_names, teams, versions = get_names_teams_versions(
         registry=request.app.state.registries.model,
-        name=model,
-        team=team,
+        name=str(model),
+        team=str(team),
     )
     model_record = request.app.state.registries.model.list_cards(
         name=model,
@@ -130,32 +130,32 @@ async def audit_list_homepage(
     auditcard_uid = model_record.get("auditcard_uid")
 
     if auditcard_uid is None:
-        audit_report = {
-            "name": None,
-            "team": None,
-            "user_email": None,
-            "version": None,
-            "uid": None,
-            "status": False,
-            "audit": AuditSections().model_dump(),
-            "timestamp": None,
-            "comments": [],
-        }
+        audit_report = AuditReport(
+            name=None,
+            team=None,
+            user_email=None,
+            version=None,
+            uid=None,
+            status=False,
+            audit=AuditSections().model_dump(),  # type: ignore
+            timestamp=None,
+            comments=[],
+        )
 
     else:
         audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=auditcard_uid)
 
-        audit_report = {
-            "name": audit_card.name,
-            "team": audit_card.team,
-            "user_email": audit_card.user_email,
-            "version": audit_card.version,
-            "uid": audit_card.uid,
-            "status": audit_card.approved,
-            "audit": audit_card.audit.model_dump(),
-            "timestamp": None,
-            "comments": audit_card.comments,
-        }
+        audit_report = AuditReport(
+            name=audit_card.name,
+            team=audit_card.team,
+            user_email=audit_card.user_email,
+            version=audit_card.version,
+            uid=audit_card.uid,
+            status=audit_card.approved,
+            audit=audit_card.audit.model_dump(),
+            timestamp=None,
+            comments=audit_card.comments,
+        )
 
     return templates.TemplateResponse(
         "include/audit/audit.html",
@@ -168,7 +168,7 @@ async def audit_list_homepage(
             "selected_email": email,
             "versions": versions,
             "version": version,
-            "audit_report": audit_report,
+            "audit_report": audit_report.model_dump(),
         },
     )
 
@@ -298,17 +298,17 @@ async def save_audit_form(request: Request, form: AuditFormRequest = Depends(Aud
     )
     audit_card = parser.parse_form()
 
-    audit_report = {
-        "name": audit_card.name,
-        "team": audit_card.team,
-        "user_email": audit_card.user_email,
-        "version": audit_card.version,
-        "uid": audit_card.uid,
-        "status": audit_card.approved,
-        "audit": audit_card.audit.model_dump(),
-        "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
-        "comments": audit_card.comments,
-    }
+    audit_report = AuditReport(
+        name=audit_card.name,
+        team=audit_card.team,
+        user_email=audit_card.user_email,
+        version=audit_card.version,
+        uid=audit_card.uid,
+        status=audit_card.approved,
+        audit=audit_card.audit.model_dump(),  # using updated section
+        timestamp=str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+        comments=audit_card.comments,
+    )
 
     return templates.TemplateResponse(
         "include/audit/audit.html",
@@ -321,7 +321,7 @@ async def save_audit_form(request: Request, form: AuditFormRequest = Depends(Aud
             "selected_email": form.selected_model_email,
             "versions": versions,
             "version": form.selected_model_version,
-            "audit_report": audit_report,
+            "audit_report": audit_report.model_dump(),
         },
     )
 
@@ -353,17 +353,17 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
 
     request.app.state.registries.audit.update_card(card=audit_card)
 
-    audit_report = {
-        "name": audit_card.name,
-        "team": audit_card.team,
-        "user_email": audit_card.user_email,
-        "version": audit_card.version,
-        "uid": audit_card.uid,
-        "status": audit_card.approved,
-        "audit": audit_card.audit.model_dump(),
-        "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
-        "comments": audit_card.comments,
-    }
+    audit_report = AuditReport(
+        name=audit_card.name,
+        team=audit_card.team,
+        user_email=audit_card.user_email,
+        version=audit_card.version,
+        uid=audit_card.uid,
+        status=audit_card.approved,
+        audit=audit_card.audit.model_dump(),  # using updated section
+        timestamp=str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+        comments=audit_card.comments,
+    )
 
     return templates.TemplateResponse(
         "include/audit/audit.html",
@@ -376,7 +376,7 @@ async def save_audit_comment(request: Request, comment: CommentSaveRequest = Dep
             "selected_email": comment.selected_model_email,
             "versions": versions,
             "version": comment.selected_model_version,
-            "audit_report": audit_report,
+            "audit_report": audit_report.model_dump(),
         },
     )
 
@@ -386,17 +386,23 @@ class AuditFormUploader:
         self.form = form
         self.background_tasks = background_tasks
 
+    @property
+    def audit_file(self) -> BinaryIO:
+        if self.form.audit_file is None:
+            raise ValueError("No audit file provided")
+        return self.form.audit_file.file
+
     def read_file(self) -> List[Dict[str, Any]]:
         """Reads an audit file to dictionary"""
-        data = self.form.audit_file.file
-        csv_reader = csv.DictReader(codecs.iterdecode(data, "utf-8"))
-        self.background_tasks.add_task(data.close)
+
+        csv_reader = csv.DictReader(codecs.iterdecode(self.audit_file, "utf-8"))
+        self.background_tasks.add_task(self.audit_file.close)
         records = list(csv_reader)
         return records
 
     def upload_audit(self) -> Dict[str, Any]:
         """Uploads audit data from file to AuditCard"""
-        audit_sections = AuditSections().model_dump()
+        audit_sections = AuditSections().model_dump()  # type:ignore
         records = self.read_file()
         for record in records:
             section = record["topic"]
@@ -421,29 +427,30 @@ async def upload_audit_data(
 
     if form.uid is not None:
         audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=form.uid)
-        audit_report = {
-            "name": audit_card.name,
-            "team": audit_card.team,
-            "user_email": audit_card.user_email,
-            "version": audit_card.version,
-            "uid": audit_card.uid,
-            "status": audit_card.approved,
-            "audit": audit_sections,  # using updated section
-            "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
-            "comments": audit_card.comments,
-        }
+        audit_report = AuditReport(
+            name=audit_card.name,
+            team=audit_card.team,
+            user_email=audit_card.user_email,
+            version=audit_card.version,
+            uid=audit_card.uid,
+            status=audit_card.approved,
+            audit=audit_sections,  # using updated section
+            timestamp=str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+            comments=audit_card.comments,
+        )
+
     else:
-        audit_report = {
-            "name": form.name or form.selected_model_name,
-            "team": form.team or form.selected_model_team,
-            "user_email": form.email or form.selected_model_email,
-            "version": form.version,
-            "uid": form.uid,
-            "status": form.status,
-            "audit": audit_sections,
-            "timestamp": str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
-            "comments": [],
-        }
+        audit_report = AuditReport(
+            name=form.name or form.selected_model_name,
+            team=form.team or form.selected_model_team,
+            user_email=form.email or form.selected_model_email,
+            version=form.version,
+            uid=form.uid,
+            status=form.status,
+            audit=audit_sections,  # using updated section
+            timestamp=str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M")),
+            comments=[],
+        )
 
     # base attr needed for html
     model_names, teams, versions = get_names_teams_versions(
@@ -463,7 +470,7 @@ async def upload_audit_data(
             "selected_email": form.selected_model_name,
             "versions": versions,
             "version": form.selected_model_version,
-            "audit_report": audit_report,
+            "audit_report": audit_report.model_dump(),
         },
     )
 
@@ -471,7 +478,7 @@ async def upload_audit_data(
 def write_audit_to_csv(
     audit_records: List[Dict[str, Optional[Union[str, int]]]],
     field_names: List[str],
-) -> Tuple[FileResponse, str]:
+) -> StreamingResponse:
     """Writes audit data to csv and returns FileResponse
 
     Args:
@@ -495,12 +502,12 @@ def write_audit_to_csv(
     )
 
 
-@router.post("/audit/download", response_class=FileResponse)
+@router.post("/audit/download", response_class=StreamingResponse)
 @error_to_500
 async def download_audit_data(
     request: Request,
     form: AuditFormRequest = Depends(AuditFormRequest),
-):
+) -> StreamingResponse:
     """Downloads Audit Form data to csv"""
 
     field_names = ["topic", "number", "question", "purpose", "response"]

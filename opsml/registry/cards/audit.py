@@ -126,12 +126,12 @@ class AuditCard(ArtifactCard):
                 Comment to add
 
         """
-        comment = Comment(name=name, comment=comment)
+        comment_model = Comment(name=name, comment=comment)
 
-        if any(comment == _comment for _comment in self.comments):
+        if any(comment_model == _comment for _comment in self.comments):
             return  # Exit early if comment already exists
 
-        self.comments.insert(0, comment)
+        self.comments.insert(0, comment_model)
 
     def create_registry_record(self) -> RegistryRecord:
         """Creates a registry record for a audit"""
@@ -163,6 +163,12 @@ class AuditCard(ArtifactCard):
         audit_registry = AuditCardRegistry(RegistryTableNames.AUDIT.value)
 
         if card.card_type.lower() == CardType.DATACARD.value:
+            if card.uid is None:
+                raise ValueError(
+                    f"""Card uid must be provided for {card.card_type}. 
+                    Uid must be registered prior to adding to AuditCard."""
+                )
+
             if audit_registry.validate_uid(card.uid, RegistryTableNames.DATA.value):
                 self.metadata.datacards.append(
                     CardVersion(
@@ -174,6 +180,11 @@ class AuditCard(ArtifactCard):
                 return
 
         elif card.card_type.lower() == CardType.MODELCARD:
+            if card.uid is None:
+                raise ValueError(
+                    f"""Card uid must be provided for {card.card_type}. 
+                    Uid must be registered prior to adding to AuditCard."""
+                )
             if audit_registry.validate_uid(card.uid, RegistryTableNames.MODEL.value):
                 self.metadata.modelcards.append(
                     CardVersion(
@@ -194,10 +205,6 @@ class AuditCard(ArtifactCard):
                 )
             )
             return  # Exit early
-
-        raise ValueError(
-            f"Invalid uid {card.uid} for {card.card_type}. Uid must be registered prior to adding to AuditCard."
-        )
 
     @property
     def business(self) -> Dict[int, Question]:

@@ -69,10 +69,10 @@ async def data_versions_page(
     versions = registry.list_cards(name=name, as_dataframe=False, limit=50)
 
     if version is None:
-        selected_data: DataCard = registry.load_card(uid=versions[0]["uid"])
+        selected_data = cast(DataCard, registry.load_card(uid=versions[0]["uid"]))
         version = selected_data.version
     else:
-        selected_data: DataCard = registry.load_card(name=name, version=version)
+        selected_data = cast(DataCard, registry.load_card(name=name, version=version))
 
     if len(selected_data.data_splits) > 0:
         data_splits = json.dumps(
@@ -124,7 +124,7 @@ async def data_versions_uid_page(
     uid: str,
 ):
     registry: CardRegistry = request.app.state.registries.data
-    selected_data: DataCard = registry.list_cards(uid=uid)[0]
+    selected_data = registry.list_cards(uid=uid)[0]
 
     return await data_versions_page(
         request=request,

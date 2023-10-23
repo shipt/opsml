@@ -1,10 +1,23 @@
-from typing import Optional
+from typing import Optional, Protocol, cast
 
 from opsml.registry.cards.types import CardType
 from opsml.registry.cards.base import ArtifactCard
 
 
-def add_to_auditcard(self, auditcard: Optional[ArtifactCard] = None, auditcard_uid: Optional[str] = None) -> None:
+class AuditCard(Protocol):
+    @property
+    def card_type(self) -> str:
+        ...
+
+    @property
+    def uid(self) -> str:
+        ...
+
+    def add_card(self, card: ArtifactCard) -> None:
+        ...
+
+
+def add_to_auditcard(self, auditcard: Optional[AuditCard] = None, auditcard_uid: Optional[str] = None) -> None:
     """Add card uid to auditcard
 
     Args:
@@ -27,12 +40,12 @@ def add_to_auditcard(self, auditcard: Optional[ArtifactCard] = None, auditcard_u
         )
 
         audit_registry = CardRegistry(registry_name="audit")
-        auditcard = audit_registry.load_card(uid=auditcard_uid)
-        auditcard.add_card(card=self)
-        audit_registry.update_card(card=auditcard)
+        loaded_card = cast(AuditCard, audit_registry.load_card(uid=auditcard_uid))
+        loaded_card.add_card(card=self)
+        audit_registry.update_card(card=loaded_card)  # type: ignore
 
         if self.card_type in [CardType.DATACARD, CardType.MODELCARD]:
-            self.metadata.auditcard_uid = auditcard.uid
+            self.metadata.auditcard_uid = loaded_card.uid
 
         return None
 

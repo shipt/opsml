@@ -9,6 +9,7 @@ from opsml.model.challenger import BattleReport
 from opsml.registry.cards.types import METRICS
 from opsml.registry.sql.base.registry_base import VersionType
 from opsml.registry.sql.semver import CardVersion
+from opsml.registry.cards.audit import Comment, AuditSections
 
 
 class StorageUri(BaseModel):
@@ -337,6 +338,13 @@ class AuditFormRequest(BaseModel):
     misc_10: Optional[str] = None
 
 
-@form_body
-class AuditUploadRequest(BaseModel):
-    file_upload: UploadFile = (File(),)
+class AuditReport(BaseModel):
+    name: Optional[str] = None
+    team: Optional[str] = None
+    user_email: Optional[str] = None
+    version: Optional[str] = None
+    uid: Optional[str] = None
+    status: Optional[bool] = False
+    audit: Optional[Dict[str, Any]] = AuditSections().model_dump()  # type: ignore
+    timestamp: Optional[str] = None
+    comments: List[Optional[Comment]] = []

@@ -10,7 +10,7 @@ from streaming_form_data.targets import FileTarget
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from opsml.app.routes.pydantic_models import ListTeamNameInfo
-from opsml.registry import CardRegistries, ModelCard, RunCard, CardRegistry
+from opsml.registry import CardRegistries, RunCard, CardRegistry
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
 
@@ -63,7 +63,7 @@ def get_runcard_from_model(
     Returns:
         RunCard object
     """
-    modelcard: ModelCard = registries.model.list_cards(
+    modelcard = registries.model.list_cards(
         name=name,
         version=version,
         uid=uid,

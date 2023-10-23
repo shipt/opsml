@@ -4,7 +4,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 import json
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
@@ -91,11 +91,11 @@ async def model_versions_page(
     )
 
     if version is None:
-        selected_model: ModelCard = registry.load_card(uid=versions[0]["uid"])
+        selected_model = cast(ModelCard, registry.load_card(uid=versions[0]["uid"]))
         version = selected_model.version
 
     else:
-        selected_model: ModelCard = registry.load_card(name=model, version=version)
+        selected_model = cast(ModelCard, registry.load_card(name=model, version=version))
 
     if selected_model.metadata.runcard_uid is not None:
         runcard = request.app.state.registries.run.load_card(uid=selected_model.metadata.runcard_uid)
@@ -117,7 +117,7 @@ async def model_versions_page(
         metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
 
     metadata_json = json.dumps(metadata.model_dump(), indent=4)
-    metadata.sample_data = json.dumps(metadata.sample_data, indent=4)
+    sample_data = json.dumps(metadata.sample_data, indent=4)
 
     return templates.TemplateResponse(
         "include/model/model_version.html",
@@ -128,6 +128,7 @@ async def model_versions_page(
             "selected_version": version,
             "project_num": project_num,
             "metadata": metadata,
+            "sample_data": sample_data,
             "runcard": runcard,
             "metadata_json": metadata_json,
         },
