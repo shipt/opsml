@@ -53,9 +53,8 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         assert data_card.metadata.runcard_uid == run.run_id
 
         auditcard = AuditCard(name="audit_card", team="team", user_email="test")
-        auditcard.add_card_uid(card_type="data", uid=data_card.uid)
-        auditcard.add_card_uid(card_type="model", uid=model_card.uid)
-        auditcard.add_card_uid(card_type="run", uid=run.run_id)
+        auditcard.add_card(card=data_card)
+        auditcard.add_card(card=model_card)
         run.register_card(card=auditcard)
 
     # Retrieve the run and load projects without making the run active (read only mode)

@@ -599,15 +599,17 @@ class ApiStorageClient(LocalStorageClient):
         recursive: bool = False,
     ) -> str:
         for file_ in files:
-            read_dir = os.path.dirname(file_)
-            local_dir = read_dir.replace(rpath, lpath)
-            filename = os.path.basename(file_)
+            path = Path(file_)
+            read_dir = str(path.parents[0])
+
+            if path.is_dir():
+                continue  # folder name path gets added to files list when use local storage client
 
             self.api_client.stream_download_file_request(
                 route=ApiRoutes.DOWNLOAD_FILE,
-                local_dir=local_dir,
+                local_dir=read_dir.replace(rpath, lpath),
                 read_dir=read_dir,
-                filename=filename,
+                filename=path.name,
             )
 
         return lpath
