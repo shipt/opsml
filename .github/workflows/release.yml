@@ -11,6 +11,8 @@ jobs:
         matrix:
           python-version: ["3.11",]
           poetry-version: ["1.5.1"]
+      environment:
+        name: pypi
 
       steps:
         - uses: actions/checkout@v3
