@@ -1,6 +1,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+
 import datetime
 from functools import wraps
 from typing import Any, Dict, Iterable, Optional, Type, Union, cast, List, Iterator
@@ -89,6 +90,7 @@ class QueryEngine:
         version: Optional[str] = None,
         max_date: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
+        limit: Optional[int] = None,
     ) -> Select:
         """
         Creates a sql query based on table, uid, name, team and version
@@ -108,6 +110,8 @@ class QueryEngine:
                 Optional card tags
             max_date:
                 Optional max date to search
+            limit:
+                Optional limit of records to return
 
         Returns
             Sqlalchemy Select statement
@@ -140,6 +144,9 @@ class QueryEngine:
 
         query = query.order_by(table.version.desc(), table.timestamp.desc())  # type: ignore
 
+        if limit is not None:
+            query = query.limit(limit)
+
         return query
 
     def _parse_records(self, records: List[Any]) -> List[Dict[str, Any]]:
@@ -171,9 +178,17 @@ class QueryEngine:
         version: Optional[str] = None,
         max_date: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
+        limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         query = self._records_from_table_query(
-            table=table, uid=uid, name=name, team=team, version=version, max_date=max_date, tags=tags
+            table=table,
+            uid=uid,
+            name=name,
+            team=team,
+            version=version,
+            max_date=max_date,
+            tags=tags,
+            limit=limit,
         )
 
         with self.session() as sess:
@@ -248,39 +263,6 @@ class QueryEngine:
             query = sess.query(table).filter(table.uid == record_uid)
             query.update(card)
             sess.commit()
-
-    def get_unique_teams(self, table: Type[REGISTRY_TABLES]) -> List[str]:
-        """Retrieves unique teams in a registry
-
-        Args:
-            table:
-                Registry table to query
-
-        Returns:
-            List of unique teams
-        """
-        team_col = cast(SqlTableType, table.team)
-        query = select(team_col).distinct()
-
-        with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
-
-        return results
-
-    def get_unique_card_names(self, team: Optional[str], table: Type[REGISTRY_TABLES]) -> List[str]:
-        """Returns a list of unique card names"""
-        name_col = cast(SqlTableType, table.name)
-        query = select(name_col)
-
-        if team is not None:
-            query = query.filter(table.team == team).distinct()  # type: ignore[attr-defined]
-        else:
-            query = query.distinct()
-
-        with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
-
-        return results
 
     def delete_card_record(
         self,
