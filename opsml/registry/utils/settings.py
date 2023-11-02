@@ -125,7 +125,6 @@ class DefaultAttrCreator:
         """Sets storage info and storage client attributes for DefaultSettings"""
 
         storage_settings = self._get_storage_settings()
-
         if isinstance(storage_settings, ApiStorageClientSettings):
             storage_settings.client = self._env_vars["request_client"]
 

@@ -327,7 +327,6 @@ class SQLRegistryBase:
     def _sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         versions = [record["version"] for record in records]
         sorted_versions = SemVerUtils.sort_semvers(versions)
-
         sorted_records = []
         for version in sorted_versions:
             for record in records:
