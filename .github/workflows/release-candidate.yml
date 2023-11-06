@@ -30,11 +30,13 @@ jobs:
                 make lints.ci
                 make test.unit
                 make setup.project
-                if [[ "v$(poetry version --short)" == *"rc"* ]]; then
+                if [[ "v$(poetry version --short)" == *"rc"* ]]; 
+                then
                   poetry build
                   twine check --strict dist/*
                 else
                   exit 1
+                fi
 
         - name: upload to pypi
           run: twine upload dist/*
