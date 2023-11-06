@@ -6,7 +6,7 @@ on:
       - release-candidate
 
 jobs:
-  Unit-Lint:
+  Unit-Lint-Release-Candidate:
       runs-on: ubuntu-latest
       strategy:
         matrix:
@@ -33,7 +33,7 @@ jobs:
                 if [[ "v$(poetry version --short)" == *"rc"* ]]; then
                   poetry build
                   twine check --strict dist/*
-                fi
+                else
                   exit 1
 
         - name: upload to pypi
