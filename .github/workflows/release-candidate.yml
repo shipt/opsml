@@ -8,6 +8,7 @@ on:
 jobs:
   Unit-Lint-Release-Candidate:
       runs-on: ubuntu-latest
+      environment: pypi
       strategy:
         matrix:
           python-version: ["3.11",]
