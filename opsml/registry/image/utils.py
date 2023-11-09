@@ -1,12 +1,16 @@
-from typing import List, Protocol
+from typing import List, Protocol, Tuple, Dict, Any
 import pyarrow as pa
 from enum import Enum
 from opsml.registry.image.dataset import ImageDataset, ImageRecord
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from opsml.helpers.logging import ArtifactLogger
+import pyarrow.parquet as pq
 import re
+import uuid
 
 logger = ArtifactLogger.get_logger()
+
+VALID_DATA = ImageDataset
 
 
 class ShardSize(Enum):
@@ -22,43 +26,55 @@ class FileSystem(Protocol):
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i : i + n]
+        yield lst[i : i + n], i
 
 
-class PyarrowImageWriter:
+class PyarrowWriterBase:
     def __init__(
         self,
-        image_data: ImageDataset,
+        data: ImageDataset,
         file_system: FileSystem,
-        dir_path: str,
+        write_path: str,
     ):
-        self.image_data = image_data
+        self.data = data
         self.file_system = file_system
-        self.dir_path = dir_path
+        self.write_path = write_path
 
-        shard_size = re.findall("[a-zA-Z]+", image_data.shard_size)
+        self.shard_size = self._set_shard_size(data.metadata.shard_size)
 
-        if len(shard_size) > 0:
-            try:
-                self.shard_size = ShardSize[shard_size[0].upper()].value
-            except KeyError:
-                logger.error("Invalid shard size: {}", image_data.shard_size)
-                logger.info("Defaulting to 512MB")
-                self.shard_size = 512 * ShardSize.MB.value
+    def _set_shard_size(self, shard_size: str) -> int:
+        """
+        Sets the shard size for the dataset. Defaults to 512MB if invalid shard size is provided
 
-    def _set_shard_size(self, shard_size: str):
+        Args:
+            shard_size:
+                `str` shard size in the format of <number><unit> e.g. 512MB, 1GB, 2KB
+
+        Returns:
+            int
+        """
         shard_num = re.findall("\d+", shard_size)
         shard_size = re.findall("[a-zA-Z]+", shard_size)
 
-        if len(shard_size) > 0:
-            try:
-                self.shard_size = int(shard_num[0]) * ShardSize[shard_size[0].upper()].value
-            except Exception as exc:
-                logger.error("Invalid shard size: {}", shard_size)
-                logger.info("Defaulting to 512MB")
-                self.shard_size = 512 * ShardSize.MB.value
+        try:
+            return int(shard_num[0]) * ShardSize[shard_size[0].upper()].value
 
-    def write_to_table(self, image_records: List[ImageRecord]) -> pa.Table:
+        # can be index or keyerror
+        except Exception as exc:
+            logger.error("Invalid shard size: {}, error: {}", shard_size, exc)
+            logger.info("Defaulting to 512MB")
+            return 512 * ShardSize.MB.value
+
+    def create_record(self, record: ImageRecord) -> Tuple[Dict[str, Any], int]:
+        """Create record for pyarrow table
+        
+        Returns:
+            Record dictionary and buffer size
+        """
+        raise NotImplementedError
+
+    def _write_buffer(self, processed_records)
+    def write_to_table(self, records: Tuple[List[ImageRecord], int]) -> pa.Table:
         """Write image records to pyarrow table
 
         Args:
@@ -69,8 +85,78 @@ class PyarrowImageWriter:
             dir_path:
                 directory path to save to
         """
-        records = []
-        for record in image_records:
+        current_buffer_size = 0
+        processed_records = []
+        shard_name = records[1]
+
+        for record in records[0]:
+            record, size =self.create_record(record)
+            processed_records.append(record)
+            current_buffer_size += size
+
+                if current_buffer_size >= self.shard_size:
+                    temp_table = pa.Table.from_pylist(records)
+                    pq.write_table(
+                        table=temp_table,
+                        where=f"{self.write_path}/shard_{shard_name}-{uuid.uuid4().hex}.parquet",
+                        filesystem=self.storage_filesystem,
+                    )
+                    records = []
+                    current_buffer_size = 0
+
+
+# this can be extended to language datasets in the future
+class PyarrowWriter:
+    def __init__(
+        self,
+        data: ImageDataset,
+        file_system: FileSystem,
+        write_path: str,
+    ):
+        self.image_data = image_data
+        self.file_system = file_system
+        self.write_path = write_path
+        self.shard_size = self._set_shard_size(image_data.metadata.shard_size)
+
+    def _set_shard_size(self, shard_size: str) -> int:
+        """
+        Sets the shard size for the dataset. Defaults to 512MB if invalid shard size is provided
+
+        Args:
+            shard_size:
+                `str` shard size in the format of <number><unit> e.g. 512MB, 1GB, 2KB
+
+        Returns:
+            int
+        """
+        shard_num = re.findall("\d+", shard_size)
+        shard_size = re.findall("[a-zA-Z]+", shard_size)
+
+        try:
+            return int(shard_num[0]) * ShardSize[shard_size[0].upper()].value
+
+        # can be index or keyerror
+        except Exception as exc:
+            logger.error("Invalid shard size: {}, error: {}", shard_size, exc)
+            logger.info("Defaulting to 512MB")
+            return 512 * ShardSize.MB.value
+
+    def write_to_table(self, records: Tuple[List[ImageRecord], int]) -> pa.Table:
+        """Write image records to pyarrow table
+
+        Args:
+            image_records:
+                `List[ImageRecord]`
+            file_system:
+                `FileSystem`
+            dir_path:
+                directory path to save to
+        """
+        current_buffer_size = 0
+        processed_records = []
+        shard_name = records[1]
+
+        for record in records[0]:
             with pa.input_stream(record.file_name) as stream:
                 records.append(
                     {
@@ -79,11 +165,19 @@ class PyarrowImageWriter:
                         "split_label": record.split,
                     }
                 )
-        table = pa.Table.from_pylist(records)
+                current_buffer_size += stream.size
 
-        return pa.Table.from_pylist(records)
+                if current_buffer_size >= self.shard_size:
+                    temp_table = pa.Table.from_pylist(records)
+                    pq.write_table(
+                        table=temp_table,
+                        where=f"{self.write_path}/shard_{shard_name}-{uuid.uuid4().hex}.parquet",
+                        filesystem=self.storage_filesystem,
+                    )
+                    records = []
+                    current_buffer_size = 0
 
-    def write_dataset_to_table(self, image_data: ImageDataset, file_system: FileSystem, dir_path: str):
+    def write_dataset_to_table(self):
         """Writes image dataset to pyarrow tables
 
         Args:
@@ -95,12 +189,10 @@ class PyarrowImageWriter:
                 directory path to save to
         """
         record_tables = []
-        record_chunks = list(chunks(image_data.metadata.records, 10))
+        record_chunks = list(chunks(self.image_data.metadata.records, 10))
 
         with ProcessPoolExecutor() as executor:
-            future_to_table = {
-                executor.submit(PyarrowImageWriter.write_to_table, chunk): chunk for chunk in record_chunks
-            }
+            future_to_table = {executor.submit(self.write_to_table, chunk): chunk for chunk in record_chunks}
             for future in as_completed(future_to_table):
                 try:
                     table = future.result()
