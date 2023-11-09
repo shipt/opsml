@@ -3,13 +3,27 @@
 # LICENSE file in the root directory of this source tree.
 import json
 import os
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Protocol
 
 from pydantic import BaseModel, ValidationInfo, field_validator
-
 from opsml.helpers.logging import ArtifactLogger
 
+
 logger = ArtifactLogger.get_logger()
+
+
+class DataSplit(Protocol):
+    """Protocol for a data split"""
+
+    @property
+    def label(self) -> str:
+        """Label for the split"""
+        ...
+
+    @property
+    def directory(self) -> Optional[str]:
+        """Directory for the split"""
+        ...
 
 
 class BBox(BaseModel):
@@ -38,6 +52,8 @@ class ImageRecord(BaseModel):
             Optional list of categories for image
         objects:
             Optional `BBox` for the image
+        split:
+            Optional split for the image
 
     """
 
@@ -45,6 +61,7 @@ class ImageRecord(BaseModel):
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
+    split: Optional[str] = None
 
 
 class ImageMetadata(BaseModel):
@@ -79,6 +96,8 @@ class ImageDataset(BaseModel):
 
     image_dir: str
     metadata: Union[str, ImageMetadata]
+    splits_defined: bool = False
+    shard_size: str = "512MB"
 
     @field_validator("image_dir", mode="before")
     def check_dir(cls, value):
@@ -115,3 +134,21 @@ class ImageDataset(BaseModel):
 
             # tag: rust-op
             self.metadata.write_to_file(filepath)
+
+    def update_split_labels(self, splits: List[DataSplit]) -> None:
+        """Updates split labels for each image record
+
+        Args:
+            splits:
+                List of DataSplit objects
+
+        """
+
+        if not self.splits_defined:
+            for record in self.metadata.records:
+                if record.split is None:
+                    for split in splits:
+                        if split.directory in record.file_name:
+                            record.split = split.label
+
+            self.splits_defined = True

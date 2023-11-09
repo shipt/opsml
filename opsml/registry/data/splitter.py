@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import pyarrow as pa
+from opsml.registry.image.dataset import ImageDataset
 from pydantic import BaseModel, ConfigDict, field_validator
 
 
@@ -25,6 +26,27 @@ class Data:
 
 
 class DataSplit(BaseModel):
+    """Create a datasplit for your data
+
+    Args:
+        label:
+            Label for the split
+        column_name:
+            Name of column to split on (for pandas and polars dataframes)
+        column_value:
+            Value of column to split on (for pandas and polars dataframes)
+        inequality:
+            Inequality to split on (for pandas and polars dataframes)
+        start:
+            Start index to split
+        stop:
+            Stop index to split
+        indices:
+            List of indices to split on
+        directory:
+            Directory to split on (for image datasets)
+    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     label: str
@@ -34,6 +56,7 @@ class DataSplit(BaseModel):
     start: Optional[int] = None
     stop: Optional[int] = None
     indices: Optional[List[int]] = None
+    directory: Optional[str] = None
 
     @field_validator("indices", mode="before")
     def convert_to_list(cls, value):
@@ -282,6 +305,12 @@ class NumpyRowSplitter(DataSplitterBase):
     @staticmethod
     def validate(data_type: type, split: DataSplit):
         return data_type == np.ndarray and split.start is not None
+
+
+class ImageDatasetSplitter(DataSplitterBase):
+    @staticmethod
+    def validate(data_type: type, split: DataSplit):
+        return data_type == ImageDataset and split.directory is not None
 
 
 class DataSplitter:

@@ -177,8 +177,14 @@ class DataCardArtifactSaver(CardArtifactSaver):
         """Saves DataCard data to file system"""
 
         if isinstance(self.card.data, ImageDataset):
+            # update split labels
+            self.update_split_labels(splits=self.card.metadata.splits)
+
+            # convert metadata to jsonl file if metadata is an ImageMetadata object
             self.card.data.convert_metadata()
+
             storage_path = self._save_data_to_storage(data=self.card.data)
+
             self.card.metadata.uris.data_uri = storage_path.uri
             self.card.metadata.data_type = AllowedTableTypes.IMAGE_DATASET.value
 

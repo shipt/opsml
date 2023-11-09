@@ -18,7 +18,7 @@ from onnx.onnx_ml_pb2 import ModelProto  # type: ignore
 
 from opsml.helpers.utils import all_subclasses
 from opsml.registry.cards.types import StoragePath
-from opsml.registry.image import ImageDataset
+from opsml.registry.image.dataset import ImageDataset
 from opsml.registry.storage.storage_system import (
     ArtifactClass,
     MlflowStorageClient,
@@ -319,6 +319,7 @@ class ImageDataStorage(ArtifactStorage):
             Storage path
         """
         storage_path = f"{storage_uri}/{artifact.image_dir}"
+
         return self.storage_client.upload(
             local_path=artifact.image_dir,
             write_path=storage_path,
@@ -410,6 +411,7 @@ class ParquetStorage(ArtifactStorage):
         pa_table: pa.Table = pq.ParquetDataset(
             path_or_paths=file_path,
             filesystem=self.storage_filesystem,
+            use_legacy_dataset=False,
         ).read()
 
         if self.artifact_type == ArtifactStorageType.PANDAS_DATAFRAME:
