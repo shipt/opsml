@@ -3,9 +3,9 @@
 # LICENSE file in the root directory of this source tree.
 import json
 import os
-from typing import List, Optional, Union, Protocol
-
-from pydantic import BaseModel, ValidationInfo, field_validator
+from typing import List, Optional, Union, Protocol, Dict, Any
+from pathlib import Path
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 from opsml.helpers.logging import ArtifactLogger
 
 
@@ -58,10 +58,20 @@ class ImageRecord(BaseModel):
     """
 
     file_name: str
+    parent_dir: str
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
     split: Optional[str] = None
+
+    @model_validator(mode="before")
+    def check_args(cls, values: Dict[str, Any]):
+        file_path = Path(values.get("file_name"))
+
+        values["parent_dir"] = str(file_path.parent)
+        values["file_name"] = str(file_path.name)
+
+        return values
 
 
 class ImageMetadata(BaseModel):
