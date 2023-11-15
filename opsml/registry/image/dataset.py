@@ -5,9 +5,10 @@ import json
 import os
 from typing import List, Optional, Union, Protocol, Dict, Any
 from pathlib import Path
-from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
+from dataclasses import dataclass
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ConfigDict
 from opsml.helpers.logging import ArtifactLogger
-
+from functools import cached_property
 
 logger = ArtifactLogger.get_logger()
 
@@ -31,7 +32,7 @@ class ImageRecord(BaseModel):
 
     Args:
         file_name:
-            Name of image file
+            Full path to the file
         caption:
             Optional caption for image
         categories:
@@ -48,15 +49,34 @@ class ImageRecord(BaseModel):
     """
 
     file_name: str
+    path: str
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
     split: Optional[str] = None
+    size: int
 
-    @field_validator("file_name", mode="before")
-    def get_file_name(cls, file_name: str):
-        file_path = Path(file_name)
-        return str(file_path.name)
+    @model_validator(mode="before")
+    def check_args(cls, values: Dict[str, Any]):
+        file_path = Path(values.get("file_name"))
+
+        values["path"] = str(file_path.parent)
+        values["file_name"] = str(file_path.name)
+        values["size"] = file_path.stat().st_size
+
+        return values
+
+
+class ImageSplitHolder(BaseModel):
+    """Class for holding data objects"""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
+
+
+@dataclass
+class Split:
+    records: List[ImageRecord]
+    size: int
 
 
 class ImageMetadata(BaseModel):
@@ -91,7 +111,6 @@ class ImageDataset(BaseModel):
 
     image_dir: str
     metadata: Union[str, ImageMetadata]
-    splits_defined: bool = False
     shard_size: str = "512MB"
 
     @field_validator("image_dir", mode="before")
@@ -130,23 +149,26 @@ class ImageDataset(BaseModel):
             # tag: rust-op
             self.metadata.write_to_file(filepath)
 
-    # def update_split_labels(self, splits: List[DataSplit]) -> None:
-    #    """Updates split labels for each image record
+    @cached_property
+    def size(self) -> int:
+        return sum([record.size for record in self.metadata.records])
 
+    def split_data(self) -> ImageSplitHolder:
+        """Loops through ImageRecords and splits them based on specified split
 
-#
-#    Args:
-#        splits:
-#            List of DataSplit objects
-#
-#    """
-#
-#    if not self.splits_defined:
-#        for record in self.metadata.records:
-#            if record.split is None:
-#                for split in splits:
-#                    if split.directory in record.file_name:
-#                        record.split = split.label
-#
-#        self.splits_defined = True
-#
+        Returns:
+            `ImageSplitHolder`
+        """
+        splits = {}
+        for record in self.metadata.records:
+            if record.split not in splits:
+                splits[record.split] = Split(records=[record], size=record.size)
+
+            else:
+                splits[record.split].records.append(record)
+                splits[record.split].size += record.size
+
+        data_holder = ImageSplitHolder()
+        for split_name, split in splits.items():
+            setattr(data_holder, split_name, split)
+        return data_holder

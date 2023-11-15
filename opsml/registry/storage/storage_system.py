@@ -143,6 +143,10 @@ class StorageClient:
     def storage_spec(self, artifact_storage_spec):
         self._storage_spec = artifact_storage_spec
 
+    def create_directory(self, save_path: str) -> None:
+        """Create directory. For most storage systems this is a no-op"""
+        pass
+
     def create_save_path(
         self,
         file_suffix: Optional[str] = None,
@@ -368,6 +372,11 @@ class S3StorageClient(StorageClient):
 
 
 class LocalStorageClient(StorageClient):
+    def create_directory(self, save_path: str) -> None:
+        """Create directory"""
+
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+
     def create_save_path(
         self,
         file_suffix: Optional[str] = None,
@@ -378,7 +387,7 @@ class LocalStorageClient(StorageClient):
             extra_path=extra_path,
         )
 
-        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+        self.create_directory(save_path=save_path)
 
         return save_path, filename
 
