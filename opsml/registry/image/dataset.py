@@ -12,20 +12,6 @@ from opsml.helpers.logging import ArtifactLogger
 logger = ArtifactLogger.get_logger()
 
 
-class DataSplit(Protocol):
-    """Protocol for a data split"""
-
-    @property
-    def label(self) -> str:
-        """Label for the split"""
-        ...
-
-    @property
-    def directory(self) -> Optional[str]:
-        """Directory for the split"""
-        ...
-
-
 class BBox(BaseModel):
     """Bounding box for an image
 
@@ -53,25 +39,24 @@ class ImageRecord(BaseModel):
         objects:
             Optional `BBox` for the image
         split:
-            Optional split for the image
+            Optional split for the image. It is expected that split is name of the subdirectory
+            that contains the file.
+
+            Example:
+                If the image file is in `images/train/` then split should be `train`
 
     """
 
     file_name: str
-    parent_dir: str
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
     split: Optional[str] = None
 
-    @model_validator(mode="before")
-    def check_args(cls, values: Dict[str, Any]):
-        file_path = Path(values.get("file_name"))
-
-        values["parent_dir"] = str(file_path.parent)
-        values["file_name"] = str(file_path.name)
-
-        return values
+    @field_validator("file_name", mode="before")
+    def get_file_name(cls, file_name: str):
+        file_path = Path(file_name)
+        return str(file_path.name)
 
 
 class ImageMetadata(BaseModel):
@@ -122,7 +107,7 @@ class ImageDataset(BaseModel):
             # check metadata file is valid
             assert "jsonl" in value, "metadata must be a jsonl file"
 
-            # file should exist in image dir
+            # metadata file should exist in image dir
             filepath = os.path.join(info.data.get("image_dir"), value)  # type: ignore
 
             assert os.path.isfile(filepath), f"metadata file {value} does not exist in image_dir"
@@ -145,20 +130,23 @@ class ImageDataset(BaseModel):
             # tag: rust-op
             self.metadata.write_to_file(filepath)
 
-    def update_split_labels(self, splits: List[DataSplit]) -> None:
-        """Updates split labels for each image record
+    # def update_split_labels(self, splits: List[DataSplit]) -> None:
+    #    """Updates split labels for each image record
 
-        Args:
-            splits:
-                List of DataSplit objects
 
-        """
-
-        if not self.splits_defined:
-            for record in self.metadata.records:
-                if record.split is None:
-                    for split in splits:
-                        if split.directory in record.file_name:
-                            record.split = split.label
-
-            self.splits_defined = True
+#
+#    Args:
+#        splits:
+#            List of DataSplit objects
+#
+#    """
+#
+#    if not self.splits_defined:
+#        for record in self.metadata.records:
+#            if record.split is None:
+#                for split in splits:
+#                    if split.directory in record.file_name:
+#                        record.split = split.label
+#
+#        self.splits_defined = True
+#
