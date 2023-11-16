@@ -375,7 +375,7 @@ class LocalStorageClient(StorageClient):
     def create_directory(self, save_path: str) -> None:
         """Create directory"""
 
-        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(save_path).mkdir(parents=True, exist_ok=True)
 
     def create_save_path(
         self,

@@ -3,10 +3,9 @@ import pyarrow as pa
 from enum import Enum
 from pathlib import Path
 from opsml.registry.image.dataset import ImageDataset, ImageRecord, Split, ImageSplitHolder
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import StorageClientType
-from opsml.helpers.utils import FindPath
 import pyarrow.parquet as pq
 import re
 import uuid
@@ -29,7 +28,7 @@ class FileSystem(Protocol):
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for nbr, i in enumerate(range(0, len(lst), n)):
-        yield lst[i : i + n], nbr
+        yield lst[i : i + n]
 
 
 class PyarrowWriterBase:
@@ -41,7 +40,7 @@ class PyarrowWriterBase:
     ):
         self.data = data
         self.storage_client = storage_client
-        self.write_path = write_path
+        self.write_path = Path(write_path)
         self.shard_size = self._set_shard_size(data.shard_size)
 
     def _set_shard_size(self, shard_size: str) -> int:
@@ -67,7 +66,7 @@ class PyarrowWriterBase:
             logger.info("Defaulting to 512MB")
             return 512 * ShardSize.MB.value
 
-    def _create_record(self, record: ImageRecord) -> Tuple[Dict[str, Any], int]:
+    def _create_record(self, record: ImageRecord) -> Dict[str, Any]:
         """Create record for pyarrow table
 
         Returns:
@@ -75,28 +74,26 @@ class PyarrowWriterBase:
         """
         raise NotImplementedError
 
-    def _write_buffer(
-        self,
-        records: List[Dict[str, Any]],
-        shard_name: str,
-        split_name: Optional[str] = None,
-    ) -> None:
+    def _write_buffer(self, records: List[Dict[str, Any]], split_name: Optional[str] = None) -> None:
         temp_table = pa.Table.from_pylist(records)
-        write_path = f"{self.write_path}/{split_name}/shard-{shard_name}-{uuid.uuid4().hex}.parquet"
+
+        if split_name is not None:
+            write_path = self.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
+        else:
+            write_path = self.write_path / f"shard-{uuid.uuid4().hex}.parquet"
+
         pq.write_table(
             table=temp_table,
             where=write_path,
             filesystem=self.storage_client.client,
         )
 
-    def create_path(self, split_name: str) -> None:
-        self.storage_client.create_directory(f"{self.write_path}/{split_name}")
+    def create_split_path(self, split_name: str) -> None:
+        if split_name is None:
+            return self.storage_client.create_directory(str(self.write_path))
+        return self.storage_client.create_directory(str(self.write_path / split_name))
 
-    def write_to_table(
-        self,
-        records: Tuple[List[ImageRecord], int],
-        split_name: Optional[str],
-    ) -> pa.Table:
+    def write_to_table(self, records: List[ImageRecord], split_name: Optional[str]) -> pa.Table:
         """Write records to pyarrow table
 
         Args:
@@ -104,21 +101,13 @@ class PyarrowWriterBase:
                 `List[ImageRecord]`
         """
 
-        # write different buffers for each split
-        buffer_size = 0
         processed_records = []
-        shard_name = records[1]
 
-        # check directory exists
-        self.create_path(split_name=records[0][0].split)
+        for record in records:
+            arrow_record = self._create_record(record)
+            processed_records.append(arrow_record)
 
-        for record in records[0]:
-            arrow_record, size = self._create_record(record)
-            processed_records[record.split].append(arrow_record)
-            buffer_size += size
-
-        # if there are records left, write to parquet
-        self._write_buffer(processed_records, shard_name, split_name=record.split)
+        self._write_buffer(processed_records, split_name)
 
     def write_dataset_to_table(self):
         """Writes image dataset to pyarrow tables
@@ -131,42 +120,54 @@ class PyarrowWriterBase:
             dir_path:
                 directory path to save to
         """
-        # get splits first (can be None, or more than one
+        # get splits first (can be None, or more than one)
+        # Splits are saved to their own paths for quick access in the future
         splits = self.data.split_data()
+
+        start = time.time()
         for name, split in splits:
+            # check directory exists
+            self.create_split_path(split_name=name)
+
             split = cast(Split, split)
 
             num_shards = max(1, split.size // self.shard_size)
-            record_tables = []
             records_per_shard = len(split.records) // num_shards
             shard_chunks = list(chunks(split.records, records_per_shard))
 
-        with ProcessPoolExecutor() as executor:
-            future_to_table = {executor.submit(self.write_to_table, chunk, name): chunk for chunk in shard_chunks}
-            for future in as_completed(future_to_table):
-                try:
-                    table = future.result()
-                    # append to list of tables
-                    record_tables.append(table)
-                except Exception as exc:
-                    logger.error("Exception occurred while writing to table: {}", exc)
+            # don't want the overhead
+            if num_shards == 1:
+                for chunk in shard_chunks:
+                    self.write_to_table(chunk, name)
+
+            else:
+                ## multi process chunks
+                with ProcessPoolExecutor() as executor:
+                    future_to_table = {
+                        executor.submit(self.write_to_table, chunk, name): chunk for chunk in shard_chunks
+                    }
+                    for future in as_completed(future_to_table):
+                        try:
+                            _ = future.result()
+                        except Exception as exc:
+                            logger.error("Exception occurred while writing to table: {}", exc)
 
 
 # this can be extended to language datasets in the future
 class PyarrowImageWriter(PyarrowWriterBase):
-    def _create_record(self, record: ImageRecord) -> Tuple[Dict[str, Any], int]:
+    def _create_record(self, record: ImageRecord) -> Dict[str, Any]:
         """Create record for pyarrow table
 
         Returns:
             Record dictionary and buffer size
         """
-        image_path = FindPath.find_filepath(record.file_name, self.data.image_dir)
+
+        image_path = str(Path(f"{record.path}/{record.file_name}"))
         with pa.input_stream(image_path) as stream:
             record = {
                 "file_name": record.file_name,
                 "bytes": stream.read(),
                 "split_label": record.split,
             }
-            size = stream.size()
 
-        return record, size
+        return record
