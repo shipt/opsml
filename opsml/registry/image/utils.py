@@ -123,8 +123,6 @@ class PyarrowWriterBase:
         # get splits first (can be None, or more than one)
         # Splits are saved to their own paths for quick access in the future
         splits = self.data.split_data()
-
-        start = time.time()
         for name, split in splits:
             # check directory exists
             self.create_split_path(split_name=name)
@@ -135,13 +133,12 @@ class PyarrowWriterBase:
             records_per_shard = len(split.records) // num_shards
             shard_chunks = list(chunks(split.records, records_per_shard))
 
-            # don't want the overhead
+            # don't want the overhead for one shard
             if num_shards == 1:
                 for chunk in shard_chunks:
                     self.write_to_table(chunk, name)
 
             else:
-                ## multi process chunks
                 with ProcessPoolExecutor() as executor:
                     future_to_table = {
                         executor.submit(self.write_to_table, chunk, name): chunk for chunk in shard_chunks
