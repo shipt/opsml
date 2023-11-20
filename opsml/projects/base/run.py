@@ -48,8 +48,10 @@ def run(add_tags: Optional[str] = None) -> Callable[[F], F]:
                     if isinstance(self.__dict__.get(add_tags), dict):
                         run_tag = self.__dict__.get(add_tags)
                     else:
-                        raise TypeError(f"Tags must be defined as dictionary, "
-                                        f"but got {type(self.__dict__.get(add_tags)).__name__}")
+                        raise TypeError(
+                            f"Tags must be defined as dictionary, "
+                            f"but got {type(self.__dict__.get(add_tags)).__name__}"
+                        )
             else:
                 raise TypeError(f"Argument add_tags must be a string, but got {type(add_tags).__name__}")
 
