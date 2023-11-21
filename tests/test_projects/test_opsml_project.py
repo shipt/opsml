@@ -21,9 +21,10 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
     """verify that we can read artifacts / metrics / cards without making a run
     active."""
 
-    info = ProjectInfo(name="test-exp", team="mlops", user_email="user@test.com")
+    info = ProjectInfo(name="test-exp", team="devops-ml", user_email="user@mlops.com")
     with opsml_project.run() as run:
         # Create metrics / params / cards
+
         run = cast(ActiveRun, run)
         run.log_metric(key="m1", value=1.1)
         run.log_parameter(key="m1", value="apple")
@@ -44,10 +45,10 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         run.log_artifact(name="array", artifact=array)
         info.run_id = run.run_id
 
-        assert data_card.team == "mlops"
-        assert data_card.user_email == "user@test.com"
-        assert model_card.team == "mlops"
-        assert model_card.user_email == "user@test.com"
+        assert data_card.team == "devops-ml"
+        assert data_card.user_email == "user@mlops.com"
+        assert model_card.team == "devops-ml"
+        assert model_card.user_email == "user@mlops.com"
         assert data_card.metadata.runcard_uid == run.run_id
 
         auditcard = AuditCard(name="audit_card", team="team", user_email="test")
@@ -123,7 +124,7 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
 def test_opsml_continue_run(opsml_project: OpsmlProject) -> None:
     """Verify a run con be continued"""
 
-    info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
+    info = ProjectInfo(name="test-exp", team="devops-ml", user_email="user@mlops.com")
     with opsml_project.run(run_name="test") as run:
         # Create metrics / params / cards
         run = cast(ActiveRun, run)
@@ -173,7 +174,7 @@ def test_opsml_fail_active_run(opsml_project: OpsmlProject) -> None:
 
 
 def test_run_fail(opsml_project: OpsmlProject) -> None:
-    info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
+    info = ProjectInfo(name="test-exp", team="devops-ml", user_email="user@mlops.com")
 
     with pytest.raises(AttributeError):
         with opsml_project.run(run_name="test") as run:

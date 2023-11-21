@@ -35,8 +35,8 @@ class _RunManager:
             project_info:
                 ProjectInfo
         """
-
         self._project_info = project_info
+
         self._run_id: Optional[str] = None
         self._run_name: Optional[str] = None
         self._active_run: Optional[ActiveRun] = None

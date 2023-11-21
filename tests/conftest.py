@@ -395,7 +395,7 @@ def api_storage_client(api_registries: CardRegistries) -> StorageClientType:
 
 @pytest.fixture(scope="function")
 def mlflow_project(api_registries: CardRegistries) -> Iterator[MlflowProject]:
-    info = ProjectInfo(name="test_exp", team="test", user_email="test", tracking_uri=SQL_PATH)
+    info = ProjectInfo(name="test_exp", team="devops-ml", user_email="user@mlops.com", tracking_uri=SQL_PATH)
     mlflow_exp: MlflowProject = get_project(info=info)
 
     mlflow_storage = mlflow_storage_client()
@@ -407,6 +407,10 @@ def mlflow_project(api_registries: CardRegistries) -> Iterator[MlflowProject]:
     mlflow_exp._run_mgr._storage_client.mlflow_client = mlflow_exp._run_mgr.mlflow_client
 
     yield mlflow_exp
+    
+@pytest.fixture(scope="function")
+def project_info() -> ProjectInfo:
+    return ProjectInfo(name="test-exp", team="devops-ml", user_email="user@mlops.com")
 
 
 @pytest.fixture(scope="function")
@@ -414,8 +418,8 @@ def opsml_project(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
     opsml_run = OpsmlProject(
         info=ProjectInfo(
             name="test_exp",
-            team="test",
-            user_email="test",
+            team="devops-ml",
+            user_email="user@mlops.com",
             tracking_uri=SQL_PATH,
         )
     )

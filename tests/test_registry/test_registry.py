@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 import pandas as pd
 import numpy as np
 import polars as pl
-import os
 from numpy.typing import NDArray
 import pyarrow as pa
 from os import path
@@ -20,6 +19,7 @@ from opsml.registry.cards import (
     Description,
 )
 from opsml.registry.sql.registry import CardRegistry
+from opsml.registry.cards.types import OpsmlCardEnvVars
 from opsml.registry.sql.sql_schema import DataSchema
 from opsml.registry.sql.base.query_engine import VersionSplitting
 from opsml.helpers.exceptions import VersionError
@@ -1153,3 +1153,25 @@ def test_sql_version_logic():
         VersionSplitting.get_version_split_query(select_query, DataSchema, "fail")
 
     assert ve.match("Unsupported dialect: fail")
+
+
+def test_card_env_vars(
+    db_registries: Dict[str, CardRegistry],
+    iris_data_polars: pl.DataFrame,
+):
+    _ = OpsmlCardEnvVars(
+        name="test-name",
+        team="devops-ml",
+        user_email="user@mlops.com",
+    )
+
+    # create data card
+    registry = db_registries["data"]
+
+    data_card = DataCard(data=iris_data_polars)
+
+    registry.register_card(card=data_card)
+
+    assert data_card.name == "test-name"
+    assert data_card.team == "devops-ml"
+    assert data_card.user_email == "user@mlops.com"

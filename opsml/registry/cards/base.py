@@ -58,11 +58,12 @@ class ArtifactCard(BaseModel):
 
             card_args[key] = val
 
-        # validate name and team for pattern
-        validate_name_team_pattern(
-            name=card_args["name"],
-            team=card_args["team"],
-        )
+        if all([card_args.get("name"), card_args.get("team")]):
+            # validate name and team for pattern
+            validate_name_team_pattern(
+                name=card_args["name"],
+                team=card_args["team"],
+            )
 
         return card_args
 

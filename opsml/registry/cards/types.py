@@ -284,7 +284,7 @@ class OpsmlCardEnvVars(BaseModel):
     @staticmethod
     def get_env_var_value(arg_name: str) -> None:
         label = OpsmlCardEnvVars.get_env_var_name(arg_name)
-        return os.environ[label]
+        return os.environ.get(label)
 
 
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]
