@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from typing import Any, Dict, Optional, Union
-
+from dataclasses import dataclass
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import (
     CardRegistries,
@@ -31,13 +31,36 @@ class RunInfo:
         registries: CardRegistries,
         runcard: RunCard,
         run_id: str,
+        project_team: str,
+        project_user_email: str,
         run_name: Optional[str] = None,
     ):
+        """Info class to be passed to an active run.
+
+        Args:
+            storage_client:
+                Storage client to be used for storing artifacts
+            registries:
+                Card registries to be used for storing cards
+            runcard:
+                RunCard to be used for storing run metadata
+            run_id:
+                MLflow run_id
+            project_team:
+                Project team
+            project_user_email:
+                Project user email
+            run_name:
+                Optional run name
+        """
+
         self.storage_client = storage_client
         self.registries = registries
         self.runcard = runcard
         self.run_id = run_id
         self.run_name = run_name
+        self.project_team = project_team
+        self.project_user_email = project_user_email
 
 
 class CardHandler:

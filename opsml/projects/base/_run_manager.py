@@ -148,6 +148,8 @@ class _RunManager:
             run_name=self.run_name,
             registries=self.registries,
             runcard=self._load_runcard(),
+            project_user_email=self._project_info.user_email,
+            project_team=self._project_info.team,
         )
 
         self.active_run = ActiveRun(run_info=run_info)
