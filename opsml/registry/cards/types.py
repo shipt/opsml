@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, field_validator
+import os
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.types import (
@@ -258,6 +259,32 @@ class DataCardMetadata(BaseModel):
         for feature, description in feature_descriptions.items():
             feat_dict[feature.lower()] = description.lower()
             return feat_dict
+
+
+class OpsmlCardEnvVars(BaseModel):
+    name: Optional[str] = None
+    team: Optional[str] = None
+    user_email: Optional[str] = None
+
+    @model_validator(mode="after")
+    def set_env_vars(self) -> None:
+        for key, value in self:
+            if value is not None:
+                self.set_env_var(key, value)
+
+    @staticmethod
+    def get_env_var_name(arg_name: str) -> str:
+        return f"OPSML_CARD_ENV_{arg_name.upper()}"
+
+    @staticmethod
+    def set_env_var(arg_name: str, value: str) -> None:
+        label = OpsmlCardEnvVars.get_env_var_name(arg_name)
+        os.environ[label] = value
+
+    @staticmethod
+    def get_env_var_value(arg_name: str) -> None:
+        label = OpsmlCardEnvVars.get_env_var_name(arg_name)
+        return os.environ[label]
 
 
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]

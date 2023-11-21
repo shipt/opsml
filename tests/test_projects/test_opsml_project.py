@@ -21,26 +21,20 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
     """verify that we can read artifacts / metrics / cards without making a run
     active."""
 
-    info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
+    info = ProjectInfo(name="test-exp", team="mlops", user_email="user@test.com")
     with opsml_project.run() as run:
         # Create metrics / params / cards
         run = cast(ActiveRun, run)
         run.log_metric(key="m1", value=1.1)
         run.log_parameter(key="m1", value="apple")
         model, data = sklearn_pipeline
-        data_card = DataCard(
-            data=data,
-            name="pipeline_data",
-            team="mlops",
-            user_email="mlops.com",
-        )
+        data_card = DataCard(data=data, name="pipeline_data")
         run.register_card(card=data_card, version_type="major")
+
         model_card = ModelCard(
             trained_model=model,
             sample_input_data=data[0:1],
             name="pipeline_model",
-            team="mlops",
-            user_email="mlops.com",
             datacard_uid=data_card.uid,
         )
         run.register_card(card=model_card)
@@ -50,6 +44,10 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         run.log_artifact(name="array", artifact=array)
         info.run_id = run.run_id
 
+        assert data_card.team == "mlops"
+        assert data_card.user_email == "user@test.com"
+        assert model_card.team == "mlops"
+        assert model_card.user_email == "user@test.com"
         assert data_card.metadata.runcard_uid == run.run_id
 
         auditcard = AuditCard(name="audit_card", team="team", user_email="test")
