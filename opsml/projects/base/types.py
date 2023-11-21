@@ -6,10 +6,11 @@ import os
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from opsml.helpers.types import OpsmlUri
 from opsml.registry.utils.settings import settings
+from opsml.registry.cards.types import OpsmlCardEnvVars
 
 
 class Tags(str, Enum):
@@ -74,3 +75,8 @@ class ProjectInfo(BaseModel):
         if value is None:
             return None
         return value.strip().lower().replace("_", "-")
+
+    @model_validator(model="after")
+    def set_vars(self) -> None:
+        # Set default card env vars
+        OpsmlCardEnvVars(team=self.team, user_email=self.user_email)

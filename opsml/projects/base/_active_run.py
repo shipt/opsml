@@ -31,8 +31,6 @@ class RunInfo:
         registries: CardRegistries,
         runcard: RunCard,
         run_id: str,
-        project_team: str,
-        project_user_email: str,
         run_name: Optional[str] = None,
     ):
         """Info class to be passed to an active run.
@@ -46,10 +44,6 @@ class RunInfo:
                 RunCard to be used for storing run metadata
             run_id:
                 MLflow run_id
-            project_team:
-                Project team
-            project_user_email:
-                Project user email
             run_name:
                 Optional run name
         """
@@ -59,8 +53,6 @@ class RunInfo:
         self.runcard = runcard
         self.run_id = run_id
         self.run_name = run_name
-        self.project_team = project_team
-        self.project_user_email = project_user_email
 
 
 class CardHandler:
@@ -89,37 +81,6 @@ class CardHandler:
         """Updates an ArtifactCard"""
         registry: CardRegistry = getattr(registries, card.card_type)
         registry.update_card(card=card)
-
-
-class CardAttributeUpdater:
-    """Class for updating card attributes during registration"""
-
-    def __init__(self, card: ArtifactCard, info: RunInfo):
-        self.card = card
-        self.info = info
-
-    def _update_team(self) -> None:
-        """Add team to card if not present"""
-        if self.card.RunInfo is None and self.card.team is None:
-            self.card.team = self.info.project_team
-
-    def _update_email(self) -> None:
-        """Add email to card if not present"""
-        if self.card.info is None and self.card.user_email is None:
-            self.card.user_email = self.info.project_user_email
-
-    def _append_runid(self) -> None:
-        """Add runid to card"""
-        if isinstance(self.card, (DataCard, ModelCard)):
-            self.card.metadata.runcard_uid = self.runcard.uid
-
-    def update(self) -> ArtifactCard:
-        """Update card attributes"""
-        self._update_team()
-        self._update_email()
-        self._append_runid()
-
-        return self.card
 
 
 class ActiveRun:
@@ -177,7 +138,7 @@ class ActiveRun:
         for key, value in tags.items():
             self.add_tag(key=key, value=value)
 
-    def register_card(self, card: ArtifactCard, version_type: VersionType = VersionType.MINOR):
+    def register_card(self, card: ArtifactCard, version_type: VersionType = VersionType.MINOR) -> None:
         """
         Register a given artifact card.
 
@@ -190,7 +151,8 @@ class ActiveRun:
         """
         self._verify_active()
 
-        card = CardAttributeUpdater(card=card, info=self._info).update()
+        if isinstance(card, (DataCard, ModelCard)):
+            card.metadata.runcard_uid = self.runcard.uid
 
         CardHandler.register_card(
             registries=self._info.registries,
