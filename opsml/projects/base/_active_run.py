@@ -91,6 +91,37 @@ class CardHandler:
         registry.update_card(card=card)
 
 
+class CardAttributeUpdater:
+    """Class for updating card attributes during registration"""
+
+    def __init__(self, card: ArtifactCard, info: RunInfo):
+        self.card = card
+        self.info = info
+
+    def _update_team(self) -> None:
+        """Add team to card if not present"""
+        if self.card.RunInfo is None and self.card.team is None:
+            self.card.team = self.info.project_team
+
+    def _update_email(self) -> None:
+        """Add email to card if not present"""
+        if self.card.info is None and self.card.user_email is None:
+            self.card.user_email = self.info.project_user_email
+
+    def _append_runid(self) -> None:
+        """Add runid to card"""
+        if isinstance(self.card, (DataCard, ModelCard)):
+            self.card.metadata.runcard_uid = self.runcard.uid
+
+    def update(self) -> ArtifactCard:
+        """Update card attributes"""
+        self._update_team()
+        self._update_email()
+        self._append_runid()
+
+        return self.card
+
+
 class ActiveRun:
     def __init__(self, run_info: RunInfo):
         """
@@ -159,9 +190,7 @@ class ActiveRun:
         """
         self._verify_active()
 
-        # add runuid to card
-        if isinstance(card, (DataCard, ModelCard)):
-            card.metadata.runcard_uid = self.runcard.uid
+        card = CardAttributeUpdater(card=card, info=self._info).update()
 
         CardHandler.register_card(
             registries=self._info.registries,
