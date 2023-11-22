@@ -50,7 +50,7 @@ class ArtifactCard(BaseModel):
             val = card_args.get(key)
 
             if card_info is not None:
-                val = val or getattr(card_info, key)
+                val = getattr(card_info, key, val)
 
             if key in ["name", "team"]:
                 if val is not None:
