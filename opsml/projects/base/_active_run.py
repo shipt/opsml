@@ -4,8 +4,16 @@
 # LICENSE file in the root directory of this source tree.
 
 from typing import Any, Dict, Optional, Union
+
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry import CardRegistries, CardRegistry, DataCard, ModelCard, RunCard, VersionType, DataSplit
+from opsml.registry import (
+    CardRegistries,
+    CardRegistry,
+    DataCard,
+    ModelCard,
+    RunCard,
+    VersionType,
+)
 from opsml.registry.cards import ArtifactCard
 from opsml.registry.cards.types import METRICS, PARAMS, CardInfo, CardType
 from opsml.registry.storage.artifact_storage import save_record_artifact_to_storage

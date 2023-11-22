@@ -77,6 +77,8 @@ class ProjectInfo(BaseModel):
         return value.strip().lower().replace("_", "-")
 
     @model_validator(mode="after")
-    def set_vars(self) -> None:
+    def set_vars(self) -> "ProjectInfo":
         # Set default card env vars
         OpsmlCardEnvVars(team=self.team, user_email=self.user_email)
+
+        return self

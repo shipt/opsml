@@ -1159,6 +1159,8 @@ def test_card_env_vars(
     db_registries: Dict[str, CardRegistry],
     iris_data_polars: pl.DataFrame,
 ):
+    import os
+
     _ = OpsmlCardEnvVars(
         name="test-name",
         team="devops-ml",

@@ -267,10 +267,12 @@ class OpsmlCardEnvVars(BaseModel):
     user_email: Optional[str] = None
 
     @model_validator(mode="after")
-    def set_env_vars(self) -> None:
+    def set_env_vars(self) -> "OpsmlCardEnvVars":
         for key, value in self:
             if value is not None:
                 self.set_env_var(key, value)
+
+        return self
 
     @staticmethod
     def get_env_var_name(arg_name: str) -> str:
@@ -282,9 +284,9 @@ class OpsmlCardEnvVars(BaseModel):
         os.environ[label] = value
 
     @staticmethod
-    def get_env_var_value(arg_name: str) -> None:
+    def get_env_var_value(arg_name: str) -> Optional[str]:
         label = OpsmlCardEnvVars.get_env_var_name(arg_name)
-        os.environ.get(label)
+        return os.environ.get(label)
 
 
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]
