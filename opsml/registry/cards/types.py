@@ -2,11 +2,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import datetime
+import os
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-import os
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
@@ -284,7 +284,7 @@ class OpsmlCardEnvVars(BaseModel):
     @staticmethod
     def get_env_var_value(arg_name: str) -> None:
         label = OpsmlCardEnvVars.get_env_var_name(arg_name)
-        return os.environ.get(label)
+        os.environ.get(label)
 
 
 NON_PIPELINE_CARDS = [card.value for card in CardType if card.value not in ["pipeline", "project", "audit"]]

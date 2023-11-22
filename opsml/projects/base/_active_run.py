@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from typing import Any, Dict, Optional, Union
-from dataclasses import dataclass
+
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import (
     CardRegistries,
