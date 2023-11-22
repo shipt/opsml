@@ -18,13 +18,13 @@ logger = ArtifactLogger.get_logger()
 
 data_info = CardInfo(
     name="pipeline_data",
-    team="mlops",
-    user_email="mlops.com",
+    team="devops-ml",
+    user_email="user@mlops.com",
 )
 model_info = CardInfo(
     name="pipeline_model",
-    team="mlops",
-    user_email="mlops.com",
+    team="devops-ml",
+    user_email="user@mlops.com",
 )
 
 

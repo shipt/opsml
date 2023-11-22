@@ -280,11 +280,18 @@ class OpsmlCardEnvVars(BaseModel):
 
     @staticmethod
     def set_env_var(arg_name: str, value: str) -> None:
+        if arg_name not in OpsmlCardEnvVars.__annotations__.keys():
+            return None
+
         label = OpsmlCardEnvVars.get_env_var_name(arg_name)
         os.environ[label] = value
+        return None
 
     @staticmethod
     def get_env_var_value(arg_name: str) -> Optional[str]:
+        if arg_name not in OpsmlCardEnvVars.__annotations__.keys():
+            return None
+
         label = OpsmlCardEnvVars.get_env_var_name(arg_name)
         return os.environ.get(label)
 

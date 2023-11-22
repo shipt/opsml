@@ -43,20 +43,12 @@ class ArtifactCard(BaseModel):
     def validate_args(cls, card_args: Dict[str, Any]) -> Dict[str, Any]:  # pylint: disable=arguments-renamed
         """Validate base args and Lowercase name and team"""
 
-        card_args = cls._check_base_args(card_args)
         card_info = card_args.get("info")
+        card_args = cls._check_base_args(card_args, card_info)
 
-        for key in ["name", "team", "user_email", "version", "uid"]:
-            val = card_args.get(key)
-
-            if card_info is not None:
-                val = getattr(card_info, key, val)
-
-            if key in ["name", "team"]:
-                if val is not None:
-                    val = clean_string(val)
-
-            card_args[key] = val
+        # clean
+        for key in ["name", "team"]:
+            card_args[key] = clean_string(card_args.get(key))
 
         if all([card_args.get("name"), card_args.get("team")]):
             # validate name and team for pattern
@@ -68,14 +60,33 @@ class ArtifactCard(BaseModel):
         return card_args
 
     @staticmethod
-    def _check_base_args(card_args: Dict[str, Any]) -> Dict[str, Any]:
-        """Check base args for artifact cards"""
-        for key in OpsmlCardEnvVars.__annotations__.keys():
+    def _check_base_args(card_args: Dict[str, Any], card_info: Optional[CardInfo] = None) -> Dict[str, Any]:
+        """Check base args for artifact cards
+
+        Args:
+            card_args:
+                Dictionary of card args
+            card_info:
+                Optional CardInfo provided by the user
+
+        Returns:
+            Dictionary of card args with updated values
+        """
+
+        for key in ["name", "team", "user_email", "version", "uid"]:
             value = card_args.get(key)
 
-            # check env vars
+            # check vars
+            # 1 - user supplied value overrides
             if value is None:
-                card_args[key] = OpsmlCardEnvVars.get_env_var_value(key)
+                if card_info is not None:
+                    # 2 card_info value overrides
+                    # if card info value is none, attempt to load env var
+                    card_args[key] = getattr(card_info, key, OpsmlCardEnvVars.get_env_var_value(key))
+
+                else:
+                    # 3 - env var overrides
+                    card_args[key] = OpsmlCardEnvVars.get_env_var_value(key)
 
         return card_args
 
