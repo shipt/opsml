@@ -58,14 +58,25 @@ class ImageRecord(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def check_args(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        file_path = Path(values.get("file_name"))
+    def check_args(cls, data_args: Dict[str, Any]) -> Dict[str, Any]:
+        parent_path = data_args.get("path")
+        file_path = data_args.get("file_name")
+        size = data_args.get("size")
 
-        values["path"] = str(file_path.parent)
-        values["file_name"] = str(file_path.name)
-        values["size"] = file_path.stat().st_size
+        # if reloading record
+        if all([parent_path, file_path, size]):
+            return data_args
 
-        return values
+        # For creating image record
+        file_path = Path(file_path)
+        if not file_path.exists():
+            file_path = Path(os.path.join(parent_path, file_path.name))
+
+        data_args["path"] = str(file_path.parent)
+        data_args["file_name"] = str(file_path.name)
+        data_args["size"] = file_path.stat().st_size
+
+        return data_args
 
 
 class ImageSplitHolder(BaseModel):
@@ -136,7 +147,7 @@ class ImageDataset(BaseModel):
             assert "jsonl" in metadata, "metadata must be a jsonl file"
 
             # metadata file should exist in image dir
-            filepath = os.path.join(info.data.get("image_dir"), value)  # type: ignore
+            filepath = os.path.join(info.data.get("image_dir"), metadata)  # type: ignore
 
             assert os.path.isfile(filepath), f"metadata file {metadata} does not exist in image_dir"
 

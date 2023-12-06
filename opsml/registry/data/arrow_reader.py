@@ -88,6 +88,7 @@ class ImageDatasetReader(PyarrowDatasetReader):
 
             except Exception as exc:
                 logger.error("Exception occurred while writing to file: {}", exc)
+                raise exc
 
     def write_batch_to_file(self, arrow_batch: List[Any]) -> None:
         """Write image data to file
@@ -112,3 +113,4 @@ class ImageDatasetReader(PyarrowDatasetReader):
                         _ = future.result()
                     except Exception as exc:
                         logger.error("Exception occurred while writing to file: {}", exc)
+                        raise exc

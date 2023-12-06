@@ -7,6 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.storage.storage_system import StorageClientType
 import pyarrow.parquet as pq
+from pyarrow.fs import LocalFileSystem
 import re
 import uuid
 from opsml.registry.data.types import yield_chunks
@@ -27,14 +28,16 @@ class FileSystem(Protocol):
 
 
 class PyarrowDatasetWriter:
+    """Client side writer for pyarrow datasets"""
+
     def __init__(
         self,
         data: ImageDataset,
-        storage_client: StorageClientType,
+        storage_filesystem: LocalFileSystem,
         write_path: str,
     ):
         self.data = data
-        self.storage_client = storage_client
+        self.storage_filesystem = storage_filesystem
         self.write_path = Path(write_path)
         self.shard_size = self._set_shard_size(data.shard_size)
         self.parquet_paths = []
@@ -71,27 +74,30 @@ class PyarrowDatasetWriter:
         raise NotImplementedError
 
     def _write_buffer(self, records: List[Dict[str, Any]], split_name: str) -> str:
-        temp_table = pa.Table.from_pylist(records)
-        write_path = self.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
+        try:
+            temp_table = pa.Table.from_pylist(records)
+            write_path = self.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
 
-        pq.write_table(
-            table=temp_table,
-            where=write_path,
-            filesystem=self.storage_client.client,
-        )
+            pq.write_table(
+                table=temp_table,
+                where=write_path,
+                filesystem=self.storage_filesystem,
+            )
 
-        return str(write_path)
+            return str(write_path)
 
-    # def create_path(self, split_name: str) -> None:
-    #    """Create path to write files. If split name is defined, create split dir
-    #
-    #    Args:
-    #        split_name:
-    #            `str` name of split
-    #    """
-    #    if split_name is None:
-    #        return self.storage_client.create_directory(str(self.write_path))
-    #    return self.storage_client.create_directory(str(self.write_path / split_name))
+        except Exception as exc:
+            logger.error("Exception occurred while writing to table: {}", exc)
+            raise exc
+
+    def create_path(self, split_name: str) -> None:
+        """Create path to write files. If split name is defined, create split dir
+        Args:
+        split_name:
+            `str` name of split
+        """
+
+        self.storage_filesystem.create_dir(str(self.write_path / split_name))
 
     def write_to_table(self, records: List[ImageRecord], split_name: Optional[str]) -> str:
         """Write records to pyarrow table
@@ -127,9 +133,11 @@ class PyarrowDatasetWriter:
         splits = self.data.split_data()
         for name, split in splits:
             num_shards = int(max(1, split.size // self.shard_size))
-
             records_per_shard = len(split.records) // num_shards
             shard_chunks = list(yield_chunks(split.records, records_per_shard))
+
+            # create split name path
+            self.create_path(name)
 
             # don't want the overhead for one shard
             if num_shards == 1:
@@ -146,6 +154,8 @@ class PyarrowDatasetWriter:
                             self.parquet_paths.append(future.result())
                         except Exception as exc:
                             logger.error("Exception occurred while writing to table: {}", exc)
+                            raise exc
+
         return self.parquet_paths
 
 

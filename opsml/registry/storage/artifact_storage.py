@@ -19,6 +19,8 @@ from opsml.helpers.utils import all_subclasses
 from opsml.model.types import ModelProto
 from opsml.registry.cards.types import StoragePath
 from opsml.registry.data.types import AllowedDataType
+from opsml.registry.data.arrow_reader import ImageDatasetReader
+from opsml.registry.data.arrow_writer import ImageDatasetWriter
 from opsml.registry.image.dataset import ImageDataset
 from opsml.registry.storage.storage_system import (
     ArtifactClass,
@@ -284,8 +286,14 @@ class ImageDataStorage(ArtifactStorage):
         """
         storage_path = f"{storage_uri}/{artifact.image_dir}"
 
+        _ = ImageDatasetWriter(
+            data=artifact,
+            storage_filesystem=self.storage_filesystem,
+            write_path=tmp_uri,
+        ).write_dataset_to_table()
+
         return self.storage_client.upload(
-            local_path=artifact.image_dir,
+            local_path=tmp_uri,
             write_path=storage_path,
             is_dir=True,
         )
