@@ -9,10 +9,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.image.dataset import (
-    ImageDataset,
-    ImageRecord,
-)
+from opsml.registry.image.dataset import ImageDataset, ImageRecord
 from opsml.registry.storage.storage_system import StorageClientType
 
 logger = ArtifactLogger.get_logger()
