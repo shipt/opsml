@@ -7,7 +7,7 @@ import os
 import numpy as np
 from opsml.registry import DataCard, ModelCard, AuditCard, CardRegistry
 from opsml.registry.cards.types import CardInfo
-from opsml.projects.base._active_run import ActiveRun
+from opsml.projects._active_run import ActiveRun
 from opsml.projects import OpsmlProject, ProjectInfo
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.image import ImageDataset
@@ -17,6 +17,23 @@ from tests import conftest
 logger = ArtifactLogger.get_logger()
 
 
+def test_opsml_artifact_storage(opsml_project: OpsmlProject) -> None:
+    """Tests logging and retrieving artifacts"""
+    with opsml_project.run() as run:
+        run.log_artifact("test1", "hello, world")
+        run_id = run.run_id
+
+    info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
+
+    proj = conftest.mock_opsml_project(info)
+    proj.run_id = run_id
+    runcard = proj.run_card
+    runcard.load_artifacts()
+
+    assert runcard.artifacts.get("test1") is not None
+    assert runcard.artifacts.get("test1") == "hello, world"
+
+
 def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pipeline.Pipeline, pd.DataFrame]) -> None:
     """verify that we can read artifacts / metrics / cards without making a run
     active."""
@@ -24,7 +41,6 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
     info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
     with opsml_project.run() as run:
         # Create metrics / params / cards
-        run = cast(ActiveRun, run)
         run.log_metric(key="m1", value=1.1)
         run.log_parameter(key="m1", value="apple")
         model, data = sklearn_pipeline
@@ -42,6 +58,7 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
             team="mlops",
             user_email="mlops.com",
             datacard_uid=data_card.uid,
+            to_onnx=True,
         )
         run.register_card(card=model_card)
 
@@ -57,10 +74,11 @@ def test_opsml_read_only(opsml_project: OpsmlProject, sklearn_pipeline: tuple[pi
         auditcard.add_card(card=model_card)
         run.register_card(card=auditcard)
 
-    # Retrieve the run and load projects without making the run active (read only mode)
+    # Retrieve the run and load artifacts without making the run active (read only mode)
+    # NOTE: info contains the run_id created in the above run.
     proj = conftest.mock_opsml_project(info)
 
-    runcard = proj.run_data
+    runcard = proj.run_card
     runcard.load_artifacts()
     assert (runcard.artifacts.get("array") == array).all()
 
@@ -193,6 +211,21 @@ def test_run_fail(opsml_project: OpsmlProject) -> None:
     assert len(cards) == 1
 
 
+def test_opsml_project_list_runs(
+    opsml_project_2: OpsmlProject,
+) -> None:
+    """verify that we can read artifacts / metrics / cards without making a run
+    active."""
+
+    with opsml_project_2.run() as run:
+        # Create metrics / params / cards
+        run = cast(ActiveRun, run)
+        run.log_metric(key="m1", value=1.1)
+        run.log_parameter(key="m1", value="apple")
+
+    assert len(opsml_project_2.list_runs()) == 1
+
+
 def test_opsml_image_dataset(opsml_project: OpsmlProject) -> None:
     """verify we can save image dataset"""
 
@@ -218,3 +251,7 @@ def test_opsml_image_dataset(opsml_project: OpsmlProject) -> None:
         assert os.path.isdir(loaded_card.data.image_dir)
         meta_path = os.path.join(loaded_card.data.image_dir, loaded_card.data.metadata)
         assert os.path.exists(meta_path)
+
+    info = ProjectInfo(name="test-exp", team="test", user_email="user@test.com")
+    proj = conftest.mock_opsml_project(info)
+    assert len(proj.list_runs()) == 7

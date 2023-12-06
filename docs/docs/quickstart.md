@@ -92,22 +92,47 @@ with project.run(run_name="test-run") as run:
         run.log_metric("mape", i, step=i)
 ```
 
-## Server UI
 
-Since we are using Mlflow as a UI, when you click the uri link, you should see something similar to the following.
+## Opsml UI
+
+### Models
+
+List models by team
+
+<p align="left">
+  <img src="../images/list-models.png"  width="449" height="413"/>
+</p>
+
+List models by version
+
+<p align="left">
+  <img src="../images/model-screen.png" width="540" height="508"/>
+</p>
+
+### Data
+
+Show data by version
+
+<p align="left">
+  <img src="../images/data-screen.png" width="612" height="508"/>
+</p>
+
 
 ### Project UI
 
 Project UI lists all projects and recent runs
 
+
+TODO(@thorrester): opsml image
 <p align="center">
-  <img src="../images/mlflow_ui.png"  width="1512" height="402" alt="mlflow"/>
+  <img src="../images/opsml_ui.png"  width="1512" height="402" alt="opsml"/>
 </p>
 
 ### Run UI
 
 Within the run UI, you will see the various auto-recorded artifacts from your `Cards` and `Run`
 
+TODO(@thorrester): opsml image
 <p align="center">
-  <img src="../images/mlflow_run.png"  width="1841" height="792" alt="mlflow run"/>
+  <img src="../images/opsml_run.png"  width="1841" height="792" alt="opsml run"/>
 </p>

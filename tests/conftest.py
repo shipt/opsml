@@ -1,6 +1,6 @@
-from typing import Iterator
 import os
-import pathlib
+from pathlib import Path
+from typing import Any, Iterator, List
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -8,20 +8,16 @@ warnings.filterwarnings("ignore")
 
 # setting initial env vars to override default sql db
 # these must be set prior to importing opsml since they establish their
-DB_FILE_PATH = str(pathlib.Path.home().joinpath("tmp.db"))
+DB_FILE_PATH = "tmp.db"
 SQL_PATH = os.environ.get("OPSML_TRACKING_URI", f"sqlite:///{DB_FILE_PATH}")
-STORAGE_PATH = str(pathlib.Path.home().joinpath("mlruns"))
+STORAGE_PATH = f"{os.getcwd()}/mlruns"
 
-os.environ["APP_ENV"] = "production"
+os.environ["APP_ENV"] = "development"
 os.environ["OPSML_PROD_TOKEN"] = "test-token"
 os.environ["OPSML_TRACKING_URI"] = SQL_PATH
 os.environ["OPSML_STORAGE_URI"] = STORAGE_PATH
 os.environ["OPSML_USERNAME"] = "test-user"
 os.environ["OPSML_PASSWORD"] = "test-pass"
-os.environ["_MLFLOW_SERVER_ARTIFACT_DESTINATION"] = STORAGE_PATH
-os.environ["_MLFLOW_SERVER_ARTIFACT_ROOT"] = "mlflow-artifacts:/"
-os.environ["_MLFLOW_SERVER_FILE_STORE"] = SQL_PATH
-os.environ["_MLFLOW_SERVER_SERVE_ARTIFACTS"] = "true"
 
 import uuid
 import pytest
@@ -76,11 +72,9 @@ from opsml.registry.storage.types import StorageClientSettings, GcsStorageClient
 from opsml.registry.sql.sql_schema import BaseMixin, Base, RegistryTableNames
 from opsml.registry.sql.db_initializer import DBInitializer
 from opsml.registry.sql.connectors.connector import LocalSQLConnection
-from opsml.registry.storage.storage_system import StorageClientGetter, StorageSystem, StorageClientType
+from opsml.registry.storage.storage_system import get_storage_client, StorageClientType
 
-from opsml.projects import get_project
-from opsml.projects.mlflow import MlflowProject
-from opsml.projects.base.types import ProjectInfo
+from opsml.projects import ProjectInfo
 from opsml.registry import CardRegistries
 from opsml.registry.cards.types import ModelCardUris
 from opsml.projects import OpsmlProject
@@ -149,8 +143,10 @@ def gcp_cred_path():
     return os.path.join(os.path.dirname(__file__), "assets/fake_gcp_creds.json")
 
 
-def save_path():
-    return f"blob/{uuid.uuid4().hex}"
+def save_path() -> str:
+    p = Path(f"mlruns/OPSML_MODEL_REGISTRY/{uuid.uuid4().hex}")
+    p.mkdir(parents=True, exist_ok=True)
+    return str(p)
 
 
 @pytest.fixture(scope="function")
@@ -195,7 +191,7 @@ def gcp_storage_client(mock_gcp_vars):
         credentials=mock_gcp_vars["gcp_creds"],
         gcp_project=mock_gcp_vars["gcp_project"],
     )
-    storage_client = StorageClientGetter.get_storage_client(storage_settings=gcs_settings)
+    storage_client = get_storage_client(storage_settings=gcs_settings)
     return storage_client
 
 
@@ -205,13 +201,13 @@ def s3_storage_client():
         storage_type="s3",
         storage_uri="s3://test",
     )
-    storage_client = StorageClientGetter.get_storage_client(storage_settings=s3_settings)
+    storage_client = get_storage_client(storage_settings=s3_settings)
     return storage_client
 
 
 @pytest.fixture(scope="function")
 def local_storage_client():
-    storage_client = StorageClientGetter.get_storage_client(storage_settings=StorageClientSettings())
+    storage_client = get_storage_client(storage_settings=StorageClientSettings())
     return storage_client
 
 
@@ -294,7 +290,7 @@ def test_app() -> Iterator[TestClient]:
     cleanup()
     from opsml.app.main import OpsmlApp
 
-    opsml_app = OpsmlApp(run_mlflow=True)
+    opsml_app = OpsmlApp()
     with TestClient(opsml_app.get_app()) as tc:
         yield tc
     cleanup()
@@ -305,7 +301,7 @@ def test_app_login() -> Iterator[TestClient]:
     cleanup()
     from opsml.app.main import OpsmlApp
 
-    opsml_app = OpsmlApp(run_mlflow=True, login=True)
+    opsml_app = OpsmlApp(login=True)
     with TestClient(opsml_app.get_app()) as tc:
         yield tc
     cleanup()
@@ -335,45 +331,6 @@ def mock_registries(test_client: TestClient) -> CardRegistries:
         return registries
 
 
-def mlflow_storage_client():
-    mlflow_storage = StorageClientGetter.get_storage_client(
-        storage_settings=StorageClientSettings(
-            storage_type=StorageSystem.MLFLOW.value,
-            storage_uri=STORAGE_PATH,
-        )
-    )
-    return mlflow_storage
-
-
-def mock_mlflow_project(info: ProjectInfo) -> MlflowProject:
-    from opsml.registry.sql.base.query_engine import QueryEngine
-
-    info.tracking_uri = SQL_PATH
-    mlflow_exp: MlflowProject = get_project(info)
-
-    api_card_registries = CardRegistries()
-
-    initializer = DBInitializer(engine=QueryEngine().engine, registry_tables=list(RegistryTableNames))
-    initializer.initialize()
-
-    api_card_registries.data = ClientCardRegistry(registry_name="data")
-    api_card_registries.model = ClientCardRegistry(registry_name="model")
-    api_card_registries.run = ClientCardRegistry(registry_name="run")
-    api_card_registries.project = ClientCardRegistry(registry_name="project")
-    api_card_registries.pipeline = ClientCardRegistry(registry_name="pipeline")
-
-    # set storage client
-    mlflow_storage = mlflow_storage_client()
-    mlflow_storage.opsml_storage_client = api_card_registries.data._registry.storage_client
-
-    api_card_registries.set_storage_client(mlflow_storage)
-    mlflow_exp._run_mgr.registries = api_card_registries
-    mlflow_exp._run_mgr._storage_client = mlflow_storage
-    mlflow_exp._run_mgr._storage_client.mlflow_client = mlflow_exp._run_mgr.mlflow_client
-
-    return mlflow_exp
-
-
 @pytest.fixture(scope="function")
 def api_registries(test_app: TestClient) -> Iterator[CardRegistries]:
     yield mock_registries(test_app)
@@ -394,22 +351,6 @@ def api_storage_client(api_registries: CardRegistries) -> StorageClientType:
 
 
 @pytest.fixture(scope="function")
-def mlflow_project(api_registries: CardRegistries) -> Iterator[MlflowProject]:
-    info = ProjectInfo(name="test_exp", team="test", user_email="test", tracking_uri=SQL_PATH)
-    mlflow_exp: MlflowProject = get_project(info=info)
-
-    mlflow_storage = mlflow_storage_client()
-    mlflow_storage.opsml_storage_client = api_registries.data._registry.storage_client
-    api_registries.set_storage_client(mlflow_storage)
-    mlflow_exp._run_mgr.registries = api_registries
-
-    mlflow_exp._run_mgr._storage_client = mlflow_storage
-    mlflow_exp._run_mgr._storage_client.mlflow_client = mlflow_exp._run_mgr.mlflow_client
-
-    yield mlflow_exp
-
-
-@pytest.fixture(scope="function")
 def opsml_project(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
     opsml_run = OpsmlProject(
         info=ProjectInfo(
@@ -423,7 +364,21 @@ def opsml_project(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
     return opsml_run
 
 
-def mock_opsml_project(info: ProjectInfo) -> MlflowProject:
+@pytest.fixture(scope="function")
+def opsml_project_2(api_registries: CardRegistries) -> Iterator[OpsmlProject]:
+    opsml_run = OpsmlProject(
+        info=ProjectInfo(
+            name="opsml_project",
+            team="devops",
+            user_email="test",
+            tracking_uri=SQL_PATH,
+        )
+    )
+    opsml_run._run_mgr.registries = api_registries
+    return opsml_run
+
+
+def mock_opsml_project(info: ProjectInfo) -> OpsmlProject:
     info.tracking_uri = SQL_PATH
     opsml_run = OpsmlProject(info=info)
 
@@ -481,12 +436,14 @@ def experiment_table_to_migrate():
 @pytest.fixture(scope="function")
 def mock_local_engine():
     local_client = LocalSQLConnection(tracking_uri="sqlite://")
-    engine = local_client.get_engine()
+    local_client.get_engine()
     return
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def db_registries():
+    cleanup()
+
     # force opsml to use CardRegistry with SQL connection (non-proxy)
     from opsml.registry.sql.registry import CardRegistry
     from opsml.registry.sql.base.query_engine import QueryEngine
@@ -557,20 +514,22 @@ def mock_gcs(test_df):
 
 
 ######### Data for registry tests
+
+
 @pytest.fixture(scope="function")
-def test_array():
+def test_array() -> np.ndarray[Any, np.float64]:
     data = np.random.rand(10, 100)
     return data
 
 
 @pytest.fixture(scope="function")
-def test_split_array():
+def test_split_array() -> List[DataSplit]:
     indices = np.array([0, 1, 2])
     return [DataSplit(label="train", indices=indices)]
 
 
 @pytest.fixture(scope="function")
-def test_df():
+def test_df() -> pd.DataFrame:
     df = pd.DataFrame(
         {
             "year": [2020, 2022, 2019, 2021],
@@ -720,7 +679,9 @@ def pytorch_onnx_byo():
     batch_size = 1  # just a random number
 
     # Initialize model with the pretrained weights
-    map_location = lambda storage, loc: storage
+    def map_location(storage, loc):
+        return storage
+
     if torch.cuda.is_available():
         map_location = None
     torch_model.load_state_dict(model_zoo.load_url(model_url, map_location=map_location))
@@ -730,7 +691,7 @@ def pytorch_onnx_byo():
 
     # Input to the model
     x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
-    torch_out = torch_model(x)
+    torch_model(x)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         onnx_path = f"{tmpdir}/super_resolution.onnx"
@@ -1072,7 +1033,6 @@ def huggingface_bart():
 def huggingface_vit():
     from transformers import ViTFeatureExtractor, ViTModel
     from PIL import Image
-    import requests
 
     image = Image.open("tests/assets/cats.jpg")
 

@@ -6,11 +6,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import clean_string
-from opsml.registry.sql.base.query_engine import (  # type: ignore
-    QueryEngine,
-    log_card_change,
-)
+from opsml.registry.cards.types import RegistryType
+from opsml.registry.sql.base.query_engine import QueryEngine
 from opsml.registry.sql.base.registry_base import SQLRegistryBase
+from opsml.registry.sql.base.utils import log_card_change
 from opsml.registry.sql.semver import (
     CardVersion,
     SemVerRegistryValidator,
@@ -18,15 +17,20 @@ from opsml.registry.sql.semver import (
     SemVerUtils,
     VersionType,
 )
-from opsml.registry.sql.sql_schema import RegistryTableNames
+from opsml.registry.sql.sql_schema import TableSchema
+from opsml.registry.sql.table_names import RegistryTableNames
 
 logger = ArtifactLogger.get_logger()
 
 
 class ServerRegistry(SQLRegistryBase):
-    def __init__(self, registry_type: str):
+    """A registry that retrieves data from a database."""
+
+    def __init__(self, registry_type: RegistryType):
         super().__init__(registry_type)
+
         self.engine = QueryEngine()
+        self._table = TableSchema.get_table(table_name=self.table_name)
 
     @property
     def unique_teams(self) -> List[str]:
@@ -136,6 +140,7 @@ class ServerRegistry(SQLRegistryBase):
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
         ignore_release_candidates: bool = False,
+        query_terms: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Retrieves records from registry
@@ -158,6 +163,8 @@ class ServerRegistry(SQLRegistryBase):
                 Places a limit on result list. Results are sorted by SemVer
             ignore_release_candidates:
                 If True, will ignore release candidates when searching for versions
+            query_terms:
+                Dictionary of query terms to filter by
 
 
         Returns:
@@ -176,6 +183,7 @@ class ServerRegistry(SQLRegistryBase):
             max_date=max_date,
             tags=tags,
             limit=limit,
+            query_terms=query_terms,
         )
 
         if cleaned_name is not None:
@@ -193,10 +201,10 @@ class ServerRegistry(SQLRegistryBase):
 
         return records
 
-    def check_uid(self, uid: str, registry_type: str) -> bool:
+    def check_uid(self, uid: str, registry_type: RegistryType) -> bool:
         result = self.engine.get_uid(
             uid=uid,
-            table_to_check=RegistryTableNames[registry_type.upper()].value,
+            table_to_check=RegistryTableNames[registry_type.value.upper()].value,
         )
         return bool(result)
 
