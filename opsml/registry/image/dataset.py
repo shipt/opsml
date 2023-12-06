@@ -3,12 +3,20 @@
 # LICENSE file in the root directory of this source tree.
 import json
 import os
-from typing import List, Optional, Union, Protocol, Dict, Any
-from pathlib import Path
 from dataclasses import dataclass
-from pydantic import BaseModel, ValidationInfo, field_validator, model_validator, ConfigDict
-from opsml.helpers.logging import ArtifactLogger
 from functools import cached_property
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
+
+from opsml.helpers.logging import ArtifactLogger
 
 logger = ArtifactLogger.get_logger()
 

@@ -18,9 +18,8 @@ from numpy.typing import NDArray
 from opsml.helpers.utils import all_subclasses
 from opsml.model.types import ModelProto
 from opsml.registry.cards.types import StoragePath
-from opsml.registry.data.types import AllowedDataType
-from opsml.registry.data.arrow_reader import ImageDatasetReader
 from opsml.registry.data.arrow_writer import ImageDatasetWriter
+from opsml.registry.data.types import AllowedDataType
 from opsml.registry.image.dataset import ImageDataset
 from opsml.registry.storage.storage_system import (
     ArtifactClass,

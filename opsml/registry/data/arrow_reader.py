@@ -1,8 +1,10 @@
-from typing import List, Optional, Any, Tuple
-import pyarrow.dataset as ds
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Any, List, Optional, Tuple
+
+import pyarrow.dataset as ds
+
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.data.types import yield_chunks, ALL_IMAGES
+from opsml.registry.data.types import ALL_IMAGES, yield_chunks
 
 logger = ArtifactLogger.get_logger
 

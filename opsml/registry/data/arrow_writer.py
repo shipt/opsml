@@ -1,16 +1,17 @@
-from typing import List, Protocol, Dict, Any, Optional
-import pyarrow as pa
-from enum import Enum
-from pathlib import Path
-from opsml.registry.image.dataset import ImageDataset, ImageRecord
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.storage.storage_system import StorageClientType
-import pyarrow.parquet as pq
-from pyarrow.fs import LocalFileSystem
 import re
 import uuid
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Protocol
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+from pyarrow.fs import LocalFileSystem
+
+from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.types import yield_chunks
+from opsml.registry.image.dataset import ImageDataset, ImageRecord
 
 logger = ArtifactLogger.get_logger()
 

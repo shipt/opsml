@@ -8,11 +8,11 @@ from typing import Any, List, Optional, Tuple, Union
 import pandas as pd
 import polars as pl
 import pyarrow as pa
-from opsml.registry.image.dataset import ImageDataset
 from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from opsml.registry.data.types import AllowedDataType
+from opsml.registry.image.dataset import ImageDataset
 
 
 class DataHolder(BaseModel):

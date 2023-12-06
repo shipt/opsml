@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, Optional, Union, List, Iterator
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 import numpy as np
 import pandas as pd
