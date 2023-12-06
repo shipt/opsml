@@ -53,11 +53,12 @@ class ImageRecord(BaseModel):
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
-    split: Optional[str] = None
+    split: str = "all"
     size: int
 
     @model_validator(mode="before")
-    def check_args(cls, values: Dict[str, Any]):
+    @classmethod
+    def check_args(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         file_path = Path(values.get("file_name"))
 
         values["path"] = str(file_path.parent)
@@ -90,6 +91,12 @@ class ImageMetadata(BaseModel):
     records: List[ImageRecord]
 
     def write_to_file(self, file_name: str) -> None:
+        """Write all records to file
+
+        Args:
+            file_name:
+                Path to file to write records to
+        """
         with open(file_name, "w", encoding="utf-8") as file_:
             for record in self.records:
                 json.dump(record.model_dump(), file_)
@@ -122,24 +129,25 @@ class ImageDataset(BaseModel):
 
     @field_validator("metadata", mode="before")
     @classmethod
-    def check_metadata(cls, value: Union[str, ImageMetadata], info: ValidationInfo) -> Union[str, ImageMetadata]:
+    def check_metadata(cls, metadata: Union[str, ImageMetadata], info: ValidationInfo) -> Union[str, ImageMetadata]:
         """Validates if metadata is a jsonl file and if each record is valid"""
-        if isinstance(value, str):
+        if isinstance(metadata, str):
             # check metadata file is valid
-            assert "jsonl" in value, "metadata must be a jsonl file"
+            assert "jsonl" in metadata, "metadata must be a jsonl file"
 
             # metadata file should exist in image dir
             filepath = os.path.join(info.data.get("image_dir"), value)  # type: ignore
 
-            assert os.path.isfile(filepath), f"metadata file {value} does not exist in image_dir"
+            assert os.path.isfile(filepath), f"metadata file {metadata} does not exist in image_dir"
 
             # read and validate each record in the jsonl file
-            # tag: rust-op
             with open(filepath, "r", encoding="utf-8") as file_:
+                records = []
                 for line in file_:
-                    ImageRecord(**json.loads(line))
+                    records.append(ImageRecord(**json.loads(line)))
+                metadata = ImageMetadata(records=records)
 
-        return value
+        return metadata
 
     def convert_metadata(self) -> None:
         """Converts metadata to jsonl file if metadata is an ImageMetadata object"""
@@ -147,21 +155,22 @@ class ImageDataset(BaseModel):
         if isinstance(self.metadata, ImageMetadata):
             logger.info("convert metadata to jsonl file")
             filepath = os.path.join(self.image_dir, "metadata.jsonl")
-
-            # tag: rust-op
             self.metadata.write_to_file(filepath)
 
     @cached_property
     def size(self) -> int:
         return sum([record.size for record in self.metadata.records])
 
-    def split_data(self) -> ImageSplitHolder:
+    def split_data(self) -> Dict[str, Split]:
         """Loops through ImageRecords and splits them based on specified split
 
         Returns:
             `ImageSplitHolder`
         """
+
         splits = {}
+        data_holder = ImageSplitHolder()
+
         for record in self.metadata.records:
             if record.split not in splits:
                 splits[record.split] = Split(records=[record], size=record.size)
@@ -170,7 +179,7 @@ class ImageDataset(BaseModel):
                 splits[record.split].records.append(record)
                 splits[record.split].size += record.size
 
-        data_holder = ImageSplitHolder()
         for split_name, split in splits.items():
             setattr(data_holder, split_name, split)
+
         return data_holder

@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List, Iterator
 
 import numpy as np
 import pandas as pd
@@ -15,6 +15,15 @@ from pydantic import BaseModel, ConfigDict
 from opsml.registry.image.dataset import ImageDataset
 
 ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]  # type: ignore
+
+# helper constant for images
+ALL_IMAGES = "all_images"
+
+
+def yield_chunks(lst: List[Any], n: int) -> Iterator[Any]:
+    """Yield successive n-sized chunks from lst."""
+    for nbr, i in enumerate(range(0, len(lst), n)):
+        yield lst[i : i + n]
 
 
 def get_class_name(object_: object) -> str:
