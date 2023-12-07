@@ -57,10 +57,10 @@ class PyarrowDatasetReader:
         )
 
         for record in data.to_batches(batch_size=self.batch_size):
-            file_names = record.column("file_name")
+            filenames = record.column("filename")
             image_bytes = record.column("bytes")
             split_label = record.column("split_label")
-            batch = list(zip(file_names, image_bytes, split_label))
+            batch = list(zip(filenames, image_bytes, split_label))
             self.write_batch_to_file(batch)
 
 
@@ -70,19 +70,19 @@ class ImageDatasetReader(PyarrowDatasetReader):
 
         Args:
             files:
-                List of tuples containing file_name, image_bytes, and split_label
+                List of tuples containing filename, image_bytes, and split_label
         """
 
         for record in files:
-            file_name, image_bytes, split_label = record
+            filename, image_bytes, split_label = record
 
             # write path
             if split_label == ALL_IMAGES:
                 # all_images is a convention ImageDataset uses when no split_label is provided
                 # we don't want to save back to this directory
-                write_path = f"{self.write_dir}/{file_name}"
+                write_path = f"{self.write_dir}/{filename}"
             else:
-                write_path = f"{self.write_dir}/{split_label}/{file_name}"
+                write_path = f"{self.write_dir}/{split_label}/{filename}"
 
             try:
                 with open(write_path, "wb") as f:

@@ -39,7 +39,7 @@ class ImageRecord(BaseModel):
     """Image record to associate with image file
 
     Args:
-        file_name:
+        filename:
             Full path to the file
         caption:
             Optional caption for image
@@ -56,7 +56,7 @@ class ImageRecord(BaseModel):
 
     """
 
-    file_name: str
+    filename: str
     path: str
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
@@ -68,7 +68,7 @@ class ImageRecord(BaseModel):
     @classmethod
     def check_args(cls, data_args: Dict[str, Any]) -> Dict[str, Any]:
         parent_path = data_args.get("path")
-        file_path = data_args.get("file_name")
+        file_path = data_args.get("filename")
         size = data_args.get("size")
 
         # if reloading record
@@ -81,7 +81,7 @@ class ImageRecord(BaseModel):
             file_path = Path(os.path.join(parent_path, file_path.name))
 
         data_args["path"] = str(file_path.parent)
-        data_args["file_name"] = str(file_path.name)
+        data_args["filename"] = str(file_path.name)
         data_args["size"] = file_path.stat().st_size
 
         return data_args
@@ -109,14 +109,14 @@ class ImageMetadata(BaseModel):
 
     records: List[ImageRecord]
 
-    def write_to_file(self, file_name: str) -> None:
+    def write_to_file(self, filename: str) -> None:
         """Write all records to file
 
         Args:
-            file_name:
+            filename:
                 Path to file to write records to
         """
-        with open(file_name, "w", encoding="utf-8") as file_:
+        with open(filename, "w", encoding="utf-8") as file_:
             for record in self.records:
                 json.dump(record.model_dump(), file_)
                 file_.write("\n")

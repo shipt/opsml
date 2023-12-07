@@ -169,10 +169,10 @@ class ImageDatasetWriter(PyarrowDatasetWriter):
             Record dictionary and buffer size
         """
 
-        image_path = str(Path(f"{record.path}/{record.file_name}"))
+        image_path = str(Path(f"{record.path}/{record.filename}"))
         with pa.input_stream(image_path) as stream:
             record = {
-                "file_name": record.file_name,
+                "filename": record.filename,
                 "bytes": stream.read(),
                 "split_label": record.split,
             }

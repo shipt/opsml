@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Tuple
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -37,6 +37,7 @@ import numpy as np
 import joblib
 import pandas as pd
 import polars as pl
+from PIL import Image
 
 # ml model packages and classes
 from sklearn.datasets import fetch_openml
@@ -79,6 +80,7 @@ from opsml.registry import CardRegistries
 from opsml.registry.cards.types import ModelCardUris
 from opsml.projects import OpsmlProject
 from opsml.model.types import OnnxModelDefinition
+from opsml.registry.image.dataset import ImageRecord
 
 # testing
 from tests.mock_api_registries import CardRegistry as ClientCardRegistry
@@ -136,6 +138,26 @@ class Bucket(BaseModel):
 
     def list_blobs(self, prefix: str):
         return [Blob()]
+
+
+@pytest.fixture(scope="function")
+def create_image_dataset() -> Tuple[str, List[ImageRecord]]:
+    # create images
+    records = []
+    write_path = f"tests/images/{uuid.uuid4().hex}"
+    for i in ["train", "test", "eval"]:
+        Path(f"{write_path}/{i}").mkdir(parents=True, exist_ok=True)
+        for j in range(200):
+            save_path = f"{write_path}/{i}/image_{j}.png"
+            imarray = np.random.rand(100, 100, 3) * 255
+            im = Image.fromarray(imarray.astype("uint8")).convert("RGBA")
+            im.save(save_path)
+
+            records.append(ImageRecord(filename=save_path, split=i))
+    yield write_path, records
+
+    # delete images
+    shutil.rmtree(write_path, ignore_errors=True)
 
 
 @pytest.fixture(scope="function")

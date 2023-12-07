@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple, List
 import os
 from opsml.registry.cards import DataCard
 from opsml.registry.sql.registry import CardRegistry
@@ -13,38 +13,38 @@ import tempfile
 
 def test_image_record():
     record = {
-        "file_name": "tests/assets/image_dataset/cats.jpg",
+        "filename": "tests/assets/image_dataset/cats.jpg",
         "caption": "This is a second value of a text feature you added to your images",
     }
 
-    metadata = ImageRecord(**record)
-    assert metadata.file_name == "cats.jpg"
+    record = ImageRecord(**record)
+    assert record.filename == "cats.jpg"
 
     bbox_record = {
-        "file_name": "tests/assets/image_dataset/cat2.jpg",
+        "filename": "tests/assets/image_dataset/cat2.jpg",
         "objects": {"bbox": [[160.0, 31.0, 248.0, 616.0], [741.0, 68.0, 202.0, 401.0]], "categories": [2, 2]},
     }
 
-    metadata = ImageRecord(**bbox_record)
-    assert metadata.file_name == "cat2.jpg"
-    assert metadata.objects.bbox == [[160.0, 31.0, 248.0, 616.0], [741.0, 68.0, 202.0, 401.0]]
+    record = ImageRecord(**bbox_record)
+    assert record.filename == "cat2.jpg"
+    assert record.objects.bbox == [[160.0, 31.0, 248.0, 616.0], [741.0, 68.0, 202.0, 401.0]]
 
 
 def test_image_metadata():
     records = [
         {
-            "file_name": "tests/assets/image_dataset/cats.jpg",
+            "filename": "tests/assets/image_dataset/cats.jpg",
             "caption": "This is a second value of a text feature you added to your images",
         },
         {
-            "file_name": "tests/assets/image_dataset/cat2.jpg",
+            "filename": "tests/assets/image_dataset/cat2.jpg",
             "objects": {"bbox": [[810.0, 100.0, 57.0, 28.0]], "categories": [1]},
         },
     ]
 
     metadata = ImageMetadata(records=records)
 
-    assert metadata.records[1].file_name == "cat2.jpg"
+    assert metadata.records[1].filename == "cat2.jpg"
     assert metadata.records[1].objects.bbox == [[810.0, 100.0, 57.0, 28.0]]
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -76,37 +76,16 @@ def test_image_dataset():
     ve.match("metadata must be a jsonl file")
 
 
-def test_register_data(
-    db_registries: Dict[str, CardRegistry],
-):
+def test_register_data(db_registries: Dict[str, CardRegistry], create_image_dataset: Tuple[str, List[ImageRecord]]):
+    # create images
+    image_dataset_path, records = create_image_dataset
+
     # create data card
     registry = db_registries["data"]
 
-    records = [
-        {
-            "file_name": "cats.jpg",
-            "path": "tests/assets/image_dataset",
-            "caption": "This is a second value of a text feature you added to your images",
-            "categories": None,
-            "objects": None,
-            "split": "all",
-            "size": 63304,
-        },
-        {
-            "file_name": "cat2.jpg",
-            "path": "tests/assets/image_dataset",
-            "caption": None,
-            "categories": None,
-            "objects": {"bbox": [[810.0, 100.0, 57.0, 28.0]], "categories": [1]},
-            "split": "all",
-            "size": 63304,
-        },
-    ]
-    metadata = ImageMetadata(records=records)
-
     image_dataset = ImageDataset(
-        image_dir="tests/assets/image_dataset",
-        metadata=metadata,
+        image_dir=image_dataset_path,
+        metadata=ImageMetadata(records=records),
     )
 
     data_card = DataCard(
