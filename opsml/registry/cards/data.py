@@ -329,11 +329,17 @@ class ImageDownloader(Downloader):
 
     def download(self) -> None:
         data = cast(ImageDataset, self.card.data)
+
         if os.path.exists(data.image_dir):
             logger.info("Image data already exists")
             return
 
-        kwargs = {"image_dir": data.image_dir}
+        kwargs = {
+            "image_dir": data.image_dir,
+            "split_filter": data.split_filter,
+            "batch_size": data.batch_size,
+            "splits": data.splits,
+        }
 
         load_record_artifact_from_storage(
             artifact_type=self.card.metadata.data_type,

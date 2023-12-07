@@ -97,6 +97,11 @@ def test_register_data(db_registries: Dict[str, CardRegistry], create_image_data
 
     registry.register_card(card=data_card)
 
+    loaded_card = registry.load_card(uid=data_card.uid)
+    loaded_card.data.image_dir = f"{loaded_card.data.image_dir}/download"
+    loaded_card.load_data()
+    a
+
 
 #
 # loaded_card = registry.load_card(uid=data_card.uid)

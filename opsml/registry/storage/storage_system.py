@@ -324,7 +324,7 @@ class LocalStorageClient(StorageClient):
         path = Path(storage_uri)
 
         if path.is_dir():
-            paths = [str(p) for p in path.rglob("*")]
+            paths = [str(p) for p in path.rglob("*") if p.is_file()]
             return paths
 
         return [storage_uri]

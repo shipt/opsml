@@ -132,12 +132,17 @@ class ImageDataset(BaseModel):
             Directory of images
         metadata:
             Metadata file for images. Can be a jsonl file or an ImageMetadata object
-
+        split_filter:
+            Optional label used to filter data when loading. Must match current dataset split labels
+        batch_size:
+            batch size to use when loading data
     """
 
     image_dir: str
     metadata: Union[str, ImageMetadata]
     shard_size: str = "512MB"
+    split_filter: Optional[str] = None
+    batch_size: int = 1000
 
     @field_validator("image_dir", mode="before")
     @classmethod
@@ -179,6 +184,11 @@ class ImageDataset(BaseModel):
     @cached_property
     def size(self) -> int:
         return sum([record.size for record in self.metadata.records])
+
+    @cached_property
+    def splits(self) -> List[str]:
+        """Returns list of unique splits"""
+        return list(set([record.split for record in self.records]))
 
     def split_data(self) -> Dict[str, Split]:
         """Loops through ImageRecords and splits them based on specified split

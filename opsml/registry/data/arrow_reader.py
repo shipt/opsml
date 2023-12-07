@@ -1,23 +1,26 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any, List, Optional, Tuple
-
+from pydantic import BaseModel
 import pyarrow.dataset as ds
-
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.types import ALL_IMAGES, yield_chunks
+from pyarrow.fs import LocalFileSystem
+from pathlib import Path
 
-logger = ArtifactLogger.get_logger
+logger = ArtifactLogger.get_logger()
+
+
+class ReadDatasetInfo(BaseModel):
+    paths: List[str]
+    storage_filesystem: LocalFileSystem
+    write_dir: str
+    splits: List[str]
+    column_filter: Optional[str] = None
+    batch_size: int = 1000
 
 
 class PyarrowDatasetReader:
-    def __init__(
-        self,
-        paths: List[str],
-        storage_filesystem: Any,
-        write_dir: str,
-        column_filter: Optional[str] = None,
-        batch_size: int = 1000,
-    ):
+    def __init__(self, info: ReadDatasetInfo):
         """Instantiates a PyarrowReaderBase object
 
         Args:
@@ -30,18 +33,24 @@ class PyarrowDatasetReader:
             column_filter:
                 Optional filter to use when loading data
         """
-        self.paths = paths
-        self.filesystem = storage_filesystem
-        self.write_dir = write_dir
-        self.filter = column_filter
-        self.batch_size = batch_size
+        self.info = info
 
     def get_filtered_paths(self) -> List[str]:
         """Filter paths by filter. Can be used to load only a subset of data"""
-        if self.filter is None:
-            return self.paths
+        if self.info.column_filter is None:
+            return self.info.paths
         else:
-            return [path for path in self.paths if self.filter in path]
+            return [path for path in self.info.paths if self.info.column_filter in path]
+
+    def check_write_paths_exist(self) -> None:
+        """Checks if local path for writing exists and creates if it doesn't"""
+        path = Path(self.info.write_dir)
+        splits = list(self.info.column_filter or self.info.splits)
+
+        for split in splits:
+            if split != ALL_IMAGES:
+                path = path / split
+            path.mkdir(parents=True, exist_ok=True)
 
     def write_batch_to_file(self, arrow_batch: List[Any]) -> None:
         raise NotImplementedError
@@ -53,10 +62,10 @@ class PyarrowDatasetReader:
         data = ds.dataset(
             source=parquet_paths,
             format="parquet",
-            filesystem=self.filesystem,
+            filesystem=self.info.filesystem,
         )
 
-        for record in data.to_batches(batch_size=self.batch_size):
+        for record in data.to_batches(batch_size=self.info.batch_size):
             filenames = record.column("filename")
             image_bytes = record.column("bytes")
             split_label = record.column("split_label")
@@ -80,9 +89,9 @@ class ImageDatasetReader(PyarrowDatasetReader):
             if split_label == ALL_IMAGES:
                 # all_images is a convention ImageDataset uses when no split_label is provided
                 # we don't want to save back to this directory
-                write_path = f"{self.write_dir}/{filename}"
+                write_path = f"{self.info.write_dir}/{filename}"
             else:
-                write_path = f"{self.write_dir}/{split_label}/{filename}"
+                write_path = f"{self.info.write_dir}/{split_label}/{filename}"
 
             try:
                 with open(write_path, "wb") as f:

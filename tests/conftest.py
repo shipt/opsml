@@ -144,7 +144,7 @@ class Bucket(BaseModel):
 def create_image_dataset() -> Tuple[str, List[ImageRecord]]:
     # create images
     records = []
-    write_path = f"tests/images/{uuid.uuid4().hex}"
+    write_path = f"tests/assets/{uuid.uuid4().hex}"
     for i in ["train", "test", "eval"]:
         Path(f"{write_path}/{i}").mkdir(parents=True, exist_ok=True)
         for j in range(200):
