@@ -18,8 +18,8 @@ from numpy.typing import NDArray
 from opsml.helpers.utils import all_subclasses
 from opsml.model.types import ModelProto
 from opsml.registry.cards.types import StoragePath
-from opsml.registry.data.arrow_writer import ImageDatasetWriter
-from opsml.registry.data.arrow_reader import ImageDatasetReader
+from opsml.registry.data.arrow_writer import ImageDatasetWriter, DatasetWriteInfo
+from opsml.registry.data.arrow_reader import ImageDatasetReader, DatasetReadInfo
 from opsml.registry.data.types import AllowedDataType
 from opsml.registry.image.dataset import ImageDataset
 from opsml.registry.storage.storage_system import (
@@ -286,11 +286,13 @@ class ImageDataStorage(ArtifactStorage):
         """
         storage_path = f"{storage_uri}/images"
 
-        _ = ImageDatasetWriter(
+        writer_info = DatasetWriteInfo(
             data=artifact,
             storage_filesystem=self.storage_filesystem,
             write_path=tmp_uri,
-        ).write_dataset_to_table()
+        )
+
+        _ = ImageDatasetWriter(info=writer_info).write_dataset_to_table()
 
         return self.storage_client.upload(
             local_path=tmp_uri,
@@ -310,13 +312,15 @@ class ImageDataStorage(ArtifactStorage):
             Pandas DataFrame, Polars DataFrame or pyarrow table
         """
 
-        ImageDatasetReader(
+        reader_info = DatasetReadInfo(
             paths=file_path,
             storage_filesystem=self.storage_filesystem,
             write_dir=kwargs.get("image_dir"),
             column_filter=kwargs.get("split_filter"),
             batch_size=kwargs.get("batch_size"),
-        ).load_dataset()
+            split_labels=kwargs.get("split_labels"),
+        )
+        ImageDatasetReader(info=reader_info).load_dataset()
 
     @staticmethod
     def validate(artifact_type: str) -> bool:

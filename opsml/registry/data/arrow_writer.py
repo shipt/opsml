@@ -3,8 +3,8 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol
-from pydantic import BaseModel, ConfigDict
+from typing import Any, Dict, List, Optional, Protocol, Union
+from pydantic import BaseModel, ConfigDict, field_validator
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pyarrow.fs import LocalFileSystem
@@ -33,7 +33,12 @@ class DatasetWriteInfo(BaseModel):
 
     data: ImageDataset
     storage_filesystem: LocalFileSystem
-    write_path: str
+    write_path: Path
+
+    @field_validator("write_path", mode="before")
+    @classmethod
+    def convert_to_path(cls, write_path: Union[str, Path]) -> Path:
+        return Path(write_path)
 
 
 class PyarrowDatasetWriter:
@@ -105,8 +110,8 @@ class PyarrowDatasetWriter:
         split_name:
             `str` name of split
         """
-
-        self.storage_filesystem.create_dir(str(self.info.write_path / split_name))
+        write_path = str(self.info.write_path / split_name)
+        self.info.storage_filesystem.create_dir(write_path)
 
     def write_to_table(self, records: List[ImageRecord], split_name: Optional[str]) -> str:
         """Write records to pyarrow table
@@ -138,6 +143,8 @@ class PyarrowDatasetWriter:
 
             # create split name path
             self.create_path(name)
+
+            logger.info("Writing {} images to parquet for split {}", len(split.records), name)
 
             # don't want the overhead for one shard
             if num_shards == 1:

@@ -1,5 +1,5 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 from pydantic import BaseModel, ConfigDict
 import pyarrow.dataset as ds
 from opsml.helpers.logging import ArtifactLogger
@@ -13,10 +13,10 @@ logger = ArtifactLogger.get_logger()
 class DatasetReadInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    paths: List[str]
+    paths: Union[List[str], str]
     storage_filesystem: LocalFileSystem
     write_dir: str
-    splits: List[str]
+    split_labels: List[str]
     column_filter: Optional[str] = None
     batch_size: int = 1000
 
@@ -41,11 +41,13 @@ class PyarrowDatasetReader:
     def check_write_paths_exist(self) -> None:
         """Checks if local path for writing exists and creates if it doesn't"""
         path = Path(self.info.write_dir)
-        splits = list(self.info.column_filter or self.info.splits)
+        splits = list(self.info.column_filter or self.info.split_labels)
 
-        for split in splits:
-            if split != ALL_IMAGES:
-                path = path / split
+        if bool(splits):
+            for split in splits:
+                dir_path = path / split
+                dir_path.mkdir(parents=True, exist_ok=True)
+        else:
             path.mkdir(parents=True, exist_ok=True)
 
     def write_batch_to_file(self, arrow_batch: List[Any]) -> None:
@@ -60,7 +62,7 @@ class PyarrowDatasetReader:
         data = ds.dataset(
             source=parquet_paths,
             format="parquet",
-            filesystem=self.info.filesystem,
+            filesystem=self.info.storage_filesystem,
         )
 
         for record in data.to_batches(batch_size=self.info.batch_size):

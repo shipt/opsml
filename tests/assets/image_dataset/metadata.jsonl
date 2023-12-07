@@ -1,2 +1,2 @@
-{"filename": "cats.jpg", "path": "tests/assets/image_dataset", "caption": "This is a second value of a text feature you added to your images", "categories": null, "objects": null, "split": "all", "size": 63304}
-{"filename": "cat2.jpg", "path": "tests/assets/image_dataset", "caption": null, "categories": null, "objects": {"bbox": [[810.0, 100.0, 57.0, 28.0]], "categories": [1]}, "split": "all", "size": 63304}
+{"filename": "cats.jpg", "path": "tests/assets/image_dataset", "caption": "This is a second value of a text feature you added to your images", "categories": null, "objects": null, "split": null, "size": 63304}
+{"filename": "cat2.jpg", "path": "tests/assets/image_dataset", "caption": null, "categories": null, "objects": {"bbox": [[810.0, 100.0, 57.0, 28.0]], "categories": [1]}, "split": null, "size": 63304}

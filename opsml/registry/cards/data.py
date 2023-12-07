@@ -187,6 +187,9 @@ class DataCard(ArtifactCard):
             storage_client=settings.storage_client,
         )
 
+        if isinstance(self.data, ImageDataset):
+            self.data.convert_metadata()
+
     def create_registry_record(self) -> RegistryRecord:
         """
         Creates required metadata for registering the current data card.
@@ -338,7 +341,7 @@ class ImageDownloader(Downloader):
             "image_dir": data.image_dir,
             "split_filter": data.split_filter,
             "batch_size": data.batch_size,
-            "splits": data.splits,
+            "split_labels": data.split_labels,
         }
 
         load_record_artifact_from_storage(

@@ -186,9 +186,9 @@ class ImageDataset(BaseModel):
         return sum([record.size for record in self.metadata.records])
 
     @cached_property
-    def splits(self) -> List[str]:
+    def split_labels(self) -> List[str]:
         """Returns list of unique splits"""
-        return list(set([record.split for record in self.records]))
+        return list(set([record.split for record in self.metadata.records if record.split is not None]))
 
     def split_data(self) -> Dict[str, Split]:
         """Loops through ImageRecords and splits them based on specified split
@@ -201,12 +201,13 @@ class ImageDataset(BaseModel):
         data_holder = ImageSplitHolder()
 
         for record in self.metadata.records:
-            if record.split not in splits:
-                splits[record.split] = Split(records=[record], size=record.size)
+            split_name = record.split or "records"
+            if split_name not in splits:
+                splits[split_name] = Split(records=[record], size=record.size)
 
             else:
-                splits[record.split].records.append(record)
-                splits[record.split].size += record.size
+                splits[split_name].records.append(record)
+                splits[split_name].size += record.size
 
         for split_name, split in splits.items():
             setattr(data_holder, split_name, split)

@@ -1,5 +1,6 @@
 from typing import Dict, Tuple, List
 import os
+from pathlib import Path
 from opsml.registry.cards import DataCard
 from opsml.registry.sql.registry import CardRegistry
 from opsml.registry.image import ImageDataset, ImageRecord, ImageMetadata
@@ -95,13 +96,18 @@ def test_register_data(db_registries: Dict[str, CardRegistry], create_image_data
         user_email="mlops.com",
     )
 
-    print(image_dataset.metadata.records[0])
-    a
     registry.register_card(card=data_card)
 
     loaded_card = registry.load_card(uid=data_card.uid)
-    # loaded_card.data.image_dir = f"{loaded_card.data.image_dir}/download"
-    # loaded_card.load_data()
+    loaded_card.data.image_dir = f"{loaded_card.data.image_dir}/download"
+    loaded_card.load_data()
+
+    assert os.path.isdir(loaded_card.data.image_dir)
+
+    # count number for files in image_dir
+    p = Path(loaded_card.data.image_dir).glob("**/*")
+    nbr_downloaded = len([x for x in p if x.is_file() and not x.name.startswith("metadata")])
+    assert nbr_downloaded == len(records)
 
 
 #
