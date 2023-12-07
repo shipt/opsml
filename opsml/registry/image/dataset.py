@@ -146,10 +146,10 @@ class ImageDataset(BaseModel):
 
     @field_validator("image_dir", mode="before")
     @classmethod
-    def check_dir(cls, value: str) -> str:
-        assert os.path.isdir(value), "image_dir must be a directory"
+    def check_dir(cls, image_dir: str) -> str:
+        assert os.path.isdir(image_dir), "image_dir must be a directory"
 
-        return value
+        return image_dir
 
     @field_validator("metadata", mode="before")
     @classmethod

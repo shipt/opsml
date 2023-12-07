@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
-
+from pydantic import BaseModel, ConfigDict
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pyarrow.fs import LocalFileSystem
@@ -28,19 +28,27 @@ class FileSystem(Protocol):
     ...
 
 
+class DatasetWriteInfo(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    data: ImageDataset
+    storage_filesystem: LocalFileSystem
+    write_path: str
+
+
 class PyarrowDatasetWriter:
     """Client side writer for pyarrow datasets"""
 
-    def __init__(
-        self,
-        data: ImageDataset,
-        storage_filesystem: LocalFileSystem,
-        write_path: str,
-    ):
-        self.data = data
-        self.storage_filesystem = storage_filesystem
-        self.write_path = Path(write_path)
-        self.shard_size = self._set_shard_size(data.shard_size)
+    def __init__(self, info: DatasetWriteInfo):
+        """Instantiates a PyarrowDatasetWriter object
+
+        Args:
+            info:
+                DatasetWriteInfo object
+        """
+
+        self.info = info
+        self.shard_size = self._set_shard_size(info.data.shard_size)
         self.parquet_paths = []
 
     def _set_shard_size(self, shard_size: str) -> int:
@@ -77,12 +85,12 @@ class PyarrowDatasetWriter:
     def _write_buffer(self, records: List[Dict[str, Any]], split_name: str) -> str:
         try:
             temp_table = pa.Table.from_pylist(records)
-            write_path = self.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
+            write_path = self.info.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
 
             pq.write_table(
                 table=temp_table,
                 where=write_path,
-                filesystem=self.storage_filesystem,
+                filesystem=self.info.storage_filesystem,
             )
 
             return str(write_path)
@@ -98,7 +106,7 @@ class PyarrowDatasetWriter:
             `str` name of split
         """
 
-        self.storage_filesystem.create_dir(str(self.write_path / split_name))
+        self.storage_filesystem.create_dir(str(self.info.write_path / split_name))
 
     def write_to_table(self, records: List[ImageRecord], split_name: Optional[str]) -> str:
         """Write records to pyarrow table
@@ -119,19 +127,10 @@ class PyarrowDatasetWriter:
         return self._write_buffer(processed_records, split_name)
 
     def write_dataset_to_table(self) -> List[str]:
-        """Writes image dataset to pyarrow tables
-
-        Args:
-            image_data:
-                `ImageDataset`
-            file_system:
-                `FileSystem`
-            dir_path:
-                directory path to save to
-        """
+        """Writes image dataset to pyarrow tables"""
         # get splits first (can be None, or more than one)
         # Splits are saved to their own paths for quick access in the future
-        splits = self.data.split_data()
+        splits = self.info.data.split_data()
         for name, split in splits:
             num_shards = int(max(1, split.size // self.shard_size))
             records_per_shard = len(split.records) // num_shards

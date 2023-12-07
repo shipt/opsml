@@ -10,7 +10,7 @@ from pathlib import Path
 logger = ArtifactLogger.get_logger()
 
 
-class ReadDatasetInfo(BaseModel):
+class DatasetReadInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     paths: List[str]
@@ -22,18 +22,12 @@ class ReadDatasetInfo(BaseModel):
 
 
 class PyarrowDatasetReader:
-    def __init__(self, info: ReadDatasetInfo):
+    def __init__(self, info: DatasetReadInfo):
         """Instantiates a PyarrowReaderBase object
 
         Args:
-            paths:
-                `List[str]` paths to read from
-            storage_client:
-                `StorageClientType` storage client to use
-            write_dir:
-                `str` directory to write to
-            column_filter:
-                Optional filter to use when loading data
+            info:
+                DatasetReadInfo object
         """
         self.info = info
 
