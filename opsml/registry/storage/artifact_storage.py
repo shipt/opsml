@@ -316,7 +316,6 @@ class ImageDataStorage(ArtifactStorage):
             write_dir=kwargs.get("image_dir"),
             column_filter=kwargs.get("split_filter"),
             batch_size=kwargs.get("batch_size"),
-            splits=
         ).load_dataset()
 
     @staticmethod

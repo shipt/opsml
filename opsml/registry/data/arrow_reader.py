@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any, List, Optional, Tuple
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 import pyarrow.dataset as ds
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.types import ALL_IMAGES, yield_chunks
@@ -11,6 +11,8 @@ logger = ArtifactLogger.get_logger()
 
 
 class ReadDatasetInfo(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     paths: List[str]
     storage_filesystem: LocalFileSystem
     write_dir: str
@@ -59,6 +61,8 @@ class PyarrowDatasetReader:
         """Loads a pyarrow dataset and writes to file"""
         parquet_paths = self.get_filtered_paths()
 
+        self.check_write_paths_exist()
+
         data = ds.dataset(
             source=parquet_paths,
             format="parquet",
@@ -66,15 +70,14 @@ class PyarrowDatasetReader:
         )
 
         for record in data.to_batches(batch_size=self.info.batch_size):
-            filenames = record.column("filename")
-            image_bytes = record.column("bytes")
-            split_label = record.column("split_label")
-            batch = list(zip(filenames, image_bytes, split_label))
+            record_bytes = record.column("bytes")
+            record_path = record.column("path")
+            batch = list(zip(record_bytes, record_path))
             self.write_batch_to_file(batch)
 
 
 class ImageDatasetReader(PyarrowDatasetReader):
-    def _write_data_to_images(self, files: List[Tuple[str, bytes, str]]) -> None:
+    def _write_data_to_images(self, files: List[Tuple[bytes, str]]) -> None:
         """Writes a list of pyarrow data to image files.
 
         Args:
@@ -83,15 +86,8 @@ class ImageDatasetReader(PyarrowDatasetReader):
         """
 
         for record in files:
-            filename, image_bytes, split_label = record
-
-            # write path
-            if split_label == ALL_IMAGES:
-                # all_images is a convention ImageDataset uses when no split_label is provided
-                # we don't want to save back to this directory
-                write_path = f"{self.info.write_dir}/{filename}"
-            else:
-                write_path = f"{self.info.write_dir}/{split_label}/{filename}"
+            image_bytes, image_path = record
+            write_path = f"{self.info.write_dir}/{image_path}"
 
             try:
                 with open(write_path, "wb") as f:

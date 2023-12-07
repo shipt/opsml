@@ -172,9 +172,9 @@ class ImageDatasetWriter(PyarrowDatasetWriter):
         image_path = str(Path(f"{record.path}/{record.filename}"))
         with pa.input_stream(image_path) as stream:
             record = {
-                "filename": record.filename,
                 "bytes": stream.read(),
                 "split_label": record.split,
+                "path": str(Path(record.split or "") / record.filename),
             }
 
         return record

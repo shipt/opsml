@@ -61,7 +61,7 @@ class ImageRecord(BaseModel):
     caption: Optional[str] = None
     categories: Optional[List[Union[str, int, float]]] = None
     objects: Optional[BBox] = None
-    split: str = "all"
+    split: Optional[str] = None
     size: int
 
     @model_validator(mode="before")
