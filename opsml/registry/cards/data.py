@@ -287,7 +287,6 @@ class Downloader:
         raise NotImplementedError
 
 
-# TODO: use this impl or one in registry/storage
 class DataDownloader(Downloader):
     """Class for downloading data from storage"""
 
