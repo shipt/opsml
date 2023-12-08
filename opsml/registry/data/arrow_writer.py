@@ -3,7 +3,7 @@ import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Protocol, Union
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -15,8 +15,6 @@ from opsml.registry.data.image_dataset import ImageDataset, ImageRecord
 from opsml.registry.data.types import yield_chunks
 
 logger = ArtifactLogger.get_logger()
-
-VALID_DATA = ImageDataset
 
 
 class ShardSize(Enum):
@@ -55,7 +53,7 @@ class PyarrowDatasetWriter:
 
         self.info = info
         self.shard_size = self._set_shard_size(info.data.shard_size)
-        self.parquet_paths = []
+        self.parquet_paths: List[str] = []
 
     def _set_shard_size(self, shard_size: str) -> int:
         """
@@ -68,17 +66,16 @@ class PyarrowDatasetWriter:
         Returns:
             int
         """
-        shard_num = re.findall("\d+", shard_size)
-        shard_size = re.findall("[a-zA-Z]+", shard_size)
+        shard_num_ = re.findall(r"\d+", shard_size)
+        shard_size_ = re.findall(r"[a-zA-Z]+", shard_size)
 
         try:
-            return int(shard_num[0]) * ShardSize[shard_size[0].upper()].value
+            return int(int(shard_num_[0]) * ShardSize[shard_size_[0].upper()].value)
 
-        # can be index or keyerror
-        except Exception as exc:
+        except (IndexError, KeyError) as exc:
             logger.error("Invalid shard size: {}, error: {}", shard_size, exc)
             logger.info("Defaulting to 512MB")
-            return 512 * ShardSize.MB.value
+            return int(512 * ShardSize.MB.value)
 
     def _create_record(self, record: ImageRecord) -> Dict[str, Any]:
         """Create record for pyarrow table
@@ -114,7 +111,7 @@ class PyarrowDatasetWriter:
         write_path = str(self.info.write_path / split_name)
         self.info.storage_filesystem.create_dir(write_path)
 
-    def write_to_table(self, records: List[ImageRecord], split_name: Optional[str]) -> str:
+    def write_to_table(self, records: List[ImageRecord], split_name: str) -> str:
         """Write records to pyarrow table
 
         Args:
@@ -178,10 +175,10 @@ class ImageDatasetWriter(PyarrowDatasetWriter):
 
         image_path = str(Path(f"{record.path}/{record.filename}"))
         with pa.input_stream(image_path) as stream:
-            record = {
+            stream_record = {
                 "bytes": stream.read(),
                 "split_label": record.split,
                 "path": str(Path(record.split or "") / record.filename),
             }
 
-        return record
+        return stream_record

@@ -11,10 +11,18 @@ import pyarrow as pa
 from pydantic import BaseModel, ConfigDict
 
 
-def yield_chunks(lst: List[Any], n: int) -> Iterator[Any]:
-    """Yield successive n-sized chunks from lst."""
-    for nbr, i in enumerate(range(0, len(lst), n)):
-        yield lst[i : i + n]
+def yield_chunks(list_: List[Any], size: int) -> Iterator[Any]:
+    """Yield successive n-sized chunks from list.
+
+    Args:
+        list_:
+            list to chunk
+        size:
+            size of chunks
+
+    """
+    for _, i in enumerate(range(0, len(list_), size)):
+        yield list_[i : i + size]
 
 
 def get_class_name(object_: object) -> str:

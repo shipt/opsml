@@ -71,8 +71,10 @@ class ImageRecord(BaseModel):
             return data_args
 
         # For creating image record
+        assert isinstance(file_path, (Path, str))
         file_path = Path(file_path)
         if not file_path.exists():
+            assert isinstance(parent_path, (Path, str))
             file_path = Path(os.path.join(parent_path, file_path.name))
 
         data_args["path"] = str(file_path.parent)
@@ -128,7 +130,7 @@ class ImageDataset(BaseModel):
     """
 
     image_dir: str
-    metadata: Union[str, ImageMetadata]
+    metadata: ImageMetadata
     shard_size: str = "512MB"
     split_filter: Optional[str] = None
     batch_size: int = 1000
@@ -172,12 +174,12 @@ class ImageDataset(BaseModel):
 
     @cached_property
     def size(self) -> int:
-        return sum([record.size for record in self.metadata.records])
+        return sum(record.size for record in self.metadata.records)
 
     @cached_property
     def split_labels(self) -> List[str]:
         """Returns list of unique splits"""
-        return list(set([record.split for record in self.metadata.records if record.split is not None]))
+        return list(set(record.split for record in self.metadata.records if record.split is not None))
 
     def split_data(self) -> DataHolder:
         """Loops through ImageRecords and splits them based on specified split

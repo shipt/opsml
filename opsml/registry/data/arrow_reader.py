@@ -33,12 +33,12 @@ class PyarrowDatasetReader:
         """
         self.info = info
 
-    def get_filtered_paths(self) -> List[str]:
+    def get_filtered_paths(self) -> Union[str, List[str]]:
         """Filter paths by filter. Can be used to load only a subset of data"""
         if self.info.column_filter is None:
             return self.info.paths
-        else:
-            return [path for path in self.info.paths if self.info.column_filter in path]
+
+        return [path for path in self.info.paths if self.info.column_filter in path]
 
     def check_write_paths_exist(self) -> None:
         """Checks if local path for writing exists and creates if it doesn't"""
@@ -88,8 +88,8 @@ class ImageDatasetReader(PyarrowDatasetReader):
             write_path = f"{self.info.write_dir}/{image_path}"
 
             try:
-                with open(write_path, "wb") as f:
-                    f.write(image_bytes.as_py())
+                with open(write_path, "wb") as file_:
+                    file_.write(image_bytes.as_py())  # type: ignore
 
             except Exception as exc:
                 logger.error("Exception occurred while writing to file: {}", exc)
