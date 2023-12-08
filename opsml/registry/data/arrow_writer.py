@@ -4,14 +4,15 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Union
-from pydantic import BaseModel, ConfigDict, field_validator
+
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pyarrow.fs import LocalFileSystem
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.data.types import yield_chunks
 from opsml.registry.data.image_dataset import ImageDataset, ImageRecord
+from opsml.registry.data.types import yield_chunks
 
 logger = ArtifactLogger.get_logger()
 

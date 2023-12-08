@@ -1,11 +1,13 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
-from pydantic import BaseModel, ConfigDict
+
 import pyarrow.dataset as ds
+from pyarrow.fs import LocalFileSystem
+from pydantic import BaseModel, ConfigDict
+
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.types import yield_chunks
-from pyarrow.fs import LocalFileSystem
-from pathlib import Path
 
 logger = ArtifactLogger.get_logger()
 

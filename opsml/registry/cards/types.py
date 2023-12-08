@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+import numpy as np
+import pandas as pd
+import polars as pl
+import pyarrow as pa
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from opsml.helpers.logging import ArtifactLogger
@@ -16,10 +20,6 @@ from opsml.model.types import (
     ExtraOnnxArgs,
     OnnxModelDefinition,
 )
-import pandas as pd
-import polars as pl
-import numpy as np
-import pyarrow as pa
 from opsml.registry.data.image_dataset import ImageDataset
 
 logger = ArtifactLogger.get_logger()

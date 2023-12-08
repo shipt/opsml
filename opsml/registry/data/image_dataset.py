@@ -7,15 +7,11 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from opsml.registry.data.splitter import DataHolder
-from pydantic import (
-    BaseModel,
-    ValidationInfo,
-    field_validator,
-    model_validator,
-)
+
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
+from opsml.registry.data.splitter import DataHolder
 
 logger = ArtifactLogger.get_logger()
 

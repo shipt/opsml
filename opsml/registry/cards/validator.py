@@ -4,9 +4,9 @@
 # LICENSE file in the root directory of this source tree.
 from typing import Any, Dict, Optional, Union
 
+import numpy as np
 import pandas as pd
 import polars as pl
-import numpy as np
 import pyarrow as pa
 from numpy.typing import NDArray
 
@@ -14,9 +14,8 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.model.model_types import ModelType
 from opsml.model.types import TrainedModelType, ValidModelInput
 from opsml.registry.cards.types import DataCardMetadata, ModelCardMetadata, ValidData
-from opsml.registry.data.types import AllowedDataType
 from opsml.registry.data.image_dataset import ImageDataset
-
+from opsml.registry.data.types import AllowedDataType
 
 logger = ArtifactLogger.get_logger()
 
