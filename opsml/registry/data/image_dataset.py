@@ -7,10 +7,9 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-
+from opsml.registry.data.splitter import DataHolder
 from pydantic import (
     BaseModel,
-    ConfigDict,
     ValidationInfo,
     field_validator,
     model_validator,
@@ -85,12 +84,6 @@ class ImageRecord(BaseModel):
         data_args["size"] = file_path.stat().st_size
 
         return data_args
-
-
-class ImageSplitHolder(BaseModel):
-    """Class for holding data objects"""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
 
 @dataclass
@@ -190,7 +183,7 @@ class ImageDataset(BaseModel):
         """Returns list of unique splits"""
         return list(set([record.split for record in self.metadata.records if record.split is not None]))
 
-    def split_data(self) -> Dict[str, Split]:
+    def split_data(self) -> DataHolder:
         """Loops through ImageRecords and splits them based on specified split
 
         Returns:
@@ -198,7 +191,7 @@ class ImageDataset(BaseModel):
         """
 
         splits = {}
-        data_holder = ImageSplitHolder()
+        data_holder = DataHolder()
 
         for record in self.metadata.records:
             split_name = record.split or "records"

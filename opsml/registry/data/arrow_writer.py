@@ -11,7 +11,7 @@ from pyarrow.fs import LocalFileSystem
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.types import yield_chunks
-from opsml.registry.image.dataset import ImageDataset, ImageRecord
+from opsml.registry.data.image_dataset import ImageDataset, ImageRecord
 
 logger = ArtifactLogger.get_logger()
 

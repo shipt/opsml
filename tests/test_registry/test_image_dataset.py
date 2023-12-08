@@ -77,9 +77,14 @@ def test_image_dataset():
     ve.match("metadata must be a jsonl file")
 
 
-def test_register_data(db_registries: Dict[str, CardRegistry], create_image_dataset: Tuple[str, List[ImageRecord]]):
+def test_register_split_image_data(
+    db_registries: Dict[str, CardRegistry],
+    create_split_image_dataset: Tuple[str, List[ImageRecord]],
+):
+    """tests imagedataset saving and loading with splits"""
+
     # create images
-    image_dataset_path, records = create_image_dataset
+    image_dataset_path, records = create_split_image_dataset
 
     # create data card
     registry = db_registries["data"]
@@ -110,11 +115,39 @@ def test_register_data(db_registries: Dict[str, CardRegistry], create_image_data
     assert nbr_downloaded == len(records)
 
 
-#
-# loaded_card = registry.load_card(uid=data_card.uid)
-# loaded_card.data.image_dir = "test_image_dir"
-# loaded_card.load_data()
-#
-# assert os.path.isdir(loaded_card.data.image_dir)
-# meta_path = os.path.join(loaded_card.data.image_dir, "metadata.jsonl")
-# assert os.path.exists(meta_path)
+def test_register_image_data(
+    db_registries: Dict[str, CardRegistry],
+    create_image_dataset: Tuple[str, List[ImageRecord]],
+):
+    """tests imagedataset saving and loading without splits"""
+
+    # create images
+    image_dataset_path, records = create_image_dataset
+
+    # create data card
+    registry = db_registries["data"]
+
+    image_dataset = ImageDataset(
+        image_dir=image_dataset_path,
+        metadata=ImageMetadata(records=records),
+    )
+
+    data_card = DataCard(
+        data=image_dataset,
+        name="test_dataset",
+        team="mlops",
+        user_email="mlops.com",
+    )
+
+    registry.register_card(card=data_card)
+
+    loaded_card = registry.load_card(uid=data_card.uid)
+    loaded_card.data.image_dir = f"{loaded_card.data.image_dir}/download"
+    loaded_card.load_data()
+
+    assert os.path.isdir(loaded_card.data.image_dir)
+
+    # count number for files in image_dir
+    p = Path(loaded_card.data.image_dir).glob("**/*")
+    nbr_downloaded = len([x for x in p if x.is_file() and not x.name.startswith("metadata")])
+    assert nbr_downloaded == len(records)

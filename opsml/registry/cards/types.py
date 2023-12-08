@@ -16,8 +16,16 @@ from opsml.model.types import (
     ExtraOnnxArgs,
     OnnxModelDefinition,
 )
+import pandas as pd
+import polars as pl
+import numpy as np
+import pyarrow as pa
+from opsml.registry.data.image_dataset import ImageDataset
 
 logger = ArtifactLogger.get_logger()
+
+
+ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]  # type: ignore
 
 
 class RegistryType(str, Enum):

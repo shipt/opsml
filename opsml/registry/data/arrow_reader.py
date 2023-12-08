@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Tuple, Union
 from pydantic import BaseModel, ConfigDict
 import pyarrow.dataset as ds
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.data.types import ALL_IMAGES, yield_chunks
+from opsml.registry.data.types import yield_chunks
 from pyarrow.fs import LocalFileSystem
 from pathlib import Path
 

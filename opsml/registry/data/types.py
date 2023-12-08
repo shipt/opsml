@@ -7,17 +7,8 @@ from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 import numpy as np
-import pandas as pd
-import polars as pl
 import pyarrow as pa
 from pydantic import BaseModel, ConfigDict
-
-from opsml.registry.image.dataset import ImageDataset
-
-ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]  # type: ignore
-
-# helper constant for images
-ALL_IMAGES = "all_images"
 
 
 def yield_chunks(lst: List[Any], n: int) -> Iterator[Any]:
@@ -59,33 +50,3 @@ class ArrowTable(BaseModel):
     table: Union[pa.Table, np.ndarray]  # type: ignore
     storage_uri: Optional[str] = None
     feature_map: Optional[Dict[str, Any]] = None
-
-
-def check_data_type(data: ValidData) -> str:
-    """Checks that the data type is one of the allowed types
-
-    Args:
-        data:
-            data to check
-
-    Returns:
-        data type
-    """
-    if isinstance(data, dict):
-        return AllowedDataType.DICT.value
-    if isinstance(data, ImageDataset):
-        return AllowedDataType.IMAGE.value
-    if isinstance(data, np.ndarray):
-        return AllowedDataType.NUMPY.value
-    if isinstance(data, pd.DataFrame):
-        return AllowedDataType.PANDAS.value
-    if isinstance(data, pl.DataFrame):
-        return AllowedDataType.POLARS.value
-    if isinstance(data, pa.Table):
-        return AllowedDataType.PYARROW.value
-
-    raise ValueError(
-        f"""Data must be one of the following types: numpy array, pandas dataframe, 
-        polars dataframe, pyarrow table, or ImageDataset. Received {str(type(data))}
-        """
-    )

@@ -21,7 +21,7 @@ from opsml.registry.cards.types import StoragePath
 from opsml.registry.data.arrow_writer import ImageDatasetWriter, DatasetWriteInfo
 from opsml.registry.data.arrow_reader import ImageDatasetReader, DatasetReadInfo
 from opsml.registry.data.types import AllowedDataType
-from opsml.registry.image.dataset import ImageDataset
+from opsml.registry.data.image_dataset import ImageDataset
 from opsml.registry.storage.storage_system import (
     ArtifactClass,
     StorageClientType,

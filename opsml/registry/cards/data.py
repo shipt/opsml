@@ -14,12 +14,12 @@ from opsml.helpers.utils import FindPath
 from opsml.profile.profile_data import DataProfiler, ProfileReport
 from opsml.registry.cards.audit_deco import auditable
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, DataCardMetadata
+from opsml.registry.cards.types import CardType, DataCardMetadata, ValidData
 from opsml.registry.cards.validator import DataCardValidator
 from opsml.registry.data.formatter import check_data_schema
 from opsml.registry.data.splitter import DataHolder, DataSplit, DataSplitter
-from opsml.registry.data.types import AllowedDataType, ValidData
-from opsml.registry.image.dataset import ImageDataset
+from opsml.registry.data.types import AllowedDataType
+from opsml.registry.data.image_dataset import ImageDataset
 from opsml.registry.sql.records import DataRegistryRecord, RegistryRecord
 from opsml.registry.storage.artifact_storage import load_record_artifact_from_storage
 from opsml.registry.storage.storage_system import StorageClientType
@@ -162,7 +162,8 @@ class DataCard(ArtifactCard):
         if self.data is None:
             self.load_data()
 
-        assert not isinstance(self.data, ImageDataset), "ImageDataset splits are not currently supported"
+        if isinstance(self.data, ImageDataset):
+            return self.data.split_data()
 
         if len(self.data_splits) > 0:
             data_holder = DataHolder()

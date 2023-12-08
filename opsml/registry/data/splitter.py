@@ -12,7 +12,6 @@ from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from opsml.registry.data.types import AllowedDataType
-from opsml.registry.image.dataset import ImageDataset
 
 
 class DataHolder(BaseModel):
@@ -58,7 +57,6 @@ class DataSplit(BaseModel):
     start: Optional[int] = None
     stop: Optional[int] = None
     indices: Optional[List[int]] = None
-    directory: Optional[str] = None
 
     @field_validator("indices", mode="before")
     @classmethod
@@ -307,12 +305,6 @@ class NumpyRowSplitter(DataSplitterBase):
     @staticmethod
     def validate(data_type: str, split: DataSplit) -> bool:
         return data_type == AllowedDataType.NUMPY and split.start is not None
-
-
-class ImageDatasetSplitter(DataSplitterBase):
-    @staticmethod
-    def validate(data_type: type, split: DataSplit):
-        return data_type == ImageDataset and split.directory is not None
 
 
 class DataSplitter:

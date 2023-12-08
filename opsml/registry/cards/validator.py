@@ -6,15 +6,49 @@ from typing import Any, Dict, Optional, Union
 
 import pandas as pd
 import polars as pl
+import numpy as np
+import pyarrow as pa
 from numpy.typing import NDArray
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.model_types import ModelType
 from opsml.model.types import TrainedModelType, ValidModelInput
-from opsml.registry.cards.types import DataCardMetadata, ModelCardMetadata
-from opsml.registry.data.types import AllowedDataType, ValidData, check_data_type
+from opsml.registry.cards.types import DataCardMetadata, ModelCardMetadata, ValidData
+from opsml.registry.data.types import AllowedDataType
+from opsml.registry.data.image_dataset import ImageDataset
+
 
 logger = ArtifactLogger.get_logger()
+
+
+def check_data_type(data: ValidData) -> str:
+    """Checks that the data type is one of the allowed types
+
+    Args:
+        data:
+            data to check
+
+    Returns:
+        data type
+    """
+    if isinstance(data, dict):
+        return AllowedDataType.DICT.value
+    if isinstance(data, ImageDataset):
+        return AllowedDataType.IMAGE.value
+    if isinstance(data, np.ndarray):
+        return AllowedDataType.NUMPY.value
+    if isinstance(data, pd.DataFrame):
+        return AllowedDataType.PANDAS.value
+    if isinstance(data, pl.DataFrame):
+        return AllowedDataType.POLARS.value
+    if isinstance(data, pa.Table):
+        return AllowedDataType.PYARROW.value
+
+    raise ValueError(
+        f"""Data must be one of the following types: numpy array, pandas dataframe, 
+        polars dataframe, pyarrow table, or ImageDataset. Received {str(type(data))}
+        """
+    )
 
 
 class CardValidator:
