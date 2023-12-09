@@ -120,13 +120,15 @@ class ImageDataset(BaseModel):
 
     Args:
         image_dir:
-            Directory of images
+            Path to directory of images
         metadata:
             Metadata file for images. Can be a jsonl file or an ImageMetadata object
         split_filter:
             Optional label used to filter data when loading. Must match current dataset split labels
         batch_size:
             batch size to use when loading data
+        data_uri:
+            Optional data uri to use when loading data. Injected after saving data via datacard
     """
 
     image_dir: str
@@ -134,6 +136,7 @@ class ImageDataset(BaseModel):
     shard_size: str = "512MB"
     split_filter: Optional[str] = None
     batch_size: int = 1000
+    data_uri: Optional[str] = None
 
     @field_validator("image_dir", mode="before")
     @classmethod

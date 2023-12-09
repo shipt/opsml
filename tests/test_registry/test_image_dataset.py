@@ -151,3 +151,42 @@ def test_register_image_data(
     p = Path(loaded_card.data.image_dir).glob("**/*")
     nbr_downloaded = len([x for x in p if x.is_file() and not x.name.startswith("metadata")])
     assert nbr_downloaded == len(records)
+
+
+def test_register_image_data_multiproc(
+    db_registries: Dict[str, CardRegistry],
+    create_image_dataset: Tuple[str, List[ImageRecord]],
+):
+    """tests imagedataset saving and loading without splits and forces multi processing"""
+
+    # create images
+    image_dataset_path, records = create_image_dataset
+
+    # create data card
+    registry = db_registries["data"]
+
+    image_dataset = ImageDataset(
+        image_dir=image_dataset_path,
+        metadata=ImageMetadata(records=records),
+        shard_size="100kb",
+    )
+
+    data_card = DataCard(
+        data=image_dataset,
+        name="test_dataset",
+        team="mlops",
+        user_email="mlops.com",
+    )
+
+    registry.register_card(card=data_card)
+
+    loaded_card = registry.load_card(uid=data_card.uid)
+    loaded_card.data.image_dir = f"{loaded_card.data.image_dir}/download"
+    loaded_card.load_data()
+
+    assert os.path.isdir(loaded_card.data.image_dir)
+
+    # count number for files in image_dir
+    p = Path(loaded_card.data.image_dir).glob("**/*")
+    nbr_downloaded = len([x for x in p if x.is_file() and not x.name.startswith("metadata")])
+    assert nbr_downloaded == len(records)
