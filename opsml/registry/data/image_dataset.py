@@ -134,8 +134,8 @@ class ImageDataset(BaseModel):
     image_dir: str
     metadata: ImageMetadata
     shard_size: str = "512MB"
-    split_filter: Optional[str] = None
-    batch_size: int = 1000
+    # split_filter: Optional[str] = None
+    # batch_size: int = 1000
     data_uri: Optional[str] = None
 
     @field_validator("image_dir", mode="before")
@@ -207,3 +207,11 @@ class ImageDataset(BaseModel):
             setattr(data_holder, split_name, split)
 
         return data_holder
+
+    def load_batch(self, batch_size: Optional[None] = None, split: Optional[str] = None):
+        """Load batch of image records"""
+        pass
+
+    def download(self, split: Optional[str] = None):
+        """Download images from storage"""
+        pass

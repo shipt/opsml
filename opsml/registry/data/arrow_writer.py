@@ -14,6 +14,13 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.image_dataset import ImageDataset, ImageRecord
 from opsml.registry.data.types import yield_chunks
 
+# try to import pillow for ImageDataset dependency
+try:
+    from PIL import Image
+except ImportError:
+    pass
+
+
 logger = ArtifactLogger.get_logger()
 
 
@@ -174,11 +181,15 @@ class ImageDatasetWriter(PyarrowDatasetWriter):
         """
 
         image_path = str(Path(f"{record.path}/{record.filename}"))
-        with pa.input_stream(image_path) as stream:
+
+        with Image.open(image_path) as img:
             stream_record = {
-                "bytes": stream.read(),
                 "split_label": record.split,
                 "path": str(Path(record.split or "") / record.filename),
+                "height": img.height,
+                "width": img.width,
+                "bytes": img.tobytes(),
+                "mode": img.mode,
             }
 
         return stream_record
