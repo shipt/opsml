@@ -182,6 +182,7 @@ class DataCard(ArtifactCard):
     def load_data(self) -> None:
         """Loads DataCard data from storage"""
 
+        # download data
         download_object(
             card=self,
             artifact_type=self.metadata.data_type,
@@ -190,6 +191,24 @@ class DataCard(ArtifactCard):
 
         if isinstance(self.data, ImageDataset):
             self.data.convert_metadata()
+
+    def load_profile(self) -> None:
+        """Loads DataCard data profile from storage"""
+
+        if self.data_profile is not None:
+            logger.info("Data profile already exists")
+            return
+
+        if self.metadata.uris.profile_uri is None:
+            logger.info("DataCard is not associated with a data profile")
+            return
+
+        # download data profile
+        download_object(
+            card=self,
+            artifact_type=AllowedDataType.PROFILE,
+            storage_client=settings.storage_client,
+        )
 
     def create_registry_record(self) -> RegistryRecord:
         """
@@ -285,6 +304,28 @@ class Downloader:
     @staticmethod
     def validate(artifact_type: str) -> bool:
         raise NotImplementedError
+
+
+class DataProfileDownloader(Downloader):
+    @property
+    def card(self) -> DataCard:
+        return cast(DataCard, self._card)
+
+    def download(self) -> None:
+        """Downloads a data profile from storage"""
+        data_profile = load_record_artifact_from_storage(
+            artifact_type=AllowedDataType.DICT,
+            storage_client=self.storage_client,
+            storage_spec=ArtifactStorageSpecs(
+                save_path=self.card.metadata.uris.profile_uri,
+            ),
+        )
+
+        setattr(self.card, "data_profile", data_profile)
+
+    @staticmethod
+    def validate(artifact_type: str) -> bool:
+        return AllowedDataType.PROFILE in artifact_type
 
 
 class DataDownloader(Downloader):
