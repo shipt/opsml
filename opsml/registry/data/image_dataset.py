@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.splitter import DataHolder
+from opsml.registry.utils.settings import settings
 
 logger = ArtifactLogger.get_logger()
 
