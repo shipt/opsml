@@ -62,6 +62,10 @@ class PyarrowDatasetWriter:
         self.shard_size = self._set_shard_size(info.data.shard_size)
         self.parquet_paths: List[str] = []
 
+    @property
+    def schema(self) -> pa.Schema:
+        raise NotImplementedError
+
     def _set_shard_size(self, shard_size: str) -> int:
         """
         Sets the shard size for the dataset. Defaults to 512MB if invalid shard size is provided
@@ -94,7 +98,7 @@ class PyarrowDatasetWriter:
 
     def _write_buffer(self, records: List[Dict[str, Any]], split_name: str) -> str:
         try:
-            temp_table = pa.Table.from_pylist(records)
+            temp_table = pa.Table.from_pylist(records, schema=self.schema)
             write_path = self.info.write_path / split_name / f"shard-{uuid.uuid4().hex}.parquet"
 
             pq.write_table(
@@ -173,6 +177,29 @@ class PyarrowDatasetWriter:
 
 # this can be extended to language datasets in the future
 class ImageDatasetWriter(PyarrowDatasetWriter):
+    @property
+    def schema(self) -> pa.Schema:
+        """Returns schema for ImageDataset records"""
+
+        return pa.schema(
+            [
+                pa.field("split_label", pa.string()),
+                pa.field("path", pa.string()),
+                pa.field("height", pa.int32()),
+                pa.field("width", pa.int32()),
+                pa.field("bytes", pa.binary()),
+                pa.field("mode", pa.string()),
+            ],
+            metadata={
+                "splt_label": "label assigned to image",
+                "path": "path to image",
+                "mode": "image mode",
+                "height": "image height",
+                "width": "image width",
+                "bytes": "image bytes",
+            },
+        )
+
     def _create_record(self, record: ImageRecord) -> Dict[str, Any]:
         """Create record for pyarrow table
 
