@@ -16,6 +16,7 @@ from opsml.profile.profile_data import DataProfiler
 from opsml.registry.cards.data import DataCard
 from opsml.registry.sql.registry import CardRegistry
 from opsml.app.routes.utils import verify_path
+from opsml.registry.data.arrow_reader import DatasetReadInfo, PyarrowDatasetReader
 
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -231,12 +232,18 @@ def download_file(
     verify_path(path=read_path)
 
     try:
-        storage_client = request.app.state.storage_client
+        info = DatasetReadInfo(
+            write_dir="/tmp",
+            path=read_path,
+            batch_size=batch_size,
+            column_filter=column_filter,
+            storage_filesystem=request.app.state.storage_client.filesystem,
+        )
+
+        arrow_reader = PyarrowDatasetReader(info=info)
+
         return StreamingResponse(
-            storage_client.iterfile(
-                file_path=read_path,
-                chunk_size=CHUNK_SIZE,
-            ),
+            arrow_reader.steam_batches(),
             media_type="application/octet-stream",
         )
 

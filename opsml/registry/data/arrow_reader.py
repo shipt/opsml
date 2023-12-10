@@ -55,7 +55,7 @@ class PyarrowDatasetReader:
     def write_batch_to_file(self, arrow_batch: List[Dict[str, Any]]) -> None:
         raise NotImplementedError
 
-    def steam_batches(self, batch_size: int = 1000) -> List[Dict[str, Any]]:
+    def steam_batches(self) -> List[Dict[str, Any]]:
         """Streams batches from dataset"""
         parquet_paths = self.get_filtered_paths()
 
@@ -65,7 +65,7 @@ class PyarrowDatasetReader:
             filesystem=self.info.storage_filesystem,
         )
 
-        for record_batch in data.to_batches(batch_size=batch_size):
+        for record_batch in data.to_batches(batch_size=self.info.batch_size):
             yield record_batch.to_pylist()
 
     def load_dataset(self) -> None:
