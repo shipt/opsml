@@ -211,7 +211,10 @@ class ImageDataset(BaseModel):
 
     def load_batch(self, batch_size: Optional[None] = None, split: Optional[str] = None):
         """Load batch of image records"""
-        pass
+
+        with settings.storage_client.stream_records(self.data_uri, batch_size=batch_size) as batch:
+            for record in batch:
+                yield record
 
     def download(self, split: Optional[str] = None):
         """Download images from storage"""

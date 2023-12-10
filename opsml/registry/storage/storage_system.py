@@ -159,6 +159,9 @@ class StorageClient:
     def delete(self, read_path: str) -> None:
         raise ValueError("Storage class does not implement a delete method")
 
+    def stream_records(self, uri: str, batch_size: int) -> Any:
+        pass
+
     @staticmethod
     def validate(storage_backend: str) -> bool:
         raise NotImplementedError
@@ -397,6 +400,8 @@ class ApiStorageClient(LocalStorageClient):
         )
 
         self.api_client = storage_settings.api_client
+
+    # def stream_records(self, uri: str, batch_size: int) -> Any:
 
     def list_files(self, storage_uri: str) -> FilePath:
         response = self.api_client.post_request(

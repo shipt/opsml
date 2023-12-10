@@ -15,6 +15,7 @@ from opsml.app.routes.utils import error_to_500
 from opsml.profile.profile_data import DataProfiler
 from opsml.registry.cards.data import DataCard
 from opsml.registry.sql.registry import CardRegistry
+from opsml.app.routes.utils import verify_path
 
 # Constants
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -192,6 +193,50 @@ def compare_data_profile(
 
         return StreamingResponse(
             iterfile(file_path=file_path),
+            media_type="application/octet-stream",
+        )
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"There was an error downloading the file. {error}",
+        ) from error
+
+
+@router.get("/data/stream", name="stream_data")
+def download_file(
+    request: Request,
+    read_path: str,
+    batch_size: int,
+    column_filter: Optional[str] = None,
+) -> StreamingResponse:
+    """Streams data from storage. Used by Image and Text datasets for streaming batches
+
+    Args:
+        request:
+            request object
+        read_path:
+            path to file
+        batch_size:
+            batch size
+        column_filter:
+            column filter
+
+    Returns:
+        Streaming file response
+    """
+
+    # prevent arbitrary file downloads
+    # Files can only be downloaded from registry paths
+    verify_path(path=read_path)
+
+    try:
+        storage_client = request.app.state.storage_client
+        return StreamingResponse(
+            storage_client.iterfile(
+                file_path=read_path,
+                chunk_size=CHUNK_SIZE,
+            ),
             media_type="application/octet-stream",
         )
 

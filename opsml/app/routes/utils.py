@@ -7,12 +7,12 @@ import io
 import os
 import re
 import traceback
+from uuid import UUID
 from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
-from fastapi import Request
-from fastapi.responses import StreamingResponse
+from fastapi import Request, HTTPException, Request, status, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from streaming_form_data.targets import FileTarget
 
@@ -23,6 +23,7 @@ from opsml.registry.cards.run import RunCard
 from opsml.registry.cards.types import RegistryType
 from opsml.registry.sql.registry import CardRegistries, CardRegistry
 from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
+from opsml.registry.sql.table_names import RegistryTableNames
 
 logger = ArtifactLogger.get_logger()
 # Constants
@@ -31,6 +32,42 @@ TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
 
 
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
+
+
+def verify_path(path: str) -> str:
+    """Verifies path only contains registry dir names. This is to prevent arbitrary file
+    uploads, downloads, lists and deletes.
+
+    Args:
+        path:
+            path to file
+
+    Returns:
+        path
+    """
+    # For v1 and v2 all artifacts belong to a registry (exception being mlflow artifacts)
+    if any(table_name in path for table_name in [*RegistryTableNames, "model_registry"]):
+        return path
+
+    # for v1 mlflow, all artifacts follow a path mlflow:/<run_id>/<artifact_path>/artifacts with artifact_path being a uid
+    has_artifacts, has_uuid = False, False
+    for split in path.split("/"):
+        if split == "artifacts":
+            has_artifacts = True
+            continue
+        try:
+            UUID(split, version=4)  # we use uuid4
+            has_uuid = True
+        except ValueError:
+            pass
+
+    if has_uuid and has_artifacts:
+        return path
+
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail="Path is not a valid registry path",
+    )
 
 
 def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:

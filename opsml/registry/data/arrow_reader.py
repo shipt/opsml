@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, Dict
 
 import pyarrow.dataset as ds
 from pyarrow.fs import LocalFileSystem
@@ -52,8 +52,21 @@ class PyarrowDatasetReader:
         else:
             path.mkdir(parents=True, exist_ok=True)
 
-    def write_batch_to_file(self, arrow_batch: List[Any]) -> None:
+    def write_batch_to_file(self, arrow_batch: List[Dict[str, Any]]) -> None:
         raise NotImplementedError
+
+    def steam_batches(self, batch_size: int = 1000) -> List[Dict[str, Any]]:
+        """Streams batches from dataset"""
+        parquet_paths = self.get_filtered_paths()
+
+        data = ds.dataset(
+            source=parquet_paths,
+            format="parquet",
+            filesystem=self.info.storage_filesystem,
+        )
+
+        for record_batch in data.to_batches(batch_size=batch_size):
+            yield record_batch.to_pylist()
 
     def load_dataset(self) -> None:
         """Loads a pyarrow dataset and writes to file"""
@@ -67,15 +80,12 @@ class PyarrowDatasetReader:
             filesystem=self.info.storage_filesystem,
         )
 
-        for record in data.to_batches(batch_size=self.info.batch_size):
-            record_bytes = record.column("bytes")
-            record_path = record.column("path")
-            batch = list(zip(record_bytes, record_path))
-            self.write_batch_to_file(batch)
+        for record_batch in data.to_batches(batch_size=self.info.batch_size):
+            self.write_batch_to_file(record_batch.to_pylist())
 
 
 class ImageDatasetReader(PyarrowDatasetReader):
-    def _write_data_to_images(self, files: List[Tuple[bytes, str]]) -> None:
+    def _write_data_to_images(self, files: List[Dict[str, Any]]) -> None:
         """Writes a list of pyarrow data to image files.
 
         Args:
@@ -84,18 +94,17 @@ class ImageDatasetReader(PyarrowDatasetReader):
         """
 
         for record in files:
-            image_bytes, image_path = record
-            write_path = f"{self.info.write_dir}/{image_path}"
+            write_path = f"{self.info.write_dir}/{record['path']}"
 
             try:
                 with open(write_path, "wb") as file_:
-                    file_.write(image_bytes.as_py())  # type: ignore
+                    file_.write(record["bytes"])  # type: ignore
 
             except Exception as exc:
                 logger.error("Exception occurred while writing to file: {}", exc)
                 raise exc
 
-    def write_batch_to_file(self, arrow_batch: List[Any]) -> None:
+    def write_batch_to_file(self, arrow_batch: List[Dict[str, Any]]) -> None:
         """Write image data to file
 
         Args:
