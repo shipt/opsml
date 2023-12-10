@@ -317,7 +317,7 @@ class ImageDataStorage(ArtifactStorage):
             storage_filesystem=self.storage_filesystem,
             write_dir=kwargs.get("image_dir"),
             column_filter=kwargs.get("split_filter"),
-            batch_size=kwargs.get("batch_size"),
+            batch_size=kwargs.get("batch_size", 1000),
             split_labels=kwargs.get("split_labels"),
         )
         ImageDatasetReader(info=reader_info).load_dataset()

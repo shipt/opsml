@@ -380,8 +380,6 @@ class ImageDownloader(Downloader):
 
         kwargs = {
             "image_dir": data.image_dir,
-            "split_filter": data.split_filter,
-            "batch_size": data.batch_size,
             "split_labels": data.split_labels,
         }
 

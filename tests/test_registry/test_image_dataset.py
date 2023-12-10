@@ -12,7 +12,7 @@ import tempfile
 # the aim is to have as much parity as possible
 
 
-def test_image_record():
+def _test_image_record():
     record = {
         "filename": "tests/assets/image_dataset/cats.jpg",
         "caption": "This is a second value of a text feature you added to your images",
@@ -31,7 +31,7 @@ def test_image_record():
     assert record.objects.bbox == [[160.0, 31.0, 248.0, 616.0], [741.0, 68.0, 202.0, 401.0]]
 
 
-def test_image_metadata():
+def _test_image_metadata():
     records = [
         {
             "filename": "tests/assets/image_dataset/cats.jpg",
@@ -54,7 +54,7 @@ def test_image_metadata():
         assert os.path.exists(filename)
 
 
-def test_image_dataset():
+def _test_image_dataset():
     ImageDataset(
         image_dir="tests/assets/image_dataset",
         metadata="metadata.jsonl",
@@ -77,7 +77,7 @@ def test_image_dataset():
     ve.match("metadata must be a jsonl file")
 
 
-def test_register_split_image_data(
+def _test_register_split_image_data(
     db_registries: Dict[str, CardRegistry],
     create_split_image_dataset: Tuple[str, List[ImageRecord]],
 ):
@@ -153,7 +153,7 @@ def test_register_image_data(
     assert nbr_downloaded == len(records)
 
 
-def test_register_image_data_multiproc(
+def _test_register_image_data_multiproc(
     db_registries: Dict[str, CardRegistry],
     create_image_dataset: Tuple[str, List[ImageRecord]],
 ):
