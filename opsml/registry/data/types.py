@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 import numpy as np
 import pyarrow as pa
+from pyarrow import dataset as ds
 from pydantic import BaseModel, ConfigDict
 
 
@@ -69,3 +70,14 @@ class ArrowTable(BaseModel):
     table: Union[pa.Table, np.ndarray]  # type: ignore
     storage_uri: Optional[str] = None
     feature_map: Optional[Dict[str, Any]] = None
+
+
+class PyArrowDataset:
+    @property
+    def to_batches(
+        self,
+        batch_size: int,
+        columns=Optional[List[str]],
+        filter=Optional[ds.Expression],
+    ) -> pa.RecordBatch:
+        pass

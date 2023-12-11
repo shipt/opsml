@@ -32,6 +32,16 @@ class PyarrowDatasetReader:
                 DatasetReadInfo object
         """
         self.info = info
+        self.filtered_paths = self.get_filtered_paths()
+
+    @property
+    def dataset(self) -> ds.Dataset:
+        """Returns a pyarrow dataset"""
+        return ds.dataset(
+            source=self.filtered_paths,
+            format="parquet",
+            filesystem=self.info.storage_filesystem,
+        )
 
     def get_filtered_paths(self) -> Union[str, List[str]]:
         """Filter paths by filter. Can be used to load only a subset of data"""
@@ -57,30 +67,19 @@ class PyarrowDatasetReader:
 
     def steam_batches(self) -> List[Dict[str, Any]]:
         """Streams batches from dataset"""
-        parquet_paths = self.get_filtered_paths()
 
-        data = ds.dataset(
-            source=parquet_paths,
-            format="parquet",
-            filesystem=self.info.storage_filesystem,
-        )
-
-        for record_batch in data.to_batches(batch_size=self.info.batch_size):
+        for record_batch in self.dataset.to_batches(
+            batch_size=self.info.batch_size,
+        ):
             yield record_batch.to_pylist()
 
     def load_dataset(self) -> None:
         """Loads a pyarrow dataset and writes to file"""
-        parquet_paths = self.get_filtered_paths()
-
         self.check_write_paths_exist()
 
-        data = ds.dataset(
-            source=parquet_paths,
-            format="parquet",
-            filesystem=self.info.storage_filesystem,
-        )
-
-        for record_batch in data.to_batches(batch_size=self.info.batch_size):
+        for record_batch in self.dataset.to_batches(
+            batch_size=self.info.batch_size,
+        ):
             self.write_batch_to_file(record_batch.to_pylist())
 
 
