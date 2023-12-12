@@ -6,10 +6,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-import numpy as np
-import pandas as pd
-import polars as pl
-import pyarrow as pa
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from opsml.helpers.logging import ArtifactLogger
@@ -20,12 +16,8 @@ from opsml.model.types import (
     ExtraOnnxArgs,
     OnnxModelDefinition,
 )
-from opsml.registry.data.image_dataset import ImageDataset
 
 logger = ArtifactLogger.get_logger()
-
-
-ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]  # type: ignore
 
 
 class RegistryType(str, Enum):
@@ -77,11 +69,6 @@ class Comment(BaseModel):
 
     def __eq__(self, other):  # type: ignore
         return self.__dict__ == other.__dict__
-
-
-@dataclass
-class StoragePath:
-    uri: str
 
 
 @dataclass

@@ -3,6 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, List, Optional, Union
 
@@ -12,6 +13,11 @@ from opsml.helpers.request_helpers import ApiClient
 from opsml.registry.data.types import AllowedDataType
 
 FilePath = Union[List[str], str]
+
+
+@dataclass
+class StoragePath:
+    uri: str
 
 
 class ArtifactStorageType(str, Enum):

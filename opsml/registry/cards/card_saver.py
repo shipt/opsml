@@ -22,13 +22,17 @@ from opsml.registry.cards.model import ModelCard
 from opsml.registry.cards.pipeline import PipelineCard
 from opsml.registry.cards.project import ProjectCard
 from opsml.registry.cards.run import RunCard
-from opsml.registry.cards.types import CardType, StoragePath
+from opsml.registry.cards.types import CardType
 from opsml.registry.data.formatter import DataFormatter
 from opsml.registry.data.image_dataset import ImageDataset
 from opsml.registry.data.types import AllowedDataType, ArrowTable
 from opsml.registry.storage.artifact_storage import save_artifact_to_storage
 from opsml.registry.storage.storage_system import StorageClientType
-from opsml.registry.storage.types import ArtifactStorageSpecs, ArtifactStorageType
+from opsml.registry.storage.types import (
+    ArtifactStorageSpecs,
+    ArtifactStorageType,
+    StoragePath,
+)
 
 
 class SaveName(str, Enum):

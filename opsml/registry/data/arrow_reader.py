@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union, Dict
+from typing import Any, Dict, List, Optional, Union
 
 import pyarrow.dataset as ds
 from pyarrow.fs import LocalFileSystem
@@ -64,14 +64,6 @@ class PyarrowDatasetReader:
 
     def write_batch_to_file(self, arrow_batch: List[Dict[str, Any]]) -> None:
         raise NotImplementedError
-
-    def steam_batches(self) -> List[Dict[str, Any]]:
-        """Streams batches from dataset"""
-
-        for record_batch in self.dataset.to_batches(
-            batch_size=self.info.batch_size,
-        ):
-            yield record_batch.to_pylist()
 
     def load_dataset(self) -> None:
         """Loads a pyarrow dataset and writes to file"""

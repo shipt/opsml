@@ -2,7 +2,6 @@ import os
 import warnings
 from pathlib import Path
 from typing import Any, Iterator, List, Tuple
-import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -33,10 +32,10 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import polars as pl
-from PIL import Image
 import pyarrow as pa
 import pytest
 from google.auth import load_credentials_from_file
+from PIL import Image
 from pydantic import BaseModel
 from sklearn import (
     cross_decomposition,
@@ -66,12 +65,12 @@ from xgboost import XGBRegressor
 from opsml.helpers.gcp_utils import GcpCreds, GCSStorageClient
 from opsml.helpers.request_helpers import ApiClient
 from opsml.model.types import OnnxModelDefinition
-from opsml.registry.data.image_dataset import ImageRecord
 from opsml.projects import OpsmlProject, ProjectInfo
 
 # opsml
 from opsml.registry import CardRegistries, DataSplit, ModelCard
 from opsml.registry.cards.types import ModelCardUris
+from opsml.registry.data.image_dataset import ImageRecord
 from opsml.registry.sql.connectors.connector import LocalSQLConnection
 from opsml.registry.sql.db_initializer import DBInitializer
 from opsml.registry.sql.sql_schema import Base, BaseMixin, RegistryTableNames

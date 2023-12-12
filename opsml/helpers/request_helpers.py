@@ -26,7 +26,6 @@ class ApiRoutes:
     DELETE_CARD = "cards/delete"
     DATA_PROFILE = "data/profile"
     COMPARE_DATA = "data/compare"
-    STREAM_ARROW = "data/stream"
     UPLOAD = "upload"
     REGISTER_MODEL = "models/register"
     MODEL_METADATA = "models/metadata"
@@ -134,18 +133,6 @@ class ApiClient:
         )
 
     @retry(reraise=True, stop=stop_after_attempt(3))
-    def stream_get(
-        self,
-        route: str,
-    ):
-        with self.client.stream(
-            method="GET",
-            url=f"{self._base_url}/{route}",
-        ) as response:
-            for chunk in response.iter_raw():
-                
-
-   # @retry(reraise=True, stop=stop_after_attempt(3))
     def stream_download_file_request(
         self,
         route: str,

@@ -13,11 +13,13 @@ from numpy.typing import NDArray
 from opsml.helpers.logging import ArtifactLogger
 from opsml.model.model_types import ModelType
 from opsml.model.types import TrainedModelType, ValidModelInput
-from opsml.registry.cards.types import DataCardMetadata, ModelCardMetadata, ValidData
+from opsml.registry.cards.types import DataCardMetadata, ModelCardMetadata
 from opsml.registry.data.image_dataset import ImageDataset
 from opsml.registry.data.types import AllowedDataType
 
 logger = ArtifactLogger.get_logger()
+
+ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]
 
 
 def check_data_type(data: ValidData) -> str:

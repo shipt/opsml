@@ -17,7 +17,6 @@ from numpy.typing import NDArray
 
 from opsml.helpers.utils import all_subclasses
 from opsml.model.types import ModelProto
-from opsml.registry.cards.types import StoragePath
 from opsml.registry.data.arrow_reader import DatasetReadInfo, ImageDatasetReader
 from opsml.registry.data.arrow_writer import DatasetWriteInfo, ImageDatasetWriter
 from opsml.registry.data.image_dataset import ImageDataset
@@ -32,6 +31,7 @@ from opsml.registry.storage.types import (
     ArtifactStorageSpecs,
     ArtifactStorageType,
     FilePath,
+    StoragePath,
 )
 
 

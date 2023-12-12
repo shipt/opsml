@@ -23,9 +23,9 @@ from opsml.app.routes.utils import (
     ExternalFileTarget,
     MaxBodySizeException,
     MaxBodySizeValidator,
+    verify_path,
 )
 from opsml.helpers.logging import ArtifactLogger
-from opsml.app.routes.utils import verify_path
 
 logger = ArtifactLogger.get_logger()
 CHUNK_SIZE = 31457280

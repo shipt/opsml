@@ -5,8 +5,10 @@
 import os
 from typing import Any, Dict, List, Optional, Union, cast
 
+import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 from pydantic import field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
@@ -14,7 +16,7 @@ from opsml.helpers.utils import FindPath
 from opsml.profile.profile_data import DataProfiler, ProfileReport
 from opsml.registry.cards.audit_deco import auditable
 from opsml.registry.cards.base import ArtifactCard
-from opsml.registry.cards.types import CardType, DataCardMetadata, ValidData
+from opsml.registry.cards.types import CardType, DataCardMetadata
 from opsml.registry.cards.validator import DataCardValidator
 from opsml.registry.data.formatter import check_data_schema
 from opsml.registry.data.image_dataset import ImageDataset
@@ -27,6 +29,8 @@ from opsml.registry.storage.types import ArtifactStorageSpecs
 from opsml.registry.utils.settings import settings
 
 logger = ArtifactLogger.get_logger()
+
+ValidData = Union[np.ndarray, pd.DataFrame, pl.DataFrame, pa.Table, ImageDataset]
 
 
 @auditable
@@ -94,6 +98,12 @@ class DataCard(ArtifactCard):
             return card_args
 
         card_args["metadata"] = validator.get_metadata()
+
+        # check data splits for image dataset
+        if isinstance(data, ImageDataset) and card_args.get("data_splits") is None:
+            if bool(data.split_labels):
+                card_args["data_splits"] = [DataSplit(label=label) for label in data.split_labels]
+
         return card_args
 
     @field_validator("data_profile", mode="before")
@@ -189,9 +199,6 @@ class DataCard(ArtifactCard):
             storage_client=settings.storage_client,
         )
 
-        if isinstance(self.data, ImageDataset):
-            self.data.convert_metadata()
-
     def load_profile(self) -> None:
         """Loads DataCard data profile from storage"""
 
@@ -256,7 +263,7 @@ class DataCard(ArtifactCard):
             self.sql_logic[name] = query
 
         elif filename is not None:
-            sql_path = FindPath.find_filepath(name=filename)
+            sql_path = str(FindPath.find_filepath(name=filename))
             with open(sql_path, "r", encoding="utf-8") as file_:
                 query = file_.read()
             self.sql_logic[name] = query
@@ -373,14 +380,15 @@ class ImageDownloader(Downloader):
 
     def download(self) -> None:
         data = cast(ImageDataset, self.card.data)
-
         if os.path.exists(data.image_dir):
             logger.info("Image data already exists")
             return
 
         kwargs = {
             "image_dir": data.image_dir,
+            "batch_size": data.batch_size,
             "split_labels": data.split_labels,
+            "split_filter": data.split_filter,
         }
 
         load_record_artifact_from_storage(

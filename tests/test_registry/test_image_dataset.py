@@ -1,14 +1,8 @@
-from typing import Dict, Tuple, List
 import os
 import sys
-from pathlib import Path
-from opsml.registry.cards import DataCard
-from opsml.registry.sql.registry import CardRegistry
-from opsml.registry.image import ImageDataset, ImageRecord, ImageMetadata
-from pydantic_core._pydantic_core import ValidationError
-import pytest
 import tempfile
-from typing import Dict
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 import pytest
 from pydantic_core._pydantic_core import ValidationError
@@ -21,7 +15,7 @@ from opsml.registry.sql.registry import CardRegistry
 # the aim is to have as much parity as possible
 
 
-def _test_image_record():
+def test_image_record():
     record = {
         "filename": "tests/assets/image_dataset/cats.jpg",
         "caption": "This is a second value of a text feature you added to your images",
@@ -40,7 +34,7 @@ def _test_image_record():
     assert record.objects.bbox == [[160.0, 31.0, 248.0, 616.0], [741.0, 68.0, 202.0, 401.0]]
 
 
-def _test_image_metadata():
+def test_image_metadata():
     records = [
         {
             "filename": "tests/assets/image_dataset/cats.jpg",
@@ -63,7 +57,7 @@ def _test_image_metadata():
         assert os.path.exists(filename)
 
 
-def _test_image_dataset():
+def test_image_dataset():
     ImageDataset(
         image_dir="tests/assets/image_dataset",
         metadata="metadata.jsonl",
@@ -87,7 +81,7 @@ def _test_image_dataset():
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test")
-def _test_register_split_image_data(
+def test_register_split_image_data(
     db_registries: Dict[str, CardRegistry],
     create_split_image_dataset: Tuple[str, List[ImageRecord]],
 ):
@@ -163,7 +157,7 @@ def test_register_image_data(
     assert nbr_downloaded == len(records)
 
 
-def _test_register_image_data_multiproc(
+def test_register_image_data_multiproc(
     db_registries: Dict[str, CardRegistry],
     create_image_dataset: Tuple[str, List[ImageRecord]],
 ):

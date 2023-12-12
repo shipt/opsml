@@ -12,7 +12,6 @@ from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.data.splitter import DataHolder
-from opsml.registry.utils.settings import settings
 
 logger = ArtifactLogger.get_logger()
 
@@ -128,13 +127,13 @@ class ImageDataset(BaseModel):
             Optional label used to filter data when loading. Must match current dataset split labels
         batch_size:
             batch size to use when loading data
-        data_uri:
-            Optional data uri to use when loading data. Injected after saving data via datacard
     """
 
     image_dir: str
     metadata: ImageMetadata
     shard_size: str = "512MB"
+    batch_size: int = 1000
+    split_filter: Optional[str] = None
     data_uri: Optional[str] = None
 
     @field_validator("image_dir", mode="before")
@@ -206,14 +205,3 @@ class ImageDataset(BaseModel):
             setattr(data_holder, split_name, split)
 
         return data_holder
-
-    def load_batch(self, batch_size: Optional[None] = None, split: Optional[str] = None):
-        """Load batch of image records"""
-
-        with settings.storage_client.stream_records(self.data_uri, batch_size=batch_size) as batch:
-            for record in batch:
-                yield record
-
-    def download(self, split: Optional[str] = None):
-        """Download images from storage"""
-        pass
