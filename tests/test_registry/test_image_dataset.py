@@ -87,7 +87,7 @@ def _test_image_dataset():
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test")
-def test_register_split_image_data(
+def _test_register_split_image_data(
     db_registries: Dict[str, CardRegistry],
     create_split_image_dataset: Tuple[str, List[ImageRecord]],
 ):

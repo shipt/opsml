@@ -159,7 +159,12 @@ class StorageClient:
     def delete(self, read_path: str) -> None:
         raise ValueError("Storage class does not implement a delete method")
 
-    def stream_records(self, uri: str, batch_size: int) -> Any:
+    def stream_arrow(
+        self,
+        uri: str,
+        batch_size: int,
+        column_filer: Optional[str] = None,
+    ) -> Any:
         pass
 
     @staticmethod
@@ -549,6 +554,22 @@ class ApiStorageClient(LocalStorageClient):
 
         if response.get("deleted") is False:
             raise ValueError("Failed to delete file")
+
+    def stream_arrow(
+        self,
+        uri: str,
+        batch_size: int,
+        column_filter: Optional[str] = None,
+    ) -> Any:
+        response = self.api_client.get_request(
+            route=ApiRoutes.STREAM_ARROW,
+            json={
+                "read_path": uri,
+                "batch_size": batch_size,
+                "column_filter": column_filter,
+            },
+        )
+        return response.get("records")
 
     @staticmethod
     def validate(storage_backend: str) -> bool:

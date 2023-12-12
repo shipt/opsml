@@ -135,8 +135,6 @@ class ImageDataset(BaseModel):
     image_dir: str
     metadata: ImageMetadata
     shard_size: str = "512MB"
-    # split_filter: Optional[str] = None
-    # batch_size: int = 1000
     data_uri: Optional[str] = None
 
     @field_validator("image_dir", mode="before")

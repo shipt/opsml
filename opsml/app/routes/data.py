@@ -205,7 +205,7 @@ def compare_data_profile(
 
 
 @router.get("/data/stream", name="stream_data")
-def download_file(
+def stream_data(
     request: Request,
     read_path: str,
     batch_size: int,
