@@ -1,5 +1,6 @@
 from typing import Dict, Tuple, List
 import os
+import sys
 from pathlib import Path
 from opsml.registry.cards import DataCard
 from opsml.registry.sql.registry import CardRegistry
@@ -7,6 +8,14 @@ from opsml.registry.image import ImageDataset, ImageRecord, ImageMetadata
 from pydantic_core._pydantic_core import ValidationError
 import pytest
 import tempfile
+from typing import Dict
+
+import pytest
+from pydantic_core._pydantic_core import ValidationError
+
+from opsml.registry.cards import DataCard
+from opsml.registry.image import ImageDataset, ImageMetadata, ImageRecord
+from opsml.registry.sql.registry import CardRegistry
 
 # these examples are pulled from huggingface
 # the aim is to have as much parity as possible
@@ -77,7 +86,8 @@ def _test_image_dataset():
     ve.match("metadata must be a jsonl file")
 
 
-def _test_register_split_image_data(
+@pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test")
+def test_register_split_image_data(
     db_registries: Dict[str, CardRegistry],
     create_split_image_dataset: Tuple[str, List[ImageRecord]],
 ):
