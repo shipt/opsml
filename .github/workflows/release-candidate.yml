@@ -9,7 +9,6 @@ jobs:
   Unit-Lint-Release-Candidate:
       environment: pypi
       runs-on: ubuntu-latest
-      environment: pypi
       strategy:
         matrix:
           python-version: ["3.11",]
