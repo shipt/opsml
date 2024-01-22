@@ -1,13 +1,18 @@
-from opsml.model.model_info import FloatTypeConverter, get_model_data, ModelData
 import pytest
-from numpy.typing import NDArray
-import pandas as pd
+
+from opsml.data import NumpyData, PandasData
+from opsml.model.utils.data_helper import (
+    FloatTypeConverter,
+    ModelDataHelper,
+    get_model_data,
+)
+from opsml.types import AllowedDataType
 
 # most methods are tested as part of other unit tests
 
 
-def test_model_data_base(test_array: NDArray):
-    model_data = ModelData(input_data=test_array)
+def test_model_data_base(numpy_data: NumpyData):
+    model_data = ModelDataHelper(input_data=numpy_data.data, data_type=AllowedDataType.NUMPY.value)
 
     with pytest.raises(NotImplementedError):
         model_data.dtypes
@@ -22,9 +27,9 @@ def test_model_data_base(test_array: NDArray):
         model_data.feature_dict
 
 
-def test_dataframe(test_df: pd.DataFrame):
+def test_dataframe(pandas_data: PandasData):
     """Test ModelData for pandas dataframe"""
-    pd_data = get_model_data(input_data=test_df, data_type=type(test_df))
+    pd_data = get_model_data(input_data=pandas_data.data, data_type=AllowedDataType.PANDAS)
 
     assert isinstance(pd_data.shape, tuple)
     assert isinstance(pd_data.dtypes, list)
@@ -32,11 +37,11 @@ def test_dataframe(test_df: pd.DataFrame):
     assert isinstance(pd_data.feature_types, zip)
 
 
-def test_numpy(test_array: NDArray):
+def test_numpy(numpy_data: NumpyData):
     """Test ModelData for numpy array"""
     numpy_data = get_model_data(
-        input_data=test_array,
-        data_type=type(test_array),
+        input_data=numpy_data.data,
+        data_type=AllowedDataType.NUMPY,
     )
 
     assert isinstance(numpy_data.feature_dict, dict)
@@ -49,12 +54,12 @@ def test_numpy(test_array: NDArray):
         numpy_data.convert_dataframe_column(column_type="test", convert_column_type="test")
 
 
-def test_dictionary(test_array: NDArray):
+def test_dictionary(numpy_data: NumpyData):
     """Test ModelData for dictionary"""
-    data = {"test": test_array}
+    data = {"test": numpy_data.data}
     dict_data = get_model_data(
         input_data=data,
-        data_type=type(data),
+        data_type=AllowedDataType.DICT,
     )
 
     assert isinstance(dict_data.feature_dict, dict)

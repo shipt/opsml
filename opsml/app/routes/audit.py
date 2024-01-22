@@ -1,12 +1,14 @@
 # pylint: disable=protected-access
+# mypy: disable-error-code="return-value"
+
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import codecs
 import csv
 import datetime
-import os
-from typing import Any, BinaryIO, Dict, List, Optional
+from pathlib import Path
+from typing import Any, BinaryIO, Dict, List, Optional, cast
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -21,43 +23,44 @@ from opsml.app.routes.route_helpers import AuditRouteHelper
 from opsml.app.routes.utils import (
     AuditFormParser,
     error_to_500,
-    get_names_teams_versions,
+    get_names_repositories_versions,
     write_records_to_csv,
 )
+from opsml.cards.audit import AuditCard, AuditSections
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry import AuditCard
-from opsml.registry.cards.audit import AuditSections
+from opsml.registry import CardRegistry
 
 logger = ArtifactLogger.get_logger()
 
 # Constants
-PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
+TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
+templates = Jinja2Templates(directory=TEMPLATE_PATH)
+
 AUDIT_FILE = "audit_file.csv"
 
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
-router = APIRouter()
 audit_route_helper = AuditRouteHelper()
+router = APIRouter()
 
 
 @router.get("/audit/", response_class=HTMLResponse)
 @error_to_500
 async def audit_list_homepage(
     request: Request,
-    team: Optional[str] = None,
+    repository: Optional[str] = None,
     model: Optional[str] = None,
     email: Optional[str] = None,
     version: Optional[str] = None,
     uid: Optional[str] = None,
-):
+) -> HTMLResponse:
     """UI home for listing models in model registry
 
     Args:
         request:
             The incoming HTTP request.
-        team:
-            Team name
+        repository:
+            repository name
         model:
             Model name
         email:
@@ -71,21 +74,21 @@ async def audit_list_homepage(
         with the list of models.
     """
 
-    if all(attr is None for attr in [uid, version, model, team]):
+    if all(attr is None for attr in [uid, version, model, repository]):
         return audit_route_helper.get_homepage(request=request)
 
-    if team is not None and all(attr is None for attr in [version, model]):
-        return audit_route_helper.get_team_page(request=request, team=team)
+    if repository is not None and all(attr is None for attr in [version, model]):
+        return audit_route_helper.get_repository_page(request=request, repository=repository)
 
-    if team is not None and model is not None and version is None:
-        return audit_route_helper.get_versions_page(request=request, team=team, name=model)
+    if repository is not None and model is not None and version is None:
+        return audit_route_helper.get_versions_page(request=request, repository=repository, name=model)
 
-    if model is not None and team is not None and all(attr is None for attr in [uid, version]):
+    if model is not None and repository is not None and all(attr is None for attr in [uid, version]):
         raise ValueError("Model name provided without either version or uid")
 
     return audit_route_helper.get_name_version_page(
         request=request,
-        team=str(team),
+        repository=str(repository),
         name=str(model),
         email=email,
         version=version,
@@ -98,26 +101,27 @@ async def audit_list_homepage(
 async def save_audit_form(
     request: Request,
     form: AuditFormRequest = Depends(AuditFormRequest),
-):
+) -> HTMLResponse:
     # collect all function arguments into a dictionary
 
     # base attr needed for html
-    model_names, teams, versions = get_names_teams_versions(
+    model_names, repositories, versions = get_names_repositories_versions(
         registry=request.app.state.registries.model,
         name=form.selected_model_name,
-        team=form.selected_model_team,
+        repository=form.selected_model_repository,
     )
 
     parser = AuditFormParser(
         audit_form_dict=form.model_dump(),
         registries=request.app.state.registries,
     )
+
     audit_card = parser.parse_form()
 
     audit_report = AuditReport(
         name=audit_card.name,
-        team=audit_card.team,
-        user_email=audit_card.user_email,
+        repository=audit_card.repository,
+        contact=audit_card.contact,
         version=audit_card.version,
         uid=audit_card.uid,
         status=audit_card.approved,
@@ -126,12 +130,12 @@ async def save_audit_form(
         comments=audit_card.comments,
     )
 
-    return templates.TemplateResponse(
+    return templates.TemplateResponse(  # type: ignore[return-value]
         "include/audit/audit.html",
         {
             "request": request,
-            "teams": teams,
-            "selected_team": form.selected_model_team,
+            "repositories": repositories,
+            "selected_repository": form.selected_model_repository,
             "models": model_names,
             "selected_model": form.selected_model_name,
             "selected_email": form.selected_model_email,
@@ -147,7 +151,7 @@ async def save_audit_form(
 async def save_audit_comment(
     request: Request,
     comment: CommentSaveRequest = Depends(CommentSaveRequest),
-):
+) -> HTMLResponse:
     """Save comment to AuditCard
 
     Args:
@@ -156,26 +160,27 @@ async def save_audit_comment(
         comment:
             `CommentSaveRequest`
     """
-
-    audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=comment.uid)
+    registry: CardRegistry = request.app.state.registries.audit
+    audit_card = cast(AuditCard, registry.load_card(uid=comment.uid))
 
     # most recent first
     audit_card.add_comment(
         name=comment.comment_name,
         comment=comment.comment_text,
     )
-    model_names, teams, versions = get_names_teams_versions(
+
+    model_names, repositories, versions = get_names_repositories_versions(
         registry=request.app.state.registries.model,
         name=comment.selected_model_name,
-        team=comment.selected_model_team,
+        repository=comment.selected_model_repository,
     )
 
-    request.app.state.registries.audit.update_card(card=audit_card)
+    registry.update_card(card=audit_card)
 
     audit_report = AuditReport(
         name=audit_card.name,
-        team=audit_card.team,
-        user_email=audit_card.user_email,
+        repository=audit_card.repository,
+        contact=audit_card.contact,
         version=audit_card.version,
         uid=audit_card.uid,
         status=audit_card.approved,
@@ -184,12 +189,12 @@ async def save_audit_comment(
         comments=audit_card.comments,
     )
 
-    return templates.TemplateResponse(
+    return templates.TemplateResponse(  # type: ignore[return-value]
         "include/audit/audit.html",
         {
             "request": request,
-            "teams": teams,
-            "selected_team": comment.selected_model_team,
+            "repositories": repositories,
+            "selected_repository": comment.selected_model_repository,
             "models": model_names,
             "selected_model": comment.selected_model_name,
             "selected_email": comment.selected_model_email,
@@ -236,7 +241,7 @@ async def upload_audit_data(
     request: Request,
     background_tasks: BackgroundTasks,
     form: AuditFormRequest = Depends(AuditFormRequest),
-):
+) -> HTMLResponse:
     """Uploads audit data form file. If an audit_uid is provided, only the audit section will be updated."""
     uploader = AuditFormUploader(
         form=form,
@@ -248,8 +253,8 @@ async def upload_audit_data(
         audit_card: AuditCard = request.app.state.registries.audit.load_card(uid=form.uid)
         audit_report = AuditReport(
             name=audit_card.name,
-            team=audit_card.team,
-            user_email=audit_card.user_email,
+            repository=audit_card.repository,
+            contact=audit_card.contact,
             version=audit_card.version,
             uid=audit_card.uid,
             status=audit_card.approved,
@@ -261,8 +266,8 @@ async def upload_audit_data(
     else:
         audit_report = AuditReport(
             name=form.name or form.selected_model_name,
-            team=form.team or form.selected_model_team,
-            user_email=form.email or form.selected_model_email,
+            repository=form.repository or form.selected_model_repository,
+            contact=form.email or form.selected_model_email,
             version=form.version,
             uid=form.uid,
             status=form.status,
@@ -272,18 +277,18 @@ async def upload_audit_data(
         )
 
     # base attr needed for html
-    model_names, teams, versions = get_names_teams_versions(
+    model_names, repositories, versions = get_names_repositories_versions(
         registry=request.app.state.registries.model,
         name=form.selected_model_name,
-        team=form.selected_model_team,
+        repository=form.selected_model_repository,
     )
 
-    return templates.TemplateResponse(
+    return templates.TemplateResponse(  # type: ignore[return-value]
         "include/audit/audit.html",
         {
             "request": request,
-            "teams": teams,
-            "selected_team": form.selected_model_team,
+            "repositories": repositories,
+            "selected_repository": form.selected_model_repository,
             "models": model_names,
             "selected_model": form.selected_model_name,
             "selected_email": form.selected_model_name,

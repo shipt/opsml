@@ -1,14 +1,14 @@
-PROJECT=poetry-template
-PYTHON_VERSION=3.10.10
+PROJECT=opsml
+PYTHON_VERSION=3.11.2
 SOURCE_OBJECTS=opsml
-
+FORMAT_OBJECTS=opsml tests examples
 
 format.black:
-	poetry run black ${SOURCE_OBJECTS}
+	poetry run black ${FORMAT_OBJECTS}
 format.isort:
-	poetry run isort ${SOURCE_OBJECTS}
+	poetry run isort ${FORMAT_OBJECTS}
 format.ruff:
-	poetry run ruff check --silent --fix --exit-zero ${SOURCE_OBJECTS}
+	poetry run ruff check --silent --fix --exit-zero ${FORMAT_OBJECTS}
 format: format.isort format.ruff format.black
 
 lints.format_check:
@@ -22,7 +22,7 @@ lints.mypy:
 lints.gitleaks:
 	poetry run gitleaks detect --log-level debug -v
 	poetry run gitleaks protect --log-level debug -v
-lints: lints.format_check lints.ruff lints.pylint lints.gitleaks lints.mypy
+lints: lints.format_check lints.ruff lints.pylint lints.mypy lints.gitleaks
 lints.ci: lints.format_check lints.ruff lints.pylint lints.mypy
 
 setup: setup.sysdeps setup.python setup.project
@@ -61,7 +61,16 @@ setup.sysdeps:
 
 test.unit:
 	poetry run pytest \
-		-m "not large" \
+		-m "not large and not compat" \
+		--ignore tests/integration \
+		--cov \
+		--cov-fail-under=0 \
+		--cov-report html:coverage \
+		--cov-report term \
+		--junitxml=./results.xml
+
+test.integration:
+	poetry run pytest tests/integration \
 		--cov \
 		--cov-fail-under=0 \
 		--cov-report html:coverage \
@@ -70,6 +79,7 @@ test.unit:
 
 test.unit.missing:
 	poetry run pytest \
+		-m "not large and not integration" \
 		--cov \
 		--cov-fail-under=0 \
 		--cov-report html:coverage \

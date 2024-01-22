@@ -1,11 +1,14 @@
 import pytest
-from opsml.registry.sql.semver import get_version_to_search, CardVersion, SemVerUtils, VersionType
-from pytest_lazyfixture import lazy_fixture
+
+from opsml.registry.semver import (
+    CardVersion,
+    SemVerUtils,
+    VersionType,
+    get_version_to_search,
+)
 
 
-def test_semver(db_registries):
-    model_registry = db_registries["model"]
-
+def test_semver() -> None:
     for i in range(0, 10):
         expected_version = f"1.{i+1}.0"
         new_version = SemVerUtils.increment_version(
@@ -48,7 +51,7 @@ def test_version_fail():
     version = "~1.*.*"
 
     with pytest.raises(ValueError) as ve:
-        parsed_version = get_version_to_search(version=version)
+        get_version_to_search(version=version)
     assert ve.match("SemVer")
 
 
@@ -59,9 +62,9 @@ def test_card_version():
     assert version.major == "1"
     assert version.minor == "0"
     assert version.patch == "0"
-    assert version.is_full_semver == True
+    assert version.is_full_semver is True
 
-    assert version.has_major_minor == True
+    assert version.has_major_minor is True
 
 
 def test_card_version_fail():
@@ -71,7 +74,7 @@ def test_card_version_fail():
     assert version.major == "1"
     assert version.minor == "0"
 
-    with pytest.raises(IndexError) as ve:
+    with pytest.raises(IndexError):
         assert version.patch == "0"
 
 

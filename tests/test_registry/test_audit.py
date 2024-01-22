@@ -1,17 +1,16 @@
-from typing import Dict, Tuple
-from opsml.registry import AuditCard, DataCard, ModelCard, CardRegistry, PipelineCard
-from opsml.registry.cards import audit_deco
+from typing import Tuple
 
-from sklearn import linear_model
-import pandas as pd
 import pytest
 
+from opsml.cards import AuditCard, DataCard, ModelCard
+from opsml.data import NumpyData
+from opsml.model import SklearnModel
+from opsml.registry import CardRegistries
 
-def test_audit_card(
-    db_registries: Dict[str, CardRegistry],
-):
-    audit_registry = db_registries["audit"]
-    card = AuditCard(name="audit_card", team="team", user_email="test")
+
+def test_audit_card(db_registries: CardRegistries):
+    audit_registry = db_registries.audit
+    card = AuditCard(name="audit_card", repository="repository", contact="test")
 
     assert card.business[1].response is None
     card.answer_question(section="business", question_nbr=1, response="response")
@@ -40,7 +39,7 @@ def test_audit_card(
 
 
 def test_audit_card_failure():
-    card = AuditCard(name="audit_card", team="team", user_email="test")
+    card = AuditCard(name="audit_card", repository="repository", contact="test")
 
     with pytest.raises(ValueError):
         card._get_section("not_a_section")
@@ -49,82 +48,28 @@ def test_audit_card_failure():
         card.answer_question(section="business", question_nbr=100, response="response")
 
 
-def test_audit_card_add_uids(
-    db_registries: Dict[str, CardRegistry], linear_regression: Tuple[linear_model.LinearRegression, pd.DataFrame]
-):
-    audit_registry = db_registries["audit"]
-    auditcard = AuditCard(name="audit_card", team="team", user_email="test")
-
+def test_audit_card_add_uids(db_registries: CardRegistries, linear_regression: Tuple[SklearnModel, NumpyData]):
     reg, data = linear_regression
+    auditcard = AuditCard(name="audit_card", repository="repository", contact="test")
 
-    datacard = DataCard(name="data_card", team="team", user_email="test", data=data)
-    data_registry = db_registries["data"]
-    data_registry.register_card(card=datacard)
+    datacard = DataCard(name="data_card", repository="repository", contact="test", interface=data)
+    db_registries.data.register_card(datacard)
 
     # test 1st path to add uid
-    datacard.add_to_auditcard(auditcard=auditcard)
+    auditcard.add_card(datacard)
 
     assert auditcard.metadata.datacards[0].name == datacard.name
 
     # register card
-    audit_registry.register_card(card=auditcard)
+    db_registries.audit.register_card(card=auditcard)
 
     # create modelcard
     modelcard = ModelCard(
         name="model_card",
-        team="team",
-        user_email="test",
-        trained_model=reg,
-        sample_input_data=data,
+        repository="repository",
+        contact="test",
+        interface=reg,
         datacard_uid=datacard.uid,
+        to_onnx=True,
     )
-    model_registry = db_registries["model"]
-    model_registry.register_card(card=modelcard)
-
-    # test 2nd path to add uid
-    modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
-    auditcard = audit_registry.load_card(uid=auditcard.uid)
-    assert auditcard.metadata.modelcards[0].version == modelcard.version
-    assert modelcard.metadata.auditcard_uid == auditcard.uid
-
-    ### These should fail
-    with pytest.raises(ValueError):
-        modelcard = ModelCard(
-            name="model_card", team="team", user_email="test", trained_model=reg, sample_input_data=data
-        )
-        modelcard.add_to_auditcard(auditcard_uid=auditcard.uid)
-
-    # need to raise other errors
-    with pytest.raises(ValueError):
-        pipe = PipelineCard(name="pipe", team="team", user_email="test")
-        auditcard.add_card(pipe)
-
-    # need fail on unregistered modelcard
-    with pytest.raises(ValueError):
-        modelcard = ModelCard(
-            name="model_card",
-            team="team",
-            user_email="test",
-            trained_model=reg,
-            sample_input_data=data,
-        )
-        auditcard.add_card(modelcard)
-
-    # need fail on unregistered datacard
-    with pytest.raises(ValueError):
-        datacard = DataCard(name="data_card", team="team", user_email="test", data=data)
-        auditcard.add_card(datacard)
-
-
-def test_audit_deco():
-    # calling for coverage
-    audit_deco.AuditCard.card_type
-    audit_deco.AuditCard.uid
-
-    # test deco
-    @audit_deco.auditable
-    class Test:
-        def __init__(self):
-            pass
-
-    assert hasattr(Test, "add_to_auditcard")
+    db_registries.model.register_card(card=modelcard)

@@ -1,10 +1,12 @@
-[tool.poetry]
+[project]
 name = "opsml"
-version = "1.5.0rc1"
-description = "A production MLOps tooling framework for python"
-authors = ["Thorrester <48217609+thorrester@users.noreply.github.com>"]
+description = "Python MLOPs quality control tooling for your production ML workflows"
+authors = [
+    { name = 'Steven Forrester', email = 'steven.forrester@shipt.com' },
+    { name = 'Damon Allison', email = 'damon@shipt.com' },
+]
 readme = "README.md"
-
+license = 'MIT'
 classifiers = [
     "Environment :: Web Environment",
     "Development Status :: 5 - Production/Stable",
@@ -26,72 +28,111 @@ classifiers = [
     "Topic :: Software Development",
     "Typing :: Typed",
 ]
+requires-python = '>=3.9, <3.12'
 
 [project.urls]
-"Homepage" = "https://github.com/shipt/opsml"
+Homepage = "https://github.com/shipt/opsml"
+Source = "https://github.com/shipt/opsml"
+
+
+[tool.poetry]
+name = "opsml"
+version = "2.0.0"
+description = "A production MLOps tooling framework for python"
+authors = [
+    "Steven Forrester <steven.forrester@shipt.com>",
+    "Damon Allison <damon@shipt.com>",
+]
 
 [tool.poetry.dependencies]
 
 # required dependencies
 python = ">=3.9,<3.12"
-alembic = "^1.10.3"
-httpx ="^0.23.3"
-matplotlib= ">=3.7.0, <3.8.0"
-onnx = ">=1.14.0, <1.15.0"
-onnxmltools = "^1.11.1"
-onnxruntime = "^1.13.0"
+fsspec = "^2023.12.2"
+httpx = "^0.23.3"
+joblib = "^1.3.2"
+opsml-cli = "^0.4.0"
+pandas = "^2.1.3"
 polars = "^0.18.0"
 pyarrow = ">=8.0.0"
 pydantic = ">=2, <3"
 pydantic_settings = "^2"
+pyyaml = "^6.0.1"
 rich = "^13.3.5"
-scikit-learn = ">=1.0"
+rusty-logger = "^0.2.0"
 semver = "^2.13.0"
-skl2onnx = "1.14.1"
-sqlalchemy = {extras = ["mypy"], version = "^1.4.46"}
 tenacity = "^8.2.2"
-tf2onnx =">=1.13.0, <1.15.0"
-typer = "^0.9.0"
 zarr = ">2.12.0"
-ydata-profiling-thorrester = "0.0.0"
 
-# mlflow deps (remove this in the future if we create our own ui. mlflow has a good # of deps)
-mlflow = ">=2.3.1, <=2.4"
 
 # optional dependencies for sql
-psycopg2 = {version="^2.9.6", optional = true}
+psycopg2 = { version = "^2.9.6", optional = true }
+
+# optional dependencies for onnx
+onnx = { version = ">=1.14.0, <1.15.0", optional = true }
+onnxruntime = { version = "^1.13.0", optional = true }
+
+# optional dependencies for sklearn onnx
+skl2onnx = { version = "^1.14.1", optional = true }
+onnxmltools = { version = "^1.11.1", optional = true }
+
+# optional dependencies for tensorflow onnx
+tf2onnx = { version = ">=1.13.0, <1.15.0", optional = true }
 
 # optional dependencies for server
-fastapi = {version="^0.100.0", optional = true}
-gunicorn = {version="^20.1.0", optional = true}
-prometheus-fastapi-instrumentator = {version="^5.8.1", optional = true}
-rollbar = {version="^0.16.3", optional = true}
-uvicorn = {version="^0.20.0", optional = true}
-wsgi-basic-auth = {version="^1.1.0", optional = true}
-streaming-form-data = {version="^1.11.0", optional = true}
+alembic = { version = "^1.10.3", optional = true }
+fastapi = { version = "^0.100.0", optional = true }
+gunicorn = { version = "^20.1.0", optional = true }
+jinja2 = { version = "^3.1.2", optional = true }
+prometheus-fastapi-instrumentator = { version = "^5.8.1", optional = true }
+python-multipart = { version = "^0.0.6", optional = true }
+rollbar = { version = "^0.16.3", optional = true }
+uvicorn = { version = "^0.20.0", optional = true }
+wsgi-basic-auth = { version = "^1.1.0", optional = true }
+streaming-form-data = { version = "^1.11.0", optional = true }
+sqlalchemy = { extras = ["mypy"], version = "^2", optional = true }
+
 
 # optional dependencies for gcp
-gcsfs = {version="^2023.5.0", optional = true}
+gcsfs = { version = "^2023.5.0", optional = true }
 
 # optional dependencies for aws
-s3fs = {version="^2023.5.0", optional = true}
-boto3 = {version="^1.28", optional = true}
+s3fs = { version = "^2023.5.0", optional = true }
+boto3 = { version = "^1.28", optional = true }
 
 # optional dependencies for cloud-sql
-cloud-sql-python-connector = {version="^1.2.0", optional = true}
-pg8000 = {version="^1.29.4", optional = true}
-pymysql = {version="^1.0.2", optional = true}
-rusty-logger = "^0.2.0"
-python-multipart = "^0.0.6"
+cloud-sql-python-connector = { version = "^1.2.0", optional = true }
+pg8000 = { version = "^1.29.4", optional = true }
+pymysql = { version = "^1.0.2", optional = true }
+
+# optional dependencies for profiling (eventually replace with rust equivalent for performance and dep reduction)
+ydata-profiling = { version = "^4.6.1", optional = true }
+
 
 [tool.poetry.extras]
-server = ["streaming-form-data", "fastapi", "uvicorn", "rollbar", "gunicorn", "prometheus-fastapi-instrumentator", "wsgi-basic-auth"]
+server = [
+    "streaming-form-data",
+    "fastapi",
+    "uvicorn",
+    "rollbar",
+    "gunicorn",
+    "prometheus-fastapi-instrumentator",
+    "wsgi-basic-auth",
+    "python-multipart",
+    "jinja2",
+    "sqlalchemy",
+    "alembic",
+]
 gcp_mysql = ["cloud-sql-python-connector", "pymysql", "gcsfs"]
 gcp_postgres = ["cloud-sql-python-connector", "pg8000", "gcsfs"]
 s3 = ["s3fs", "boto3"]
 gcs = ["gcsfs"]
 postgres = ["psycopg2"]
 mysql = ["pymysql"]
+tf_onnx = ["onnx", "onnxruntime", "tf2onnx"]
+sklearn_onnx = ["onnx", "onnxruntime", "skl2onnx", "onnxmltools"]
+torch_onnx = ["onnx", "onnxruntime"]
+profiling = ["ydata-profiling"]
 
 [tool.poetry.group.dev]
 optional = true
@@ -100,27 +141,30 @@ optional = true
 pytest = "^7.1.2"
 pytest-lazy-fixture = "^0.6.3"
 pytest-cov = "^3.0.0"
-coverage = {extras = ["toml"], version = "^6.5.0"}
+coverage = { extras = ["toml"], version = "^6.5.0" }
 torch = "<=2.0.0"
 torchvision = "^0.15"
 #tabulate = "^0.9.0"
 lightgbm = "^3.3.3, <4.0.0"
 xgboost = "^1.7.1"
 transformers = "^4.27.3"
-tensorflow = {version="^2.11.0", platform = "linux"}
+tensorflow = { version = "^2.11.0", platform = "linux" }
 # Tensorflow < 2.13.0 has no arm64 build in the main pypi package, so this separate one must be used for apple silicon
-tensorflow-macos = {version="2.12.0", platform="darwin"}
+tensorflow-macos = { version = "2.12.0", platform = "darwin" }
+lightning = "^2.1.2"
+optimum = "^1.16.1"
+pytest-rerunfailures = "^13.0"
+catboost = "^1.2.2"
+accelerate = "^0.26.1"
 
 [tool.poetry.group.dev-lints]
 optional = true
 
 [tool.poetry.group.dev-lints.dependencies]
-ruff = "^0.0.242"
-sqlalchemy-stubs = "^0.4"
+ruff = "^0.1.0"
 types-pymysql = "^1.0.19.1"
 types-requests = "^2.28.11.7"
 black = "22.3.0"
-sqlalchemy2-stubs = "0.0.2a32"
 mypy = "^1"
 types-protobuf = "^4.21.0.3"
 pylint = "^2.17.5"
@@ -131,13 +175,11 @@ isort = "^5.12.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-material = "^9.1.7"
-mkdocstrings = {extras = ["python"], version = "^0.21.2"}
+mkdocstrings = { extras = ["python"], version = "^0.21.2" }
 
 
 [tool.poetry.scripts]
-opsml-uvicorn-server = 'opsml.app.main:opsml_uvicorn_server'
-opsml-gunicorn-server = 'opsml.app.main:opsml_gunicorn_server'
-opsml-cli = "opsml.cli.api_cli:app"
+opsml-uvicorn-server = 'opsml.cli.launch_server:cli'
 
 [tool.isort]
 profile = "black"
@@ -148,11 +190,11 @@ target-version = ['py310']
 include = '\.pyi?$'
 
 [tool.pylint.MASTER]
-ignore-paths = [ "opsml/.local_tests/*","opsml/registry/sql/migration/*"]
+ignore-paths = ["opsml/.local_tests/*", "opsml/registry/sql/migration/*"]
 load-plugins = ["pylint_pydantic", "pylint.extensions.docparams"]
 
 [tool.pylint.messages_control]
-max-line-length = 120
+max-line-length = 130
 disable = [
     "too-few-public-methods",
     "design",
@@ -163,18 +205,20 @@ disable = [
     "too-many-nested-blocks",
     "unused-argument",
     "fixme",
-    "import-outside-toplevel"
+    "import-outside-toplevel",
+    "no-name-in-module",
+    "ungrouped-imports",
+    "cyclic-import", 
+    "logging-too-many-args",
 ]
-extension-pkg-whitelist = [
-    "pydantic"
-]
+extension-pkg-whitelist = ["pydantic"]
 
 
 [tool.flake8]
 # This section is just a doc placeholder..see setup.cfg
 max-complexity = 10
 format = "pylint"
-statistics = "True"
+statistics = true
 max-line-length = 125
 # ignore non-PEP8 lints
 ignore = ["E203", "W503", "W0511"]
@@ -184,21 +228,33 @@ log_cli = true
 log_cli_level = "INFO"
 testpaths = ["tests"]
 addopts = "--ignore=tests/test_docs"
+markers = [
+    "large",
+    "compat",
+]
 
 
 [tool.mypy]
 # platform configuration
 python_version = "3.9"
 platform = "linux"
-mypy_path = "stubs"
 ignore_missing_imports = true
+strict = true
+disable_error_code = [
+    "attr-defined",
+    "assignment",
+]
+
 plugins = [
     "numpy.typing.mypy_plugin",
     "pydantic.mypy",
     "sqlalchemy.ext.mypy.plugin",
-    "sqlmypy",
 ]
-exclude = ["opsml/.local_tests/*", "opsml/registry/sql/query_helpers.py", "opsml/registry/sql/migration/*"]
+exclude = [
+    "opsml/.local_tests/*",
+    "opsml/registry/sql/query_helpers.py",
+    "opsml/registry/sql/migration/*",
+]
 
 
 [tool.coverage.paths]
@@ -214,7 +270,7 @@ fail_under = 80
 
 
 [tool.ruff]
-line-length = 120
+line-length = 130
 
 # Enable Pyflakes `E` and `F` codes by default.
 select = ["E", "F"]
@@ -252,7 +308,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py310"
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F841","F401","F811"]
+"__init__.py" = ["F841", "F401", "F811"]
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
@@ -261,4 +317,3 @@ max-complexity = 10
 [build-system]
 requires = ["poetry-core>=1.2.2"]
 build-backend = "poetry.core.masonry.api"
-

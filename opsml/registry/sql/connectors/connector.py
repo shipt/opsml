@@ -1,38 +1,22 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-import os
-from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, Type, cast
+from typing import Any, Dict, Optional, Type
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import all_subclasses
 from opsml.registry.sql.connectors.base import (
-    DEFAULT_OVERFLOW,
-    DEFAULT_POOL_SIZE,
     BaseSQLConnection,
     CloudSQLConnection,
+    CloudSqlPrefix,
+    PythonCloudSqlType,
+    SqlType,
 )
 
 logger = ArtifactLogger.get_logger()
 
-
-class SqlType(str, Enum):
-    CLOUDSQL_MYSQL = "cloudsql_mysql"
-    CLOUDSQL_POSTGRES = "cloudsql_postgresql"
-    LOCAL = "local"
-    SQLITE = "sqlite"
-
-
-class PythonCloudSqlType(str, Enum):
-    MYSQL = "pymysql"
-    POSTGRES = "pg8000"
-
-
-class CloudSqlPrefix(str, Enum):
-    MYSQL = "mysql+pymysql://"
-    POSTGRES = "postgresql+pg8000://"
+_ENGINE_CACHE: Dict[str, BaseSQLConnection] = {}
 
 
 class CloudSqlPostgresql(CloudSQLConnection):
@@ -71,10 +55,12 @@ class LocalSQLConnection(BaseSQLConnection):
     ):
         """
         Args:
-            new database named "opsml.db" will be created in the home user directory.
-            If the "opsml.db" already exists, a connection will be re-established (the
-            database will not be overwritten)
-            storage_backend (str): Which storage system to use. Defaults to local
+            tracking_uri:
+                The path to the sql URL. Should be in the form sqlite:///
+
+            credentials:
+                Optional credentials required by the local DB
+
         Returns:
             Instantiated class with required SQLite arguments
         """
@@ -87,23 +73,7 @@ class LocalSQLConnection(BaseSQLConnection):
         self.storage_backend: str = SqlType.LOCAL.value
 
     @cached_property
-    def default_db_kwargs(self) -> Dict[str, int]:
-        kwargs = {}
-        if SqlType.SQLITE.value not in self.tracking_uri:
-            kwargs = {
-                "pool_size": int(os.getenv("OPSML_POOL_SIZE", DEFAULT_POOL_SIZE)),
-                "max_overflow": int(os.getenv("OPSML_MAX_OVERFLOW", DEFAULT_OVERFLOW)),
-            }
-
-        logger.info(
-            "Default pool size: {}, overflow: {}",
-            kwargs.get("pool_size", DEFAULT_POOL_SIZE),
-            kwargs.get("max_overflow", DEFAULT_OVERFLOW),
-        )
-        return kwargs
-
-    @cached_property
-    def _sqlalchemy_prefix(self):
+    def _sqlalchemy_prefix(self) -> str:
         return self.tracking_uri
 
     @staticmethod
@@ -111,14 +81,31 @@ class LocalSQLConnection(BaseSQLConnection):
         return connector_type == SqlType.LOCAL
 
 
-class SQLConnector:
-    """Interface for finding correct subclass of BaseSQLConnection"""
+class DefaultConnector:
+    def __init__(
+        self,
+        tracking_uri: str,
+        credentials: Optional[Any] = None,
+    ):
+        self.tracking_uri = tracking_uri
+        self.credentials = credentials
 
-    @staticmethod
-    def get_connector(connector_type: str) -> Type[BaseSQLConnection]:
-        """Gets the appropriate SQL connector given the type specified"""
+    def _get_connector_type_str(self) -> str:
+        """Gets the sql connection type when running opsml locally (without api proxy)"""
 
-        connector = next(
+        connector_type = "local"
+        for db_type in ["postgresql", "mysql"]:
+            if db_type in self.tracking_uri:
+                connector_type = db_type
+
+        if "cloudsql" in self.tracking_uri:
+            connector_type = f"cloudsql_{connector_type}"
+
+        return connector_type
+
+    def _get_connector_type(self, connector_type: str) -> Type[BaseSQLConnection]:
+        """Gets the sql connection given a connector type"""
+        return next(
             (
                 connector
                 for connector in all_subclasses(BaseSQLConnection)
@@ -126,4 +113,16 @@ class SQLConnector:
             ),
             LocalSQLConnection,
         )
-        return cast(Type[BaseSQLConnection], connector)
+
+    def get_connector(self) -> BaseSQLConnection:
+        """Gets the sql connector to use when running opsml locally (without api proxy)"""
+
+        cached_conn = _ENGINE_CACHE.get(self.tracking_uri)
+        if cached_conn is not None:
+            return cached_conn
+
+        connector_type = self._get_connector_type(connector_type=self._get_connector_type_str())
+        connector = connector_type(self.tracking_uri, self.credentials)
+
+        _ENGINE_CACHE[self.tracking_uri] = connector
+        return connector

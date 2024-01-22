@@ -2,59 +2,81 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Tuple
+import textwrap
+from typing import Any, Dict, List, Optional, Sequence, Tuple, cast
 
+from opsml.cards import ArtifactCard, ModelCard
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import clean_string
-from opsml.registry.sql.base.query_engine import (  # type: ignore
-    QueryEngine,
-    log_card_change,
-)
-from opsml.registry.sql.base.registry_base import SQLRegistryBase
-from opsml.registry.sql.semver import (
+from opsml.helpers.utils import check_package_exists, clean_string
+from opsml.registry.semver import (
     CardVersion,
     SemVerRegistryValidator,
     SemVerSymbols,
     SemVerUtils,
     VersionType,
 )
-from opsml.registry.sql.sql_schema import RegistryTableNames
+from opsml.registry.sql.base.db_initializer import DBInitializer
+from opsml.registry.sql.base.query_engine import QueryEngine
+from opsml.registry.sql.base.registry_base import SQLRegistryBase
+from opsml.registry.sql.base.sql_schema import SQLTableGetter
+from opsml.registry.sql.base.utils import log_card_change
+from opsml.registry.sql.connectors.connector import DefaultConnector
+from opsml.settings.config import config
+from opsml.storage.client import StorageClient
+from opsml.types import RegistryTableNames, RegistryType
 
 logger = ArtifactLogger.get_logger()
 
 
 class ServerRegistry(SQLRegistryBase):
-    def __init__(self, registry_type: str):
-        super().__init__(registry_type)
-        self.engine = QueryEngine()
+    """A registry that retrieves data from a database."""
+
+    def __init__(self, registry_type: RegistryType, storage_client: StorageClient):
+        super().__init__(registry_type, storage_client)
+
+        connector = DefaultConnector(tracking_uri=config.opsml_tracking_uri).get_connector()
+        db_initializer = DBInitializer(
+            engine=connector.sql_engine,
+            registry_tables=[t.value for t in RegistryTableNames],
+        )
+        db_initializer.initialize()
+
+        self.engine = QueryEngine(db_initializer.engine)
+        self._table = SQLTableGetter.get_table(table_name=self.table_name)
 
     @property
-    def unique_teams(self) -> List[str]:
-        """Returns a list of unique teams"""
-        return self.engine.get_unique_teams(table=self._table)
+    def registry_type(self) -> RegistryType:
+        """Registry type"""
+        raise NotImplementedError
 
-    def get_unique_card_names(self, team: Optional[str] = None) -> List[str]:
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        raise NotImplementedError
+
+    @property
+    def unique_repositories(self) -> Sequence[str]:
+        """Returns a list of unique repositories"""
+        return self.engine.get_unique_repositories(table=self._table)
+
+    def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         """Returns a list of unique card names
         Args:
-            team:
-                Team to filter by
+            repository:
+                repository to filter by
         Returns:
             List of unique card names
         """
 
-        return self.engine.get_unique_card_names(
-            table=self._table,
-            team=team,
-        )
+        return self.engine.get_unique_card_names(table=self._table, repository=repository)
 
-    def _get_versions_from_db(self, name: str, team: str, version_to_search: Optional[str] = None) -> List[str]:
+    def _get_versions_from_db(self, name: str, repository: str, version_to_search: Optional[str] = None) -> List[str]:
         """Query versions from Card Database
 
         Args:
             name:
                 Card name
-            team:
-                Card team
+            repository:
+                Card repository
             version_to_search:
                 Version to search for
         Returns:
@@ -63,8 +85,8 @@ class ServerRegistry(SQLRegistryBase):
         results = self.engine.get_versions(table=self._table, name=name, version=version_to_search)
 
         if bool(results):
-            if results[0].team != team:
-                raise ValueError("""Model name already exists for a different team. Try a different name.""")
+            if results[0].repository != repository:
+                raise ValueError("""Model name already exists for a different repository. Try a different name.""")
 
             versions = [result.version for result in results]
             return SemVerUtils.sort_semvers(versions=versions)
@@ -73,7 +95,7 @@ class ServerRegistry(SQLRegistryBase):
     def set_version(
         self,
         name: str,
-        team: str,
+        repository: str,
         pre_tag: str,
         build_tag: str,
         version_type: VersionType,
@@ -85,8 +107,8 @@ class ServerRegistry(SQLRegistryBase):
         Args:
             name:
                 Card name
-            team:
-                Card team
+            repository:
+                Card repository
             pre_tag:
                 Pre-release tag
             build_tag:
@@ -110,7 +132,7 @@ class ServerRegistry(SQLRegistryBase):
 
         versions = self._get_versions_from_db(
             name=name,
-            team=team,
+            repository=repository,
             version_to_search=ver_validator.version_to_search,
         )
 
@@ -130,12 +152,13 @@ class ServerRegistry(SQLRegistryBase):
         self,
         uid: Optional[str] = None,
         name: Optional[str] = None,
-        team: Optional[str] = None,
+        repository: Optional[str] = None,
         version: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
         ignore_release_candidates: bool = False,
+        query_terms: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Retrieves records from registry
@@ -143,8 +166,8 @@ class ServerRegistry(SQLRegistryBase):
         Args:
             name:
                 Artifact record name
-            team:
-                Team data is assigned to
+            repository:
+                Repository card is assigned to
             version:
                 Optional version number of existing data. If not specified,
                 the most recent version will be used. Version can also include tilde (~), caret (^) and * characters.
@@ -158,6 +181,8 @@ class ServerRegistry(SQLRegistryBase):
                 Places a limit on result list. Results are sorted by SemVer
             ignore_release_candidates:
                 If True, will ignore release candidates when searching for versions
+            query_terms:
+                Dictionary of query terms to filter by
 
 
         Returns:
@@ -165,17 +190,18 @@ class ServerRegistry(SQLRegistryBase):
         """
 
         cleaned_name = clean_string(name)
-        cleaned_team = clean_string(team)
+        cleaned_repository = clean_string(repository)
 
         records = self.engine.get_records_from_table(
             table=self._table,
             name=cleaned_name,
-            team=cleaned_team,
+            repository=cleaned_repository,
             version=version,
             uid=uid,
             max_date=max_date,
             tags=tags,
             limit=limit,
+            query_terms=query_terms,
         )
 
         if cleaned_name is not None:
@@ -193,10 +219,10 @@ class ServerRegistry(SQLRegistryBase):
 
         return records
 
-    def check_uid(self, uid: str, registry_type: str) -> bool:
+    def check_uid(self, uid: str, registry_type: RegistryType) -> bool:
         result = self.engine.get_uid(
             uid=uid,
-            table_to_check=RegistryTableNames[registry_type.upper()].value,
+            table_to_check=RegistryTableNames[registry_type.value.upper()].value,
         )
         return bool(result)
 
@@ -206,6 +232,136 @@ class ServerRegistry(SQLRegistryBase):
         self.engine.delete_card_record(table=self._table, card=card)
         return card, "deleted"
 
+
+class ServerDataCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.DATA
+
     @staticmethod
     def validate(registry_name: str) -> bool:
-        raise NotImplementedError
+        return registry_name.lower() == RegistryType.DATA.value
+
+
+class ServerModelCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.MODEL
+
+    def _validate_datacard_uid(self, uid: str) -> None:
+        exists = self.check_uid(uid=uid, registry_type=RegistryType.DATA)
+        if not exists:
+            raise ValueError("ModelCard must be associated with a valid DataCard uid")
+
+    def _has_datacard_uid(self, uid: Optional[str]) -> bool:
+        return bool(uid)
+
+    def register_card(
+        self,
+        card: ArtifactCard,
+        version_type: VersionType = VersionType.MINOR,
+        pre_tag: str = "rc",
+        build_tag: str = "build",
+    ) -> None:
+        """
+        Adds new record to registry.
+
+        Args:
+            card:
+                Card to register
+            version_type:
+                Version type for increment. Options are "major", "minor" and
+                "patch". Defaults to "minor"
+            pre_tag:
+                pre-release tag
+            build_tag:
+                build tag
+        """
+
+        if card.uid is not None:
+            logger.info(
+                textwrap.dedent(
+                    f"""
+                Card {card.uid} already exists. Skipping registration. If you'd like to register
+                a new card, please instantiate a new Card object. If you'd like to update the
+                existing card, please use the update_card method.
+                """
+                )
+            )
+
+        else:
+            model_card = cast(ModelCard, card)
+
+            if model_card.to_onnx:
+                if not check_package_exists("onnx"):
+                    raise ModuleNotFoundError(
+                        """To convert a model to onnx, please install onnx via one of the extras
+                        (opsml[sklearn_onnx], opsml[tf_onnx], opsml[torch_onnx]) or set to_onnx to False.
+                        """
+                    )
+
+            if not self._has_datacard_uid(uid=model_card.datacard_uid):
+                raise ValueError("""ModelCard must be associated with a valid DataCard uid""")
+
+            if model_card.datacard_uid is not None:
+                self._validate_datacard_uid(uid=model_card.datacard_uid)
+
+            super().register_card(
+                card=card,
+                version_type=version_type,
+                pre_tag=pre_tag,
+                build_tag=build_tag,
+            )
+
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        return registry_name.lower() == RegistryType.MODEL.value
+
+
+class ServerRunCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.RUN
+
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        return registry_name.lower() == RegistryType.RUN.value
+
+
+class ServerPipelineCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.PIPELINE
+
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        return registry_name.lower() == RegistryType.PIPELINE.value
+
+    def delete_card(self, card: ArtifactCard) -> None:
+        raise ValueError("PipelineCardRegistry does not support delete_card")
+
+
+class ServerProjectCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.PROJECT
+
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        return registry_name.lower() == RegistryType.PROJECT.value
+
+    def delete_card(self, card: ArtifactCard) -> None:
+        raise ValueError("ProjectCardRegistry does not support delete_card")
+
+
+class ServerAuditCardRegistry(ServerRegistry):
+    @property
+    def registry_type(self) -> RegistryType:
+        return RegistryType.AUDIT
+
+    def validate_uid(self, uid: str, registry_type: RegistryType) -> bool:
+        return self.check_uid(uid=uid, registry_type=registry_type)
+
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        return registry_name.lower() == RegistryType.AUDIT.value

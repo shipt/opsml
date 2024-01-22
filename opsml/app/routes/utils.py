@@ -9,19 +9,21 @@ import re
 import traceback
 from functools import wraps
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from streaming_form_data.targets import FileTarget
 
-from opsml.app.routes.pydantic_models import ListTeamNameInfo
+from opsml.app.routes.pydantic_models import ListRepositoryNameInfo
+from opsml.cards.audit import AuditCard, AuditSections
+from opsml.cards.run import RunCard
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry import AuditCard, CardRegistries, CardRegistry, RunCard
-from opsml.registry.cards.audit import AuditSections
-from opsml.registry.cards.types import RegistryType
-from opsml.registry.storage.storage_system import LocalStorageClient, StorageClientType
+from opsml.registry.registry import CardRegistries, CardRegistry
+from opsml.settings.config import config
+from opsml.storage.client import LocalStorageClient, StorageClient
+from opsml.types import RegistryType
 
 logger = ArtifactLogger.get_logger()
 # Constants
@@ -32,41 +34,49 @@ TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
 
-def get_model_versions(registry: CardRegistry, model: str, team: str) -> List[str]:
-    """Returns a list of model versions for a given team and model
+def get_model_versions(registry: CardRegistry, model: str, repository: str) -> List[str]:
+    """Returns a list of model versions for a given repository and model
 
     Args:
         registry:
             The registry to query
         model:
             The model to query
-        team:
-            The team to query
+        repository:
+            The repository to query
     Returns:
         A list of model versions
     """
 
-    return [card["version"] for card in registry.list_cards(name=model, team=team, as_dataframe=False)]
+    return [
+        card["version"]
+        for card in registry.list_cards(
+            name=model,
+            repository=repository,
+        )
+    ]
 
 
-def get_names_teams_versions(registry: CardRegistry, team: str, name: str) -> Tuple[List[str], List[str], List[str]]:
-    """Helper functions to get the names, teams, and versions for a given registry
+def get_names_repositories_versions(
+    registry: CardRegistry, repository: str, name: str
+) -> Tuple[Sequence[str], Sequence[str], List[str]]:
+    """Helper functions to get the names, repositories, and versions for a given registry
 
     Args:
         registry:
             The registry to query
-        team:
-            The team to query
+        repository:
+            The repository to query
         name:
             The name to query
     Returns:
-        A tuple of names, teams, and versions
+        A tuple of names, repositories, and versions
     """
 
-    teams = registry._registry.unique_teams  # pylint: disable=protected-access
-    versions = get_model_versions(registry, name, team)
-    names = registry._registry.get_unique_card_names(team=team)  # pylint: disable=protected-access
-    return names, teams, versions
+    repositories = registry._registry.unique_repositories  # pylint: disable=protected-access
+    versions = get_model_versions(registry, name, repository)
+    names = registry._registry.get_unique_card_names(repository=repository)  # pylint: disable=protected-access
+    return names, repositories, versions
 
 
 def get_runcard_from_model(
@@ -98,21 +108,26 @@ def get_runcard_from_model(
     run_uid = modelcard.get("runcard_uid", None)
 
     if run_uid is not None:
-        return registries.run.load_card(uid=run_uid)
+        return cast(RunCard, registries.run.load_card(uid=run_uid))
 
     return None
 
 
-def error_to_500(func):
+def error_to_500(func: Callable[..., Any]) -> Any:
     """Function for wrapping errors in the opsml UI"""
 
     @wraps(func)
-    async def wrapper(request: Request, *args, **kwargs):
+    async def wrapper(request: Request, *args: Any, **kwargs: Any) -> Any:
         try:
             return await func(request, *args, **kwargs)
+
         except Exception as exc:  # pylint: disable=broad-exception-caught
             trace_back = traceback.format_exc()
             logger.error("exceptions: {} {}", exc, trace_back)
+
+            if config.opsml_testing:
+                raise ValueError(f"Exception: {exc}, {trace_back}") from exc
+
             return templates.TemplateResponse(
                 "include/500.html",
                 {
@@ -144,36 +159,6 @@ def get_registry_type_from_table(
     raise ValueError("Could not determine registry type")
 
 
-def get_real_path(current_path: str, proxy_root: str, storage_root: str) -> str:
-    new_path = current_path.replace(proxy_root, f"{storage_root}/")
-    return new_path
-
-
-def replace_proxy_root(
-    card: Dict[str, Any],
-    storage_root: str,
-    proxy_root: str,
-) -> Dict[str, Any]:
-    for name, value in card.items():
-        if "uri" in name:
-            if isinstance(value, str):
-                real_path = get_real_path(
-                    current_path=value,
-                    proxy_root=proxy_root,
-                    storage_root=storage_root,
-                )
-                card[name] = real_path
-
-        if isinstance(value, dict):
-            replace_proxy_root(
-                card=value,
-                storage_root=storage_root,
-                proxy_root=proxy_root,
-            )
-
-    return card
-
-
 class MaxBodySizeException(Exception):
     def __init__(self, body_len: int):
         self.body_len = body_len
@@ -184,53 +169,49 @@ class MaxBodySizeValidator:
         self.body_len = 0
         self.max_size = max_size
 
-    def __call__(self, chunk: bytes):
+    def __call__(self, chunk: bytes) -> None:
         self.body_len += len(chunk)
         if self.body_len > self.max_size:
             raise MaxBodySizeException(body_len=self.body_len)
 
 
-class ExternalFileTarget(FileTarget):
+class ExternalFileTarget(FileTarget):  # type: ignore[misc]
     def __init__(  # pylint: disable=keyword-arg-before-vararg
         self,
-        filename: str,
-        write_path: str,
-        storage_client: StorageClientType,
+        write_path: Path,
+        storage_client: StorageClient,
         allow_overwrite: bool = True,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ):
-        super().__init__(filename=filename, allow_overwrite=allow_overwrite, *args, **kwargs)
+        super().__init__(filename=write_path.name, allow_overwrite=allow_overwrite, *args, **kwargs)
 
         self.storage_client = storage_client
         self.write_path = write_path
-        self.filepath = f"{self.write_path}/{filename}"
-        self._create_base_path()
 
-    def _create_base_path(self):
         if isinstance(self.storage_client, LocalStorageClient):
-            Path(self.write_path).mkdir(parents=True, exist_ok=True)
+            self.write_path.parent.mkdir(parents=True, exist_ok=True)
 
-    def on_start(self):
-        self._fd = self.storage_client.open(self.filepath, self._mode)
+    def on_start(self) -> None:
+        self._fd = self.storage_client.open(self.write_path, self._mode)
 
 
-def list_team_name_info(registry: CardRegistry, team: Optional[str] = None) -> ListTeamNameInfo:
-    """Returns dictionary of items"""
+def list_repository_name_info(registry: CardRegistry, repository: Optional[str] = None) -> ListRepositoryNameInfo:
+    """Returns dictionary of repositories and info"""
 
-    all_teams = registry._registry.unique_teams  # pylint: disable=protected-access
+    all_repositories = registry._registry.unique_repositories  # pylint: disable=protected-access
 
-    if not bool(all_teams):
-        default_team = None
+    if not bool(all_repositories):
+        default_repository = None
     else:
-        default_team = all_teams[0]
+        default_repository = all_repositories[0]
 
-    team = team or default_team
-    names = registry._registry.get_unique_card_names(team=team)  # pylint: disable=protected-access
+    repository = repository or default_repository
+    names = registry._registry.get_unique_card_names(repository=repository)  # pylint: disable=protected-access
 
-    return ListTeamNameInfo(
-        teams=all_teams,
-        selected_team=team,
+    return ListRepositoryNameInfo(
+        repositories=all_repositories,
+        selected_repository=repository,
         names=names,
     )
 
@@ -277,8 +258,11 @@ class AuditFormParser:
         # register/update audit
         if audit_card.uid is not None:
             return self.registries.audit.update_card(card=audit_card)
+
         self.registries.audit.register_card(card=audit_card)
+
         self._add_auditcard_to_modelcard(auditcard_uid=audit_card.uid)
+
         return None
 
     def get_audit_card(self) -> AuditCard:
@@ -292,20 +276,20 @@ class AuditFormParser:
             records = self.registries.audit.list_cards(uid=self.audit_form_dict["uid"])
 
             if bool(records):
-                audit_card: AuditCard = self.registries.audit.load_card(uid=self.audit_form_dict["uid"])
+                audit_card = cast(AuditCard, self.registries.audit.load_card(uid=self.audit_form_dict["uid"]))
 
             else:
                 logger.info("Invalid uid specified, defaulting to new AuditCard")
                 audit_card = AuditCard(
                     name=self.audit_form_dict["name"],
-                    team=self.audit_form_dict["team"],
-                    user_email=self.audit_form_dict["email"],
+                    repository=self.audit_form_dict["repository"],
+                    contact=self.audit_form_dict["email"],
                 )
         else:
             audit_card = AuditCard(
                 name=self.audit_form_dict["name"],
-                team=self.audit_form_dict["team"],
-                user_email=self.audit_form_dict["email"],
+                repository=self.audit_form_dict["repository"],
+                contact=self.audit_form_dict["email"],
             )
 
         return audit_card

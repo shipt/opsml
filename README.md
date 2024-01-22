@@ -4,49 +4,47 @@
   <br>
 </h1>
 
-<h2 align="center">Tooling for machine learning workflows</h2>
+<h2 align="center">Adding Quality Control to Machine Learning</h2>
 
 <h1 align="center"><a href="https://thorrester.github.io/opsml-ghpages/">OpsML Documentation</h1>
 
 [![Tests](https://github.com/shipt/opsml/actions/workflows/lint-unit-tests.yml/badge.svg?branch=main)](https://github.com/shipt/opsml/actions/workflows/lint-unit-tests.yml)
+[![Examples](https://github.com/shipt/opsml/actions/workflows/examples.yml/badge.svg)](https://github.com/shipt/opsml/actions/workflows/examples.yml)
 ![Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Py-Versions](https://img.shields.io/pypi/pyversions/opsml.svg?color=%2334D058)](https://pypi.org/project/opsml)
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://docs.pydantic.dev/latest/contributing/#badges)
+[![gitleaks](https://img.shields.io/badge/protected%20by-gitleaks-purple)](https://github.com/zricethezav/gitleaks-action)
 
-
-<h4 align="left">Supported Model Types</h4
-
-[![Keras](https://img.shields.io/badge/Keras-FF0000?logo=keras&logoColor=white)]()
-[![Pytorch](https://img.shields.io/badge/PyTorch--EE4C2C.svg?style=flat&logo=pytorch)]()
-[![Sklearn](https://img.shields.io/badge/scikit_learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/stable/)
-[![Xgboost](https://img.shields.io/badge/Package-XGBoost-blueviolet)](https://xgboost.readthedocs.io/en/stable/)
-[![Lightgbm](https://img.shields.io/badge/Package-LightGBM-success)](https://lightgbm.readthedocs.io/en/v3.3.2/)
-
-<h4 align="left">Supported Storage Types</h4>
-
-[![GCS](https://img.shields.io/badge/google_cloud_storage-grey.svg?logo=google-cloud)](https://cloud.google.com/storage)
-[![S3](https://img.shields.io/badge/aws_s3-grey?logo=amazons3)](https://aws.amazon.com/)
-
-## Table of Contents
-- [Table of Contents](#table-of-contents)
-- [What is it?](#what-is-it)
-- [Features:](#features)
-- [Installation:](#installation)
-  - [Poetry](#poetry)
-  - [Pip](#pip)
-- [Usage](#usage)
-- [Advanced Installation Scenarios](#advanced-installation-scenarios)
-- [QuickStart](#quickstart)
-- [Contributing](#contributing)
 
 ## What is it?
-`OpsML` is a library which simplifies the machine learning project lifecycle.
+
+`OpsML` provides tooling that enables data science and engineering teams to better govern and manage their machine learning projects and artifacts.
+
 
 ## Features:
-  - **Simple Design**: Standardized design that can easily be incorporated into existing workflows.
+  - **Simple Design**: Standardized design that can easily be incorporated into existing projects.
 
-  - **Cards**: Track, version, and store a variety of ML artifacts via cards (data, models, runs, pipelines) and a SQL-based card registry system. Think "trading cards for machine learning".
+  - **Cards**: Track, version and store a variety of ML artifacts via cards (data, models, runs, projects) and a SQL-based card registry system. Think `trading cards for machine learning`.
 
-  - **Automation**: Automated processes including Onnx model conversion, api generation from Onnx model, data schema inference, code conversion and packaging for production.
+  - **Type Checking**: Strongly typed and type checking for data and model artifacts.
+
+  - **Support**: Robust support for a variety of ML and data libraries.
+
+  - **Automation**: Automated processes including onnx model conversion, metadata creation and production packaging.
+
+
+## Incorporate into Existing Workflows
+
+Add quality control to your ML projects with little effort! With `opsml`, data and models are added to interfaces and cards, which are then registered via card registries. 
+
+<h1 align="center">
+  <br>
+  <img src="https://github.com/shipt/opsml/blob/main/images/opsml-flow-chart.png?raw=true"  width="470" alt="opsml flow"/>
+  <br>
+</h1>
+
 
 ## Installation:
 
@@ -66,10 +64,90 @@ Setup your local environment:
 
 By default, `opsml` will log artifacts and experiments locally. To change this behavior and log to a remote server, you'll need to set the following environment variables:
 
-
 ```shell
 export OPSML_TRACKING_URI=${YOUR_TRACKING_URI}
 ```
+
+## Quickstart
+
+If running the example below locally without a server, make sure to install the `server` extra:
+
+```bash 
+poetry add "opsml[server]"
+```
+
+```python
+# imports
+from sklearn.linear_model import LinearRegression
+from opsml import (
+    CardInfo,
+    CardRegistries,
+    DataCard,
+    DataSplit,
+    ModelCard,
+    PandasData,
+    SklearnModel,
+)
+from opsml.helpers.data import create_fake_data
+
+
+info = CardInfo(name="linear-regression", repository="opsml", user_email="user@email.com")
+registries = CardRegistries()
+
+
+#--------- Create DataCard ---------#
+
+# create fake data
+X, y = create_fake_data(n_samples=1000, task_type="regression")
+X["target"] = y
+
+# Create data interface
+data_interface = PandasData(
+    data=X,
+    data_splits=[
+        DataSplit(label="train", column_name="col_1", column_value=0.5, inequality=">="),
+        DataSplit(label="test", column_name="col_1", column_value=0.5, inequality="<"),
+    ],
+    dependent_vars=["target"],
+)
+
+# Create and register datacard
+datacard = DataCard(interface=data_interface, info=info)
+registries.data.register_card(card=datacard)
+
+#--------- Create ModelCard ---------#
+
+# split data
+data = datacard.split_data()
+
+# fit model
+reg = LinearRegression()
+reg.fit(data.train.X.to_numpy(), data.train.y.to_numpy())
+
+# create model interface
+interface = SklearnModel(
+    model=reg,
+    sample_data=data.train.X.to_numpy(),
+    task_type="regression",  # optional
+)
+
+# create modelcard
+modelcard = ModelCard(
+    interface=interface,
+    info=info,
+    to_onnx=True,  # lets convert onnx
+    datacard_uid=datacard.uid,  # modelcards must be associated with a datacard
+)
+registries.model.register_card(card=modelcard)
+```
+
+## Table of Contents
+- [Table of Contents](#table-of-contents)
+- [Usage](#usage)
+- [Advanced Installation Scenarios](#advanced-installation-scenarios)
+- [Environment Variables](#environment-variables)
+- [Supported Libraries](#supported-libraries)
+- [Contributing](#contributing)
 
 ## Usage
 
@@ -89,7 +167,7 @@ Types of extras that can be installed:
   poetry add "opsml[postgres]"
   ```
 
-- **Server**: Installs necessary packages for setting up an `Fastapi`/`Mlflow` based `Opsml` server
+- **Server**: Installs necessary packages for setting up a `Fastapi`-based `Opsml` server
   ```bash
   poetry add "opsml[server]"
   ```
@@ -124,140 +202,55 @@ Types of extras that can be installed:
   poetry add "opsml[s3,mysql]"
   ```
 
-## QuickStart
+## Environment Variables
 
-```console
-opsml-cli launch-uvicorn-app
-```
+The following environment variables are used to configure opsml. When using
+opsml as a client (i.e., not running a server), the only variable that must be
+set is `OPSML_TRACKING_URI`.
 
-Open new terminal
+| Name                       | Description                                                                                                                     |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| APP_ENV                    | The environment to use. Supports `development`, `staging`, and `production`                                                      |
+| GOOGLE_ACCOUNT_JSON_BASE64 | The base64 string of the the GCP service account to use.                                                                        |
+| OPSML_MAX_OVERFLOW         | The SQL "max_overflow" size. Defaults to 5                                                                                      |
+| OPSML_POOL_SIZE            | The SQL connection pool size. Defaults to 10.                                                                                   |
+| OPSML_STORAGE_URI          | The location of storage to use. Supports a local file system, AWS, and GCS. Example: `gs://some-bucket`                         |
+| OPSML_TRACKING_URI         | Used when logging artifacts to an opsml server (a.k.a., the server which "tracks" artifacts)                                    |
+| OPSML_USERNAME             | An optional server username. If the server is setup with login enabled, all clients must use HTTP basic auth with this username |
+| OPSML_PASSWORD             | An optional server password. If the server is setup with login enabled, all clients must use HTTP basic auth with this password |
+| OPSML_RUN_ID               | If set, the run will be automatically loaded when creating new cards.                                                           |
 
-```console
-export OPSML_TRACKING_URI=http://0.0.0.0:8888
-```
 
-Run the following py script
+# Supported Libraries
 
-```python
-# Data and Model
-from sklearn.datasets import load_linnerud
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-import numpy as np
+`Opsml` is designed to work with a variety of ML and data libraries. The following libraries are currently supported:
 
-# Opsml
-from opsml.registry import CardInfo, DataCard, CardRegistry, ModelCard, DataSplit
+## Data Libraries
 
-# set up registries
-data_registry = CardRegistry(registry_name="data")
-model_registry = CardRegistry(registry_name="model")
+| Name          |  Opsml Implementation    |                                
+|---------------|:-----------------------: |
+| Pandas        | `PandasData`             |
+| Polars        | `PolarsData`             |                                                            
+| Torch         | `TorchData`              |                                                                     
+| Arrow         | `ArrowData`              |                                                                              
+| Numpy         | `NumpyData`              |                        
+| Sql           | `SqlData`                |                     
+| Text          | `TextDataset`            | 
+| Image         | `ImageDataset`           | 
 
-# card info (optional, but is used to simplify required args a bit)
-card_info = CardInfo(name="linnerrud", team="opsml", user_email="user@email.com")
+## Model Libraries
 
-# get X, y
-data, target = load_linnerud(return_X_y=True, as_frame=True)
-data["Pulse"] = target.Pulse
+| Name          |  Opsml Implementation      |    Example                                          |                                
+|-----------------|:-----------------------: |:--------------------------------------------------: |
+| Sklearn         | `SklearnModel`           | [link](examples/sklearn/basic.py)                   |
+| LightGBM        | `LightGBMModel`          | [link](examples/boosters/lightgbm_boost.py)         |                                                           
+| XGBoost         | `XGBoostModel`           | [link](examples/boosters/xgboost_sklearn.py)        |                                                                     
+| CatBoost        | `CatBoostModel`          | [link](examples/boosters/catboost_example.py)       |                                                                              
+| Torch           | `TorchModel`             | [link](examples/torch/torch_example.py)             |                        
+| Torch Lightning | `LightningModel`         | [link](examples/torch/torch_lightning_example.py)   |                     
+| TensorFlow      | `TensorFlowModel`        | [link](examples/tensorflow/tf_example.py)           | 
+| HuggingFace     | `HuggingFaceModel`       | [link](examples/huggingface/hf_example.py)          | 
 
-# Split indices
-indices = np.arange(data.shape[0])
-
-# usual train-test split
-train_idx, test_idx = train_test_split(indices, test_size=0.2, train_size=None)
-
-datacard = DataCard(
-    info=card_info,
-    data=data,
-    dependent_vars=["Pulse"],
-    # define splits
-    data_splits=[
-        DataSplit(label="train", indices=train_idx),
-        DataSplit(label="test", indices=test_idx),
-    ],
-)
-
-# register card
-data_registry.register_card(datacard)
-
-# split data
-data_splits = datacard.split_data()
-X_train = data_splits.train.X
-y_train = data_splits.train.y
-
-# fit model
-linreg = LinearRegression()
-linreg = linreg.fit(X=X_train, y=y_train)
-
-# Create ModelCard
-modelcard = ModelCard(
-    info=card_info,
-    trained_model=linreg,
-    sample_input_data=X_train,
-    datacard_uid=datacard.uid,
-)
-
-model_registry.register_card(card=modelcard)
-
-# >{"level": "INFO", "message": "OPSML_DATA_REGISTRY: linnerrud, version:1.0.0 registered", "timestamp": "2023-04-27T19:12:30", "app_env": "development"}
-# >{"level": "INFO", "message": "Validating converted onnx model", "timestamp": "2023-04-27T19:12:30", "app_env": "development"}
-# >{"level": "INFO", "message": "Onnx model validated", "timestamp": "2023-04-27T19:12:30", "app_env": "development"}
-# >{"level": "INFO", "message": "OPSML_MODEL_REGISTRY: linnerrud, version:1.0.0 registered", "timestamp": "2023-04-27T19:12:30", "app_env": "development"}
-
-print(data_registry.list_cards(info=card_info, as_dataframe=False))
-print(model_registry.list_cards(info=card_info, as_dataframe=False))
-```
-*(Code will run as-is)*
-
-Outputs:
-
-data registry output
-```json
-[
-    {
-        "name": "linnerrud",
-        "version": "1.0.0",
-        "tags": {},
-        "data_type": "PandasDataFrame",
-        "pipelinecard_uid": null,
-        "date": "2023-10-29",
-        "timestamp": 1698622188318014,
-        "app_env": "development",
-        "uid": "07131023c60d4a6892092851eab0f86d",
-        "team": "opsml",
-        "user_email": "user@email.com",
-        "data_uri": "***/OPSML_DATA_REGISTRY/opsml/linnerrud/v1.0.0/linnerrud.parquet",
-        "runcard_uid": null,
-        "datacard_uri": "***/OPSML_DATA_REGISTRY/opsml/linnerrud/v1.0.0/datacard.joblib",
-    }
-
-]
-```
-
-model registry output
-```json
-[
-    {
-        "uid": "1e68ef7851b34974bfaac764f348491d",
-        "app_env": "development",
-        "team": "opsml",
-        "user_email": "user@email.com",
-        "modelcard_uri": "***//OPSML_MODEL_REGISTRY/opsml/linnerrud/v1.0.0/modelcard.joblib",
-        "trained_model_uri": "***//OPSML_MODEL_REGISTRY/opsml/linnerrud/v1.0.0/model/trained-model.joblib",
-        "sample_data_uri": "***//OPSML_MODEL_REGISTRY/opsml/linnerrud/v1.0.0/sample-model-data.parquet",
-        "model_type": "sklearn_estimator",
-        "pipelinecard_uid": null,
-        "date": "2023-10-29",
-        "name": "linnerrud",
-        "timestamp": 1698622188320834,
-        "version": "1.0.0",
-        "tags": {},
-        "datacard_uid": "07131023c60d4a6892092851eab0f86d",
-        "model_metadata_uri": "***/OPSML_MODEL_REGISTRY/opsml/linnerrud/v1.0.0/model-metadata.json",
-        "sample_data_type": "PandasDataFrame",
-        "runcard_uid": null,
-    }
-]
-```
 
 ## Contributing
 If you'd like to contribute, be sure to check out our [contributing guide](./CONTRIBUTING.md)! If you'd like to work on any outstanding items, check out the `roadmap` section in the docs and get started :smiley:
@@ -267,3 +260,4 @@ Thanks goes to these phenomenal [projects and people](./ATTRIBUTIONS.md) and peo
 <a href="https://github.com/shipt/opsml/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=shipt/opsml" />
 </a>
+

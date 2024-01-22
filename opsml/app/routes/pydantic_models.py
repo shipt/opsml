@@ -6,24 +6,19 @@ from typing import Any, Dict, List, Optional, Union
 from fastapi import File, Form, UploadFile
 from pydantic import BaseModel, Field, model_validator
 
+from opsml.cards.audit import AuditSections
 from opsml.model.challenger import BattleReport
-from opsml.registry.cards.audit import AuditSections, Comment
-from opsml.registry.cards.types import METRICS
-from opsml.registry.sql.base.registry_base import VersionType
-from opsml.registry.sql.semver import CardVersion
-
-
-class StorageUri(BaseModel):
-    storage_uri: str
+from opsml.registry.semver import CardVersion, VersionType
+from opsml.types import Comment, Metrics
 
 
 class HealthCheckResult(BaseModel):
     is_alive: bool
 
 
-class ListTeamNameInfo(BaseModel):
-    teams: Optional[List[str]] = None
-    selected_team: Optional[str] = None
+class ListRepositoryNameInfo(BaseModel):
+    repositories: Optional[List[str]] = None
+    selected_repository: Optional[str] = None
     names: Optional[List[str]] = None
 
 
@@ -31,20 +26,17 @@ class DebugResponse(BaseModel):
     url: str
     storage: str
     app_env: str
-    proxy_root: Optional[str] = None
-    is_proxy: Optional[bool] = None
 
 
 class StorageSettingsResponse(BaseModel):
     storage_type: str
     storage_uri: str
     version: str
-    proxy: bool = False
 
 
 class VersionRequest(BaseModel):
     name: str
-    team: str
+    repository: str
     version: Optional[CardVersion] = None
     version_type: VersionType
     registry_type: Optional[str] = None
@@ -67,21 +59,32 @@ class UidExistsResponse(BaseModel):
     uid_exists: bool
 
 
+class DownloadFileRequest(BaseModel):
+    read_path: Optional[str] = None
+
+
+class PutFileRequest(BaseModel):
+    write_path: str
+
+
 class ListCardRequest(BaseModel):
     name: Optional[str] = None
-    team: Optional[str] = None
+    repository: Optional[str] = None
     version: Optional[str] = None
     uid: Optional[str] = None
     max_date: Optional[str] = None
     limit: Optional[int] = None
     tags: Optional[Dict[str, str]] = None
     ignore_release_candidates: bool = False
+    project_id: Optional[str] = None
     registry_type: Optional[str] = None
     table_name: Optional[str] = None
+    query_terms: Optional[Dict[str, Any]] = None
 
     @model_validator(mode="before")
-    def update_limit(cls, env_vars: Dict[str, Optional[Union[str, int]]]):
-        if not any((env_vars.get(key) for key in ["name", "team", "limit"])):
+    @classmethod
+    def update_limit(cls, env_vars: Dict[str, Optional[Union[str, int]]]) -> Dict[str, Optional[Union[str, int]]]:
+        if not any((env_vars.get(key) for key in ["name", "repository", "limit"])):
             env_vars["limit"] = 20
         return env_vars
 
@@ -122,7 +125,7 @@ class DeleteCardResponse(BaseModel):
 
 class QuerycardRequest(BaseModel):
     name: Optional[str] = None
-    team: Optional[str] = None
+    repository: Optional[str] = None
     version: Optional[str] = None
     uid: Optional[str] = None
     registry_type: Optional[str] = None
@@ -142,13 +145,13 @@ class CardRequest(BaseModel):
 
 class CompareCardRequest(BaseModel):
     name: Optional[str] = None
-    team: Optional[str] = None
+    repository: Optional[str] = None
     versions: Optional[List[str]] = None
     uids: Optional[List[str]] = None
 
 
 class RegisterModelRequest(BaseModel):
-    name: str = Field(..., description="Model name (does not include team)")
+    name: str = Field(..., description="Model name (does not include repository)")
     version: str = Field(
         ...,
         pattern="^[0-9]+(.[0-9]+)?(.[0-9]+)?$",
@@ -170,8 +173,8 @@ class RegisterModelRequest(BaseModel):
     )
 
 
-class TeamsResponse(BaseModel):
-    teams: List[str] = []
+class RepositoriesResponse(BaseModel):
+    repositories: List[str] = []
 
 
 class TableNameResponse(BaseModel):
@@ -183,7 +186,7 @@ class NamesResponse(BaseModel):
 
 
 class ListFileRequest(BaseModel):
-    read_path: Optional[str] = None
+    read_path: str
 
 
 class ListFileResponse(BaseModel):
@@ -194,19 +197,23 @@ class DeleteFileResponse(BaseModel):
     deleted: bool
 
 
+class FileExistsResponse(BaseModel):
+    exists: bool
+
+
 class DeleteFileRequest(BaseModel):
     read_path: str
 
 
 class MetricRequest(BaseModel):
     name: Optional[str] = None
-    team: Optional[str] = None
+    repository: Optional[str] = None
     version: Optional[str] = None
     uid: Optional[str] = None
 
 
 class MetricResponse(BaseModel):
-    metrics: METRICS
+    metrics: Metrics
 
 
 class CompareMetricRequest(BaseModel):
@@ -222,7 +229,7 @@ class CompareMetricResponse(BaseModel):
     report: Dict[str, List[BattleReport]]
 
 
-def form_body(cls):
+def form_body(cls: Any) -> Any:
     args = []
     params = cls.__signature__.parameters
     for param in params.values():
@@ -243,9 +250,9 @@ class CommentSaveRequest(BaseModel):
     uid: str
     name: str
     email: str
-    team: str
+    repository: str
     selected_model_name: str
-    selected_model_team: str
+    selected_model_repository: str
     selected_model_version: str
     selected_model_email: str
     comment_name: str
@@ -256,12 +263,12 @@ class CommentSaveRequest(BaseModel):
 class AuditFormRequest(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
-    team: Optional[str] = None
+    repository: Optional[str] = None
     uid: Optional[str] = None
     version: Optional[str] = None
     status: Optional[str] = None
     selected_model_name: str
-    selected_model_team: str
+    selected_model_repository: str
     selected_model_version: str
     selected_model_email: str
     audit_file: Optional[UploadFile] = None
@@ -348,8 +355,8 @@ class AuditFormRequest(BaseModel):
 
 class AuditReport(BaseModel):
     name: Optional[str] = None
-    team: Optional[str] = None
-    user_email: Optional[str] = None
+    repository: Optional[str] = None
+    contact: Optional[str] = None
     version: Optional[str] = None
     uid: Optional[str] = None
     status: Optional[bool] = False

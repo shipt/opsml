@@ -7,14 +7,14 @@
 ## Code Example
 
 ```python
-from opsml.registry import AuditCard, CardRegistry
+from opsml import AuditCard, CardRegistry
 
 ... # create model and data cards
 
 auditcard = AuditCard(
     name="linear-regressor-audit",
-    team="my_team", 
-    user_email="user_email"
+    repository="my_repository", 
+    contact="contact"
 )
 
 # add modelcard to auditcard
@@ -80,7 +80,7 @@ These questions help stakeholders gain a clear understanding of the business con
 
 6. **Data Quality Thresholds**: This question focuses on whether threshold values have been set for data quality and the reasons for choosing them, along with what actions are taken when data quality falls below or exceeds these thresholds.
 
-7. **Documentation of Data Model Semantic**: This question focuses on whether the meaning and structure of data have been clearly defined in the data model. This includes checking if the team has established the interpretation of data, including any abbreviations or codes used, ensuring consistency and understanding in data usage.
+7. **Documentation of Data Model Semantic**: This question focuses on whether the meaning and structure of data have been clearly defined in the data model. This includes checking if the repository has established the interpretation of data, including any abbreviations or codes used, ensuring consistency and understanding in data usage.
 
 8. **Data Subject to Security Requirements**: This helps identify whether the application handles data subject to security regulations like FTC and the rationale behind using such data.
 
@@ -249,7 +249,7 @@ The recommended way to interact with `AuditCards` is through the UI.
 Navigate to the model tab and find your specific model and version.
 
 <p align="left">
-  <img src="../../images/model-ui.png" width="703" height="536"/>
+  <img src="../../images/model-ui.png" width="669"/>
 </p>
 
 ### Click the Audit link and fill out the audit form
@@ -257,5 +257,5 @@ Navigate to the model tab and find your specific model and version.
 You can also upload and existing audit csv, download the current audit as a csv, and add comments via the comment button.
 
 <p align="left">
-  <img src="../../images/audit-ui.png" width="716" height="427"/>
+  <img src="../../images/audit-ui.png" width="958"/>
 </p>

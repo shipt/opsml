@@ -46,8 +46,40 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
         poetry-version: ["1.5.1"]
         os: [ubuntu, macos]
+        exclude: # ubuntu 3.11 is used for coverage tests
+          - os: ubuntu
+            python-version: 3.11
 
     runs-on: ${{ matrix.os }}-latest
+    env:
+      OPSML_TESTING: 1
+      LOG_LEVEL: DEBUG
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry==${{ matrix.poetry-version }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+      - run : make setup.project
+      - run : make test.unit
+
+
+  Unit-Test-311-Coverage:
+    needs: Lints
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        poetry-version: ["1.5.1"]
+        os: [ubuntu]
+
+    runs-on: ${{ matrix.os }}-latest
+    env:
+      OPSML_TESTING: 1
+      LOG_LEVEL: DEBUG
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -67,9 +99,62 @@ jobs:
           name: coverage
           path: coverage
 
+  Unit-Test-Windows:
+    needs: Lints
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        poetry-version: ["1.5.1"]
+        os: [windows]
+
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry==${{ matrix.poetry-version }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+      - run : make setup.project
+      - run : make test.unit
+
+  Unit-Integration:
+    needs: [Unit-Test, Unit-Test-Windows, Unit-Test-311-Coverage]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        poetry-version: ["1.5.1"]
+        os: [ubuntu]
+
+    runs-on: ${{ matrix.os }}-latest
+    env:
+      OPSML_TESTING: 1
+      LOG_LEVEL: DEBUG
+      OPSML_GCS_TEST_BUCKET: ${{ secrets.OPSML_GCS_TEST_BUCKET }}
+      GOOGLE_ACCOUNT_JSON_BASE64: ${{ secrets.GOOGLE_ACCOUNT_JSON_BASE64 }}
+      OPSML_STORAGE_URI: gs://${{ secrets.OPSML_GCS_TEST_BUCKET }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry==${{ matrix.poetry-version }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+      - run : make setup.project
+      - run : make test.integration
+
   Postgres-Unit:
-    needs: Unit-Test
+    needs: Unit-Integration
     runs-on: ubuntu-latest
+    env:
+      OPSML_TESTING: 1
+      LOG_LEVEL: DEBUG
 
     strategy:
       matrix:
@@ -109,8 +194,11 @@ jobs:
             OPSML_TRACKING_URI: postgresql://postgres:postgres@localhost:5432/postgres?connect_timeout=5&sslmode=disable
 
   MySql-Unit:
-    needs: Unit-Test
+    needs: Unit-Integration
     runs-on: ubuntu-latest
+    env:
+      OPSML_TESTING: 1
+      LOG_LEVEL: DEBUG
 
     strategy:
       matrix:
@@ -154,7 +242,7 @@ jobs:
 
 
   Coverage:
-    needs: Unit-Test
+    needs: Unit-Test-311-Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
@@ -171,36 +259,10 @@ jobs:
 
       - run: smokeshow upload coverage
         env:
-          SMOKESHOW_GITHUB_STATUS_DESCRIPTION: CLI Coverage {coverage-percentage}
+          SMOKESHOW_GITHUB_STATUS_DESCRIPTION: Coverage {coverage-percentage}
           SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 85
           SMOKESHOW_GITHUB_CONTEXT: coverage
           SMOKESHOW_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SMOKESHOW_GITHUB_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           SMOKESHOW_AUTH_KEY: ${{ secrets.SMOKESHOW_AUTH_TOKEN }}
 
-
-  #Windows-Test:
-  #  needs: Lints
-  #  strategy:
-  #    matrix:
-  #      python-version: ["3.10"]
-  #      poetry-version: ["1.5.1"]
-  #      os: [windows]
-#
-  #  runs-on: ${{ matrix.os }}-latest
-  #  steps:
-  #    - uses: actions/checkout@v3
-#
-  #    - uses: actions/download-artifact@master
-  #      with:
-  #        name: requirements
-  #        path: deps
-#
-  #    - name: Set up Python ${{ matrix.python-version }}
-  #      uses: actions/setup-python@v4
-  #      with:
-  #        python-version: ${{ matrix.python-version }}
-  #        cache: 'pip'
-  #    - run : pip install -r deps/requirements.txt
-  #    - run : pip install google-auth
-  #    - run : make test.unit.windows

@@ -1,9 +1,14 @@
 # opsml-artifacts
 mlruns/
 opsml/api/
-
-# vscode
-.vscode/
+test_scripts*
+tmp.db
+opsml_artifacts
+opsml/deploy/seldon/api_test.txt
+docs/site/
+expressions.txt
+test.png
+blob/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -41,6 +46,7 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+coverage/
 .coverage
 .coverage.*
 .cache
@@ -113,13 +119,11 @@ notebooks/
 .local_tests/
 .local_integration/
 .test_local.py
+lightning_logs/
 
-examples/.DS_Store
+# git
 **/*.orig
-test_scripts*
-tmp.db
-opsml_artifacts
-opsml/deploy/seldon/api_test.txt
-docs/site/
-expressions.txt
+
+# macOS
 .DS_Store
+**/.DS_Store

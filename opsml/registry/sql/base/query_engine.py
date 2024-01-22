@@ -1,22 +1,25 @@
+# mypy: disable-error-code="call-overload"
+
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import datetime
 from contextlib import contextmanager
-from functools import wraps
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Type, Union, cast
+from enum import Enum
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Union, cast
 
 from sqlalchemy import Integer
+from sqlalchemy import cast as sql_cast
 from sqlalchemy import func as sqa_func
 from sqlalchemy import select, text
+from sqlalchemy.engine import Engine, Row
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import FromClause, Select
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
-from opsml.registry.sql.semver import get_version_to_search
-from opsml.registry.sql.sql_schema import REGISTRY_TABLES, TableSchema
-from opsml.registry.utils.settings import settings
+from opsml.registry.semver import get_version_to_search
+from opsml.registry.sql.base.sql_schema import CardSQLTable, SQLTableGetter
 
 logger = ArtifactLogger.get_logger()
 
@@ -24,69 +27,112 @@ SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
 YEAR_MONTH_DATE = "%Y-%m-%d"
 
 
-class VersionSplitting:
-    """
-    Class containing logic for splitting version into major, minor, patch
-    depending on sql dialect
-    """
+class SqlDialect(str, Enum):
+    SQLITE = "sqlite"
+    POSTGRES = "postgres"
+    MYSQL = "mysql"
+    SQLITE_MEMORY = ":memory:"
+
+
+class DialectHelper:
+    def __init__(self, query: Select[Any], table: CardSQLTable):
+        """Instantiates a dialect helper"""
+        self.query = query
+        self.table = table
+
+    def get_version_split_logic(self) -> Select[Any]:
+        """Defines dialect specific logic to split version into major, minor, patch"""
+        raise NotImplementedError
 
     @staticmethod
-    def sqlite(query: Select, table: Type[REGISTRY_TABLES]) -> Select:
-        return query.add_columns(  # type: ignore[attr-defined]
-            sqa_func.cast(sqa_func.substr(table.version, 0, sqa_func.instr(table.version, ".")), Integer).label(
+    def validate_dialect(dialect: str) -> bool:
+        raise NotImplementedError
+
+    @staticmethod
+    def get_dialect_logic(query: Select[Any], table: CardSQLTable, dialect: str) -> Select[Any]:
+        helper = next(
+            (
+                dialect_helper
+                for dialect_helper in DialectHelper.__subclasses__()
+                if dialect_helper.validate_dialect(dialect)
+            ),
+            None,
+        )
+
+        if helper is None:
+            raise ValueError(f"Unsupported dialect: {dialect}")
+
+        helper_instance = helper(query=query, table=table)
+
+        return helper_instance.get_version_split_logic()
+
+
+class SqliteHelper(DialectHelper):
+    def get_version_split_logic(self) -> Select[Any]:
+        return self.query.add_columns(
+            sql_cast(sqa_func.substr(self.table.version, 0, sqa_func.instr(self.table.version, ".")), Integer).label(
                 "major"
             ),
-            sqa_func.cast(
+            sql_cast(
                 sqa_func.substr(
-                    sqa_func.substr(table.version, sqa_func.instr(table.version, ".") + 1),
+                    sqa_func.substr(self.table.version, sqa_func.instr(self.table.version, ".") + 1),
                     1,
-                    sqa_func.instr(sqa_func.substr(table.version, sqa_func.instr(table.version, ".") + 1), ".") - 1,
+                    sqa_func.instr(
+                        sqa_func.substr(self.table.version, sqa_func.instr(self.table.version, ".") + 1), "."
+                    )
+                    - 1,
                 ),
                 Integer,
             ).label("minor"),
             sqa_func.substr(
-                sqa_func.substr(table.version, sqa_func.instr(table.version, ".") + 1),
-                sqa_func.instr(sqa_func.substr(table.version, sqa_func.instr(table.version, ".") + 1), ".") + 1,
+                sqa_func.substr(self.table.version, sqa_func.instr(self.table.version, ".") + 1),
+                sqa_func.instr(sqa_func.substr(self.table.version, sqa_func.instr(self.table.version, ".") + 1), ".")
+                + 1,
             ).label("patch"),
         )
 
     @staticmethod
-    def postgres(query: Select, table: Type[REGISTRY_TABLES]) -> Select:
-        return query.add_columns(  # type: ignore[attr-defined]
-            sqa_func.cast(sqa_func.split_part(table.version, ".", 1), Integer).label("major"),
-            sqa_func.cast(sqa_func.split_part(table.version, ".", 2), Integer).label("minor"),
-            sqa_func.cast(
-                sqa_func.regexp_replace(sqa_func.split_part(table.version, ".", 3), "[^0-9]+", "", "g"),
+    def validate_dialect(dialect: str) -> bool:
+        return SqlDialect.SQLITE in dialect
+
+
+class PostgresHelper(DialectHelper):
+    def get_version_split_logic(self) -> Select[Any]:
+        return self.query.add_columns(
+            sql_cast(sqa_func.split_part(self.table.version, ".", 1), Integer).label("major"),
+            sql_cast(sqa_func.split_part(self.table.version, ".", 2), Integer).label("minor"),
+            sql_cast(
+                sqa_func.regexp_replace(sqa_func.split_part(self.table.version, ".", 3), "[^0-9]+", "", "g"),
                 Integer,
             ).label("patch"),
         )
 
     @staticmethod
-    def mysql(query: Select, table: Type[REGISTRY_TABLES]) -> Select:
-        return query.add_columns(  # type: ignore[attr-defined]
-            sqa_func.cast(sqa_func.substring_index(table.version, ".", 1), Integer).label("major"),
-            sqa_func.cast(
-                sqa_func.substring_index(sqa_func.substring_index(table.version, ".", 2), ".", -1), Integer
+    def validate_dialect(dialect: str) -> bool:
+        return SqlDialect.POSTGRES in dialect
+
+
+class MySQLHelper(DialectHelper):
+    def get_version_split_logic(self) -> Select[Any]:
+        return self.query.add_columns(
+            sql_cast(sqa_func.substring_index(self.table.version, ".", 1), Integer).label("major"),
+            sql_cast(
+                sqa_func.substring_index(sqa_func.substring_index(self.table.version, ".", 2), ".", -1), Integer
             ).label("minor"),
-            sqa_func.cast(
-                sqa_func.regexp_replace(sqa_func.substring_index(table.version, ".", -1), "[^0-9]+", ""), Integer
+            sql_cast(
+                sqa_func.regexp_replace(sqa_func.substring_index(self.table.version, ".", -1), "[^0-9]+", ""),
+                Integer,
             ).label("patch"),
         )
 
     @staticmethod
-    def get_version_split_query(query: Select, table: Type[REGISTRY_TABLES], dialect: str) -> Select:
-        if "sqlite" in dialect:
-            return VersionSplitting.sqlite(query=query, table=table)
-        if "postgres" in dialect:
-            return VersionSplitting.postgres(query=query, table=table)
-        if "mysql" in dialect:
-            return VersionSplitting.mysql(query=query, table=table)
-        raise ValueError(f"Unsupported dialect: {dialect}")
+    def validate_dialect(dialect: str) -> bool:
+        return SqlDialect.MYSQL in dialect
 
 
 class QueryEngine:
-    def __init__(self):
-        self.engine = settings.sql_engine
+    def __init__(self, engine: Engine) -> None:
+        self.engine = engine
 
     @property
     def dialect(self) -> str:
@@ -94,15 +140,15 @@ class QueryEngine:
 
     @contextmanager
     def session(self) -> Iterator[Session]:
-        with Session(self.engine) as sess:  # type: ignore
+        with Session(self.engine) as sess:
             yield sess
 
     def _create_version_query(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         name: str,
         version: Optional[str] = None,
-    ) -> Select:
+    ) -> Select[Any]:
         """Creates query to get latest card version
 
         Args:
@@ -124,7 +170,7 @@ class QueryEngine:
 
     def get_versions(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         name: str,
         version: Optional[str] = None,
     ) -> List[Any]:
@@ -144,23 +190,24 @@ class QueryEngine:
         query = self._create_version_query(table=table, name=name, version=version)
 
         with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
+            results = sess.scalars(query).all()
 
-        return results
+        return cast(List[Any], results)
 
     def _records_from_table_query(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         uid: Optional[str] = None,
         name: Optional[str] = None,
-        team: Optional[str] = None,
+        repository: Optional[str] = None,
         version: Optional[str] = None,
         max_date: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
         limit: Optional[int] = None,
-    ) -> Select:
+        query_terms: Optional[Dict[str, Any]] = None,
+    ) -> Select[Any]:
         """
-        Creates a sql query based on table, uid, name, team and version
+        Creates a sql query based on table, uid, name, repository and version
 
         Args:
             table:
@@ -169,8 +216,8 @@ class QueryEngine:
                 Optional unique id of Card
             name:
                 Optional name of Card
-            team:
-                Optional team name
+            repository:
+                Optional Repository name
             version:
                 Optional version of Card
             tags:
@@ -179,23 +226,22 @@ class QueryEngine:
                 Optional max date to search
             limit:
                 Optional limit of records to return
+            query_terms:
+                Optional query terms to search
 
         Returns
             Sqlalchemy Select statement
         """
-        query: Select = self._get_base_select_query(table=table)
-        query = VersionSplitting.get_version_split_query(
-            query=query,
-            table=table,
-            dialect=self.dialect,
-        )
+
+        query = cast(Select[Any], select(table))
+        query = DialectHelper.get_dialect_logic(query=query, table=table, dialect=self.dialect)
 
         if bool(uid):
             return query.filter(table.uid == uid)  # type: ignore
 
         filters = []
 
-        for field, value in zip(["name", "team"], [name, team]):
+        for field, value in zip(["name", "repository"], [name, repository]):
             if value is not None:
                 filters.append(getattr(table, field) == value)
 
@@ -211,17 +257,21 @@ class QueryEngine:
             for key, value in tags.items():
                 filters.append(table.tags[key].as_string() == value)  # type: ignore
 
-        if bool(filters):
-            query = query.filter(*filters)  # type: ignore
+        if query_terms is not None:
+            for field, value in query_terms.items():
+                filters.append(getattr(table, field) == value)
 
-        query = query.order_by(text("major desc"), text("minor desc"), text("patch desc"))  # type: ignore
+        if bool(filters):
+            query = query.filter(*filters)
+
+        query = query.order_by(text("major desc"), text("minor desc"), text("patch desc"))
 
         if limit is not None:
             query = query.limit(limit)
 
         return query
 
-    def _parse_records(self, records: List[Any]) -> List[Dict[str, Any]]:
+    def _parse_records(self, records: Sequence[Row[Any]]) -> List[Dict[str, Any]]:
         """
         Helper for parsing sql results
 
@@ -243,24 +293,26 @@ class QueryEngine:
 
     def get_records_from_table(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         uid: Optional[str] = None,
         name: Optional[str] = None,
-        team: Optional[str] = None,
+        repository: Optional[str] = None,
         version: Optional[str] = None,
         max_date: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
         limit: Optional[int] = None,
+        query_terms: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         query = self._records_from_table_query(
             table=table,
             uid=uid,
             name=name,
-            team=team,
+            repository=repository,
             version=version,
             max_date=max_date,
             tags=tags,
             limit=limit,
+            query_terms=query_terms,
         )
 
         with self.session() as sess:
@@ -268,7 +320,7 @@ class QueryEngine:
 
         return self._parse_records(results)
 
-    def _get_epoch_time_to_search(self, max_date: str):
+    def _get_epoch_time_to_search(self, max_date: str) -> int:
         """
         Creates timestamp that represents the max epoch time to limit records to
 
@@ -287,28 +339,21 @@ class QueryEngine:
         # opsml timestamp records are stored as BigInts
         return int(round(max_date_.timestamp() * 1_000_000))
 
-    def _get_base_select_query(self, table: Type[REGISTRY_TABLES]) -> Select:
-        sql_table = cast(SqlTableType, table)
-        return cast(Select, select(sql_table))
+    def _uid_exists_query(self, uid: str, table_to_check: str) -> Select[Any]:
+        table = SQLTableGetter.get_table(table_name=table_to_check)
+        query = select(table).filter(table.uid == uid)
 
-    def _uid_exists_query(self, uid: str, table_to_check: str) -> Select:
-        table = TableSchema.get_table(table_name=table_to_check)
-        query = self._get_base_select_query(table=table.uid)  # type: ignore
-        query = query.filter(table.uid == uid)  # type: ignore
+        return cast(Select[Any], query)
 
-        return cast(Select, query)
-
-    def get_uid(self, uid: str, table_to_check: str) -> List[Any]:
+    def get_uid(self, uid: str, table_to_check: str) -> List[str]:
         query = self._uid_exists_query(uid=uid, table_to_check=table_to_check)
 
         with self.session() as sess:
-            results = sess.execute(query).first()
-
-        return results
+            return cast(List[str], sess.execute(query).first())
 
     def add_and_commit_card(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         card: Dict[str, Any],
     ) -> None:
         """Add card record to table
@@ -319,7 +364,8 @@ class QueryEngine:
             card:
                 card to add
         """
-        sql_record = table(**card)
+
+        sql_record = table(**card)  # type:ignore[operator]
 
         with self.session() as sess:
             sess.add(sql_record)
@@ -327,70 +373,52 @@ class QueryEngine:
 
     def update_card_record(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         card: Dict[str, Any],
-    ):
+    ) -> None:
         record_uid = cast(str, card.get("uid"))
+
         with self.session() as sess:
             query = sess.query(table).filter(table.uid == record_uid)
             query.update(card)
             sess.commit()
 
-    def get_unique_teams(self, table: Type[REGISTRY_TABLES]) -> List[str]:
-        """Retrieves unique teams in a registry
+    def get_unique_repositories(self, table: CardSQLTable) -> Sequence[str]:
+        """Retrieves unique repositories in a registry
 
         Args:
             table:
                 Registry table to query
 
         Returns:
-            List of unique teams
+            List of unique repositories
         """
-        team_col = cast(SqlTableType, table.team)
-        query = select(team_col).distinct()
+
+        repository_col = table.repository
+        query = select(repository_col).distinct()  # type:ignore[call-overload]
 
         with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
+            return sess.scalars(query).all()
 
-        return results
-
-    def get_unique_card_names(self, team: Optional[str], table: Type[REGISTRY_TABLES]) -> List[str]:
+    def get_unique_card_names(self, repository: Optional[str], table: CardSQLTable) -> Sequence[str]:
         """Returns a list of unique card names"""
-        name_col = cast(SqlTableType, table.name)
-        query = select(name_col)
+        query = select(table.name)  # type:ignore[call-overload]
 
-        if team is not None:
-            query = query.filter(table.team == team).distinct()  # type: ignore[attr-defined]
+        if repository is not None:
+            query = query.filter(table.repository == repository).distinct()
         else:
             query = query.distinct()
 
         with self.session() as sess:
-            results = sess.scalars(query).all()  # type: ignore[attr-defined]
-
-        return results
+            return sess.scalars(query).all()
 
     def delete_card_record(
         self,
-        table: Type[REGISTRY_TABLES],
+        table: CardSQLTable,
         card: Dict[str, Any],
-    ):
+    ) -> None:
         record_uid = cast(str, card.get("uid"))
         with self.session() as sess:
-            query = sess.query(table).filter(table.uid == record_uid)
+            query = sess.query(table).filter(table.uid == record_uid)  # type:ignore
             query.delete()
             sess.commit()
-
-
-def log_card_change(func):
-    """Decorator for logging card changes"""
-
-    @wraps(func)
-    def wrapper(self, *args, **kwargs) -> None:
-        card, state = func(self, *args, **kwargs)
-        name = str(card.get("name"))
-        version = str(card.get("version"))
-        logger.info(
-            "{}: {}, version:{} {}", self._table.__tablename__, name, version, state  # pylint: disable=protected-access
-        )
-
-    return wrapper

@@ -1,19 +1,20 @@
-from typing import Dict
 import pytest
-from opsml.registry.sql.registry import CardRegistry
-from opsml.registry import DataCard
+
+from opsml.cards import DataCard
+from opsml.data import SqlData
 from opsml.helpers.exceptions import VersionError
+from opsml.registry import CardRegistries
+from opsml.registry.registry import CardRegistry
 
 
-def test_version_tags(db_registries: Dict[str, CardRegistry]):
-    # create data card
-    registry: CardRegistry = db_registries["data"]
+def test_version_tags(sql_data: SqlData, db_registries: CardRegistries):
+    registry: CardRegistry = db_registries.data
 
     kwargs = {
         "name": "pre_build",
-        "team": "mlops",
-        "user_email": "opsml.com",
-        "sql_logic": {"test": "select * from test_table"},
+        "repository": "mlops",
+        "contact": "opsml.com",
+        "interface": sql_data,
     }
 
     # create initial prerelease
@@ -67,29 +68,16 @@ def test_version_tags(db_registries: Dict[str, CardRegistry]):
     registry.register_card(card=card, version_type="build")
     assert card.version == "1.0.0+git.1a5d783h3784"
 
-    # this should fail
-    kwargs = {
-        "name": "pre_build",
-        "team": "fail",
-        "user_email": "opsml.com",
-        "sql_logic": {"test": "select * from test_table"},
-    }
 
-    with pytest.raises(ValueError) as ve:
-        card = DataCard(**kwargs, version="1.0.0")
-        registry.register_card(card=card)
-    assert ve.match("Model name already exists for a different team. Try a different name.")
-
-
-def test_build_tag_official_version(db_registries: Dict[str, CardRegistry]):
+def test_build_tag_official_version(sql_data: SqlData, db_registries: CardRegistries):
     # create data card
-    registry: CardRegistry = db_registries["data"]
+    registry: CardRegistry = db_registries.data
 
     kwargs = {
         "name": "build_tag",
-        "team": "mlops",
-        "user_email": "opsml.com",
-        "sql_logic": {"test": "select * from test_table"},
+        "repository": "mlops",
+        "contact": "opsml.com",
+        "interface": sql_data,
     }
 
     # create card with minor increment with build tag

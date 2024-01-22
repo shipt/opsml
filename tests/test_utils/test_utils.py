@@ -1,77 +1,140 @@
-import os
-from pathlib import PosixPath
 import base64
-from opsml.helpers import utils
-from opsml.helpers import gcp_utils
-from google.oauth2.service_account import Credentials
 import json
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+from google.oauth2.service_account import Credentials
+
+from opsml.helpers import exceptions, gcp_utils, utils
 
 
-def test_find_path():
-    path = utils.FindPath.find_filepath("requirements.txt")
-    assert isinstance(path, PosixPath)
+def test_experimental_feature() -> None:
+    called = False
+
+    @utils.experimental_feature
+    def test(self: Any) -> None:
+        nonlocal called
+        called = True
+
+    test(1)
+    assert called
 
 
-def test_find_dir_path():
-    path = utils.FindPath.find_dirpath(
-        dir_name="assets",
-        path=os.getcwd(),
-        anchor_file="anchor.py",
+def test_clean_string() -> None:
+    assert utils.clean_string("  TEST ") == "test"
+    assert utils.clean_string("  !!test!!  ") == "test"
+    assert utils.clean_string("  !!_-test-_!!  ") == "--test--"
+
+
+def test_validate_repository_name_pattern() -> None:
+    utils.validate_name_repository_pattern("test", "test")
+    utils.validate_name_repository_pattern("test-name", "test-repository")
+
+    with pytest.raises(ValueError):
+        utils.validate_name_repository_pattern("TEST", "test")
+
+    with pytest.raises(ValueError):
+        utils.validate_name_repository_pattern("test:", "test")
+
+    with pytest.raises(ValueError):
+        utils.validate_name_repository_pattern("test_name", "test")
+
+
+def test_type_checker_check_metric_type() -> None:
+    assert utils.TypeChecker.check_metric_type(1) == 1
+    assert utils.TypeChecker.check_metric_type(1.0) == 1.0
+
+    with pytest.raises(ValueError):
+        utils.TypeChecker.check_metric_type("test")
+
+
+def test_type_checker_check_param_type() -> None:
+    assert utils.TypeChecker.check_param_type(1) == 1
+    assert utils.TypeChecker.check_param_type(1.0) == 1.0
+    assert utils.TypeChecker.check_param_type("test") == "test"
+
+    with pytest.raises(ValueError):
+        utils.TypeChecker.check_metric_type((1, 1))
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test")
+def test_file_utils_find_dirpath(tmp_path: Path) -> None:
+    tmp_assets = Path(tmp_path).joinpath("test/child/grandchild")
+    tmp_assets.mkdir(parents=True)
+    tmp_assets.joinpath("test.txt").write_text("hello, world", encoding="utf-8")
+
+    assert Path(tmp_assets).joinpath("test.txt").exists()
+
+    assert utils.FileUtils.find_dirpath(path=tmp_path, dir_name="test", anchor_file="test.txt").name == "test"
+    assert utils.FileUtils.find_dirpath(path=tmp_path, dir_name="child", anchor_file="test.txt").name == "child"
+    assert (
+        utils.FileUtils.find_dirpath(path=tmp_path, dir_name="grandchild", anchor_file="test.txt").name == "grandchild"
     )
-    assert isinstance(path, str)
 
-
-def test_find_src_dir():
-    src_dir, src_path = utils.FindPath.find_source_dir(
-        os.getcwd(),
-        "anchor.py",
-    )
-    assert src_dir == "assets"
-
-
-def test_gcs_storage_client_integration(mock_gcs):
-    FILENAME = "example.csv"
-    file_path = utils.FindPath.find_filepath(name=FILENAME)
-
-    # upload
-    path = "test_upload/test.csv"
+    # Create a second "anchor_file" somewhere in the directory tree. Any search
+    # where the anchor file exists in more than one directory rooted at tmp_path
+    # will fail.
     #
-    storage_client = gcp_utils.GCSStorageClient()
+    # /tmp_dir/test/child/gradchild/test.text
+    # /tmp_dir/test/child2/test.txt
     #
-    storage_client.upload(
-        gcs_bucket="test_bucket",
-        filename=file_path,
-        destination_path=path,
-    )
-    #
-    # download
-    storage_client.download_object(
-        gcs_bucket="test_bucket",
-        blob_path=path,
-        destination_filename="test.csv",
-    )
-    #
-    blobs = storage_client.list_objects(
-        gcs_bucket="test_bucket",
-        prefix="test_upload/",
-    )
+    tmp_assets2 = Path(tmp_path).joinpath("test/child2")
+    tmp_assets2.mkdir()
+    tmp_assets2.joinpath("test.txt").write_text("hello, world", encoding="utf-8")
+    assert Path(tmp_assets2).joinpath("test.txt").exists()
 
-    _ = storage_client.download_object_from_uri(gcs_uri="gs://test_bucket/test_upload/test.csv")
+    with pytest.raises(exceptions.MoreThanOnePathException):
+        utils.FileUtils.find_dirpath(path=tmp_path, dir_name="child2", anchor_file="test.txt")
 
-    storage_client.delete_object_from_uri(gcs_uri="gs://test_bucket/test_upload/test.csv")
+    with pytest.raises(FileNotFoundError):
+        # `path` does not exist
+        utils.FileUtils.find_dirpath(path="/notthere", dir_name="test", anchor_file="test.txt")
 
-    for blob in blobs:
-        assert path in blob.name
+    with pytest.raises(FileNotFoundError):
+        # `path` exists, but `dir_name` does not. Not we are searching tmp_assets2, not tmp_path - test.txt is unique.
+        utils.FileUtils.find_dirpath(path=tmp_assets2, dir_name="notthere", anchor_file="test.txt")
 
-    bucket, path, file_ = storage_client.parse_gcs_uri("gs://testbucket/blob/example.csv")
 
-    assert file_ == FILENAME
+@pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test")
+def test_file_utils_find_filepath(tmp_path: Path) -> None:
+    tmp_files = Path(tmp_path).joinpath("files")
+    tmp_files.mkdir()
 
-    # delete
-    storage_client.delete_object(
-        gcs_bucket="test_bucket",
-        blob_path=path,
-    )
+    tmp_file = Path(tmp_files / "test.txt")
+    tmp_file.write_text("hello, world", encoding="utf-8")
+
+    assert utils.FileUtils.find_filepath("test.txt", path=str(tmp_files)) is not None
+    with pytest.raises(FileNotFoundError):
+        utils.FileUtils.find_filepath("notthere", path=str(tmp_files))
+
+    tmp_files_2 = Path(tmp_path).joinpath("files2")
+    tmp_files_2.mkdir()
+    tmp_file2 = Path(tmp_files_2 / "test.txt")
+    tmp_file2.write_text("hello, world", encoding="utf-8")
+
+    with pytest.raises(exceptions.MoreThanOnePathException):
+        utils.FileUtils.find_filepath("test.txt", path=str(tmp_path))
+
+
+def test_all_sublcasses() -> None:
+    class A:
+        pass
+
+    class B(A):
+        pass
+
+    class C(B):
+        pass
+
+    subs = utils.all_subclasses(A)
+    assert B in subs and C in subs
+
+
+def test_check_package_exists() -> None:
+    assert utils.check_package_exists("pydantic")
+    assert not utils.check_package_exists("notthere")
 
 
 def test_gcp_creds(gcp_cred_path: str):
@@ -85,9 +148,6 @@ def test_gcp_creds(gcp_cred_path: str):
     assert isinstance(creds, Credentials)
 
 
-def test_gcp_default_creds(gcp_cred_path: str):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_cred_path
-
-    creds, project = gcp_utils.GcpCredsSetter().get_base64_creds()
-
-    assert isinstance(creds, Credentials)
+def test_import_exception():
+    with pytest.raises(ModuleNotFoundError):
+        utils.try_import("fail", "fail", "fail")

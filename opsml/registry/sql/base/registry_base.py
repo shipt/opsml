@@ -2,92 +2,44 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import uuid
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from semver import VersionInfo
-from sqlalchemy.sql.expression import ColumnElement, FromClause
 
+from opsml.cards.base import ArtifactCard
 from opsml.helpers.exceptions import VersionError
 from opsml.helpers.logging import ArtifactLogger
-from opsml.helpers.utils import clean_string
-from opsml.registry.cards import (
-    ArtifactCard,
-    AuditCard,
-    DataCard,
-    ModelCard,
-    PipelineCard,
-    RunCard,
-)
-from opsml.registry.cards.card_deleter import delete_card_artifacts
-from opsml.registry.cards.card_saver import save_card_artifacts
-from opsml.registry.cards.types import RegistryType
-from opsml.registry.sql.records import LoadedRecordType, load_record
-from opsml.registry.sql.semver import CardVersion, SemVerUtils, VersionType
-from opsml.registry.sql.sql_schema import RegistryTableNames, TableSchema
-from opsml.registry.storage.types import ArtifactStorageSpecs
-from opsml.registry.utils.settings import settings
+from opsml.registry.records import SaveRecord, registry_name_record_map
+from opsml.registry.semver import CardVersion, SemVerUtils, VersionType
+from opsml.storage.card_saver import save_card_artifacts
+from opsml.storage.client import StorageClient
+from opsml.types import RegistryTableNames, RegistryType
 
 logger = ArtifactLogger.get_logger()
 
 
-SqlTableType = Optional[Iterable[Union[ColumnElement[Any], FromClause, int]]]
-
-
-table_name_card_map = {
-    RegistryType.DATA.value: DataCard,
-    RegistryType.MODEL.value: ModelCard,
-    RegistryType.RUN.value: RunCard,
-    RegistryType.PIPELINE.value: PipelineCard,
-    RegistryType.AUDIT.value: AuditCard,
-}
-
-
-def load_card_from_record(
-    registry_type: str,
-    record: LoadedRecordType,
-) -> ArtifactCard:
-    """
-    Loads an artifact card given a tablename and the loaded record
-    from backend database
-
-    Args:
-        registry_type:
-            Registry type
-        record:
-            Loaded record from backend database
-
-    Returns:
-        `ArtifactCard`
-    """
-
-    card = table_name_card_map[registry_type]
-
-    return card(**record.model_dump())
-
-
 class SQLRegistryBase:
-    def __init__(self, registry_type: str):
+    def __init__(self, registry_type: RegistryType, storage_client: StorageClient):
         """
         Base class for SQL Registries to inherit from
 
         Args:
-            table_name:
-                CardRegistry table name
+            registry_type:
+                Registry type
         """
-        self.storage_client = settings.storage_client
-        table_name = RegistryTableNames[registry_type.upper()].value
-        self._table = TableSchema.get_table(table_name=table_name)
+        self.storage_client = storage_client
+        self._table_name = RegistryTableNames[registry_type.value.upper()].value
 
     @property
-    def unique_teams(self) -> List[str]:
+    def unique_repositories(self) -> Sequence[str]:
         raise NotImplementedError
 
-    def get_unique_card_names(self, team: Optional[str] = None):
+    def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         raise NotImplementedError
 
     @property
     def table_name(self) -> str:
-        return self._table.__tablename__
+        return self._table_name
 
     @property
     def supported_card(self) -> str:
@@ -96,7 +48,7 @@ class SQLRegistryBase:
     def set_version(
         self,
         name: str,
-        team: str,
+        repository: str,
         pre_tag: str,
         build_tag: str,
         version_type: VersionType,
@@ -104,12 +56,12 @@ class SQLRegistryBase:
     ) -> str:
         raise NotImplementedError
 
-    def _is_correct_card_type(self, card: ArtifactCard):
+    def _is_correct_card_type(self, card: ArtifactCard) -> bool:
         """Checks wether the current card is associated with the correct registry type"""
         return self.supported_card.lower() == card.__class__.__name__.lower()
 
     @property
-    def registry_type(self) -> str:
+    def registry_type(self) -> RegistryType:
         """Registry type"""
         raise NotImplementedError
 
@@ -126,12 +78,16 @@ class SQLRegistryBase:
     def delete_card_record(self, card: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
         raise NotImplementedError
 
-    def _validate_card_type(self, card: ArtifactCard):
+    @staticmethod
+    def validate(registry_name: str) -> bool:
+        raise NotImplementedError
+
+    def _validate_card_type(self, card: ArtifactCard) -> None:
         # check compatibility
         if not self._is_correct_card_type(card=card):
             raise ValueError(
                 f"""Card of type {card.__class__.__name__} is not supported by registry
-                {self._table.__tablename__}"""
+                {self.table_name}"""
             )
 
         if self.check_uid(uid=str(card.uid), registry_type=self.registry_type):
@@ -142,27 +98,15 @@ class SQLRegistryBase:
             """
             )
 
-    def _set_artifact_storage_spec(self, card: ArtifactCard) -> None:
-        """Creates artifact storage info to associate with artifacts"""
-
-        save_path = f"{self.table_name}/{card.team}/{card.name}/v{card.version}"
-
-        artifact_storage_spec = ArtifactStorageSpecs(save_path=save_path)
-        self._update_storage_client_metadata(storage_specdata=artifact_storage_spec)
-
-    def _update_storage_client_metadata(self, storage_specdata: ArtifactStorageSpecs):
-        """Updates storage metadata"""
-        self.storage_client.storage_spec = storage_specdata
-
-    def _validate_semver(self, name: str, team: str, version: CardVersion) -> None:
+    def _validate_semver(self, name: str, repository: str, version: CardVersion) -> None:
         """
         Validates version if version is manually passed to Card
 
         Args:
             name:
                 Name of card
-            team:
-                Team of card
+            repository:
+                Repository of card
             version:
                 Version of card
         Returns:
@@ -171,9 +115,6 @@ class SQLRegistryBase:
         if version.is_full_semver:
             records = self.list_cards(name=name, version=version.valid_version)
             if len(records) > 0:
-                if records[0]["team"] != team:
-                    raise ValueError("""Model name already exists for a different team. Try a different name.""")
-
                 for record in records:
                     ver = VersionInfo.parse(record["version"])
 
@@ -201,7 +142,7 @@ class SQLRegistryBase:
         version_type: VersionType,
         pre_tag: str,
         build_tag: str,
-    ):
+    ) -> None:
         """Sets a given card's version and uid
 
         Args:
@@ -226,7 +167,7 @@ class SQLRegistryBase:
                     card.version = self.set_version(
                         name=card.name,
                         supplied_version=card_version,
-                        team=card.team,
+                        repository=card.repository,
                         version_type=version_type,
                         pre_tag=pre_tag,
                         build_tag=build_tag,
@@ -234,13 +175,13 @@ class SQLRegistryBase:
 
             card_version = CardVersion(version=card.version)
             if card_version.is_full_semver:
-                self._validate_semver(name=card.name, team=card.team, version=card_version)
+                self._validate_semver(name=card.name, repository=card.repository, version=card_version)
                 return None
 
         version = self.set_version(
             name=card.name,
             supplied_version=card_version,
-            team=card.team,
+            repository=card.repository,
             version_type=version_type,
             pre_tag=pre_tag,
             build_tag=build_tag,
@@ -268,21 +209,6 @@ class SQLRegistryBase:
         if card.uid is None:
             card.uid = self._get_uid()
 
-    def _create_registry_record(self, card: ArtifactCard) -> None:
-        """
-        Creates a registry record from a given ArtifactCard.
-        Saves artifacts prior to creating record
-
-        Args:
-            card:
-                Card to create a registry record from
-        """
-
-        card = save_card_artifacts(card=card, storage_client=self.storage_client)
-        record = card.create_registry_record()
-
-        self.add_and_commit(card=record.model_dump())
-
     def register_card(
         self,
         card: ArtifactCard,
@@ -305,15 +231,14 @@ class SQLRegistryBase:
         """
 
         self._validate_card_type(card=card)
-        self._set_card_version(
-            card=card,
-            version_type=version_type,
-            pre_tag=pre_tag,
-            build_tag=build_tag,
-        )
+        self._set_card_version(card=card, version_type=version_type, pre_tag=pre_tag, build_tag=build_tag)
         self._set_card_uid(card=card)
-        self._set_artifact_storage_spec(card=card)
-        self._create_registry_record(card=card)
+
+        save_card_artifacts(card=card)
+        registry_record: SaveRecord = registry_name_record_map[card.card_type]
+        record = registry_record.model_validate(card.create_registry_record())
+
+        self.add_and_commit(card=record.model_dump())
 
     def update_card(self, card: ArtifactCard) -> None:
         """
@@ -323,24 +248,29 @@ class SQLRegistryBase:
             card:
                 Card to update
         """
-        card = save_card_artifacts(card=card, storage_client=self.storage_client)
-        record = card.create_registry_record()
-        self.update_card_record(card=record.model_dump())
+        # checking card exists
+        record = self.list_cards(uid=card.uid, limit=1)
+        assert bool(record), "Card does not exist in registry. Please use register card first"
+        save_card_artifacts(card=card)
+        save_record: SaveRecord = registry_name_record_map[card.card_type](**card.create_registry_record())
+
+        self.update_card_record(card=save_record.model_dump())
 
     def list_cards(
         self,
         uid: Optional[str] = None,
         name: Optional[str] = None,
-        team: Optional[str] = None,
+        repository: Optional[str] = None,
         version: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
         max_date: Optional[str] = None,
         limit: Optional[int] = None,
         ignore_release_candidates: bool = False,
+        query_terms: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
-    def check_uid(self, uid: str, registry_type: str) -> bool:
+    def check_uid(self, uid: str, registry_type: RegistryType) -> bool:
         raise NotImplementedError
 
     def _sort_by_version(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -355,38 +285,7 @@ class SQLRegistryBase:
 
         return sorted_records
 
-    def load_card(
-        self,
-        name: Optional[str] = None,
-        version: Optional[str] = None,
-        tags: Optional[Dict[str, str]] = None,
-        uid: Optional[str] = None,
-        ignore_release_candidates: bool = False,
-    ) -> ArtifactCard:
-        cleaned_name = clean_string(name)
-
-        record = self.list_cards(
-            name=cleaned_name,
-            version=version,
-            uid=uid,
-            limit=1,
-            tags=tags,
-            ignore_release_candidates=ignore_release_candidates,
-        )
-
-        loaded_record = load_record(
-            registry_type=self.registry_type,
-            record_data=record[0],
-            storage_client=self.storage_client,
-        )
-
-        return load_card_from_record(
-            registry_type=self.registry_type,
-            record=loaded_record,
-        )
-
     def delete_card(self, card: ArtifactCard) -> None:
         """Delete a specific card"""
-
-        delete_card_artifacts(card=card, storage_client=self.storage_client)
+        self.storage_client.rm(card.uri)
         self.delete_card_record(card=card.model_dump(include={"uid", "name", "version"}))

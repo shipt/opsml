@@ -1,0 +1,58 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "cli-model-download",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/opsml/scripts/api_cli.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "download-model",
+                "--write-dir",
+                "/tmp/models",
+                "--name",
+                "mymodel",
+                "--repository",
+                "myrepository",
+                "--version",
+                "1.9.0"
+            ]
+        },
+        {
+            "name": "webserver",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "opsml.app.main:run_app"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+        },
+        {
+            "name": "example",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/example.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [],
+            "envFile": "${workspaceFolder}/.env",
+        },
+    ]
+}

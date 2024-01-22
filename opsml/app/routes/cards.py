@@ -6,7 +6,6 @@ from typing import Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 
-from opsml.app.core.config import config
 from opsml.app.core.dependencies import verify_token
 from opsml.app.routes.pydantic_models import (
     AddCardRequest,
@@ -16,7 +15,7 @@ from opsml.app.routes.pydantic_models import (
     ListCardRequest,
     ListCardResponse,
     NamesResponse,
-    TeamsResponse,
+    RepositoriesResponse,
     UidExistsRequest,
     UidExistsResponse,
     UpdateCardRequest,
@@ -24,7 +23,7 @@ from opsml.app.routes.pydantic_models import (
     VersionRequest,
     VersionResponse,
 )
-from opsml.app.routes.utils import get_registry_type_from_table, replace_proxy_root
+from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
 
@@ -55,12 +54,12 @@ def check_uid(
     return UidExistsResponse(uid_exists=False)
 
 
-@router.get("/cards/teams", response_model=TeamsResponse, name="teams")
-def card_teams(
+@router.get("/cards/repositories", response_model=RepositoriesResponse, name="repositories")
+def card_repositories(
     request: Request,
     registry_type: str,
-) -> TeamsResponse:
-    """Get all teams associated with a registry
+) -> RepositoriesResponse:
+    """Get all repositories associated with a registry
 
     Args:
         request:
@@ -69,21 +68,21 @@ def card_teams(
             Type of registry
 
     Returns:
-        `TeamsResponse`
+        `RepositoriesResponse`
     """
     registry: CardRegistry = getattr(request.app.state.registries, registry_type)
 
-    teams = registry._registry.unique_teams
+    repositories = registry._registry.unique_repositories
 
-    return TeamsResponse(teams=teams)
+    return RepositoriesResponse(repositories=repositories)
 
 
 @router.get("/cards/names", response_model=NamesResponse, name="names")
 def card_names(
     request: Request,
     registry_type: str,
-    team: Optional[str] = None,
-):
+    repository: Optional[str] = None,
+) -> NamesResponse:
     """Get all names associated with a registry
 
     Args:
@@ -91,15 +90,15 @@ def card_names(
             FastAPI request object
         registry_type:
             Type of registry
-        team:
-            Team to filter names by
+        repository:
+            repository to filter names by
 
     Returns:
         `NamesResponse`
     """
 
     registry: CardRegistry = getattr(request.app.state.registries, registry_type)
-    names = registry._registry.get_unique_card_names(team=team)
+    names = registry._registry.get_unique_card_names(repository=repository)
 
     return NamesResponse(names=names)
 
@@ -125,7 +124,7 @@ def set_version(
     try:
         version = registry._registry.set_version(
             name=payload.name,
-            team=payload.team,
+            repository=payload.repository,
             supplied_version=payload.version,
             version_type=payload.version_type,
             pre_tag=payload.pre_tag,
@@ -156,27 +155,17 @@ def list_cards(
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
         logger.info("Listing cards with request: {}", payload.model_dump())
 
-        cards = registry.list_cards(
+        cards = registry._registry.list_cards(
             uid=payload.uid,
             name=payload.name,
-            team=payload.team,
+            repository=payload.repository,
             version=payload.version,
             max_date=payload.max_date,
             limit=payload.limit,
             tags=payload.tags,
-            as_dataframe=False,
             ignore_release_candidates=payload.ignore_release_candidates,
+            query_terms=payload.query_terms,
         )
-
-        if config.is_proxy:
-            cards = [
-                replace_proxy_root(
-                    card=card,
-                    storage_root=config.STORAGE_URI,
-                    proxy_root=str(config.proxy_root),
-                )
-                for card in cards
-            ]
 
         return ListCardResponse(cards=cards)
 

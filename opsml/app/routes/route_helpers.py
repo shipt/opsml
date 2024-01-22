@@ -4,23 +4,32 @@
 # LICENSE file in the root directory of this source tree.
 
 import json
-import os
 import tempfile
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
+from starlette.templating import _TemplateResponse
 
 from opsml.app.routes.pydantic_models import AuditReport
-from opsml.app.routes.utils import get_names_teams_versions, list_team_name_info
-from opsml.model.types import ModelMetadata
-from opsml.registry import AuditCard, CardRegistry, DataCard, RunCard
-from opsml.registry.cards import ArtifactCard, ModelCard
-from opsml.registry.cards.audit import AuditSections
+from opsml.app.routes.utils import (
+    get_names_repositories_versions,
+    list_repository_name_info,
+)
+from opsml.cards.audit import AuditCard, AuditSections
+from opsml.cards.base import ArtifactCard
+from opsml.cards.data import DataCard
+from opsml.cards.model import ModelCard
+from opsml.cards.run import RunCard
+from opsml.helpers.logging import ArtifactLogger
+from opsml.registry import CardRegistry
+from opsml.types import ModelMetadata, SaveName, Suffix
+
+logger = ArtifactLogger.get_logger()
 
 # Constants
-PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-TEMPLATE_PATH = os.path.abspath(os.path.join(PARENT_DIR, "templates"))
+TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
 
@@ -59,7 +68,7 @@ class RouteHelper:
 class AuditRouteHelper(RouteHelper):
     """Route helper for AuditCard pages"""
 
-    def get_homepage(self, request: Request):
+    def get_homepage(self, request: Request) -> _TemplateResponse:
         """Returns default audit page when all parameters are None
 
         Args:
@@ -74,32 +83,32 @@ class AuditRouteHelper(RouteHelper):
             "include/audit/audit.html",
             {
                 "request": request,
-                "teams": request.app.state.registries.model._registry.unique_teams,
+                "repositories": request.app.state.registries.model._registry.unique_repositories,
                 "models": None,
-                "selected_team": None,
+                "selected_repository": None,
                 "selected_model": None,
                 "version": None,
                 "audit_report": None,
             },
         )
 
-    def get_team_page(self, request: Request, team: str):
-        """Returns audit page for a specific team
+    def get_repository_page(self, request: Request, repository: str) -> _TemplateResponse:
+        """Returns audit page for a specific repository
 
         Args:
             request:
                 The incoming HTTP request.
-            team:
-                The team name.
+            repository:
+                The repository name.
         """
-        teams = request.app.state.registries.model._registry.unique_teams
-        model_names = request.app.state.registries.model._registry.get_unique_card_names(team=team)
+        repositories = request.app.state.registries.model._registry.unique_repositories
+        model_names = request.app.state.registries.model._registry.get_unique_card_names(repository=repository)
         return templates.TemplateResponse(
             "include/audit/audit.html",
             {
                 "request": request,
-                "teams": teams,
-                "selected_team": team,
+                "repositories": repositories,
+                "selected_repository": repository,
                 "models": model_names,
                 "versions": None,
                 "selected_model": None,
@@ -108,29 +117,29 @@ class AuditRouteHelper(RouteHelper):
             },
         )
 
-    def get_versions_page(self, request: Request, name: str, team: str):
-        """Returns the audit page for a model name, team, and versions
+    def get_versions_page(self, request: Request, name: str, repository: str) -> _TemplateResponse:
+        """Returns the audit page for a model name, repository, and versions
 
         Args:
             request:
                 The incoming HTTP request.
             name:
                 The model name.
-            team:
-                The team name.
+            repository:
+                The repository name.
         """
-        model_names, teams, versions = get_names_teams_versions(
+        model_names, repositories, versions = get_names_repositories_versions(
             registry=request.app.state.registries.model,
             name=name,
-            team=team,
+            repository=repository,
         )
 
         return templates.TemplateResponse(
             "include/audit/audit.html",
             {
                 "request": request,
-                "teams": teams,
-                "selected_team": team,
+                "repositories": repositories,
+                "selected_repository": repository,
                 "models": model_names,
                 "selected_model": name,
                 "versions": versions,
@@ -159,8 +168,8 @@ class AuditRouteHelper(RouteHelper):
         if uid is None:
             return AuditReport(
                 name=None,
-                team=None,
-                user_email=None,
+                repository=None,
+                contact=None,
                 version=None,
                 uid=None,
                 status=False,
@@ -172,8 +181,8 @@ class AuditRouteHelper(RouteHelper):
         audit_card: AuditCard = audit_registry.load_card(uid=uid)  # type: ignore
         return AuditReport(
             name=audit_card.name,
-            team=audit_card.team,
-            user_email=audit_card.user_email,
+            repository=audit_card.repository,
+            contact=audit_card.contact,
             version=audit_card.version,
             uid=audit_card.uid,
             status=audit_card.approved,
@@ -185,19 +194,19 @@ class AuditRouteHelper(RouteHelper):
     def get_name_version_page(
         self,
         request: Request,
-        team: str,
+        repository: str,
         name: str,
         version: Optional[str] = None,
         email: Optional[str] = None,
         uid: Optional[str] = None,
-    ):
+    ) -> _TemplateResponse:
         """Get audit information for model version
 
         Args:
             request:
                 The incoming HTTP request.
-            team:
-                The team name.
+            repository:
+                The repository name.
             name:
                 The model name.
             version:
@@ -208,10 +217,10 @@ class AuditRouteHelper(RouteHelper):
                 The user email.
         """
 
-        model_names, teams, versions = get_names_teams_versions(
+        model_names, repositories, versions = get_names_repositories_versions(
             registry=request.app.state.registries.model,
             name=name,
-            team=team,
+            repository=repository,
         )
 
         model_record = request.app.state.registries.model.list_cards(
@@ -220,7 +229,7 @@ class AuditRouteHelper(RouteHelper):
             uid=uid,
         )[0]
 
-        email = model_record.get("user_email") if email is None else email
+        email = model_record.get("contact") if email is None else email
 
         audit_report = self._get_audit_report(
             audit_registry=request.app.state.registries.audit,
@@ -231,8 +240,8 @@ class AuditRouteHelper(RouteHelper):
             "include/audit/audit.html",
             {
                 "request": request,
-                "teams": teams,
-                "selected_team": team,
+                "repositories": repositories,
+                "selected_repository": repository,
                 "models": model_names,
                 "selected_model": name,
                 "selected_email": email,
@@ -246,24 +255,24 @@ class AuditRouteHelper(RouteHelper):
 class DataRouteHelper(RouteHelper):
     """Route helper for DataCard pages"""
 
-    def get_homepage(self, request: Request, team: Optional[str] = None):
+    def get_homepage(self, request: Request, repository: Optional[str] = None) -> _TemplateResponse:
         """Retrieves homepage
 
         Args:
             request:
                 The incoming HTTP request.
-            team:
-                The team name.
+            repository:
+                The repository name.
         """
         registry: CardRegistry = request.app.state.registries.data
 
-        info = list_team_name_info(registry, team)
+        info = list_repository_name_info(registry, repository)
         return templates.TemplateResponse(
             "include/data/data.html",
             {
                 "request": request,
-                "all_teams": info.teams,
-                "selected_team": info.selected_team,
+                "all_repositories": info.repositories,
+                "selected_repository": info.selected_repository,
                 "data": info.names,
             },
         )
@@ -276,7 +285,9 @@ class DataRouteHelper(RouteHelper):
             )
         return None
 
-    def _load_profile(self, request: Request, load_profile: bool, datacard: DataCard) -> Tuple[Optional[str], bool]:
+    def _load_profile(
+        self, request: Request, load_profile: bool, datacard: DataCard
+    ) -> Tuple[Optional[str], bool, bool]:
         """If load_profile is True, attempts to load the data profile
 
         Args:
@@ -290,21 +301,25 @@ class DataRouteHelper(RouteHelper):
         Returns:
             `Tuple[str, bool]`
         """
-        if load_profile and datacard.metadata.uris.profile_html_uri is not None:
+        storage_client = request.app.state.storage_client
+
+        data_html_path = (datacard.uri / SaveName.DATA_PROFILE.value).with_suffix(Suffix.HTML.value)
+        html_exists = storage_client.exists(data_html_path)
+
+        if load_profile and html_exists:
             with tempfile.TemporaryDirectory() as tmp_dir:
-                filepath = request.app.state.storage_client.download(
-                    datacard.metadata.uris.profile_html_uri,
-                    tmp_dir,
-                )
+                lpath = Path(tmp_dir) / data_html_path.name
+                storage_client.get(data_html_path, lpath)
 
-                stats = os.stat(filepath)
-                if stats.st_size / (1024 * 1024) <= 50:
-                    with open(filepath, "r", encoding="utf-8") as html_file:
-                        return html_file.read(), True
+                file_size = lpath.stat().st_size
+                if file_size / (1024 * 1024) <= 50:
+                    with lpath.open("r", encoding="utf-8") as html_file:
+                        return html_file.read(), True, html_exists
+
                 else:
-                    return "Data profile too large to display. Please download to view.", False
+                    return "Data profile too large to display. Please download to view.", False, html_exists
 
-        return None, False
+        return None, False, html_exists
 
     def get_versions_page(
         self,
@@ -312,7 +327,7 @@ class DataRouteHelper(RouteHelper):
         name: str,
         load_profile: bool,
         version: Optional[str] = None,
-    ):
+    ) -> _TemplateResponse:
         """Given a data name, returns the data versions page
 
         Args:
@@ -327,12 +342,16 @@ class DataRouteHelper(RouteHelper):
         """
 
         registry: CardRegistry = request.app.state.registries.data
-        versions = registry.list_cards(name=name, as_dataframe=False, limit=50)
+        versions = registry.list_cards(name=name, limit=50)
+
         datacard, version = self._check_version(registry, name, versions, version)
         datacard = cast(DataCard, datacard)
 
         data_splits = self._check_splits(card=datacard)
-        data_profile, render_profile = self._load_profile(request, load_profile, datacard)
+        data_profile, render_profile, html_exists = self._load_profile(request, load_profile, datacard)
+
+        data_filename = Path(SaveName.DATA.value).with_suffix(datacard.interface.data_suffix)
+        data_profile_filename = Path(SaveName.DATA_PROFILE.value).with_suffix(Suffix.HTML.value)
 
         return templates.TemplateResponse(
             "include/data/data_version.html",
@@ -345,52 +364,9 @@ class DataRouteHelper(RouteHelper):
                 "data_profile": data_profile,
                 "render_profile": render_profile,
                 "load_profile": load_profile,
-            },
-        )
-
-    def get_data_profile_page(
-        self,
-        request: Request,
-        name: str,
-        version: str,
-        profile_uri: Optional[str] = None,
-    ):
-        """Loads the data profile page
-
-        Args:
-            request:
-                The incoming HTTP request.
-            name:
-                The data name.
-            version:
-                The data version.
-            profile_uri:
-                The data profile uri.
-        """
-        if profile_uri is None:
-            data_profile = "No profile found"
-            render = False
-        else:
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                filepath = request.app.state.storage_client.download(profile_uri, tmp_dir)
-                stats = os.stat(filepath)
-                if stats.st_size / (1024 * 1024) <= 50:
-                    with open(filepath, "r", encoding="utf-8") as html_file:
-                        data_profile = html_file.read()
-                        render = True
-
-                else:
-                    data_profile = "Data profile too large to display. Please download to view."
-                    render = False
-
-        return templates.TemplateResponse(
-            "include/data/data_profile.html",
-            {
-                "request": request,
-                "name": name,
-                "data_profile": data_profile,
-                "version": version,
-                "render": render,
+                "html_exists": html_exists,
+                "data_filename": data_filename,
+                "data_profile_filename": data_profile_filename,
             },
         )
 
@@ -398,67 +374,65 @@ class DataRouteHelper(RouteHelper):
 class ModelRouteHelper(RouteHelper):
     """Route helper for DataCard pages"""
 
-    def get_homepage(self, request: Request, team: Optional[str] = None):
+    def get_homepage(self, request: Request, repository: Optional[str] = None) -> _TemplateResponse:
         """Retrieve homepage
 
         Args:
             request:
                 The incoming HTTP request.
-            team:
-                The team name.
+            repository:
+                The repository name.
         """
         registry: CardRegistry = request.app.state.registries.model
 
-        info = list_team_name_info(registry, team)
+        info = list_repository_name_info(registry, repository)
         return templates.TemplateResponse(
             "include/model/models.html",
             {
                 "request": request,
-                "all_teams": info.teams,
-                "selected_team": info.selected_team,
+                "all_repositories": info.repositories,
+                "selected_repository": info.selected_repository,
                 "models": info.names,
             },
         )
 
-    def _get_runcard(
-        self,
-        request: Request,
-        registry: CardRegistry,
-        modelcard: ModelCard,
-    ) -> Tuple[Optional[RunCard], Optional[str]]:
+    def _get_runcard(self, registry: CardRegistry, modelcard: ModelCard) -> Tuple[Optional[RunCard], Optional[str]]:
         if modelcard.metadata.runcard_uid is not None:
             runcard: RunCard = registry.load_card(uid=modelcard.metadata.runcard_uid)  # type: ignore
-            project_num = request.app.state.mlflow_client.get_experiment_by_name(name=runcard.project_id).experiment_id
-
-            return runcard, project_num
+            return runcard, runcard.project
 
         return None, None
 
-    def _check_data_dim(self, metadata: ModelMetadata) -> Tuple[str, str]:
-        """Checks if the data dimension is too large to load in the UI
+    def _get_path(self, name: str, path: Optional[str] = None) -> Tuple[Optional[str], Optional[str]]:
+        if path is None:
+            return None, None
 
-        Args:
-            metadata:
-                The model metadata.
+        rpath = Path(path)
 
-        Returns:
-            `Tuple[str, str]`
-        """
-        max_dim = 0
-        if metadata.data_schema.model_data_schema.data_type == "NUMPY_ARRAY":
-            features = metadata.data_schema.model_data_schema.input_features
-            inputs = features.get("inputs")
-            if inputs is not None:
-                max_dim = max(inputs.shape)
-        # capping amount of sample data shown
+        if rpath.suffix == "":
+            save_filename = f"{name}.zip"
+        else:
+            save_filename = rpath.name
 
-        if max_dim > 200:
-            metadata.sample_data = {"inputs": "Sample data is too large to load in ui"}
+        return rpath.as_posix(), save_filename
 
-        metadata_json = json.dumps(metadata.model_dump(), indent=4)
-        sample_data = json.dumps(metadata.sample_data, indent=4)
+    def _get_processor_uris(self, metadata: ModelMetadata) -> Dict[str, Dict[str, Optional[str]]]:
+        processor_uris = {}
+        dumped_meta = metadata.model_dump()
 
-        return metadata_json, sample_data
+        # get preprocessor
+        rpath, filename = self._get_path("preprocessor", dumped_meta.get("preprocessor_uri"))
+        processor_uris["preprocessor"] = {"rpath": rpath, "filename": filename}
+
+        # get tokenizer
+        rpath, filename = self._get_path("tokenizer", dumped_meta.get("tokenizer_uri"))
+        processor_uris["tokenizer"] = {"rpath": rpath, "filename": filename}
+
+        # get feature extractor
+        rpath, filename = self._get_path("feature_extractor", dumped_meta.get("feature_extractor_uri"))
+        processor_uris["feature_extractor"] = {"rpath": rpath, "filename": filename}
+
+        return processor_uris
 
     def get_versions_page(
         self,
@@ -467,7 +441,7 @@ class ModelRouteHelper(RouteHelper):
         versions: List[Dict[str, Any]],
         metadata: ModelMetadata,
         version: Optional[str] = None,
-    ):
+    ) -> _TemplateResponse:
         """Given a data name, returns the data versions page
 
         Args:
@@ -487,12 +461,29 @@ class ModelRouteHelper(RouteHelper):
         modelcard, version = self._check_version(registry, name, versions, version)
 
         runcard, project_num = self._get_runcard(
-            request=request,
             registry=request.app.state.registries.run,
             modelcard=cast(ModelCard, modelcard),
         )
 
-        metadata_json, sample_data = self._check_data_dim(metadata)
+        metadata_json = json.dumps(metadata.model_dump(), indent=4)
+
+        model_filename = Path(metadata.model_uri)
+
+        if model_filename.suffix == "":
+            model_save_filename = "model.zip"
+        else:
+            model_save_filename = model_filename.name
+
+        onnx_filename = Path(metadata.onnx_uri) if metadata.onnx_uri is not None else None
+
+        if onnx_filename is not None and onnx_filename.suffix == "":
+            onnx_save_filename = "onnx.zip"
+        elif onnx_filename is not None:
+            onnx_save_filename = onnx_filename.name
+        else:
+            onnx_save_filename = None
+
+        processor_uris = self._get_processor_uris(metadata)
 
         return templates.TemplateResponse(
             "include/model/model_version.html",
@@ -503,8 +494,128 @@ class ModelRouteHelper(RouteHelper):
                 "selected_version": version,
                 "project_num": project_num,
                 "metadata": metadata,
-                "sample_data": sample_data,
                 "runcard": runcard,
                 "metadata_json": metadata_json,
+                "model_filename": model_save_filename,
+                "processor_uris": processor_uris,
+                "onnx_filename": onnx_save_filename,
+            },
+        )
+
+
+class ProjectRouteHelper(RouteHelper):
+    """Route helper for DataCard pages"""
+
+    def get_run_metrics(self, request: Request, run_uid: str) -> _TemplateResponse:
+        """Retrieve homepage
+
+        Args:
+            request:
+                The incoming HTTP request.
+            run_uid:
+                The run uid.
+        """
+        run_registry: CardRegistry = request.app.state.registries.run
+        runcard = run_registry.load_card(uid=run_uid).model_dump()
+
+        return templates.TemplateResponse(
+            "include/project/metric_page.html",
+            {
+                "request": request,
+                "runcard": runcard,
+            },
+        )
+
+    def get_unique_projects(self, project_registry: CardRegistry) -> List[str]:
+        """Get unique projects
+
+        Args:
+            project_registry:
+                The project registry.
+        """
+
+        projects = project_registry.list_cards()
+
+        return list(set(project["name"] for project in projects))
+
+    def get_project_runs(self, project: str, run_registry: CardRegistry) -> List[Dict[str, Any]]:
+        """Get runs for a project
+
+        Args:
+            project:
+                The selected project.
+            run_registry:
+                The run registry.
+        """
+        project_runs = run_registry._registry.list_cards(
+            limit=100,
+            query_terms={"project": project},
+        )
+        sorted(project_runs, key=lambda k: k["timestamp"], reverse=True)
+
+        return project_runs
+
+    def get_project_run(
+        self,
+        request: Request,
+        project: Optional[str] = None,
+        run_uid: Optional[str] = None,
+    ) -> _TemplateResponse:
+        """Retrieve homepage
+
+        Args:
+            request:
+                The incoming HTTP request.
+            project:
+                The project name.
+            run_uid:
+                The run uid.
+        """
+        project_registry: CardRegistry = request.app.state.registries.project
+        run_registry: CardRegistry = request.app.state.registries.run
+
+        unique_projects = self.get_unique_projects(project_registry)
+
+        logger.debug(f"unique_projects: {unique_projects}")
+
+        if len(unique_projects) == 0:
+            return templates.TemplateResponse(
+                "include/project/no_projects.html",
+                {"request": request},
+            )
+
+        if project is None:
+            selected_project = unique_projects[0]
+        else:
+            selected_project = project
+
+        # get projects
+        project_runs = self.get_project_runs(selected_project, run_registry)
+
+        logger.debug("Found {} runs", len(project_runs))
+
+        if run_uid is not None:
+            runcard = run_registry.load_card(uid=run_uid)
+        else:
+            if len(project_runs) == 0:
+                return templates.TemplateResponse(
+                    "include/project/projects.html",
+                    {
+                        "request": request,
+                        "all_projects": unique_projects,
+                        "selected_project": selected_project,
+                        "project_runs": project_runs,
+                    },
+                )
+            runcard = run_registry.load_card(uid=project_runs[0]["uid"])
+
+        return templates.TemplateResponse(
+            "include/project/projects.html",
+            {
+                "request": request,
+                "all_projects": unique_projects,
+                "selected_project": selected_project,
+                "project_runs": project_runs,
+                "runcard": runcard,
             },
         )
