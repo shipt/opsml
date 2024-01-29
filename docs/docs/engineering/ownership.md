@@ -4,9 +4,47 @@ In many organizations there is often a separation of concerns between data scien
 
 ## **Architecture of Opsml Proxy Setup**
 
-<p align="center">
-  <img src="../../images/opsml-example-arch.png" width="1419" height="845"/>
-</p>
+```mermaid
+flowchart LR
+  subgraph "1: Common DS Workflow (Exploration, Training, Evaluation, Etc.)"
+    
+    DS1(["fa:fa-user-group" DS])
+
+    DS1 --> 
+    Workflow([Workflow]) --> 
+    Cards(Cards) --> 
+    OpsMLClient(OpsML Client)
+  end
+  Artifact(Artifact)
+  DBRecord(DBRecord)
+  OpsMLClient --> Artifact
+  OpsMLClient --> DBRecord
+
+  Artifact --> OpsMLServer
+  DBRecord --> OpsMLServer
+
+  subgraph "Engineering Owned"
+    OpsMLServer("OpsML Server - (Docker/K8s)") 
+    OpsMLServer <--> Storage(Storage)
+    OpsMLServer <-->  Registry[(Registry)]
+
+    DownloadModel(Download Model) --> OpsMLServer
+    OpsMLServer <-- Model --> Docker
+    CICD(CI/CD Process) --> Build(Build)
+    Build --> DownloadModel
+    Build --> Docker("Docker")
+  end
+
+  subgraph "2: Model Deployment"
+    
+    DS2(["fa:fa-user-group" DS]) 
+    DS2 -- Custom Logic --> APICode("API Code (FastAPI)") -- Push/Tag --> CICD
+    DS2 -- Specify Model --> ConfigSpec(Config/Specification) -- Push/Tag --> CICD
+  end
+
+  ModelAPI("Model API - (Docker/K8s)")
+  Docker --> ModelAPI
+```
 
 ### General Setup
 
