@@ -120,7 +120,7 @@ def download_file(request: Request, path: str) -> StreamingResponse:
         return StreamingResponse(
             storage_client.iterfile(
                 Path(swap_opsml_root(request, Path(path))),
-                1024 * 1024,
+                CHUNK_SIZE,
             ),
             media_type="application/octet-stream",
         )

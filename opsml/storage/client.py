@@ -120,8 +120,12 @@ class StorageClientBase(StorageClientProtocol):
     def iterfile(self, path: Path, chunk_size: int) -> Iterator[bytes]:
         with self.open(path, "rb") as file_:
             logger.info(f"Streaming file {path} in chunks of {chunk_size} bytes")
-            while chunk := file_.read(chunk_size):
-                yield chunk
+            try:
+                while chunk := file_.read(chunk_size):
+                    yield chunk
+            except Exception as error:
+                logger.error(f"Error streaming file {path}: {error}")
+                raise error
 
     def iterbuffer(self, buffer: io.BytesIO, chunk_size: int) -> Iterator[bytes]:
         buffer.seek(0)
