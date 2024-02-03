@@ -30,11 +30,12 @@ from opsml.app.routes.utils import (
     MaxBodySizeValidator,
 )
 from opsml.helpers.logging import ArtifactLogger
+from opsml.types import StorageClientSettings
 from opsml.storage.client import StorageClientBase, LocalStorageClient
 
 logger = ArtifactLogger.get_logger()
 CHUNK_SIZE = 31457280
-local_fs = LocalStorageClient()
+local_fs = LocalStorageClient(settings=StorageClientSettings())
 
 
 MAX_FILE_SIZE = 1024 * 1024 * 1024 * 50  # = 50GB
