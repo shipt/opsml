@@ -7,7 +7,6 @@ import tempfile
 import zipfile as zp
 from pathlib import Path
 from typing import Dict
-
 import streaming_form_data
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
@@ -31,10 +30,11 @@ from opsml.app.routes.utils import (
     MaxBodySizeValidator,
 )
 from opsml.helpers.logging import ArtifactLogger
-from opsml.storage.client import StorageClientBase
+from opsml.storage.client import StorageClientBase, LocalStorageClient
 
 logger = ArtifactLogger.get_logger()
 CHUNK_SIZE = 31457280
+local_fs = LocalStorageClient()
 
 
 MAX_FILE_SIZE = 1024 * 1024 * 1024 * 50  # = 50GB
@@ -116,14 +116,28 @@ def download_file(request: Request, path: str) -> StreamingResponse:
     """
     logger.info("Server: Downloading file {}", path)
     storage_client: StorageClientBase = request.app.state.storage_client
+
     try:
-        return StreamingResponse(
-            storage_client.iterfile(
-                Path(swap_opsml_root(request, Path(path))),
-                CHUNK_SIZE,
-            ),
-            media_type="application/octet-stream",
-        )
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            lpath = Path(tmpdirname)
+            rpath = swap_opsml_root(request, Path(path))
+            local_path = lpath / rpath.name
+            storage_client.get(rpath, local_path)
+            logger.info("File downloaded to {}", local_path)
+            logger.info("Server: Sending file {}", path)
+
+            return StreamingResponse(
+                local_fs.iterfile(local_path, CHUNK_SIZE),
+                media_type="application/octet-stream",
+            )
+    # try:
+    #    return StreamingResponse(
+    #        storage_client.iterfile(
+    #            Path(swap_opsml_root(request, Path(path))),
+    #            CHUNK_SIZE,
+    #        ),
+    #        media_type="application/octet-stream",
+    #    )
 
     except Exception as error:
         logger.error("Server: Error downloading file {}", path)
