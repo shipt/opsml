@@ -30,12 +30,10 @@ from opsml.app.routes.utils import (
     MaxBodySizeValidator,
 )
 from opsml.helpers.logging import ArtifactLogger
-from opsml.types import StorageClientSettings
-from opsml.storage.client import StorageClientBase, LocalStorageClient
+from opsml.storage.client import StorageClientBase
 
 logger = ArtifactLogger.get_logger()
 CHUNK_SIZE = 31457280
-local_fs = LocalStorageClient(settings=StorageClientSettings())
 
 
 MAX_FILE_SIZE = 1024 * 1024 * 1024 * 50  # = 50GB
@@ -119,36 +117,13 @@ def download_file(request: Request, path: str) -> StreamingResponse:
     storage_client: StorageClientBase = request.app.state.storage_client
 
     try:
-        tmpdirname = "downloads"
-        lpath = Path(tmpdirname)
-        lpath.mkdir(parents=True, exist_ok=True)
-
-        rpath = swap_opsml_root(request, Path(path))
-        local_path = lpath / rpath.name
-
-        logger.info("Server: Downloading {} to {}", rpath, local_path)
-
-        storage_client.get(rpath, local_path)
-
-        logger.info("File downloaded to {}", local_path)
-
-        # check file exists
-        if not local_path.exists():
-            logger.info("Log File {} not found", local_path)
-            raise FileNotFoundError(f"File {local_path} not found")
-
         return StreamingResponse(
-            local_fs.iterfile(local_path, CHUNK_SIZE),
+            storage_client.iterfile(
+                Path(swap_opsml_root(request, Path(path))),
+                CHUNK_SIZE,
+            ),
             media_type="application/octet-stream",
         )
-    # try:
-    #    return StreamingResponse(
-    #        storage_client.iterfile(
-    #            Path(swap_opsml_root(request, Path(path))),
-    #            CHUNK_SIZE,
-    #        ),
-    #        media_type="application/octet-stream",
-    #    )
 
     except Exception as error:
         logger.error("Server: Error downloading file {}", path)
