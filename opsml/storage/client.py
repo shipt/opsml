@@ -119,7 +119,11 @@ class StorageClientBase(StorageClientProtocol):
 
     def iterfile(self, path: Path, chunk_size: int) -> Iterator[bytes]:
         with self.open(path, "rb") as file_:
+            chunked = 0
+            logger.info(f"Streaming file {path} in chunks of {chunk_size} bytes")
             while chunk := file_.read(chunk_size):
+                chunked += chunk_size
+                logger.info(f"Streaming chunk {chunked} of {path}")
                 yield chunk
 
     def iterbuffer(self, buffer: io.BytesIO, chunk_size: int) -> Iterator[bytes]:
