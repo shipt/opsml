@@ -123,9 +123,18 @@ def download_file(request: Request, path: str) -> StreamingResponse:
             lpath = Path(tmpdirname)
             rpath = swap_opsml_root(request, Path(path))
             local_path = lpath / rpath.name
+            local_path.mkdir(parents=True, exist_ok=True)
+
+            logger.info("Server: Downloading {} to {}", rpath, local_path)
+
             storage_client.get(rpath, local_path)
+
             logger.info("File downloaded to {}", local_path)
-            logger.info("Server: Sending file {}", path)
+
+            # check file exists
+            if not local_path.exists():
+                logger.info("Log File {} not found", local_path)
+                raise FileNotFoundError(f"File {local_path} not found")
 
             return StreamingResponse(
                 local_fs.iterfile(local_path, CHUNK_SIZE),
