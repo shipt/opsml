@@ -122,6 +122,7 @@ class StorageClientBase(StorageClientProtocol):
             logger.info(f"Streaming file {path} in chunks of {chunk_size} bytes")
             try:
                 while chunk := file_.read(chunk_size):
+                    logger.info(f"{chunk}")
                     yield chunk
             except Exception as error:
                 logger.error(f"Error streaming file {path}: {error}")
