@@ -119,27 +119,27 @@ def download_file(request: Request, path: str) -> StreamingResponse:
     storage_client: StorageClientBase = request.app.state.storage_client
 
     try:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            lpath = Path(tmpdirname)
-            rpath = swap_opsml_root(request, Path(path))
-            local_path = lpath / rpath.name
-            local_path.mkdir(parents=True, exist_ok=True)
+        tmpdirname = "downloads"
+        lpath = Path(tmpdirname)
+        rpath = swap_opsml_root(request, Path(path))
+        local_path = lpath / rpath.name
+        local_path.mkdir(parents=True, exist_ok=True)
 
-            logger.info("Server: Downloading {} to {}", rpath, local_path)
+        logger.info("Server: Downloading {} to {}", rpath, local_path)
 
-            storage_client.get(rpath, local_path)
+        storage_client.get(rpath, local_path)
 
-            logger.info("File downloaded to {}", local_path)
+        logger.info("File downloaded to {}", local_path)
 
-            # check file exists
-            if not local_path.exists():
-                logger.info("Log File {} not found", local_path)
-                raise FileNotFoundError(f"File {local_path} not found")
+        # check file exists
+        if not local_path.exists():
+            logger.info("Log File {} not found", local_path)
+            raise FileNotFoundError(f"File {local_path} not found")
 
-            return StreamingResponse(
-                local_fs.iterfile(local_path, CHUNK_SIZE),
-                media_type="application/octet-stream",
-            )
+        return StreamingResponse(
+            local_fs.iterfile(local_path, CHUNK_SIZE),
+            media_type="application/octet-stream",
+        )
     # try:
     #    return StreamingResponse(
     #        storage_client.iterfile(
