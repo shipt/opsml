@@ -35,7 +35,7 @@ class ApiRoutes:
 
 
 api_routes = ApiRoutes()
-_TIMEOUT_CONFIG = httpx.Timeout(connect=10, read=60 * 5, write=60 * 5)
+_TIMEOUT_CONFIG = httpx.Timeout(10, read=60 * 5, write=60 * 5)
 
 
 class ApiClient:
