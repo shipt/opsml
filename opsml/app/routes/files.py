@@ -121,9 +121,10 @@ def download_file(request: Request, path: str) -> StreamingResponse:
     try:
         tmpdirname = "downloads"
         lpath = Path(tmpdirname)
+        lpath.mkdir(parents=True, exist_ok=True)
+
         rpath = swap_opsml_root(request, Path(path))
         local_path = lpath / rpath.name
-        local_path.mkdir(parents=True, exist_ok=True)
 
         logger.info("Server: Downloading {} to {}", rpath, local_path)
 
