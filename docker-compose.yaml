@@ -32,3 +32,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  
+  webserver:
+    container_name: opsml-docker
+    restart: always
+    build:
+      context: docker
+      dockerfile: Dockerfile
+      target: prod
+      args:
+        PY_VER_FULL: "3.10.13"
+        PY_VER_MAJOR: "3.10"
+        OPSML_EXTRAS: "gcs, server, postgres"
+        OPSML_VERSION: "2.1.6"
+
+    ports:
+      - "8000:8000"
+
+    command: >
+      gunicorn 
+      -k uvicorn.workers.UvicornWorker 
+      --workers=1
+      --bind=0.0.0.0:8000 
+      "opsml.app.main:run_app()"
+

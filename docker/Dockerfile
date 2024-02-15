@@ -3,12 +3,12 @@ ARG EXTRA_SYS_PACKAGES="\
   libpq-dev \
   "
 
+ARG POETRY_VERSION=1.6.1
 ARG PROJECT_NAME=opsml-docker
-ARG PIPX_VERSION=1.2.0
 ARG PY_VER_FULL
 ARG PY_VER_MAJOR
-ARG OPSML_VERSION
-ARG OPSML_EXTRAS
+ARG POETRY_VERSION=1.7.1
+ARG PIPX_VERSION=1.2.0
 
 # required on all stages..e.g. CAs and timezones should never be stale
 ARG SYS_PACKAGES="ca-certificates tzdata"
@@ -25,9 +25,18 @@ RUN wget https://github.com/pypa/pipx/releases/download/${PIPX_VERSION}/pipx.pyz
     && python pipx.pyz install pipx \
     && rm pipx.pyz
 
-FROM python-pipx as base
+FROM python-pipx as python-pipx-poetry
+ARG POETRY_VERSION
+ENV POETRY_VERSION=${POETRY_VERSION}
+
+RUN pipx install poetry==${POETRY_VERSION}
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+ENV POETRY_VIRTUALENVS_CREATE=true
+
+FROM python-pipx-poetry as base
 ARG EXTRA_SYS_PACKAGES
 ARG PROJECT_NAME
+ARG PY_VER_MAJOR
 ARG SYS_PACKAGES
 
 ENV PROJECT_HOME=/opt/${PROJECT_NAME}
@@ -54,8 +63,12 @@ WORKDIR ${PROJECT_HOME}
 # adds python project files
 # ================================================================
 FROM base as builder
+ARG OPSML_EXTRAS
+ARG OPSML_VERSION
 
-RUN pipx install "opsml[${OPSML_EXTRAS}]==${OPSML_VERSION}"
+# separate caching layer for deps
+COPY pyproject.toml poetry.lock ./
+RUN poetry run pip install "opsml[${OPSML_EXTRAS}]==${OPSML_VERSION}" 
 
 # # ================================================================
 # # Prod Image
@@ -64,8 +77,8 @@ RUN pipx install "opsml[${OPSML_EXTRAS}]==${OPSML_VERSION}"
 FROM python:${PY_VER_FULL}-slim as prod
 ARG EXTRA_SYS_PACKAGES
 ARG PROJECT_NAME
-ARG SYS_PACKAGES
 ARG PY_VER_MAJOR
+ARG SYS_PACKAGES
 
 ENV PROJECT_HOME=/opt/${PROJECT_NAME}
 ENV PROJECT_PYTHONPATH=${PROJECT_HOME}/.venv/lib/python${PY_VER_MAJOR}/site-packages
