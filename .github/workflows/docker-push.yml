@@ -16,7 +16,8 @@ jobs:
       env:
         PY_VER_FULL: "3.10.13"
         PY_VER_MAJOR: "3.10"
-        OPSML_VERSION: "2.1.6"
+       
+
       strategy:
         matrix:
           storage_backend: ["gcs"]
@@ -34,7 +35,7 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
 
-        - name: Extract metadata (tags, labels) for Docker
+        - name: metadata
           id: meta
           uses: docker/metadata-action@v5
           with:
@@ -42,10 +43,14 @@ jobs:
 
         - run: |
             export poetry_version="v$(poetry version --short)"
-            echo "VERSION_TAG=$poetry_version" >> $GITHUB_ENV
-            echo "PYPI_VERSION=$(poetry version --short)" >> $GITHUB_ENV
+            echo "VERSION_TAG=$poetry_version" >> "$GITHUB_OUTPUT"
+            echo "PYPI_VERSION=$(poetry version --short)" >> "$GITHUB_OUTPUT"
 
         - name: Build and push Docker image
+          env:
+            VERSION_TAG: ${{ steps.metadata.outputs.VERSION_TAG }}
+            PYPI_VERSION: ${{ steps.metadata.outputs.PYPI_VERSION }}
+            
           uses: docker/build-push-action@v5
           with:
             context: .
