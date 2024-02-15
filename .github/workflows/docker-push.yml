@@ -40,7 +40,9 @@ jobs:
           with:
             images: my-docker-hub-namespace/my-docker-hub-repository
 
-        - run: export OPSML_VERSION="v$(poetry version --short)"
+        - run: |
+            echo "VERSION_TAG="v$(poetry version --short)" >> $GITHUB_ENV
+            echo "PYPI_VERSION=$(poetry version --short)" >> $GITHUB_ENV
 
         - name: Build and push Docker image
           uses: docker/build-push-action@v5
@@ -48,10 +50,10 @@ jobs:
             context: .
             file: ./docker/Dockerfile
             push: true
-            tags: demml/opsml:${{env.PY_VER_FULL}}_gcs_pg_${{env.OPSML_VERSION}}
+            tags: demml/opsml:${{env.PY_VER_FULL}}_${{matrix.storage_backend}}_${{matrix.sql_backend}}_${{env.VERSION_TAG}}
             labels: ${{ steps.meta.outputs.labels }}
             build-args: |
               PY_VER_FULL=${{env.PY_VER_FULL}}
               PY_VER_MAJOR=${{env.PY_VER_MAJOR}}
-              OPSML_CMD=opsml[${{matrix.storage_backend}},${{matrix.sql_backend}},server]==${{env.OPSML_VERSION}}
+              OPSML_CMD=opsml[${{matrix.storage_backend}},${{matrix.sql_backend}},server]==${{env.PYPI_VERSION}}
          
