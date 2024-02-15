@@ -49,4 +49,4 @@ jobs:
               PY_VER_FULL=${{env.PY_VER_FULL}}
               PY_VER_MAJOR=${{env.PY_VER_MAJOR}}
               OPSML_EXTRAS="gcs, server, postgres"
-              OPSML_VERSION=$OPSML_VERSION
+              OPSML_VERSION=${{env.OPSML_VERSION}}
