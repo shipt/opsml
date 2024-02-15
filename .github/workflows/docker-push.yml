@@ -16,6 +16,7 @@ jobs:
       env:
         PY_VER_FULL: "3.10.13"
         PY_VER_MAJOR: "3.10"
+        OPSML_VERSION: "2.1.6"
       steps:
         - name: Check out the repo
           uses: actions/checkout@v4
@@ -42,7 +43,7 @@ jobs:
             context: .
             file: ./docker/Dockerfile
             push: true
-            tags: demml/opsml:${{env.PY_VER_FULL}}_gcs_pg_${OPSML_VERSION}
+            tags: demml/opsml:${{env.PY_VER_FULL}}_gcs_pg_${{env.OPSML_VERSION}}
             labels: ${{ steps.meta.outputs.labels }}
             build-args: |
               PY_VER_FULL=${{env.PY_VER_FULL}}
