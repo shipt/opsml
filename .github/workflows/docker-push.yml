@@ -19,7 +19,7 @@ jobs:
         OPSML_VERSION: "2.1.6"
       strategy:
         matrix:
-          storage_backend: ["gcs", s3]
+          storage_backend: ["gcs"]
           sql_backend: ["postgres", "mysql"]
 
       steps:
