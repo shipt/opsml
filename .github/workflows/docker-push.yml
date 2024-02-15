@@ -41,7 +41,8 @@ jobs:
             images: my-docker-hub-namespace/my-docker-hub-repository
 
         - run: |
-            echo "VERSION_TAG="v$(poetry version --short)" >> $GITHUB_ENV
+            poetry_version="v$(poetry version --short)"
+            echo "VERSION_TAG=$poetry_version" >> $GITHUB_ENV
             echo "PYPI_VERSION=$(poetry version --short)" >> $GITHUB_ENV
 
         - name: Build and push Docker image
