@@ -16,7 +16,7 @@ jobs:
       env:
         PY_VER_FULL: "3.10.13"
         PY_VER_MAJOR: "3.10"
-       
+        OPSML_VERSION: "2.1.6"
 
       strategy:
         matrix:
@@ -41,25 +41,16 @@ jobs:
           with:
             images: my-docker-hub-namespace/my-docker-hub-repository
 
-        - run: |
-            export poetry_version="v$(poetry version --short)"
-            echo "VERSION_TAG=$poetry_version" >> "$GITHUB_OUTPUT"
-            echo "PYPI_VERSION=$(poetry version --short)" >> "$GITHUB_OUTPUT"
-
         - name: Build and push Docker image
-          env:
-            VERSION_TAG: ${{ steps.metadata.outputs.VERSION_TAG }}
-            PYPI_VERSION: ${{ steps.metadata.outputs.PYPI_VERSION }}
-            
           uses: docker/build-push-action@v5
           with:
             context: .
             file: ./docker/Dockerfile
             push: true
-            tags: demml/opsml:${{env.PY_VER_FULL}}_${{matrix.storage_backend}}_${{matrix.sql_backend}}_${{env.VERSION_TAG}}
+            tags: demml/opsml:${{env.PY_VER_FULL}}_${{matrix.storage_backend}}_${{matrix.sql_backend}}_v${{env.OPSML_VERSION}}
             labels: ${{ steps.meta.outputs.labels }}
             build-args: |
               PY_VER_FULL=${{env.PY_VER_FULL}}
               PY_VER_MAJOR=${{env.PY_VER_MAJOR}}
-              OPSML_CMD=opsml[${{matrix.storage_backend}},${{matrix.sql_backend}},server]==${{env.PYPI_VERSION}}
+              OPSML_CMD=opsml[${{matrix.storage_backend}},${{matrix.sql_backend}},server]==${{env.OPSML_VERSION}}
          
