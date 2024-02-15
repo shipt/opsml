@@ -63,12 +63,11 @@ WORKDIR ${PROJECT_HOME}
 # adds python project files
 # ================================================================
 FROM base as builder
-ARG OPSML_EXTRAS
-ARG OPSML_VERSION
+ARG OPSML_CMD
 
 # separate caching layer for deps
 COPY pyproject.toml poetry.lock ./
-RUN poetry run pip install "opsml[${OPSML_EXTRAS}]==${OPSML_VERSION}" 
+RUN poetry run pip install ${OPSML_CMD}
 
 # # ================================================================
 # # Prod Image

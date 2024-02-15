@@ -17,6 +17,11 @@ jobs:
         PY_VER_FULL: "3.10.13"
         PY_VER_MAJOR: "3.10"
         OPSML_VERSION: "2.1.6"
+      strategy:
+        matrix:
+          storage_backend: ["gcs", s3]
+          sql_backend: ["postgres", "mysql"]
+
       steps:
         - name: Check out the repo
           uses: actions/checkout@v4
@@ -48,5 +53,5 @@ jobs:
             build-args: |
               PY_VER_FULL=${{env.PY_VER_FULL}}
               PY_VER_MAJOR=${{env.PY_VER_MAJOR}}
-              OPSML_EXTRAS="gcs, server, postgres"
-              OPSML_VERSION=${{env.OPSML_VERSION}}
+              OPSML_CMD="opsml[${{matrix.storage_backend}},${{matrix.sql_backend}},server]==${{env.OPSML_VERSION}}"
+         
