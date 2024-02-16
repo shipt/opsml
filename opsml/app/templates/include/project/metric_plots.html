@@ -1,30 +1,11 @@
-{% extends "base.html" %}
+<hr id="version-spacer">
 
-
-{% set model_status = none %}
-{% set data_status = none %}
-{% set runs_status = 'active' %}
-{% set audit_status = none %}
-{% include "include/navbar.html" %}
-
-{% block title %}
-  <title>Metrics</title>
-{% endblock %}
-
-{% block content %}
-<body id="RunPage">
-<div class="container" style="padding-top:65px;">
-</div>
-
-<br>
-
-
-<h5 style="padding-top:10px; padding-left:80px;"><button onclick="window.location.href='/opsml/projects/list/?project={{ runcard["project"] }}&run_uid={{ runcard["uid"] }}';" id="project-button" class="btn btn-success">{{ runcard["project"] }}</button> - {{ runcard["name"] }} - Metrics</h5>
-
+<div class="card-body" style="min-height:1000px;">
 
 {% if runcard["metrics"]|length > 0 %}
 
-<div class"containter" id="split-column" style="padding-left:70px;">
+<div class"containter" id="split-column" >
+
     <div id="MetricSelectColumn">
         <form id="myForm" action="javascript:void(0);">
 
@@ -62,9 +43,8 @@
  </p>
 
 {% endif %}
+</div>
 
-
-{% endblock %}
 
 {% block scripts %}
 <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -263,4 +243,3 @@
       
 </script>
 {% endblock %}
-

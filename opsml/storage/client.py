@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import BinaryIO, Iterator, List, Optional, Protocol, cast
 
 from fsspec.implementations.local import LocalFileSystem
-
+from functools import cached_property
+import datetime
 from opsml.helpers.logging import ArtifactLogger
 from opsml.settings.config import OpsmlConfig, config
 from opsml.storage.api import ApiClient, ApiRoutes
@@ -22,6 +23,8 @@ from opsml.types import (
     StorageClientSettings,
     StorageSettings,
     StorageSystem,
+    BotoClient,
+    GCSClient,
 )
 
 warnings.filterwarnings("ignore", message="Setuptools is replacing distutils.")
@@ -147,6 +150,10 @@ class StorageClientBase(StorageClientProtocol):
         except FileNotFoundError:
             return False
 
+    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+        """Generates pre signed url for object"""
+        return (Path(self.settings.storage_uri) / path).as_posix()
+
 
 class GCSFSStorageClient(StorageClientBase):
     def __init__(
@@ -170,6 +177,28 @@ class GCSFSStorageClient(StorageClientBase):
             client=client,
         )
 
+    @cached_property
+    def gcs_client(self) -> GCSClient:
+        from google.cloud import storage
+
+        return cast(GCSClient, storage.Client())
+
+    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+        """Generates pre signed url for S3 object"""
+        try:
+            bucket = self.gcs_client.bucket(config.storage_root)
+            blob = bucket.blob(str(path))
+
+            return blob.generate_presigned_url(
+                version="v4",
+                expiration=datetime.timedelta(seconds=expiration),
+                # Allow GET requests using this URL.
+                method="GET",
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate presigned URL: {e}")
+            return None
+
 
 class S3StorageClient(StorageClientBase):
     def __init__(
@@ -180,11 +209,25 @@ class S3StorageClient(StorageClientBase):
 
         assert isinstance(settings, S3StorageClientSettings)
         client = s3fs.S3FileSystem()
+        super().__init__(settings=settings, client=client)
 
-        super().__init__(
-            settings=settings,
-            client=client,
-        )
+    @cached_property
+    def s3_client(self) -> BotoClient:
+        import boto3
+
+        return cast(BotoClient, boto3.client("s3"))
+
+    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+        """Generates pre signed url for S3 object"""
+        try:
+            return self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": config.storage_root, "Key": str(path)},
+                ExpiresIn=expiration,
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate presigned URL: {e}")
+            return None
 
 
 class LocalStorageClient(StorageClientBase):

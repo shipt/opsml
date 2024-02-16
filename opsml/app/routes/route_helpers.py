@@ -4,6 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import json
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
@@ -287,9 +288,7 @@ class DataRouteHelper(RouteHelper):
             )
         return None
 
-    def _load_profile(
-        self, request: Request, load_profile: bool, datacard: DataCard
-    ) -> Tuple[Optional[str], bool, bool]:
+    def _load_profile(self, request: Request, load_profile: bool, datacard: DataCard) -> Tuple[Optional[str], bool, bool]:
         """If load_profile is True, attempts to load the data profile
 
         Args:
@@ -653,7 +652,7 @@ class ProjectRouteHelper(RouteHelper):
                 "all_projects": unique_projects,
                 "selected_project": selected_project,
                 "project_runs": project_runs,
-                "runcard": runcard,
+                "runcard": runcard.model_dump(),
                 "graphs": self.load_graphs(runcard),
             },
         )
