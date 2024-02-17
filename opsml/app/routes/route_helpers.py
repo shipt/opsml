@@ -4,7 +4,6 @@
 # LICENSE file in the root directory of this source tree.
 
 import json
-import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
@@ -288,7 +287,9 @@ class DataRouteHelper(RouteHelper):
             )
         return None
 
-    def _load_profile(self, request: Request, load_profile: bool, datacard: DataCard) -> Tuple[Optional[str], bool, bool]:
+    def _load_profile(
+        self, request: Request, load_profile: bool, datacard: DataCard
+    ) -> Tuple[Optional[str], bool, bool]:
         """If load_profile is True, attempts to load the data profile
 
         Args:
@@ -587,6 +588,21 @@ class ProjectRouteHelper(RouteHelper):
 
         return sorted(project_runs, key=lambda k: k["timestamp"], reverse=True)
 
+    def get_graphics_uris(self, runcard: RunCard) -> Dict[str, str]:
+        """Get graphics uris
+
+        Args:
+            runcard:
+                The run card.
+        """
+        graphics_uris = {"uris": {}}
+        for key, artifact in runcard.artifact_uris.items():
+            local_path = Path(artifact.local_path)
+            if local_path.suffix in [".png", ".jpg", ".jpeg", ".tiff", ".gif", ".bmp", ".svg"]:
+                graphics_uris["uris"][key] = artifact.model_dump()
+
+        return graphics_uris
+
     def get_project_run(
         self,
         request: Request,
@@ -654,5 +670,6 @@ class ProjectRouteHelper(RouteHelper):
                 "project_runs": project_runs,
                 "runcard": runcard.model_dump(),
                 "graphs": self.load_graphs(runcard),
+                "graphics": self.get_graphics_uris(runcard),
             },
         )

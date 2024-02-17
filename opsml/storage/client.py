@@ -4,27 +4,28 @@
 # LICENSE file in the root directory of this source tree.
 
 
+import datetime
 import io
 import warnings
+from functools import cached_property
 from pathlib import Path
 from typing import BinaryIO, Iterator, List, Optional, Protocol, cast
 
 from fsspec.implementations.local import LocalFileSystem
-from functools import cached_property
-import datetime
+
 from opsml.helpers.logging import ArtifactLogger
 from opsml.settings.config import OpsmlConfig, config
 from opsml.storage.api import ApiClient, ApiRoutes
 from opsml.types import (
     ApiStorageClientSettings,
+    BotoClient,
+    GCSClient,
     GcsStorageClientSettings,
     S3StorageClientSettings,
     StorageClientProtocol,
     StorageClientSettings,
     StorageSettings,
     StorageSystem,
-    BotoClient,
-    GCSClient,
 )
 
 warnings.filterwarnings("ignore", message="Setuptools is replacing distutils.")

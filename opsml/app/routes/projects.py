@@ -7,7 +7,7 @@
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -25,30 +25,6 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
 router = APIRouter()
 project_route_helper = ProjectRouteHelper()
-
-
-@router.get("/projects/test/", response_class=HTMLResponse)
-@error_to_500
-async def test(
-    request: Request,
-    background_tasks: BackgroundTasks,
-) -> str:
-    """UI home for listing models in model registry
-
-    Args:
-        request:
-            The incoming HTTP request.
-        project:
-            The project to query
-        run_uid:
-            The run_uid to query
-
-    Returns:
-        200 if the request is successful. The body will contain a JSON string
-        with the list of models.
-    """
-
-    return "<b>Test</b>"
 
 
 @router.get("/projects/list/", response_class=HTMLResponse)

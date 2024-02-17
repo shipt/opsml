@@ -210,6 +210,10 @@ class DeleteFileRequest(BaseModel):
     read_path: str
 
 
+class ArtifactURIs(BaseModel):
+    uris: Dict[str, Dict[str, str]]
+
+
 class Metric(BaseModel):
     run_uid: str
     name: str
