@@ -2,7 +2,7 @@
 # LICENSE file in the root directory of this source tree.
 
 # pylint: disable=protected-access
-
+import os
 from pathlib import Path
 from typing import Dict, Any
 from fastapi import APIRouter, Request
@@ -26,7 +26,7 @@ router = APIRouter()
 
 @router.post("/runs/graphics", name="graphic_uris", response_class=HTMLResponse)
 @error_to_500
-async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> str:
+async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLResponse:
     """Method for generating presigned urls and html for graphics page
 
     Args:
@@ -38,22 +38,27 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> str:
     Returns:
         Generated HTML for graphics
     """
-    print(payload)
-    # uris = {}
+    uris = {}
     #
-    # storage_client: StorageClientBase = request.app.state.storage_client
-    # uris = payload.uris
-    #
-    # for name, artifact in uris.items():
-    #    remote_path = Path(artifact.get("remote_path"))
-    #    suffix = remote_path.suffix
-    #    if suffix in [".png", ".jpg", ".jpeg", ".tiff", ".gif", ".bmp", ".svg"]:
-    #        remote_path = swap_opsml_root(request, remote_path)
-    #
-    #        # get remote path relative to storage root
-    #        remote_path = remote_path.relative_to(storage_client.settings.storage_uri)
-    #        uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
-    #
-    # print(uris)
+    storage_client: StorageClientBase = request.app.state.storage_client
+    tracking_local = request.app.state.is_tracking_local
+
+    # can't figure out how to render images from unlinked folders on local
+    if tracking_local:
+        return templates.TemplateResponse(
+            "include/not_supported.html", {"request": request, "text": "Displaying images from local storage is not supported"}
+        )
+
+    for name, artifact in payload.items():
+        remote_path = Path(artifact.get("remote_path"))
+        suffix = remote_path.suffix
+        if suffix in [".png", ".jpg", ".jpeg", ".tiff", ".gif", ".bmp", ".svg"]:
+            remote_path = swap_opsml_root(request, remote_path)
+
+            # get remote path relative to storage root
+            remote_path = remote_path.relative_to(storage_client.settings.storage_uri)
+            uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
+
+    return templates.TemplateResponse("include/project/graphics.html", {"request": request, "uris": uris})
 
     return "<b>Test</b>"

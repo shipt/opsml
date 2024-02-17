@@ -1,0 +1,27 @@
+<hr id="version-spacer">
+
+<div class="card-body" style="min-height:1000px;">
+    <div class="card-body" id="GraphicsDisplay">
+        <h5><i class="fa-solid fa-chart-simple" style="color:#04b78a"></i> <font color="#999">Graphics</font></h5>
+        {% if uris|length > 0 %}
+        <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+            <colgroup>
+            <col span="1" style="width: 15%;">
+            <col span="1" style="width: 50%;">
+            </colgroup>
+        
+            <tbody>
+            <div id="GraphContainer">
+                {% for name, uri in uris.items() %}
+                <div class="image_container">
+                    <img src={{ uri }}/>
+                </div>
+                {% endfor %}
+            </div>
+            </tbody>
+        </table>
+        {% else %}
+            <b>No graphics recorded during run</b>
+        {% endif %}
+    </div>
+</div>

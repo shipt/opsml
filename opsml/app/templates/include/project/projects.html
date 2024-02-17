@@ -86,8 +86,9 @@
 
      <div id="GraphicsBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
       <div id="Insert">
+        <span class="loader"></span>
+        <B>Loading Graphics...<B>
       </div>
-
      </div>
 
     </div>
@@ -104,8 +105,10 @@
 
 {% block scripts %}
 
+<script type="module">
+  import { generate_html_from_data } from '/static/js/utils.js';
 
-<script>
+
 $('.list-group-item').click(function() {
   $('.list-group-item').removeClass('active');
   $(this).addClass('active');
@@ -125,27 +128,13 @@ $('.list-group-item').click(function() {
   $('#GraphBox').toggle( ix === 2 );
 
   // if ix == 3 call localhost to get html
-
-  
   if (ix == 3) {
     var uri_data = {{ runcard["artifact_uris"]|tojson }};
-    $.ajax({
-      url: "/opsml/runs/graphics",
-      type: "POST",
-      dataType:"html",
-      contentType: "application/json",
-      data: JSON.stringify(uri_data),
-      success: function(data) {
-          console.log("success",data);
-          document.getElementById('Insert').innerHTML = data;
-      },
-      error: function() {
-          console.log("error", data);
-          alert('error loading from database...');
-          }
-    });
-    $('#GraphicsBox').toggle( ix === 3 );
+    var path = "/opsml/runs/graphics";
+    generate_html_from_data(path, uri_data, "Insert");
   }
+
+  $('#GraphicsBox').toggle( ix === 3 );
   
 });
 
