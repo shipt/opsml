@@ -2,18 +2,18 @@
 # LICENSE file in the root directory of this source tree.
 
 # pylint: disable=protected-access
-import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from opsml.app.core.dependencies import swap_opsml_root
-from opsml.app.routes.pydantic_models import ArtifactURIs
 from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
+from opsml.types import StorageSystem
 
 logger = ArtifactLogger.get_logger()
 
@@ -41,12 +41,14 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLRes
     uris = {}
     #
     storage_client: StorageClientBase = request.app.state.storage_client
-    tracking_local = request.app.state.is_tracking_local
+    storage_system = request.app.state.storage_system
+    storage_root = request.app.state.storage_root
 
     # can't figure out how to render images from unlinked folders on local
-    if tracking_local:
+    if storage_system == StorageSystem.LOCAL:
         return templates.TemplateResponse(
-            "include/not_supported.html", {"request": request, "text": "Displaying images from local storage is not supported"}
+            "include/not_supported.html",
+            {"request": request, "text": "Displaying images from local storage is not supported"},
         )
 
     for name, artifact in payload.items():
@@ -56,7 +58,7 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLRes
             remote_path = swap_opsml_root(request, remote_path)
 
             # get remote path relative to storage root
-            remote_path = remote_path.relative_to(storage_client.settings.storage_uri)
+            remote_path = remote_path.relative_to(storage_root)
             uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
 
     return templates.TemplateResponse("include/project/graphics.html", {"request": request, "uris": uris})

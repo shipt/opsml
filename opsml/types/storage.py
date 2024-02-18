@@ -30,6 +30,7 @@ class GcsStorageClientSettings(StorageClientSettings):
     storage_system: StorageSystem = StorageSystem.GCS
     credentials: Optional[Any] = None
     gcp_project: Optional[str] = None
+    default_creds: bool = False
 
 
 class S3StorageClientSettings(StorageClientSettings):
@@ -60,7 +61,7 @@ class BotoClient(Protocol):
 
 
 class Blob(Protocol):
-    def generate_presigned_url(self, version="v4", expiration: int = 600) -> str:
+    def generate_signed_url(self, version="v4", expiration: int = 600) -> str:
         ...
 
 

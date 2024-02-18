@@ -38,7 +38,7 @@ def _init_registries(app: FastAPI) -> None:
     app.state.storage_client = client.storage_client
     app.state.model_registrar = ModelRegistrar(client.storage_client)
     app.state.storage_root = config.storage_root
-    app.state.is_tracking_local = config.is_tracking_local
+    app.state.storage_system = config.storage_system
 
 
 def _shutdown_registries(app: FastAPI) -> None:

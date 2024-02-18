@@ -9,7 +9,7 @@ import io
 import warnings
 from functools import cached_property
 from pathlib import Path
-from typing import BinaryIO, Iterator, List, Optional, Protocol, cast
+from typing import Any, BinaryIO, Iterator, List, Optional, Protocol, cast
 
 from fsspec.implementations.local import LocalFileSystem
 
@@ -164,7 +164,7 @@ class GCSFSStorageClient(StorageClientBase):
         import gcsfs
 
         assert isinstance(settings, GcsStorageClientSettings)
-        if settings.credentials is None:
+        if settings.default_creds is None:
             logger.info("Using default GCP credentials")
             client = gcsfs.GCSFileSystem()
         else:
@@ -184,16 +184,36 @@ class GCSFSStorageClient(StorageClientBase):
 
         return cast(GCSClient, storage.Client())
 
+    # cached_property is a decorator that caches the result of the function it decorates.
+
+    @cached_property
+    def get_id_credentials(self) -> Any:
+        assert isinstance(self.settings, GcsStorageClientSettings)
+
+        if self.settings.default_creds:
+            from google.auth import compute_engine
+            from google.auth.transport import requests
+
+            auth_request = requests.Request()
+            return compute_engine.IDTokenCredentials(auth_request, "")
+
+        return None
+
     def generate_presigned_url(self, path: Path, expiration: int) -> str:
         """Generates pre signed url for S3 object"""
+        # from google.auth.transport import requests
+        # from google.auth import compute_engine
+
+        # auth_request = requests.Request()
+        # signing_credentials = compute_engine.IDTokenCredentials(auth_request, "")
+
         try:
             bucket = self.gcs_client.bucket(config.storage_root)
             blob = bucket.blob(str(path))
 
-            return blob.generate_presigned_url(
-                version="v4",
+            return blob.generate_signed_url(
                 expiration=datetime.timedelta(seconds=expiration),
-                # Allow GET requests using this URL.
+                credentials=self.get_id_credentials,
                 method="GET",
             )
         except Exception as e:
@@ -348,6 +368,7 @@ def _get_gcs_settings(storage_uri: str) -> GcsStorageClientSettings:
         storage_uri=storage_uri,
         gcp_project=gcp_creds.project,
         credentials=gcp_creds.creds,
+        default_creds=gcp_creds.default_creds,
     )
 
 

@@ -12,9 +12,9 @@
         
             <tbody>
             <div id="GraphContainer">
-                {% for name, uri in uris.items() %}
+                {% for key in uris %}
                 <div class="image_container">
-                    <img src={{ uri }}/>
+                    <img src="{{ uris[key] }}"/>
                 </div>
                 {% endfor %}
             </div>
