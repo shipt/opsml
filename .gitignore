@@ -127,3 +127,4 @@ lightning_logs/
 # macOS
 .DS_Store
 **/.DS_Store
+opsml/app/templates/include/project/misc.html

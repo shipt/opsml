@@ -13,7 +13,6 @@ from opsml.app.core.dependencies import swap_opsml_root
 from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
-from opsml.types import StorageSystem
 
 logger = ArtifactLogger.get_logger()
 
@@ -41,15 +40,7 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLRes
     uris = {}
     #
     storage_client: StorageClientBase = request.app.state.storage_client
-    storage_system = request.app.state.storage_system
     storage_root = request.app.state.storage_root
-
-    # can't figure out how to render images from unlinked folders on local
-    if storage_system == StorageSystem.LOCAL:
-        return templates.TemplateResponse(
-            "include/not_supported.html",
-            {"request": request, "text": "Displaying images from local storage is not supported"},
-        )
 
     for name, artifact in payload.items():
         remote_path = Path(artifact.get("remote_path"))
@@ -62,5 +53,3 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLRes
             uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
 
     return templates.TemplateResponse("include/project/graphics.html", {"request": request, "uris": uris})
-
-    return "<b>Test</b>"

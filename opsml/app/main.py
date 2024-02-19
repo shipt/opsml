@@ -17,6 +17,7 @@ from opsml.app.core.middleware import rollbar_middleware
 from opsml.app.routes.router import api_router
 from opsml.helpers.logging import ArtifactLogger
 from opsml.settings.config import config
+from opsml.types import StorageSystem
 
 logger = ArtifactLogger.get_logger()
 
@@ -40,6 +41,12 @@ class OpsmlApp:
     def build_app(self) -> None:
         self.app.include_router(api_router)
         self.app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
+
+        if config.storage_system == StorageSystem.LOCAL:
+            # find path to storage root
+            storage_root = Path(config.storage_root)
+            storage_root.mkdir(parents=True, exist_ok=True)
+            self.app.mount("/artifacts", StaticFiles(directory=config.storage_root), name="artifacts")
 
         instrumentator.instrument(self.app).expose(self.app)
         self.app.middleware("http")(rollbar_middleware)

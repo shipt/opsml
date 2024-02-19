@@ -153,7 +153,7 @@ class StorageClientBase(StorageClientProtocol):
 
     def generate_presigned_url(self, path: Path, expiration: int) -> str:
         """Generates pre signed url for object"""
-        return (Path(self.settings.storage_uri) / path).as_posix()
+        return path.as_posix()
 
 
 class GCSFSStorageClient(StorageClientBase):
@@ -201,11 +201,6 @@ class GCSFSStorageClient(StorageClientBase):
 
     def generate_presigned_url(self, path: Path, expiration: int) -> str:
         """Generates pre signed url for S3 object"""
-        # from google.auth.transport import requests
-        # from google.auth import compute_engine
-
-        # auth_request = requests.Request()
-        # signing_credentials = compute_engine.IDTokenCredentials(auth_request, "")
 
         try:
             bucket = self.gcs_client.bucket(config.storage_root)
@@ -259,6 +254,11 @@ class LocalStorageClient(StorageClientBase):
             rpath.mkdir(parents=True, exist_ok=True)
 
         super().put(lpath, rpath)
+
+    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+        """Generates pre signed url for object"""
+        # use mounted path for local storage
+        return (Path("/artifacts") / path).as_posix()
 
 
 class ApiStorageClient(StorageClientBase):
