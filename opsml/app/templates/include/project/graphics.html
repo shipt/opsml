@@ -11,11 +11,15 @@
             </colgroup>
         
             <tbody>
-            <div id="GraphContainer">
+            <div id="GraphicsContainer">
                 {% for key in uris %}
-                <div class="image_container">
-                    <img src="{{ uris[key] }}"/>
+              
+                <div class="graphics-child" id="graph_{{key}}">
+                    <a data-bs-toggle="modal" data-bs-target="#exampleModal" data-whatever="{{ uris[key] }}" data-name="{{ key }}">
+                        <img id="image" src="{{ uris[key] }}"/>
+                    </a>
                 </div>
+           
                 {% endfor %}
             </div>
             </tbody>
@@ -25,3 +29,9 @@
         {% endif %}
     </div>
 </div>
+
+
+
+    
+
+

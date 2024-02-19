@@ -1139,6 +1139,7 @@ clipboard-copy:focus-visible {
   overflow-x: auto;
   white-space: nowrap;
 }
+
 .graph-child {
   display: inline-block;
   width: 100%;
@@ -1148,6 +1149,38 @@ clipboard-copy:focus-visible {
   overflow-x: auto;
 }
 
+
+#GraphicsContainer {
+  column-count: 3; /* speciifes that the content inside the container should be divided into three columns */
+  column-gap: 1rem;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex; 
+  flex-wrap: wrap;
+}
+
+.graphics-child {
+  margin-top: 1%;
+  margin-bottom: 1%;
+  margin-left: 1%;
+  margin-right: 1%;
+  display: inline-block;
+  width: 350px;
+  height: 350px;
+  box-sizing: border-box;
+  break-inside: avoid; /* ensures that each child element stays within a single column */
+  padding: 0.5rem;
+  overflow-x: auto;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: 2%;
+}
+
+.graphics-child img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
 .loader {
   width: 48px;
@@ -1202,4 +1235,21 @@ clipboard-copy:focus-visible {
     transform: rotate(-360deg);
   }
 }
+
+.modal-dialog {
+  max-width: max-content !important;
+}
+
+.modal-body {
+  display: flex;
+}
+
+.modal-body img {
+  object-fit: contain;
+}
+
+.modal-header {
+  display: flex; 
+}
+
 

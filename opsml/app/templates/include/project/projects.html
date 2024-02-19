@@ -91,12 +91,31 @@
       </div>
      </div>
 
+    
+    <div id="exampleModal" class="modal">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel" style="float: left;">Artifact</h5>
+            <a id="modal-download" href="placeholder">
+              <button id="download-button" type="submit" class="btn btn-success">Download</button>
+            </a>
+          </div>
+          <div class="modal-body">
+       
+            <img src="https://via.placeholder.com/500" id="modal_img">
+          </div>
+        </div>
+      </di>
     </div>
 
-  </div> 
+
+     
+     
 
 </div>
 {% endif %}
+
 
 
 </body>
@@ -105,8 +124,28 @@
 
 {% block scripts %}
 
+
+<script>
+
+$('#exampleModal').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget) // Button that triggered the modal
+  var uri = button.data('whatever') // Extract info from data-* attributes
+  var name = button.data('name') // Extract info from data-* attributes
+  var modal = $(this)
+
+
+  modal.find('.modal-title').text(name)
+  modal.find('#modal-download').attr('href', uri)
+  modal.find('#modal_img').attr('src', uri)
+
+})
+
+</script>
+
+
 <script type="module">
   import { generate_html_from_data } from '/static/js/utils.js';
+
 
 
 $('.list-group-item').click(function() {
@@ -157,6 +196,8 @@ $( "#param-button" ).on( "click", function() {
 $( "#artifact-button" ).on( "click", function() {
   $( "#Artifacts" ).toggle();
 } );
+
+
 
 
 </script>
