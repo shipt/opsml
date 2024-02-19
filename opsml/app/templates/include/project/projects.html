@@ -92,11 +92,11 @@
      </div>
 
     
-    <div id="exampleModal" class="modal">
+    <div id="ImageModal" class="modal">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel" style="float: left;">Artifact</h5>
+            <h5 class="modal-title" id="ImageModalLabel" style="float: left;">Artifact</h5>
             <a id="modal-download" href="placeholder">
               <button id="download-button" type="submit" class="btn btn-success">Download</button>
             </a>
@@ -127,7 +127,7 @@
 
 <script>
 
-$('#exampleModal').on('show.bs.modal', function (event) {
+$('#ImageModal').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget) // Button that triggered the modal
   var uri = button.data('whatever') // Extract info from data-* attributes
   var name = button.data('name') // Extract info from data-* attributes
