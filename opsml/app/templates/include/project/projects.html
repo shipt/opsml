@@ -85,9 +85,14 @@
 {% block scripts %}
 
 
-
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/modules/boost.js"></script>
 <script type="module">
   import { generate_html_from_data, ready_project_page, call_graphics, call_metadata, ready_project_toggles, ready_project_buttons} from '/static/js/utils.js';
+  import { build_bar_chart, build_line_chart } from '/static/js/charts.js';
 
 
   // Prepare project page and render default metadata
