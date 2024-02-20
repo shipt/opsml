@@ -49,49 +49,8 @@
     </div>
 
     <div id="MetadataColumn">
+    </div>
 
-      <div class="card" style="width:100%;">
-        <div class="card-body">
-          <h4>Run: {{ runcard["name"] }}
-            <div id="CardTabBox">
-            <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
-            <span><button id="download-button" type="submit" class="btn btn-success" >Metrics</button></span>
-            <span><button id="download-button" type="submit" class="btn btn-success" >Graphs</button></span>
-            <span><button id="download-button" type="submit" class="btn btn-success" >Graphics</button></span>
-          </div>
-          </h4>
-      </div>
-
-      <div class="card border-0" id="CardBox" style="width:100%;">
-        {% include "include/project/run_metadata.html" %}
-      </div>
-
-      {% if runcard["tags"]|length > 0 %}
-      <div class="card border-0" id="TagBox" style="width:100%;">
-        {% include "include/model/model_tags.html" %}
-      </div>
-      {% endif %}
-
-      <div class="card border-0" id="ExtraBox" style="width:100%;">
-        {% include "include/project/runcard_extras.html" %}
-      </div>
-
-      <div id="PlotBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
-        {% include "include/project/metric_plots.html" %}
-      </div>
-
-     <div id="GraphBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
-      {% include "include/project/graphs.html" %}
-     </div>
-
-     <div id="GraphicsBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
-      <div id="Insert">
-        <span class="loader"></span>
-        <B>Loading Graphics...<B>
-      </div>
-     </div>
-
-    
     <div id="ImageModal" class="modal">
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -125,80 +84,24 @@
 {% block scripts %}
 
 
-<script>
 
-$('#ImageModal').on('show.bs.modal', function (event) {
-  var button = $(event.relatedTarget) // Button that triggered the modal
-  var uri = button.data('whatever') // Extract info from data-* attributes
-  var name = button.data('name') // Extract info from data-* attributes
-  var modal = $(this)
-
-
-  modal.find('.modal-title').text(name)
-  modal.find('#modal-download').attr('href', uri)
-  modal.find('#modal_img').attr('src', uri)
-
-})
-
-</script>
 
 
 <script type="module">
-  import { generate_html_from_data } from '/static/js/utils.js';
+  import { generate_html_from_data, ready_project_page, call_graphics} from '/static/js/utils.js';
 
 
+  $(document).ready( ready_project_page );
 
-$('.list-group-item').click(function() {
-  $('.list-group-item').removeClass('active');
-  $(this).addClass('active');
-  var version_uid = $(this).attr('id');
-  alert(id);
-    // write javscript that will take the value of the active div on click and pass that value to another div
- });
-
-
- $('#CardTabBox > span').click(function() {
-  var ix = $(this).index();
-  
-  $('#CardBox').toggle( ix === 0 );
-  $('#TagBox').toggle( ix === 0 );
-  $('#ExtraBox').toggle( ix === 0 );
-  $('#PlotBox').toggle( ix === 1 );
-  $('#GraphBox').toggle( ix === 2 );
-
-  // if ix == 3 call localhost to get html
-  if (ix == 3) {
-    var uri_data = {{ runcard["artifact_uris"]|tojson }};
-    var path = "/opsml/runs/graphics";
-    generate_html_from_data(path, uri_data, "Insert");
+ 
+  function get_graphics()
+  {
+    call_graphics({{ runcard['artifact_uris']|tojson }}) ;
   }
-
-  $('#GraphicsBox').toggle( ix === 3 );
-  
-});
-
-$(document).ready(function() {
-  $('#MetadataRepositoriesSelect').select2();
-
-  $("#MetadataRepositoriesSelect").on('select2:select', function(e){
-    window.location.href = e.params.data.id;
-  });
-});
-
-$( "#metric-button" ).on( "click", function() {
-  $( "#Metrics" ).toggle();
-} );
-
-$( "#param-button" ).on( "click", function() {
-  $( "#Params" ).toggle();
-} );
-
-$( "#artifact-button" ).on( "click", function() {
-  $( "#Artifacts" ).toggle();
-} );
+  document.getElementById("graphics-button").onclick = get_graphics;
 
 
-
+ 
 
 </script>
 

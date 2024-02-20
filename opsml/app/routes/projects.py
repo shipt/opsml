@@ -34,6 +34,7 @@ async def project_list_page(
     background_tasks: BackgroundTasks,
     project: Optional[str] = None,
     run_uid: Optional[str] = None,
+    metadata_only: bool = False,
 ) -> HTMLResponse:
     """UI home for listing models in model registry
 
@@ -50,7 +51,12 @@ async def project_list_page(
         with the list of models.
     """
 
-    return project_route_helper.get_project_run(request=request, project=project, run_uid=run_uid)
+    return project_route_helper.get_project_run(
+        request=request,
+        project=project,
+        run_uid=run_uid,
+        metadata_only=metadata_only,
+    )
 
 
 @router.get("/projects/runs/plot/", response_class=HTMLResponse)

@@ -287,9 +287,7 @@ class DataRouteHelper(RouteHelper):
             )
         return None
 
-    def _load_profile(
-        self, request: Request, load_profile: bool, datacard: DataCard
-    ) -> Tuple[Optional[str], bool, bool]:
+    def _load_profile(self, request: Request, load_profile: bool, datacard: DataCard) -> Tuple[Optional[str], bool, bool]:
         """If load_profile is True, attempts to load the data profile
 
         Args:
@@ -608,6 +606,7 @@ class ProjectRouteHelper(RouteHelper):
         request: Request,
         project: Optional[str] = None,
         run_uid: Optional[str] = None,
+        metadata_only: bool = False,
     ) -> _TemplateResponse:
         """Retrieve homepage
 
@@ -660,6 +659,15 @@ class ProjectRouteHelper(RouteHelper):
 
         # load metrics from db
         runcard.load_metrics()
+
+        if metadata_only:
+            return templates.TemplateResponse(
+                "include/project/metadata.html",
+                {
+                    "request": request,
+                    "runcard": runcard.model_dump(),
+                },
+            )
 
         return templates.TemplateResponse(
             "include/project/projects.html",
