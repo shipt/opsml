@@ -40,10 +40,11 @@
 <div class"containter" id="split-column">
   <div class="boxes" id="VersionContainer">
 
+
     <div id="VersionColumn">
       <div class="list-group">
         {% for run in project_runs %}
-          <a href="/opsml/projects/list/?project={{ selected_project }}&run_uid={{ run["uid"] }}" class="list-group-item list-group-item-action {% if runcard["uid"] ==  run["uid"] %}active {% endif %}">{{ run["name"] }} -- {{ run["date"] }}</a>
+          <a href="#" onclick="get_project('{{ run["uid"] }}', '{{ selected_project }}')"  class="list-group-item list-group-item-action {% if runcard["uid"] ==  run["uid"] %}active {% endif %}">{{ run["name"] }} -- {{ run["date"] }}</a>
         {% endfor %}
       </div>
     </div>
@@ -85,25 +86,36 @@
 
 
 
-
-
 <script type="module">
-  import { generate_html_from_data, ready_project_page, call_graphics} from '/static/js/utils.js';
+  import { generate_html_from_data, ready_project_page, call_graphics, call_metadata, ready_project_toggles, ready_project_buttons} from '/static/js/utils.js';
 
 
-  $(document).ready( ready_project_page );
+  // Prepare project page and render default metadata
+  $(document).ready( function() {
+    let run_uid = "{{ runcard['uid'] }}";
+    let project = "{{ selected_project }}";
+    ready_project_page(run_uid, project);
+  });
 
+
+  $(document).on('click','#graphics-button',function(){
+    // get data from element
+    let element = document.getElementById("graphics-button");
+    call_graphics(element.getAttribute('data-runid')) ;
+
+  });
  
-  function get_graphics()
-  {
-    call_graphics({{ runcard['artifact_uris']|tojson }}) ;
+  
+
+  window.get_project=(run_uid, project)=>{
+    ready_project_page(run_uid, project);
+    ready_project_buttons();
   }
-  document.getElementById("graphics-button").onclick = get_graphics;
 
 
- 
 
 </script>
+
 
 
 {% endblock %}

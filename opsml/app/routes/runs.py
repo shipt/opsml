@@ -3,7 +3,6 @@
 
 # pylint: disable=protected-access
 from pathlib import Path
-from typing import Any, Dict
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
@@ -13,6 +12,7 @@ from opsml.app.core.dependencies import swap_opsml_root
 from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
+from opsml import CardRegistry, RunCard
 
 logger = ArtifactLogger.get_logger()
 
@@ -23,9 +23,9 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-@router.post("/runs/graphics", name="graphic_uris", response_class=HTMLResponse)
+@router.get("/runs/graphics", name="graphic_uris", response_class=HTMLResponse)
 @error_to_500
-async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLResponse:
+async def get_graphic_page(request: Request, run_uid: str) -> HTMLResponse:
     """Method for generating presigned urls and html for graphics page
 
     Args:
@@ -38,12 +38,15 @@ async def get_graphic_page(request: Request, payload: Dict[str, Any]) -> HTMLRes
         Generated HTML for graphics
     """
     uris = {}
-    #
+
     storage_client: StorageClientBase = request.app.state.storage_client
+    run_registry: CardRegistry = request.app.state.registries.run
     storage_root = request.app.state.storage_root
 
-    for name, artifact in payload.items():
-        remote_path = Path(artifact.get("remote_path"))
+    card: RunCard = run_registry.load_card(uid=run_uid)
+
+    for name, artifact in card.artifact_uris.items():
+        remote_path = Path(artifact.remote_path)
         suffix = remote_path.suffix
         if suffix in [".png", ".jpg", ".jpeg", ".tiff", ".gif", ".bmp", ".svg"]:
             remote_path = swap_opsml_root(request, remote_path)

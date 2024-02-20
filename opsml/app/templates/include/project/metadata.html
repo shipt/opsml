@@ -5,7 +5,7 @@
         <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
         <span><button id="download-button" type="submit" class="btn btn-success" >Metrics</button></span>
         <span><button id="download-button" type="submit" class="btn btn-success" >Graphs</button></span>
-        <span><button onclick="get_graphics()" id="graphics-button" type="submit" class="btn btn-success" >Graphics</button></span>
+        <span><button data-runid="{{ runcard['uid'] }}" id="graphics-button" type="submit" class="btn btn-success" >Graphics</button></span>
         </div>
       </h4>
     </div>
@@ -38,4 +38,7 @@
         <B>Loading Graphics...<B>
       </div>
     </div>
-  </div>
+</div>
+
+
+

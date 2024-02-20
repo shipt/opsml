@@ -7,7 +7,7 @@
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -31,7 +31,6 @@ project_route_helper = ProjectRouteHelper()
 @error_to_500
 async def project_list_page(
     request: Request,
-    background_tasks: BackgroundTasks,
     project: Optional[str] = None,
     run_uid: Optional[str] = None,
     metadata_only: bool = False,
@@ -50,7 +49,6 @@ async def project_list_page(
         200 if the request is successful. The body will contain a JSON string
         with the list of models.
     """
-
     return project_route_helper.get_project_run(
         request=request,
         project=project,
