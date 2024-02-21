@@ -72,6 +72,15 @@ function call_graphics(run_uid) {
     
 }
 
+// Function to call graphics
+// metrics: list of metric names
+function call_metrics(metrics) {
+    var uri_data = {"run_uid": run_uid};
+    var path = "/opsml/runs/graphics";
+    generate_html_from_data("GET", path, uri_data, "Insert");
+    
+}
+
 // Function to call metadata
 function call_metadata(run_uid, project) {
     var run_uid = run_uid;  

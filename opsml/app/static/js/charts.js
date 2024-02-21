@@ -1,3 +1,14 @@
+import Highcharts from "/static/chart/highcharts.src.js"
+import "/static/chart/highcharts.js"
+import "/static/chart/modules/data.js"
+import "/static/chart/modules/series-label.js"
+import "/static/chart/modules/exporting.js"
+import "/static/chart/modules/export-data.js"
+import "/static/chart/modules/accessibility.js"
+
+Highcharts.setOptions({
+  colors: ['#04b78a', "#5e0fb7", "#bdbdbd", "#009adb"],
+});
 
 function build_bar_chart (metrics, selected_metrics) {
     var scores = [];

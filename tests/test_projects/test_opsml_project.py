@@ -154,7 +154,12 @@ def test_opsml_read_only(
     with pytest.raises(ValueError) as ve:
         db_registries.project.delete_card(data_card)
     ve.match("ProjectCardRegistry does not support delete_card")
-
+    
+    # test loading multiple metrics
+    
+    metrics = runcard._registry.get_metric(run_uid=info.run_id, name=["m1", "m2"])
+    assert len(metrics) == 2
+  
 
 def test_opsml_continue_run(db_registries: CardRegistries) -> None:
     """Verify a run con be continued"""

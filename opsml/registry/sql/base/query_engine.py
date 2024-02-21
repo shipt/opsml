@@ -14,7 +14,7 @@ from sqlalchemy import func as sqa_func
 from sqlalchemy import insert, select, text
 from sqlalchemy.engine import Engine, Row
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql import FromClause, Select
+from sqlalchemy.sql import FromClause, Select, or_
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
@@ -500,11 +500,10 @@ class RunQueryEngine(QueryEngine):
 
         if name is not None:
             filters = [MetricSchema.name == n for n in name]
-            query = query.filter(*filters)
+            query = query.filter(or_(*filters))
 
         with self.session() as sess:
             results = sess.execute(query).all()
-
         if not results:
             return None
         return self._parse_records(results)
