@@ -325,7 +325,7 @@ class ServerRunCardRegistry(ServerRegistry):
     def registry_type(self) -> RegistryType:
         return RegistryType.RUN
 
-    def get_metric(self, run_uid: str, name: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
+    def get_metric(self, run_uid: str, name: Optional[List[str]] = None) -> Optional[List[Dict[str, Any]]]:
         """Get metric from run card
 
         Args:

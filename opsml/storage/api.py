@@ -105,7 +105,7 @@ class ApiClient:
         raise ValueError(f"""Failed to to make server call for post request Url: {route}, {detail}""")
 
     @retry(reraise=True, stop=stop_after_attempt(1))
-    def get_request(self, route: str, params: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    def get_request(self, route: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         response = self.client.get(url=f"{self._base_url}/{route}", params=params)
 
         if response.status_code == 200:
@@ -124,9 +124,7 @@ class ApiClient:
     ) -> Dict[str, Any]:
         result = ""
 
-        with self.client.stream(
-            method="POST", url=f"{self._base_url}/{route}", files=files, headers=headers
-        ) as response:
+        with self.client.stream(method="POST", url=f"{self._base_url}/{route}", files=files, headers=headers) as response:
             for data in response.iter_bytes(chunk_size=chunk_size):
                 result += data.decode("utf-8")
 

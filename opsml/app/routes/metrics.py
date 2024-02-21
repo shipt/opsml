@@ -39,13 +39,11 @@ def insert_metric(request: Request, payload: Metrics) -> Success:
         return Success()
     except Exception as error:
         logger.error(f"Failed to insert metrics: {error}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to insert metrics"
-        ) from error
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to insert metrics") from error
 
 
 @router.get("/metrics", response_model=Metrics, name="metric_get")
-def get_metric(request: Request, run_uid: str, name: Optional[str] = None) -> Metrics:
+def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None) -> Metrics:
     """Get metrics from metric table
 
     Args:
@@ -68,6 +66,4 @@ def get_metric(request: Request, run_uid: str, name: Optional[str] = None) -> Me
 
     except Exception as error:
         logger.error(f"Failed to get metrics: {error}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get metrics"
-        ) from error
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get metrics") from error
