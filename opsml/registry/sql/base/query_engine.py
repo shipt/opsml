@@ -14,7 +14,7 @@ from sqlalchemy import func as sqa_func
 from sqlalchemy import insert, select, text
 from sqlalchemy.engine import Engine, Row
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql import FromClause, Select, or_
+from sqlalchemy.sql import FromClause, Select, or_, distinct
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
@@ -500,16 +500,15 @@ class RunQueryEngine(QueryEngine):
         Returns:
             List of run metrics
         """
-        column_to_query = MetricSchema.name if names_only else MetricSchema
+        column_to_query = distinct(MetricSchema.name) if names_only else MetricSchema
 
-        query = select(column_to_query).filter(MetricSchema.run_uid == run_uid)
+        query = select(column_to_query)
+
+        query.filter(MetricSchema.run_uid == run_uid)
 
         if name is not None:
             filters = [MetricSchema.name == n for n in name]
             query = query.filter(or_(*filters))
-
-        if names_only:
-            query.distinct()
 
         with self.session() as sess:
             results = sess.execute(query).all()
