@@ -657,8 +657,8 @@ class ProjectRouteHelper(RouteHelper):
 
             runcard: RunCard = run_registry.load_card(uid=project_runs[0]["uid"])  # type: ignore[no-redef]
 
-        # load metrics from db
-        runcard.load_metrics()
+        # get metric keys
+        metrics = runcard._registry.get_metric(run_uid=runcard.uid, names_only=True)
 
         if metadata_only:
             return templates.TemplateResponse(
@@ -666,6 +666,7 @@ class ProjectRouteHelper(RouteHelper):
                 {
                     "request": request,
                     "runcard": runcard.model_dump(),
+                    "metrics": metrics,
                 },
             )
 
@@ -677,6 +678,7 @@ class ProjectRouteHelper(RouteHelper):
                 "selected_project": selected_project,
                 "project_runs": project_runs,
                 "runcard": runcard.model_dump(),
+                "metrics": metrics,
                 "graphs": self.load_graphs(runcard),
                 "graphics": self.get_graphics_uris(runcard),
             },

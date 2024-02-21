@@ -315,7 +315,12 @@ class ClientRunCardRegistry(ClientRegistry):
             json={"metric": metric},
         )
 
-    def get_metric(self, run_uid: str, name: Optional[List[str]] = None) -> Optional[List[Dict[str, Any]]]:
+    def get_metric(
+        self,
+        run_uid: str,
+        name: Optional[List[str]] = None,
+        names_only: bool = False,
+    ) -> Optional[List[Dict[str, Any]]]:
         """Get run metrics. By default, all metrics are returned. If name is provided,
         only metrics with that name are returned. Metric type can be either "metric" or "graph".
         "metric" will return name, value, step records. "graph" will return graph (x, y) records.
@@ -333,6 +338,9 @@ class ClientRunCardRegistry(ClientRegistry):
 
         if name is not None:
             params["name"] = name
+
+        if names_only:
+            params["names_only"] = names_only
 
         data = self._session.get_request(route=api_routes.METRICS, params=params)
 

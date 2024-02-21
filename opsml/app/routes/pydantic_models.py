@@ -173,9 +173,7 @@ class RegisterModelRequest(BaseModel):
                     * "1.1.1" = registers 1.1.1 at "1.1.1"
                 """,
     )
-    onnx: bool = Field(
-        True, description="Flag indicating if the onnx or non-onnx model should be registered. Default True."
-    )
+    onnx: bool = Field(True, description="Flag indicating if the onnx or non-onnx model should be registered. Default True.")
 
 
 class RepositoriesResponse(BaseModel):
@@ -223,7 +221,7 @@ class Metric(BaseModel):
 
 
 class Metrics(BaseModel):
-    metric: Optional[List[Metric]]
+    metric: Union[Optional[List[Metric]], Optional[List[str]]]
 
 
 class CompareMetricRequest(BaseModel):

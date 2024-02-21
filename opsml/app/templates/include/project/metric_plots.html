@@ -2,7 +2,7 @@
 
 <div class="card-body" style="min-height:1000px;">
 
-{% if runcard["metrics"]|length > 0 %}
+{% if metrics|length > 0 %}
 
 <div class"containter" id="split-column" >
 
@@ -10,7 +10,7 @@
         <form id="myForm" action="javascript:void(0);">
 
             <div style="padding-top:2px; padding-left:40px;">
-                {% for metric in runcard["metrics"].keys() %}
+                {% for metric in metrics %}
                     <div class="form-check">
                         <label class="form-check-label" for="flexCheckDefault">{{ metric }}</label>
                         <input class="form-check-input" type="checkbox" name={{ metric }} value={{ metric }} id="flexCheckDefault">

@@ -481,7 +481,12 @@ class RunQueryEngine(QueryEngine):
             sess.execute(insert(MetricSchema), metric)
             sess.commit()
 
-    def get_metric(self, run_uid: str, name: Optional[List[str]] = None) -> Optional[List[Dict[str, Any]]]:
+    def get_metric(
+        self,
+        run_uid: str,
+        name: Optional[List[str]] = None,
+        names_only: bool = False,
+    ) -> Optional[List[Dict[str, Any]]]:
         """Get run metrics. By default, all metrics are returned. If name is provided,
         only metrics with that name are returned. Metric type can be either "metric" or "graph".
         "metric" will return name, value, step records. "graph" will return graph (x, y) records.
@@ -495,17 +500,24 @@ class RunQueryEngine(QueryEngine):
         Returns:
             List of run metrics
         """
+        column_to_query = MetricSchema.name if names_only else MetricSchema
 
-        query = select(MetricSchema).filter(MetricSchema.run_uid == run_uid)
+        query = select(column_to_query).filter(MetricSchema.run_uid == run_uid)
 
         if name is not None:
             filters = [MetricSchema.name == n for n in name]
             query = query.filter(or_(*filters))
 
+        if names_only:
+            query.distinct()
+
         with self.session() as sess:
             results = sess.execute(query).all()
         if not results:
             return None
+
+        if names_only:
+            return [row[0] for row in results]
         return self._parse_records(results)
 
 

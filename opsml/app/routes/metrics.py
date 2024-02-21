@@ -43,7 +43,7 @@ def insert_metric(request: Request, payload: Metrics) -> Success:
 
 
 @router.get("/metrics", response_model=Metrics, name="metric_get")
-def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None) -> Metrics:
+def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None, names_only: bool = False) -> Metrics:
     """Get metrics from metric table
 
     Args:
@@ -52,7 +52,9 @@ def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None)
         run_uid:
             Run uid
         name:
-            Name of metric
+            List of metrics to retrieve
+        names_only:
+            Return only the names of the metrics
 
     Returns:
         `MetricsModel`
@@ -60,7 +62,7 @@ def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None)
 
     run_reg: ServerRunCardRegistry = request.app.state.registries.run._registry
     try:
-        metrics = run_reg.get_metric(run_uid, name)
+        metrics = run_reg.get_metric(run_uid, name, names_only)
         return Metrics(metric=metrics)
 
     except Exception as error:
