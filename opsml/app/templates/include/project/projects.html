@@ -68,13 +68,21 @@
         </div>
       </di>
     </div>
-
-
-     
-     
-
+  </div>
 </div>
 {% endif %}
+
+<figure class="highcharts-figure">
+  <div id="container"></div>
+  <p class="highcharts-description">
+      This chart shows how symbols and shapes can be used in charts.
+      Highcharts includes several common symbol shapes, such as squares,
+      circles and triangles, but it is also possible to add your own
+      custom symbols. In this chart, custom weather symbols are used on
+      data points to highlight that certain temperatures are warm while
+      others are cold.
+  </p>
+</figure>
 
 
 
@@ -85,14 +93,11 @@
 {% block scripts %}
 
 
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-<script src="https://code.highcharts.com/modules/boost.js"></script>
+
+
 <script type="module">
   import { generate_html_from_data, ready_project_page, call_graphics, call_metadata, ready_project_toggles, ready_project_buttons} from '/static/js/utils.js';
-  import { build_bar_chart, build_line_chart } from '/static/js/charts.js';
+
 
 
   // Prepare project page and render default metadata
@@ -110,7 +115,6 @@
 
   });
  
-  
 
   window.get_project=(run_uid, project)=>{
     ready_project_page(run_uid, project);
@@ -120,6 +124,47 @@
 
 
 </script>
+
+
+<script src="/static/chart/highcharts.js"></script>
+<script src="/static/chart/modules/data.js"></script>
+<script src="/static/chart/modules/series-label.js"></script>
+<script src="/static/chart/modules/exporting.js"></script>
+<script src="/static/chart/modules/export-data.js"></script>
+<script src="/static/chart/modules/accessibility.js"></script>
+<script>
+
+  // Create the chart
+  Highcharts.setOptions({
+    colors: ['#04b78a', "#5e0fb7", "#bdbdbd", "#009adb"],
+  });
+
+
+
+
+  $(document).on('click','#plot-metric',function(){
+
+
+    var selected_metrics = [];
+    var selected_chart = [];
+
+    $('#myForm input:checked').each(function() {
+
+        if ($(this).attr('name') == 'bar' || $(this).attr('name') == 'step') {
+            selected_chart.push($(this).attr('name'));
+        }
+        else {
+            selected_metrics.push($(this).attr('name'));
+        }
+  
+    });
+
+    alert(selected_chart);
+
+  });
+
+</script>
+
 
 
 

@@ -1,8 +1,3 @@
-import Highcharts from "https://code.highcharts.com/highcharts.js";
-
-Highcharts.setOptions({
-    colors: ['#04b78a', "#5e0fb7", "#bdbdbd", "#009adb"],
-});
 
 function build_bar_chart (metrics, selected_metrics) {
     var scores = [];
