@@ -59,7 +59,6 @@ def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None)
     """
 
     run_reg: ServerRunCardRegistry = request.app.state.registries.run._registry
-
     try:
         metrics = run_reg.get_metric(run_uid, name)
         return Metrics(metric=metrics)
