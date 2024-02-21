@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, cast
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from opsml.app.routes.pydantic_models import Metrics, Success
+from opsml.app.routes.pydantic_models import Metrics, Success, GetMetrcRequest
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.base.server import ServerRunCardRegistry
 
@@ -17,7 +17,7 @@ logger = ArtifactLogger.get_logger()
 router = APIRouter()
 
 
-@router.post("/metrics", name="metric_post", response_model=Success)
+@router.put("/metrics", name="metric_put", response_model=Success)
 def insert_metric(request: Request, payload: Metrics) -> Success:
     """Inserts metrics into metric table
 
@@ -42,8 +42,9 @@ def insert_metric(request: Request, payload: Metrics) -> Success:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to insert metrics") from error
 
 
-@router.get("/metrics", response_model=Metrics, name="metric_get")
-def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None, names_only: bool = False) -> Metrics:
+# GET would be used, but we are using POST to allow for a request body so that we can pass in a list of metrics to retrieve
+@router.post("/metrics", response_model=Metrics, name="metric_get")
+def get_metric(request: Request, payload: GetMetrcRequest) -> Metrics:
     """Get metrics from metric table
 
     Args:
@@ -62,7 +63,7 @@ def get_metric(request: Request, run_uid: str, name: Optional[List[str]] = None,
 
     run_reg: ServerRunCardRegistry = request.app.state.registries.run._registry
     try:
-        metrics = run_reg.get_metric(run_uid, name, names_only)
+        metrics = run_reg.get_metric(payload.run_uid, payload.name, payload.names_only)
         return Metrics(metric=metrics)
 
     except Exception as error:

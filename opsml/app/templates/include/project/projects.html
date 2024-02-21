@@ -89,7 +89,15 @@
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
 <script type="module">
-  import { generate_html_from_data, ready_project_page, call_graphics, call_metadata, ready_project_toggles, ready_project_buttons} from '/static/js/utils.js';
+  import { 
+    generate_html_from_data, 
+    ready_project_page, 
+    call_graphics, 
+    call_metadata, 
+    ready_project_toggles, 
+    ready_project_buttons, 
+    get_metrics
+  } from '/static/js/utils.js';
 
 
   // Prepare project page and render default metadata
@@ -102,7 +110,7 @@
 
   $(document).on('click','#graphics-button',function(){
     // get data from element
-    let element = document.getElementById("graphics-button");
+    let element = document.getElementById("metadata-run-id");
     call_graphics(element.getAttribute('data-runid')) ;
 
   });
@@ -279,6 +287,10 @@
     });
 
     // get metrics here
+    let element = document.getElementById("metadata-run-id");
+    get_metrics(element.getAttribute('data-runid'), selected_metrics)
+
+
 
   });
 

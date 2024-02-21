@@ -15,6 +15,7 @@ logging.getLogger("httpx").propagate = False
 PATH_PREFIX = "opsml"
 
 
+# TODO (STEVEN): next pr -> refactor client methods into generic request method that takes in method type
 class ApiRoutes:
     CHECK_UID = "cards/uid"
     VERSION = "cards/version"
@@ -97,6 +98,20 @@ class ApiClient:
             url=f"{self._base_url}/{route}",
             json=json,
         )
+
+        if response.status_code == 200:
+            return cast(Dict[str, Any], response.json())
+
+        detail = response.json().get("detail")
+        raise ValueError(f"""Failed to to make server call for post request Url: {route}, {detail}""")
+
+    @retry(reraise=True, stop=stop_after_attempt(3))
+    def put_request(
+        self,
+        route: str,
+        json: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        response = self.client.put(url=f"{self._base_url}/{route}", json=json)
 
         if response.status_code == 200:
             return cast(Dict[str, Any], response.json())

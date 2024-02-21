@@ -1,5 +1,8 @@
 
 
+const METRICS_PATH = "/opsml/metrics";
+const GRAPHICS_PATH = "/opsml/runs/graphics";
+const METADATA_PATH = "/opsml/projects/list/";
 
 // Function to generate html from data
 // path: path to the function that generates the html
@@ -67,17 +70,35 @@ function ready_project_toggles() {
 // uris: uris to be passed to the function
 function call_graphics(run_uid) {
     var uri_data = {"run_uid": run_uid};
-    var path = "/opsml/runs/graphics";
-    generate_html_from_data("GET", path, uri_data, "Insert");
+    generate_html_from_data("GET", GRAPHICS_PATH, uri_data, "Insert");
     
 }
 
 // Function to call graphics
 // metrics: list of metric names
-function call_metrics(metrics) {
-    var uri_data = {"run_uid": run_uid, name: metrics};
-    var path = "/opsml/metrics";
-    generate_html_from_data("GET", path, uri_data, "Insert");
+function get_metrics(run_uid, metrics) {
+    var request_data = JSON.stringify(metrics);
+    let url = METRICS_PATH + "?run_uid=" + run_uid
+
+
+    alert(url);
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType:"application/json",
+        data: '["mae"]',
+        content_type: "application/json",
+        success: function(data) {
+            console.log("success",data);
+            alert(JSON.stringify(data));
+        },
+        error: function() {
+            console.log("error", data);
+            alert('error loading from database...');
+            }
+      });
+    
     
 }
 
@@ -141,4 +162,5 @@ export {
     ready_project_buttons,
     call_graphics,
     call_metadata,
+    get_metrics,
 };

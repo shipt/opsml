@@ -5,10 +5,11 @@
         <span><button id="metadata-button" type="submit" class="btn btn-success" >Metadata</button></span>
         <span><button id="metrics-button" type="submit" class="btn btn-success" >Metrics</button></span>
         <span><button id="graphs-button" type="submit" class="btn btn-success" >Graphs</button></span>
-        <span><button data-runid="{{ runcard['uid'] }}" id="graphics-button" type="submit" class="btn btn-success" >Graphics</button></span>
+        <span><button id="graphics-button" type="submit" class="btn btn-success" >Graphics</button></span>
         </div>
       </h4>
     </div>
+    <div id="metadata-run-id" data-runid="{{ runcard["uid"] }}" style="display: None;"></div>
 
     <div class="card border-0" id="CardBox" style="width:100%;">
       {% include "include/project/run_metadata.html" %}

@@ -224,6 +224,12 @@ class Metrics(BaseModel):
     metric: Union[Optional[List[Metric]], Optional[List[str]]]
 
 
+class GetMetrcRequest(BaseModel):
+    run_uid: str
+    name: Optional[List[str]] = None
+    names_only: bool = False
+
+
 class CompareMetricRequest(BaseModel):
     metric_name: List[str]
     lower_is_better: Union[bool, List[bool]]
