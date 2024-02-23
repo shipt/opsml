@@ -1,9 +1,17 @@
 name: Integration
 
+#on:
+#  workflow_run:
+#    workflows: [Lint-Unit-Test]
+#    types: [completed]
 on:
-  workflow_run:
-    workflows: [Lint-Unit-Test]
-    types: [completed]
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - main
       
 jobs:
   Unit-Integration:
