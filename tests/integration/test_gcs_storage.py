@@ -15,8 +15,8 @@ pytestmark = [
 def test_gcs_storage_client(tmp_path: Path, gcs_storage_client: StorageClient, gcs_test_bucket: Path) -> None:
 
     # export sa creds to file - needed for presigning urls
-    creds = GcpCredsSetter().get_creds()
-    creds.export_sa_to_app_default()
+    #creds = GcpCredsSetter().get_creds()
+    #creds.export_sa_to_app_default()
 
     lpath = Path("tests/assets/cats.jpg")
     rpath_dir = gcs_test_bucket / "test_dir"

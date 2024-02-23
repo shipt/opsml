@@ -4,6 +4,7 @@ name: Integration
 #  workflow_run:
 #    workflows: [Lint-Unit-Test]
 #    types: [completed]
+
 on:
   pull_request:
     types:
@@ -12,6 +13,7 @@ on:
   push:
     branches:
       - main
+
       
 jobs:
   Unit-Integration:
@@ -28,11 +30,16 @@ jobs:
       OPSML_GCS_TEST_BUCKET: ${{ secrets.OPSML_GCS_TEST_BUCKET }}
       GOOGLE_ACCOUNT_JSON_BASE64: ${{ secrets.GOOGLE_ACCOUNT_JSON_BASE64 }}
       OPSML_STORAGE_URI: gs://${{ secrets.OPSML_GCS_TEST_BUCKET }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-       
+
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GOOGLE_ACCOUNT_JSON }}
+        
       - name: Install poetry
         run: pipx install poetry==${{ matrix.poetry-version }}
 
