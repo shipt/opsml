@@ -32,7 +32,7 @@ class GcpCreds(BaseModel):
     use_default: bool = False
 
     def export_sa_to_app_default(self) -> None:
-        """This is a helper method for export base64 encoded service accounts to GOOGLE_APPLICATION_CREDENTIALS
+        """This is a helper method to export base64 encoded service accounts to GOOGLE_APPLICATION_CREDENTIALS
         Note: This is only a helper method and is primarily used for testing
         pre-signed url generation (json key file is needed for this operation)
         """
