@@ -1,10 +1,5 @@
 name: Integration
 
-#on:
-#  workflow_run:
-#    workflows: [Lint-Unit-Test]
-#    types: [completed]
-
 on:
   pull_request:
     types:
@@ -14,7 +9,6 @@ on:
     branches:
       - main
 
-      
 jobs:
   Unit-Integration:
     strategy:
