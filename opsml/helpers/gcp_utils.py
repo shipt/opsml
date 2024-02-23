@@ -38,9 +38,9 @@ class GcpCredsSetter:
         self.service_base64_creds = service_creds or os.environ.get("GOOGLE_ACCOUNT_JSON_BASE64")
 
     def get_creds(self) -> GcpCreds:
-        service_creds, project_name, user_default = self._get_creds()
+        service_creds, project_name, use_default = self._get_creds()
 
-        return GcpCreds(creds=service_creds, project=project_name, use_default=user_default)
+        return GcpCreds(creds=service_creds, project=project_name, use_default=use_default)
 
     def _get_creds(self) -> Tuple[Optional[Union[ComputeEngineCredentials, Credentials]], Optional[str], bool]:
         """Get GCP credentials
