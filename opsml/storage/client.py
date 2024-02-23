@@ -196,11 +196,9 @@ class GCSFSStorageClient(StorageClientBase):
             return compute_engine.IDTokenCredentials(auth_request, "")
 
         assert self.settings.credentials is not None
-        return compute_engine.IDTokenCredentials(
-            auth_request,
-            "",
-            service_account_email=self.settings.credentials.service_account_email,
-        )
+
+        self.settings.credentials.refresh(auth_request)
+        return self.settings.credentials
 
     def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
         """Generates pre signed url for S3 object"""
@@ -213,6 +211,7 @@ class GCSFSStorageClient(StorageClientBase):
                 expiration=datetime.timedelta(seconds=expiration),
                 credentials=self.get_id_credentials,
                 method="GET",
+                version="v4",
             )
         except Exception as error:
             logger.error(f"Failed to generate presigned URL: {error}")
