@@ -186,17 +186,21 @@ class GCSFSStorageClient(StorageClientBase):
 
     @cached_property
     def get_id_credentials(self) -> Any:
+        from google.auth import compute_engine
+        from google.auth.transport import requests
+
         assert isinstance(self.settings, GcsStorageClientSettings)
+        auth_request = requests.Request()
 
         if self.settings.use_default:
-            from google.auth import compute_engine
-            from google.auth.transport import requests
-
-            auth_request = requests.Request()
             return compute_engine.IDTokenCredentials(auth_request, "")
 
         assert self.settings.credentials is not None
-        return self.settings.credentials
+        return compute_engine.IDTokenCredentials(
+            auth_request,
+            "",
+            service_account_email=self.settings.credentials.service_account_email,
+        )
 
     def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
         """Generates pre signed url for S3 object"""
