@@ -44,7 +44,9 @@ class GcpCreds(BaseModel):
         key = os.environ.get("GOOGLE_ACCOUNT_JSON_BASE64")
         json_path = Path("temp_service_account.json")
 
-        with json_path.open(mode="+w") as file_:
+        assert key is not None, "GOOGLE_ACCOUNT_JSON_BASE64 environment variable is not set"
+
+        with json_path.open(mode="+w", encoding="utf-8") as file_:
             # write to json
             decoded = base64.b64decode(key)
             account = decoded.decode("utf-8")

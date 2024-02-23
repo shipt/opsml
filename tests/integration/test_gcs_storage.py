@@ -1,8 +1,10 @@
 import sys
 from pathlib import Path
+
 import pytest
-from opsml.storage.client import StorageClient
+
 from opsml.helpers.gcp_utils import GcpCredsSetter
+from opsml.storage.client import StorageClient
 
 pytestmark = [
     pytest.mark.skipif(sys.platform == "win32", reason="No wn_32 test"),
@@ -11,11 +13,11 @@ pytestmark = [
 
 # gcs integration tests perform operation on test bucket that has a TTL of 1 day for all objects
 def test_gcs_storage_client(tmp_path: Path, gcs_storage_client: StorageClient, gcs_test_bucket: Path) -> None:
-    
+
     # export sa creds to file - needed for presigning urls
     creds = GcpCredsSetter().get_creds()
     creds.export_sa_to_app_default()
-    
+
     lpath = Path("tests/assets/cats.jpg")
     rpath_dir = gcs_test_bucket / "test_dir"
     rpath = rpath_dir / "cats.jpg"
