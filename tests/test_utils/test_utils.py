@@ -1,6 +1,5 @@
 import base64
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -146,11 +145,6 @@ def test_gcp_creds(gcp_cred_path: str):
     json_creds = json.dumps(creds)
     base64_creds = base64.b64encode(json_creds.encode("utf-8")).decode("utf-8")
     creds = gcp_utils.GcpCredsSetter(service_creds=base64_creds).get_creds()
-    creds.export_sa_to_app_default()
-    assert os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") == "temp_service_account.json"
-
-    # unset the env var
-    os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS")
 
     assert isinstance(creds.creds, Credentials)
 
@@ -160,9 +154,6 @@ def test_gcp_creds(gcp_cred_path: str):
         # ensure this is none
         cred_setter.service_base64_creds = None
         creds = cred_setter.get_creds()
-
-        creds.export_sa_to_app_default()
-        assert os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") != "temp_service_account.json"
         assert creds.creds is None
 
 

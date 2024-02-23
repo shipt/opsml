@@ -8,7 +8,6 @@
 import base64
 import json
 import os
-from pathlib import Path
 from typing import Optional, Tuple, Union, cast
 
 import google.auth
@@ -30,31 +29,6 @@ class GcpCreds(BaseModel):
     creds: Optional[Union[Credentials, compute_engine.IDTokenCredentials, ComputeEngineCredentials]] = None
     project: Optional[str] = None
     use_default: bool = False
-
-    def export_sa_to_app_default(self) -> None:
-        """This is a helper method to export base64 encoded service accounts to GOOGLE_APPLICATION_CREDENTIALS
-        Note: This is only a helper method and is primarily used for testing
-        pre-signed url generation (json key file is needed for this operation)
-        """
-        if not isinstance(self.creds, service_account.Credentials):
-            logger.error("Only base64 encoded service accounts can be exported to GOOGLE_APPLICATION_CREDENTIALS")
-            return
-
-        # Opening JSON file
-        key = os.environ.get("GOOGLE_ACCOUNT_JSON_BASE64")
-        json_path = Path("temp_service_account.json")
-
-        assert key is not None, "GOOGLE_ACCOUNT_JSON_BASE64 environment variable is not set"
-
-        with json_path.open(mode="+w", encoding="utf-8") as file_:
-            # write to json
-            decoded = base64.b64decode(key)
-            account = decoded.decode("utf-8")
-            creds = json.loads(account)
-            json.dump(creds, file_)
-
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "temp_service_account.json"
-        return
 
 
 class GcpCredsSetter:
@@ -82,8 +56,7 @@ class GcpCredsSetter:
         return self.get_default_creds()
 
     def get_default_creds(self) -> Tuple[Optional[ComputeEngineCredentials], Optional[str], bool]:
-        scopes = {"scopes": ["https://www.googleapis.com/auth/devstorage.full_control"]}  # needed for gcsfs
-        credentials, project_id = google.auth.default(**scopes)
+        credentials, project_id = google.auth.default()
 
         return credentials, project_id, True
 
