@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
-
+import base64
+import json
 import pytest
-
+import os
 from opsml.storage.client import StorageClient
 
 pytestmark = [
@@ -12,6 +13,22 @@ pytestmark = [
 
 # gcs integration tests perform operation on test bucket that has a TTL of 1 day for all objects
 def test_gcs_storage_client(tmp_path: Path, gcs_storage_client: StorageClient, gcs_test_bucket: Path) -> None:
+    
+    # Opening JSON file
+    key = os.environ.get("GOOGLE_ACCOUNT_JSON_BASE64")
+    json_path = Path("temp_service_account.json")
+    
+   
+    with json_path.open(mode="+w") as file_:
+        # write to json
+        decoded = base64.b64decode(key)
+        account = decoded.decode("utf-8")
+        creds = json.loads(account)
+        json.dump(creds, file_)
+        
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "temp_service_account.json"
+
+    
     lpath = Path("tests/assets/cats.jpg")
     rpath_dir = gcs_test_bucket / "test_dir"
     rpath = rpath_dir / "cats.jpg"

@@ -186,18 +186,16 @@ class GCSFSStorageClient(StorageClientBase):
 
     @cached_property
     def get_id_credentials(self) -> Any:
-        from google.auth import compute_engine
-        from google.auth.transport import requests
-
         assert isinstance(self.settings, GcsStorageClientSettings)
-        auth_request = requests.Request()
 
         if self.settings.use_default:
+            from google.auth import compute_engine
+            from google.auth.transport import requests
+
+            auth_request = requests.Request()
             return compute_engine.IDTokenCredentials(auth_request, "")
 
         assert self.settings.credentials is not None
-
-        self.settings.credentials.refresh(auth_request)
         return self.settings.credentials
 
     def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
@@ -211,7 +209,6 @@ class GCSFSStorageClient(StorageClientBase):
                 expiration=datetime.timedelta(seconds=expiration),
                 credentials=self.get_id_credentials,
                 method="GET",
-                version="v4",
             )
         except Exception as error:
             logger.error(f"Failed to generate presigned URL: {error}")
