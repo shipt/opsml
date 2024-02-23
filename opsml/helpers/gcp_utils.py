@@ -82,7 +82,8 @@ class GcpCredsSetter:
         return self.get_default_creds()
 
     def get_default_creds(self) -> Tuple[Optional[ComputeEngineCredentials], Optional[str], bool]:
-        credentials, project_id = google.auth.default()
+        scopes = {"scopes": ["https://www.googleapis.com/auth/devstorage.full_control"]}  # needed for gcsfs
+        credentials, project_id = google.auth.default(**scopes)
 
         return credentials, project_id, True
 
