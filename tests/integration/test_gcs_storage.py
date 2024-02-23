@@ -12,6 +12,7 @@ pytestmark = [
 
 # gcs integration tests perform operation on test bucket that has a TTL of 1 day for all objects
 def test_gcs_storage_client(tmp_path: Path, gcs_storage_client: StorageClient, gcs_test_bucket: Path) -> None:
+
     lpath = Path("tests/assets/cats.jpg")
     rpath_dir = gcs_test_bucket / "test_dir"
     rpath = rpath_dir / "cats.jpg"

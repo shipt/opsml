@@ -30,7 +30,7 @@ def test_gcs_presigned_uri():
 
     with patch(
         "opsml.helpers.gcp_utils.GcpCredsSetter.get_creds",
-        return_value=gcp_utils.GcpCreds(default_creds=True),
+        return_value=gcp_utils.GcpCreds(use_default=True),
     ), patch("google.auth.transport.requests.Request", return_value=None,), patch(
         "google.auth.compute_engine.IDTokenCredentials",
         return_value=None,
@@ -51,7 +51,7 @@ def test_gcs_presigned_uri():
     # this should result in an error (None)
     with patch(
         "opsml.helpers.gcp_utils.GcpCredsSetter.get_creds",
-        return_value=gcp_utils.GcpCreds(default_creds=True),
+        return_value=gcp_utils.GcpCreds(use_default=True),
     ), patch("gcsfs.GCSFileSystem", autospec=True,), patch(
         "google.auth.transport.requests.Request",
         return_value=None,

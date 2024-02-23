@@ -164,7 +164,7 @@ class GCSFSStorageClient(StorageClientBase):
         import gcsfs
 
         assert isinstance(settings, GcsStorageClientSettings)
-        if settings.default_creds is None:
+        if settings.use_default is None:
             logger.info("Using default GCP credentials")
             client = gcsfs.GCSFileSystem()
         else:
@@ -184,19 +184,18 @@ class GCSFSStorageClient(StorageClientBase):
 
         return cast(GCSClient, storage.Client())
 
-    # cached_property is a decorator that caches the result of the function it decorates.
-
     @cached_property
     def get_id_credentials(self) -> Any:
         assert isinstance(self.settings, GcsStorageClientSettings)
 
-        if self.settings.default_creds:
+        if self.settings.use_default:
             from google.auth import compute_engine
             from google.auth.transport import requests
 
             auth_request = requests.Request()
             return compute_engine.IDTokenCredentials(auth_request, "")
 
+        assert self.settings.credentials is not None
         return self.settings.credentials
 
     def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
@@ -205,6 +204,7 @@ class GCSFSStorageClient(StorageClientBase):
         try:
             bucket = self.gcs_client.bucket(config.storage_root)
             blob = bucket.blob(str(path))
+
             return blob.generate_signed_url(
                 expiration=datetime.timedelta(seconds=expiration),
                 credentials=self.get_id_credentials,
@@ -388,7 +388,7 @@ def _get_gcs_settings(storage_uri: str) -> GcsStorageClientSettings:
         storage_uri=storage_uri,
         gcp_project=gcp_creds.project,
         credentials=gcp_creds.creds,
-        default_creds=gcp_creds.default_creds,
+        use_default=gcp_creds.use_default,
     )
 
 

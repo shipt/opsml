@@ -28,7 +28,7 @@ class GcpCreds(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     creds: Optional[Union[Credentials, compute_engine.IDTokenCredentials, ComputeEngineCredentials]] = None
     project: Optional[str] = None
-    default_creds: bool = False
+    use_default: bool = False
 
 
 class GcpCredsSetter:
@@ -38,9 +38,9 @@ class GcpCredsSetter:
         self.service_base64_creds = service_creds or os.environ.get("GOOGLE_ACCOUNT_JSON_BASE64")
 
     def get_creds(self) -> GcpCreds:
-        service_creds, project_name, default_creds = self._get_creds()
+        service_creds, project_name, use_default = self._get_creds()
 
-        return GcpCreds(creds=service_creds, project=project_name, default_creds=default_creds)
+        return GcpCreds(creds=service_creds, project=project_name, use_default=use_default)
 
     def _get_creds(self) -> Tuple[Optional[Union[ComputeEngineCredentials, Credentials]], Optional[str], bool]:
         """Get GCP credentials
