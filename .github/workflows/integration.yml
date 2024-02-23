@@ -15,7 +15,6 @@ on:
       
 jobs:
   Unit-Integration:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
         python-version: ["3.11"]
