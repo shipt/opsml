@@ -14,7 +14,7 @@ from sqlalchemy import func as sqa_func
 from sqlalchemy import insert, select, text
 from sqlalchemy.engine import Engine, Row
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql import FromClause, Select, or_, distinct
+from sqlalchemy.sql import FromClause, Select, distinct, or_
 from sqlalchemy.sql.expression import ColumnElement
 
 from opsml.helpers.logging import ArtifactLogger
@@ -288,6 +288,9 @@ class QueryEngine:
             result_dict.pop("_sa_instance_state")
             record_list.append(result_dict)
 
+        print()
+        print(record_list)
+        print()
         return record_list
 
     def get_records_from_table(
@@ -496,15 +499,17 @@ class RunQueryEngine(QueryEngine):
                 Run uid
             name:
                 Name of the metric
+            names_only:
+                Return only the names of the metrics
 
         Returns:
             List of run metrics
         """
         column_to_query = distinct(MetricSchema.name) if names_only else MetricSchema
 
-        query = select(column_to_query)
+        column_to_query = distinct(MetricSchema.name) if names_only else MetricSchema
 
-        query.filter(MetricSchema.run_uid == run_uid)
+        query = select(column_to_query).filter(MetricSchema.run_uid == run_uid)
 
         if name is not None:
             filters = [MetricSchema.name == n for n in name]

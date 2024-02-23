@@ -4,11 +4,11 @@
 
 # pylint: disable=protected-access
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, cast
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from opsml.app.routes.pydantic_models import Metrics, Success, GetMetrcRequest
+from opsml.app.routes.pydantic_models import GetMetricRequest, Metrics, Success
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.base.server import ServerRunCardRegistry
 
@@ -44,18 +44,14 @@ def insert_metric(request: Request, payload: Metrics) -> Success:
 
 # GET would be used, but we are using POST to allow for a request body so that we can pass in a list of metrics to retrieve
 @router.post("/metrics", response_model=Metrics, name="metric_get")
-def get_metric(request: Request, payload: GetMetrcRequest) -> Metrics:
+def get_metric(request: Request, payload: GetMetricRequest) -> Metrics:
     """Get metrics from metric table
 
     Args:
         request:
             FastAPI request object
-        run_uid:
-            Run uid
-        name:
-            List of metrics to retrieve
-        names_only:
-            Return only the names of the metrics
+        payload:
+            GetMetricRequest
 
     Returns:
         `MetricsModel`

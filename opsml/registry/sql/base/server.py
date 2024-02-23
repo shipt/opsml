@@ -326,10 +326,7 @@ class ServerRunCardRegistry(ServerRegistry):
         return RegistryType.RUN
 
     def get_metric(
-        self,
-        run_uid: str,
-        name: Optional[List[str]] = None,
-        names_only: bool = False,
+        self, run_uid: str, name: Optional[List[str]] = None, names_only: bool = False
     ) -> Optional[List[Dict[str, Any]]]:
         """Get metric from run card
 
@@ -337,10 +334,12 @@ class ServerRunCardRegistry(ServerRegistry):
             run_uid:
                 run card uid
             name:
-                name
+                List of names of metrics to retrieve
+            names_only:
+                if True, will return only names
 
         Returns:
-            metric value
+            metrics
 
         """
         assert isinstance(self.engine, RunQueryEngine)

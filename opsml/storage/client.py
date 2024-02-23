@@ -1,4 +1,4 @@
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel,broad-exception-caught
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
@@ -15,7 +15,7 @@ from fsspec.implementations.local import LocalFileSystem
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.settings.config import OpsmlConfig, config
-from opsml.storage.api import ApiClient, ApiRoutes
+from opsml.storage.api import ApiClient, ApiRoutes, RequestType
 from opsml.types import (
     ApiStorageClientSettings,
     BotoClient,
@@ -151,7 +151,7 @@ class StorageClientBase(StorageClientProtocol):
         except FileNotFoundError:
             return False
 
-    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+    def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
         """Generates pre signed url for object"""
         return path.as_posix()
 
@@ -197,22 +197,21 @@ class GCSFSStorageClient(StorageClientBase):
             auth_request = requests.Request()
             return compute_engine.IDTokenCredentials(auth_request, "")
 
-        return None
+        return self.settings.credentials
 
-    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+    def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
         """Generates pre signed url for S3 object"""
 
         try:
             bucket = self.gcs_client.bucket(config.storage_root)
             blob = bucket.blob(str(path))
-
             return blob.generate_signed_url(
                 expiration=datetime.timedelta(seconds=expiration),
                 credentials=self.get_id_credentials,
                 method="GET",
             )
-        except Exception as e:
-            logger.error(f"Failed to generate presigned URL: {e}")
+        except Exception as error:
+            logger.error(f"Failed to generate presigned URL: {error}")
             return None
 
 
@@ -245,6 +244,24 @@ class S3StorageClient(StorageClientBase):
             logger.error(f"Failed to generate presigned URL: {e}")
             return None
 
+    @cached_property
+    def s3_client(self) -> BotoClient:
+        import boto3
+
+        return cast(BotoClient, boto3.client("s3"))
+
+    def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
+        """Generates pre signed url for S3 object"""
+        try:
+            return self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": config.storage_root, "Key": str(path)},
+                ExpiresIn=expiration,
+            )
+        except Exception as error:
+            logger.error(f"Failed to generate presigned URL: {error}")
+            return None
+
 
 class LocalStorageClient(StorageClientBase):
     def put(self, lpath: Path, rpath: Path) -> None:
@@ -255,7 +272,7 @@ class LocalStorageClient(StorageClientBase):
 
         super().put(lpath, rpath)
 
-    def generate_presigned_url(self, path: Path, expiration: int) -> str:
+    def generate_presigned_url(self, path: Path, expiration: int) -> Optional[str]:
         """Generates pre signed url for object"""
         # use mounted path for local storage
         return (Path("/artifacts") / path).as_posix()
@@ -299,8 +316,9 @@ class ApiStorageClient(StorageClientBase):
             )
 
     def find(self, path: Path) -> List[Path]:
-        response = self.api_client.get_request(
+        response = self.api_client.request(
             route=ApiRoutes.LIST_FILES,
+            request_type=RequestType.GET,
             params={"path": path.as_posix()},
         )
 
@@ -336,8 +354,9 @@ class ApiStorageClient(StorageClientBase):
         raise NotImplementedError
 
     def rm(self, path: Path) -> None:
-        response = self.api_client.get_request(
+        response = self.api_client.request(
             route=ApiRoutes.DELETE_FILE,
+            request_type=RequestType.GET,
             params={"path": path.as_posix()},
         )
 
@@ -351,8 +370,9 @@ class ApiStorageClient(StorageClientBase):
             path:
                 Path to file
         """
-        response = self.api_client.get_request(
+        response = self.api_client.request(
             route=ApiRoutes.FILE_EXISTS,
+            request_type=RequestType.GET,
             params={"path": path.as_posix()},
         )
 
