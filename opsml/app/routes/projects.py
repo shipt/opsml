@@ -99,7 +99,6 @@ def project_id(
     """
 
     registry: ServerProjectCardRegistry = request.app.state.registries.project._registry
-
     return ProjectIdResponse(
         project_id=registry.get_project_id(
             project_name=project_name,

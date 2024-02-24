@@ -822,12 +822,12 @@ p {
 }
 
 
-#model-card:hover{
+#artifact-card:hover{
     transform: scale(1.05);
     box-shadow: 0px 10px 20px rgba(26, 255, 163, 0.24);
 }
 
-#model-card {
+#artifact-card {
     width: fit-content;
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
     background-repeat: no-repeat;

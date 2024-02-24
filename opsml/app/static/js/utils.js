@@ -3,6 +3,7 @@
 const METRICS_PATH = "/opsml/metrics";
 const GRAPHICS_PATH = "/opsml/runs/graphics";
 const METADATA_PATH = "/opsml/projects/list/";
+const REPO_NAMES_PATH = "/opsml/repository";
 
 // Function to generate html from data
 // path: path to the function that generates the html
@@ -81,7 +82,6 @@ function get_metrics(run_uid, metrics) {
     let url = METRICS_PATH + "?run_uid=" + run_uid
 
 
-    alert(url);
 
     $.ajax({
         url: url,
@@ -154,6 +154,53 @@ function ready_project_page(run_uid, project) {
 
 }
 
+//
+function get_repo_names_page(registry, repository) {
+    var uri_data = {"registry": registry, "repository": repository};
+
+    $.ajax({
+        url: REPO_NAMES_PATH,
+        type: "GET",
+        dataType:"json",
+        data: uri_data,
+        success: function(data) {
+            alert(JSON.stringify(data));
+            // get repository and names from dictionary
+            var repositories = data["repositories"];
+            var names = data["names"];
+
+            if (repositories.length > 0) {
+                var select = document.getElementById("MetadataRepositoriesSelect");
+                // remove all content from select before adding new content
+                select.innerHTML = "";
+            
+                for (var i = 0; i < repositories.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = repositories[i];
+                    opt.innerHTML = repositories[i];
+                    select.appendChild(opt);
+                }
+            } else {
+                var select = document.getElementById("MetadataRepositoriesSelect");
+                // remove all content from select before adding new content
+                select.innerHTML = "";
+            
+                var opt = document.createElement('option');
+                opt.value = "No repositories found";
+                opt.innerHTML = "No repositories found";
+                select.appendChild(opt);
+            }
+        },
+
+        error: function() {
+            alert('error loading from database...');
+            }
+      });
+
+
+}
+
+
 export {
     generate_html_from_data, 
     execute_image_modal, 
@@ -163,4 +210,5 @@ export {
     call_graphics,
     call_metadata,
     get_metrics,
+    get_repo_names_page,
 };
