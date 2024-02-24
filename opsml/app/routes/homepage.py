@@ -8,6 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from opsml.types import RegistryType
 
 # Constants
 TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
@@ -24,6 +25,13 @@ async def opsml_homepage(
     repository: Optional[str] = None,
     version: Optional[str] = None,
 ) -> HTMLResponse:
+    # validate registry type
+    if registry:
+        try:
+            RegistryType.from_str(registry)
+        except NotImplementedError:
+            registry = None
+
     return templates.TemplateResponse(
         "include/index.html",
         {

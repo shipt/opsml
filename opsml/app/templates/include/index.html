@@ -81,25 +81,25 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
 
-    // if all vars are none unhide repository-page
-    if (registry == "None" && name == "None" && repository == "None" && version == "None") {
+    // if vars are passed, get specific page
+    if (registry != "None" && name != "None" && repository != "None" && version != "None"){
+      // get specific page
+      // pages can be:
+        // 1. model page
+        // 2. data page
+        // 3. run page
+        // 4. audit
+      get_artifact_page(registry, name, repository, version);
+      
+    // return default model page
+    } else {
+
+      // get all artifacts
       $("#repository-page").show();
       // make nav-models active
       $("#nav-models").addClass("active");
-
-    } else if (registry == "model" && name == "None" && repository == "None" && version == "None") {
-      $("#repository-page").show();
-      // make nav-models active
-      $("#nav-models").addClass("active"); 
-
-    } else if (registry == "data" && name == "None" && repository == "None" && version == "None") {
-        $("#repository-page").show();
-        // make nav-models active
-        $("#nav-data").addClass("active");  
-
-     }else {
-      // call metadata
-      call_metadata(registry, name, repository, version);
+      get_repositories();
+      
     }
     });
 
