@@ -91,7 +91,6 @@ function get_metrics(run_uid, metrics) {
         content_type: "application/json",
         success: function(data) {
             console.log("success",data);
-            alert(JSON.stringify(data));
         },
         error: function() {
             console.log("error", data);
@@ -134,9 +133,9 @@ function ready_project_page(run_uid, project) {
     call_metadata(run_uid, project);
 
 
-    $('#MetadataRepositoriesSelect').select2();
+    $('#RepositoriesSelect').select2();
 
-    $("#MetadataRepositoriesSelect").on('select2:select', function(e){
+    $("#RepositoriesSelect").on('select2:select', function(e){
         window.location.href = e.params.data.id;
     });
 
@@ -168,8 +167,13 @@ function get_repo_names_page(registry, repository) {
             var repositories = data["repositories"];
             var names = data["names"];
 
+            // if repository is undefined, set it to the first repository
+            if (repository == undefined) {
+                repository = repositories[0];
+            }
+
             if (repositories.length > 0) {
-                var select = document.getElementById("MetadataRepositoriesSelect");
+                var select = document.getElementById("RepositoriesSelect");
                 // remove all content from select before adding new content
                 select.innerHTML = "";
             
@@ -177,10 +181,15 @@ function get_repo_names_page(registry, repository) {
                     var opt = document.createElement('option');
                     opt.value = repositories[i];
                     opt.innerHTML = repositories[i];
+
+                    if (repositories[i] == repository) {
+                        opt.selected = true;
+                    }
+
                     select.appendChild(opt);
                 }
             } else {
-                var select = document.getElementById("MetadataRepositoriesSelect");
+                var select = document.getElementById("RepositoriesSelect");
                 // remove all content from select before adding new content
                 select.innerHTML = "";
             
@@ -191,14 +200,10 @@ function get_repo_names_page(registry, repository) {
             }
 
             if (names.length > 0) {
-                alert("names found");
-
-                // if repository is undefined, set it to the first repository
-                if (repository == undefined) {
-                    repository = repositories[0];
-                }
 
                 var repo_header = document.getElementById("repository-header");
+                repo_header.innerHTML = "";
+
                  // created heading
                 var repo_heading = document.createElement('h2');
                 repo_heading.innerHTML = repository;
@@ -210,35 +215,40 @@ function get_repo_names_page(registry, repository) {
             
                 for (var i = 0; i < names.length; i++)
                 {
+                    var card_outer_div = document.createElement('div');
+                    card_outer_div.className = "col-12";
+
                     var card = document.createElement('div');
                     card.className = "card text-left rounded m-1";
                     card.style = "width: 14rem;";
                     card.id = "artifact-card";
-            
+
+                    card_outer_div.appendChild(card);
+         
                     var card_body = document.createElement('div');
                     card_body.className = "card-body";
-            
+                    card.appendChild(card_body);
+          
                     var card_row = document.createElement('div');
                     card_row.className = "row";
-            
+                    card_body.appendChild(card_row);
+          
                     var card_col = document.createElement('div');
                     card_col.className = "col-sm-8";
-            
+                    card_row.appendChild(card_col);
+         
                     var card_title = document.createElement('h5');
                     card_title.className = "card-title";
                     card_title.innerHTML = names[i];
-            
+                    card_col.appendChild(card_title);
+
                     var card_text = document.createElement('a');
                     card_text.className = "stretched-link";
                     card_text.href = "#";
                     card_text.value = names[i];
-            
-            
-                    card_col.appendChild(card_title);
                     card_col.appendChild(card_text);
-                    card_row.appendChild(card_col);
-            
-                    // create image column
+     
+                    //// create image column
                     var card_col_img = document.createElement('div');
                     card_col_img.className = "col-sm-4";
                     card_col_img.id = "artifact-card-img";
@@ -246,15 +256,24 @@ function get_repo_names_page(registry, repository) {
                     var card_img = document.createElement('img');
                     card_img.className = "center-block";
                     card_img.src = "/static/images/chip.png";
+                    card_img.width = "40";
+                    card_img.height = "40";
             
                     card_col_img.appendChild(card_img);
                     card_row.appendChild(card_col_img);
-            
-                    card_body.appendChild(card_row);
-                    card.appendChild(card_body);
-                    artifact_card_div.appendChild(card);
+         
+                    artifact_card_div.appendChild(card_outer_div);
                 }
             }
+
+        // set registry type
+        var registry_type = document.getElementById("registry-type");
+        registry_type.dataset.registry = registry;
+        
+        // set available to active
+        var available = document.getElementById("available");
+        available.classList.add("active");
+
         },
 
         error: function() {
@@ -264,6 +283,82 @@ function get_repo_names_page(registry, repository) {
 
 
 }
+
+
+// Function to set up select2 for repositories
+// This will take selection and generate repo/name html objects
+function set_repository_select() {
+
+    $('#RepositoriesSelect').select2();
+    $("#RepositoriesSelect").on('select2:select', function(e){
+      let repo = e.params.data.id;
+      let registry = document.getElementById("registry-type").dataset.registry;
+      get_repo_names_page(registry, repo);
+
+    });
+
+}
+
+
+function set_default_page(registry, name, repository, version) {
+    // if vars are passed, get specific page
+    if (registry != "None" && name != "None" && repository != "None" && version != "None"){
+        // get specific page
+        // (1) model page, (2) data page, (3) run page, (4) audit
+        get_artifact_page(registry, name, repository, version);
+        
+    // return default model page
+    } else {
+
+        // get all artifacts
+        $("#repository-page").show();
+
+        // make nav-models active
+        $("#nav-models").addClass("active");
+
+        // if repository is none, set it to null
+        if (repository == "None"){
+            repository = undefined;
+        }
+        get_repo_names_page('model', repository);
+    }
+
+    }
+
+
+// Function to set up click event for navbar items
+// This will take selection and generate repo/name html objects
+function set_nav_click() {
+    // get clicked navbar-toggler
+    $('.nav-link').click(function(){
+        var registry = $(this).attr('data-type');
+        get_repo_names_page(registry);
+      });
+
+}
+
+// Function to set active item in navbar
+function ready_nav() {
+
+    const links = document.querySelectorAll('.nav-link');
+        
+    if (links.length) {
+    links.forEach((link) => {
+        link.addEventListener('click', (e) => {
+
+        links.forEach((link) => {
+            link.classList.remove('active');
+        });
+
+        e.preventDefault();
+        link.classList.add('active');
+
+        });
+    });
+    }
+    
+}
+
 
 
 export {
@@ -276,4 +371,8 @@ export {
     call_metadata,
     get_metrics,
     get_repo_names_page,
+    set_repository_select,
+    set_nav_click,
+    set_default_page
+
 };

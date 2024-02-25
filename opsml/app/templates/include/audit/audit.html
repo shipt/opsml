@@ -20,7 +20,7 @@
 <!---- Form for selecting repository -------->
   <div class="btn-group">
       <div class="dropdown" id="MetadataRepositoriesSelect">
-        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+        <a class="btn dropdown-toggle m-1" href="" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
           
           {% if selected_repository is not none %}
             {{selected_repository}}
@@ -38,13 +38,13 @@
             {% endfor %}
           
             {% else %}
-            <a class="dropdown-item" href="#">No repository Found</a>
+            <a class="dropdown-item" href="">No repository Found</a>
             {% endif %}
         </div>
       </div>
 
       <div class="dropdown" id="MetadataRepositoriesSelect">
-        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+        <a class="btn dropdown-toggle m-1" href="" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
           
           {% if selected_model is not none %}
             {{selected_model}}
@@ -64,7 +64,7 @@
 
 
       <div class="dropdown" id="MetadataRepositoriesSelect">
-        <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+        <a class="btn dropdown-toggle m-1" href="" role="button" id="dropdownMenuLink" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
           {% if version is not none %}
             {{version}}
           {% else %}

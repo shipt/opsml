@@ -44,7 +44,7 @@
     <div id="VersionColumn">
       <div class="list-group">
         {% for run in project_runs %}
-          <a href="#" onclick="get_project('{{ run["uid"] }}', '{{ selected_project }}')"  class="list-group-item list-group-item-action {% if runcard["uid"] ==  run["uid"] %}active {% endif %}">{{ run["name"] }} -- {{ run["date"] }}</a>
+          <a href="" onclick="get_project('{{ run["uid"] }}', '{{ selected_project }}')"  class="list-group-item list-group-item-action {% if runcard["uid"] ==  run["uid"] %}active {% endif %}">{{ run["name"] }} -- {{ run["date"] }}</a>
         {% endfor %}
       </div>
     </div>

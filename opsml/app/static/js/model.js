@@ -1,6 +1,6 @@
   // check if repositories is not empty
   if (repositories.length > 0) {
-    var select = document.getElementById("MetadataRepositoriesSelect");
+    var select = document.getElementById("RepositoriesSelect");
     // remove all content from select before adding new content
     select.innerHTML = "";
 
@@ -11,7 +11,7 @@
         select.appendChild(opt);
     }
 } else {
-    var select = document.getElementById("MetadataRepositoriesSelect");
+    var select = document.getElementById("RepositoriesSelect");
     // remove all content from select before adding new content
     select.innerHTML = "";
 

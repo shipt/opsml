@@ -7,9 +7,11 @@
 
 {% block content %}
 
-<body id="ModelPage">
+<body id="ArtifactPage">
+
   <div class="container" style="padding-top:65px;"></div>
   <div id="page-content">
+  <div hidden data-registry="" id="registry-type"></div>
 
     <!-- repository page --> 
     <div id="repository-page" style="display: none;">
@@ -45,7 +47,11 @@
     ready_project_toggles, 
     ready_project_buttons, 
     get_metrics,
-    get_repo_names_page
+    get_repo_names_page,
+    set_repository_select,
+    set_nav_click,
+    set_default_page
+
   } from '/static/js/utils.js';
   import {ready_nav} from '/static/js/nav.js';
 
@@ -56,46 +62,24 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
 
-    // Repository dropdown
-    $('#MetadataRepositoriesSelect').select2();
-    $("#MetadataRepositoriesSelect").on('select2:select', function(e){
-      window.location.href = e.params.data.id;
-    });
+    // set the default page
+    set_default_page(registry, name, repository, version);
 
-    // if vars are passed, get specific page
-    if (registry != "None" && name != "None" && repository != "None" && version != "None"){
-      // get specific page
-      // pages can be:
-        // 1. model page
-        // 2. data page
-        // 3. run page
-        // 4. audit
-      get_artifact_page(registry, name, repository, version);
-      
-    // return default model page
-    } else {
-
-      // get all artifacts
-      $("#repository-page").show();
-
-      // make nav-models active
-      $("#nav-models").addClass("active");
-      $("#available").addClass("active");
-
-      // if repository is none, set it to null
-      if (repository == "None"){
-        repository = undefined;
-      }
-      get_repo_names_page('model', repository);
-      }
     }
 
-  
-
-  
   );
 
+  // ready the main nav
   ready_nav();
+
+  // handle repository select dynamics
+  set_repository_select();
+
+
+  // handle nav link click
+  set_nav_click();
+
+
 
 </script>
 

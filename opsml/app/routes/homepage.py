@@ -70,6 +70,10 @@ async def opsml_repositories(
     _registry: CardRegistry = getattr(request.app.state.registries, registry)
 
     repositories = _registry._registry.unique_repositories
+
+    if repository is None:
+        repository = repositories[0]
+
     card_names = _registry._registry.get_unique_card_names(repository=repository)
 
     return {"repositories": repositories, "names": card_names}

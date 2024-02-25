@@ -48,7 +48,7 @@ body {
 }
 
 
-#ModelPage {
+#ArtifactPage {
     font-family: Boing;
     font-weight: medium;
     background: #fafafa;
@@ -729,7 +729,7 @@ p {
 }
 
 
-#MetadataRepositoriesSelect .dropdown-toggle {
+#RepositoriesSelect .dropdown-toggle {
     background:#04b78a;
     color:#fffefe !important;
   }
