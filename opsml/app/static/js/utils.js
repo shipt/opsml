@@ -153,6 +153,12 @@ function ready_project_page(run_uid, project) {
 
 }
 
+//function to get version pages
+// this could be in it's own separate file
+function get_version_page(registry, name) {
+    alert(registry);
+}
+
 //
 function get_repo_names_page(registry, repository) {
     var uri_data = {"registry": registry, "repository": repository};
@@ -244,8 +250,9 @@ function get_repo_names_page(registry, repository) {
 
                     var card_text = document.createElement('a');
                     card_text.className = "stretched-link";
-                    card_text.href = "#";
+                    card_text.href = "";
                     card_text.value = names[i];
+                    card_text.id = "artifact-card-name";
                     card_col.appendChild(card_text);
      
                     //// create image column
@@ -274,7 +281,17 @@ function get_repo_names_page(registry, repository) {
         var available = document.getElementById("available");
         available.classList.add("active");
 
-        },
+        // create event listener for artifact card
+        var artifact_cards = document.querySelectorAll('#artifact-card-name');
+        artifact_cards.forEach((card) => {
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                var name = e.target.value;
+                var registry = document.getElementById("registry-type").dataset.registry;
+                get_version_page(registry, name);
+            }
+        )});
+    },
 
         error: function() {
             alert('error loading from database...');
@@ -333,6 +350,7 @@ function set_nav_click() {
     $('.nav-link').click(function(){
         var registry = $(this).attr('data-type');
         get_repo_names_page(registry);
+        // add logic for run and audit pages
       });
 
 }
