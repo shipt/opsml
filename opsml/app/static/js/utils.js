@@ -1,4 +1,4 @@
-
+import { set_version_page } from './version.js';
 
 const METRICS_PATH = "/opsml/metrics";
 const GRAPHICS_PATH = "/opsml/runs/graphics";
@@ -153,11 +153,6 @@ function ready_project_page(run_uid, project) {
 
 }
 
-//function to get version pages
-// this could be in it's own separate file
-function get_version_page(registry, name) {
-    alert(registry);
-}
 
 //
 function get_repo_names_page(registry, repository) {
@@ -213,6 +208,8 @@ function get_repo_names_page(registry, repository) {
                  // created heading
                 var repo_heading = document.createElement('h2');
                 repo_heading.innerHTML = repository;
+                repo_heading.dataset.repo = repository;
+                repo_heading.id = "active-repo";
                 repo_header.appendChild(repo_heading);
 
 
@@ -288,7 +285,8 @@ function get_repo_names_page(registry, repository) {
                 e.preventDefault();
                 var name = e.target.value;
                 var registry = document.getElementById("registry-type").dataset.registry;
-                get_version_page(registry, name);
+                var repository = document.getElementById("active-repo").dataset.repo;
+                set_version_page(registry, repository, name);
             }
         )});
     },
