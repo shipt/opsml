@@ -372,29 +372,7 @@ class DataRouteHelper(RouteHelper):
 
 
 class ModelRouteHelper(RouteHelper):
-    """Route helper for DataCard pages"""
-
-    def get_homepage(self, request: Request, repository: Optional[str] = None) -> _TemplateResponse:
-        """Retrieve homepage
-
-        Args:
-            request:
-                The incoming HTTP request.
-            repository:
-                The repository name.
-        """
-        registry: CardRegistry = request.app.state.registries.model
-
-        info = list_repository_name_info(registry, repository)
-        return templates.TemplateResponse(
-            "include/model/models.html",
-            {
-                "request": request,
-                "all_repositories": info.repositories,
-                "selected_repository": info.selected_repository,
-                "models": info.names,
-            },
-        )
+    """Route helper for ModelCard data"""
 
     def _get_runcard(self, registry: CardRegistry, modelcard: ModelCard) -> Tuple[Optional[RunCard], Optional[str]]:
         if modelcard.metadata.runcard_uid is not None:
@@ -435,39 +413,23 @@ class ModelRouteHelper(RouteHelper):
 
         return processor_uris
 
-    def get_versions_page(
-        self,
-        request: Request,
-        name: str,
-        versions: List[Dict[str, Any]],
-        metadata: ModelMetadata,
-        version: Optional[str] = None,
-    ) -> _TemplateResponse:
+    def get_card_metadata(self, request: Request, card: ModelCard) -> Dict[str, Any]:
         """Given a data name, returns the data versions page
 
         Args:
             request:
                 The incoming HTTP request.
-            name:
-                The data name.
-            versions:
-                The list of card versions.
-            metadata:
-                The model metadata.
-            version:
-                The data version.
+            modelcard:
+                The model card.
         """
-
-        registry: CardRegistry = request.app.state.registries.model
-        modelcard, version = self._check_version(registry, name, versions, version)
 
         runcard, project_num = self._get_runcard(
             registry=request.app.state.registries.run,
-            modelcard=cast(ModelCard, modelcard),
+            modelcard=card,
         )
 
+        metadata = card.metadata
         metadata_json = json.dumps(metadata.model_dump(), indent=4)
-
         model_filename = Path(metadata.model_uri)
 
         if model_filename.suffix == "":
@@ -486,22 +448,15 @@ class ModelRouteHelper(RouteHelper):
 
         processor_uris = self._get_processor_uris(metadata)
 
-        return templates.TemplateResponse(
-            "include/model/model_version.html",
-            {
-                "request": request,
-                "versions": versions,
-                "selected_model": modelcard,
-                "selected_version": version,
-                "project_num": project_num,
-                "metadata": metadata,
-                "runcard": runcard,
-                "metadata_json": metadata_json,
-                "model_filename": model_save_filename,
-                "processor_uris": processor_uris,
-                "onnx_filename": onnx_save_filename,
-            },
-        )
+        return {
+            "modelcard": card.model_dump(),
+            "runcard": runcard.model_dump(),
+            "metadata_json": metadata_json,
+            "model_filename": model_save_filename,
+            "onnx_filename": onnx_save_filename,
+            "processor_uris": processor_uris,
+            "project_num": project_num,
+        }
 
 
 class ProjectRouteHelper(RouteHelper):

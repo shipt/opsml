@@ -2,7 +2,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 
@@ -26,6 +26,8 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
+from opsml import ModelCard
+from opsml.app.routes.route_helpers import ModelRouteHelper
 
 logger = ArtifactLogger.get_logger()
 
@@ -280,4 +282,27 @@ def delete_card(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"""Error deleting card record from registry. {error}""",
+        ) from error
+
+
+@router.post("/cards/ui", response_model=ListCardResponse, name="card_ui_data")
+def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dict[str, Any]:
+    """Lists a Card"""
+
+    try:
+        registry_type = get_registry_type_from_table(
+            table_name=payload.table_name,
+            registry_type=payload.registry_type,
+        )
+
+        registry: CardRegistry = getattr(request.app.state.registries, registry_type)
+        card = registry.load_card(name=payload.name, repository=payload.repository, version=payload.version)
+
+        if isinstance(card, ModelCard):
+            return ModelRouteHelper().get_card_metadata(card=card)
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"""Error listing cards. {error}""",
         ) from error

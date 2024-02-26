@@ -1,11 +1,12 @@
 const LIST_CARD_PATH = "/opsml/cards/list";
-
+const ACTIVE_CARD_PATH = "/opsml/cards/ui";
 
 function create_version_elements(card_versions, active_version) {
 
 
     // get the version list
     let version_list = document.getElementById("version-list");
+    version_list.innerHTML = "";  // clear the version list
 
 
     // loop through each item and create an "a" tag for each version
@@ -26,6 +27,35 @@ function create_version_elements(card_versions, active_version) {
         version_list.appendChild(version_link);
     }
 
+}
+
+function create_active_version_card(registry, repository, name, version) {
+    var list_data = {"registry_type": registry, "repository": repository, "name": name, "version": version};
+
+    $.ajax({
+        url: LIST_CARD_PATH,
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        data: JSON.stringify(list_data),
+        success: function(data) {
+            let card_versions = data["cards"];
+
+            // check if version is not set
+            if (version === undefined) {
+                version = card_versions[0];
+            }
+
+            create_version_elements(card_versions, version);
+
+        },
+
+        error: function(xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            alert(err.Message);
+          }
+    });
+
 
 }
 
@@ -40,13 +70,11 @@ function get_versions(registry, name, repository, version) {
         data: JSON.stringify(list_data),
         success: function(data) {
             let card_versions = data["cards"];
-            alert(JSON.stringify(card_versions));
 
             // check if version is not set
             if (version === undefined) {
                 version = card_versions[0];
             }
-
 
             create_version_elements(card_versions, version);
 
@@ -82,6 +110,8 @@ function set_version_page(registry, repository, name) {
     //let active_version = card_versions[0];  // set the first version as the active version
 
     //create_version_elements(card_versions, active_version);
+    
+    // create version card
 
 
     $("#version-page").show();
