@@ -12,7 +12,7 @@ function get_versions(registry, name, repository, version) {
         data: JSON.stringify(list_data),
         success: function(data) {
 
-            //alert(JSON.stringify(data));
+            return data;
           
         },
         error: function(xhr, status, error) {
