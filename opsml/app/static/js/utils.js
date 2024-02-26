@@ -273,7 +273,20 @@ function get_repo_names_page(registry, repository) {
         // set registry type
         var registry_type = document.getElementById("registry-type");
         registry_type.dataset.registry = registry;
-        
+
+        // set repo for specific registry type
+        if (registry == "model") {
+            var repo = document.getElementById("selected-model-repo")
+            repo.dataset.model_repo = repository;
+        } else if (registry == "data") {
+            var repo = document.getElementById("selected-data-repo")
+            repo.dataset.data_repo = repository;
+        } else if (registry == "run") {
+            var repo = document.getElementById("selected-run-repo")
+            repo.dataset.run_repo = repository;
+        }
+
+
         // set available to active
         var available = document.getElementById("available");
         available.classList.add("active");
@@ -289,6 +302,12 @@ function get_repo_names_page(registry, repository) {
                 set_version_page(registry, repository, name);
             }
         )});
+
+        $("#version-page").hide();
+        $("#repository-page").show();
+
+
+
     },
 
         error: function() {
@@ -347,7 +366,17 @@ function set_nav_click() {
     // get clicked navbar-toggler
     $('.nav-link').click(function(){
         var registry = $(this).attr('data-type');
-        get_repo_names_page(registry);
+
+        // get repository name 
+        if (registry == "model") {
+            var repository = document.getElementById("selected-model-repo").dataset.model_repo;
+        } else if (registry == "data") {
+            var repository = document.getElementById("selected-data-repo").dataset.data_repo;
+        } else if (registry == "run") {
+            var repository = document.getElementById("selected-run-repo").dataset.run_repo;
+        }
+     
+        get_repo_names_page(registry, repository);
         // add logic for run and audit pages
       });
 
