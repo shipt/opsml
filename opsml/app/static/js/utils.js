@@ -153,9 +153,159 @@ function ready_project_page(run_uid, project) {
 
 }
 
+function set_dropdown(data, registry, repository){
+
+    var repositories = data["repositories"];
+    var names = data["names"];
+
+    // if repository is undefined, set it to the first repository
+    if (repository == undefined) {
+        repository = repositories[0];
+    }
+
+
+    if (repositories.length > 0) {
+      
+        var select = document.getElementById("RepositoriesSelect");
+
+        // remove all content from select before adding new content
+        select.innerHTML = "";
+    
+        for (var i = 0; i < repositories.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = repositories[i];
+            opt.innerHTML = repositories[i];
+
+            if (repositories[i] == repository) {
+                opt.selected = true;
+            }
+
+            select.appendChild(opt);
+        }
+    } else {
+        var select = document.getElementById("RepositoriesSelect");
+        // remove all content from select before adding new content
+        select.innerHTML = "";
+    
+        var opt = document.createElement('option');
+        opt.value = "No repositories found";
+        opt.innerHTML = "No repositories found";
+        select.appendChild(opt);
+    }
+
+    if (names.length > 0) {
+
+        var repo_header = document.getElementById("repository-header");
+        repo_header.innerHTML = "";
+
+         // created heading
+        var repo_heading = document.createElement('h2');
+        repo_heading.innerHTML = repository;
+        repo_heading.dataset.repo = repository;
+        repo_heading.id = "active-repo";
+        repo_header.appendChild(repo_heading);
+
+
+        var artifact_card_div = document.getElementById("artifact-card-div");
+        artifact_card_div.innerHTML = "";
+    
+        for (var i = 0; i < names.length; i++)
+        {
+            var card_outer_div = document.createElement('div');
+            card_outer_div.className = "col-12";
+
+            var card = document.createElement('div');
+            card.className = "card text-left rounded m-1";
+            card.style = "width: 14rem;";
+            card.id = "artifact-card";
+
+            card_outer_div.appendChild(card);
+ 
+            var card_body = document.createElement('div');
+            card_body.className = "card-body";
+            card.appendChild(card_body);
+  
+            var card_row = document.createElement('div');
+            card_row.className = "row";
+            card_body.appendChild(card_row);
+  
+            var card_col = document.createElement('div');
+            card_col.className = "col-sm-8";
+            card_row.appendChild(card_col);
+ 
+            var card_title = document.createElement('h5');
+            card_title.className = "card-title";
+            card_title.innerHTML = names[i];
+            card_col.appendChild(card_title);
+
+            var card_text = document.createElement('a');
+            card_text.className = "stretched-link";
+            card_text.href = "";
+            card_text.value = names[i];
+            card_text.id = "artifact-card-name";
+            card_col.appendChild(card_text);
+
+            //// create image column
+            var card_col_img = document.createElement('div');
+            card_col_img.className = "col-sm-4";
+            card_col_img.id = "artifact-card-img";
+    
+            var card_img = document.createElement('img');
+            card_img.className = "center-block";
+            card_img.src = "/static/images/chip.png";
+            card_img.width = "40";
+            card_img.height = "40";
+    
+            card_col_img.appendChild(card_img);
+            card_row.appendChild(card_col_img);
+ 
+            artifact_card_div.appendChild(card_outer_div);
+        }
+    }
+
+    // set registry type
+    var registry_type = document.getElementById("registry-type");
+    registry_type.dataset.registry = registry;
+
+    // set repo for specific registry type
+    if (registry == "model") {
+        var repo = document.getElementById("selected-model-repo")
+        repo.dataset.model_repo = repository;
+    } else if (registry == "data") {
+        var repo = document.getElementById("selected-data-repo")
+        repo.dataset.data_repo = repository;
+    } else if (registry == "run") {
+        var repo = document.getElementById("selected-run-repo")
+        repo.dataset.run_repo = repository;
+    }
+
+
+    // set available to active
+    var available = document.getElementById("available");
+    available.classList.add("active");
+
+    // create event listener for artifact card
+    var artifact_cards = document.querySelectorAll('#artifact-card-name');
+    artifact_cards.forEach((card) => {
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            var name = e.target.value;
+            var registry = document.getElementById("registry-type").dataset.registry;
+            var repository = document.getElementById("active-repo").dataset.repo;
+            set_version_page(registry, repository, name);
+        }
+    )});
+
+    $("#version-page").hide();
+    $("#repository-page").show();
+
+    let results = [registry, repository];
+    return results;
+
+}
 
 //
-function get_repo_names_page(registry, repository) {
+function get_repo_names_page(registry, repository, save_state=true) {
     var uri_data = {"registry": registry, "repository": repository};
 
     $.ajax({
@@ -165,149 +315,24 @@ function get_repo_names_page(registry, repository) {
         data: uri_data,
         success: function(data) {
             // get repository and names from dictionary
-            var repositories = data["repositories"];
-            var names = data["names"];
 
-            // if repository is undefined, set it to the first repository
-            if (repository == undefined) {
-                repository = repositories[0];
-            }
+        
+            let results = set_dropdown(data, registry, repository);
 
-            if (repositories.length > 0) {
-                var select = document.getElementById("RepositoriesSelect");
-                // remove all content from select before adding new content
-                select.innerHTML = "";
-            
-                for (var i = 0; i < repositories.length; i++) {
-                    var opt = document.createElement('option');
-                    opt.value = repositories[i];
-                    opt.innerHTML = repositories[i];
-
-                    if (repositories[i] == repository) {
-                        opt.selected = true;
-                    }
-
-                    select.appendChild(opt);
+            if (save_state) {
+                // get html from ArtifactPage and save it as state
+                // if repo is none or undefined, set it to null
+                if (repository != "None" || repository == undefined) {
+                    url = url + "&repository=" + repository;
                 }
-            } else {
-                var select = document.getElementById("RepositoriesSelect");
-                // remove all content from select before adding new content
-                select.innerHTML = "";
-            
-                var opt = document.createElement('option');
-                opt.value = "No repositories found";
-                opt.innerHTML = "No repositories found";
-                select.appendChild(opt);
+
+                var url = "/opsml/registry?registry=" + results[0];
+                var stateObj = { html: document.getElementById("ArtifactPage").innerHTML, page_type: "repository", registry: results[0], repository: results[1]};
+                window.history.pushState(stateObj, null, url.toString());
             }
 
-            if (names.length > 0) {
-
-                var repo_header = document.getElementById("repository-header");
-                repo_header.innerHTML = "";
-
-                 // created heading
-                var repo_heading = document.createElement('h2');
-                repo_heading.innerHTML = repository;
-                repo_heading.dataset.repo = repository;
-                repo_heading.id = "active-repo";
-                repo_header.appendChild(repo_heading);
-
-
-                var artifact_card_div = document.getElementById("artifact-card-div");
-                artifact_card_div.innerHTML = "";
-            
-                for (var i = 0; i < names.length; i++)
-                {
-                    var card_outer_div = document.createElement('div');
-                    card_outer_div.className = "col-12";
-
-                    var card = document.createElement('div');
-                    card.className = "card text-left rounded m-1";
-                    card.style = "width: 14rem;";
-                    card.id = "artifact-card";
-
-                    card_outer_div.appendChild(card);
-         
-                    var card_body = document.createElement('div');
-                    card_body.className = "card-body";
-                    card.appendChild(card_body);
-          
-                    var card_row = document.createElement('div');
-                    card_row.className = "row";
-                    card_body.appendChild(card_row);
-          
-                    var card_col = document.createElement('div');
-                    card_col.className = "col-sm-8";
-                    card_row.appendChild(card_col);
-         
-                    var card_title = document.createElement('h5');
-                    card_title.className = "card-title";
-                    card_title.innerHTML = names[i];
-                    card_col.appendChild(card_title);
-
-                    var card_text = document.createElement('a');
-                    card_text.className = "stretched-link";
-                    card_text.href = "";
-                    card_text.value = names[i];
-                    card_text.id = "artifact-card-name";
-                    card_col.appendChild(card_text);
-     
-                    //// create image column
-                    var card_col_img = document.createElement('div');
-                    card_col_img.className = "col-sm-4";
-                    card_col_img.id = "artifact-card-img";
-            
-                    var card_img = document.createElement('img');
-                    card_img.className = "center-block";
-                    card_img.src = "/static/images/chip.png";
-                    card_img.width = "40";
-                    card_img.height = "40";
-            
-                    card_col_img.appendChild(card_img);
-                    card_row.appendChild(card_col_img);
-         
-                    artifact_card_div.appendChild(card_outer_div);
-                }
-            }
-
-        // set registry type
-        var registry_type = document.getElementById("registry-type");
-        registry_type.dataset.registry = registry;
-
-        // set repo for specific registry type
-        if (registry == "model") {
-            var repo = document.getElementById("selected-model-repo")
-            repo.dataset.model_repo = repository;
-        } else if (registry == "data") {
-            var repo = document.getElementById("selected-data-repo")
-            repo.dataset.data_repo = repository;
-        } else if (registry == "run") {
-            var repo = document.getElementById("selected-run-repo")
-            repo.dataset.run_repo = repository;
-        }
-
-
-        // set available to active
-        var available = document.getElementById("available");
-        available.classList.add("active");
-
-        // create event listener for artifact card
-        var artifact_cards = document.querySelectorAll('#artifact-card-name');
-        artifact_cards.forEach((card) => {
-            card.addEventListener('click', (e) => {
-                e.preventDefault();
-                var name = e.target.value;
-                var registry = document.getElementById("registry-type").dataset.registry;
-                var repository = document.getElementById("active-repo").dataset.repo;
-                set_version_page(registry, repository, name);
-            }
-        )});
-
-        $("#version-page").hide();
-        $("#repository-page").show();
-
-
-
+    
+                
     },
 
         error: function() {
@@ -323,13 +348,13 @@ function get_repo_names_page(registry, repository) {
 // This will take selection and generate repo/name html objects
 function set_repository_select() {
 
-    $('#RepositoriesSelect').select2();
-    $("#RepositoriesSelect").on('select2:select', function(e){
-      let repo = e.params.data.id;
-      let registry = document.getElementById("registry-type").dataset.registry;
-      get_repo_names_page(registry, repo);
+    $('#RepositoriesSelect').select2().on('select2:select', function(e){
+        let repo =  e.params.data.id;
+        let registry = document.getElementById("registry-type").dataset.registry;
+        get_repo_names_page(registry, repo);
 
     });
+
 
 }
 
@@ -347,14 +372,38 @@ function set_default_page(registry, name, repository, version) {
         // get all artifacts
         $("#repository-page").show();
 
-        // make nav-models active
-        $("#nav-models").addClass("active");
+        // make nav-model active
+        
 
         // if repository is none, set it to null
         if (repository == "None"){
             repository = undefined;
         }
-        get_repo_names_page('model', repository);
+
+        if (registry == "None") {
+            registry = "model";
+        }
+
+        $("#nav-" + registry).addClass("active");
+        get_repo_names_page(registry, repository);
+
+        $('#RepositoriesSelect').select2().on('select2-selecting', function(e){
+            alert("selecting");
+            let repo =  e.params.data.id;
+            let registry = document.getElementById("registry-type").dataset.registry;
+            get_repo_names_page(registry, repo);
+    
+        });
+
+        
+       
+
+        //// get html from ArtifactPage and save it as state
+        //var current_page_content = document.getElementById("ArtifactPage").innerHTML;
+        //var stateObj = { html: current_page_content, page_type: "repository", registry: registry, repository: repository};
+        //
+        //window.history.pushState(stateObj, null, url.toString());
+  
     }
 
     }
@@ -374,6 +423,11 @@ function set_nav_click() {
             var repository = document.getElementById("selected-data-repo").dataset.data_repo;
         } else if (registry == "run") {
             var repository = document.getElementById("selected-run-repo").dataset.run_repo;
+        }
+
+        // check if repository is none
+        if (repository == "None") {
+            repository = undefined;
         }
      
         get_repo_names_page(registry, repository);
@@ -404,6 +458,18 @@ function ready_nav() {
     
 }
 
+function set_component_navigation() {
+     // ready the main nav
+    ready_nav();
+
+    // handle repository select dynamics
+    set_repository_select();
+
+    // handle nav link click
+    set_nav_click();
+
+}
+
 
 
 export {
@@ -418,6 +484,7 @@ export {
     get_repo_names_page,
     set_repository_select,
     set_nav_click,
-    set_default_page
+    set_default_page,
+    set_component_navigation
 
 };

@@ -11,10 +11,10 @@
 
   <div class="container" style="padding-top:65px;"></div>
   <div id="page-content"></div>
-  <div hidden data-registry="" id="registry-type"></div>
-  <div hidden data-model_repo="" id="selected-model-repo"></div>
-  <div hidden data-data_repo="" id="selected-data-repo"></div>
-  <div hidden data-run_repo="" id="selected-run-repo"></div>
+  <div hidden data-registry="None" id="registry-type"></div>
+  <div hidden data-model_repo="None" id="selected-model-repo"></div>
+  <div hidden data-data_repo="None" id="selected-data-repo"></div>
+  <div hidden data-run_repo="None" id="selected-run-repo"></div>
 
   {% include "include/components/subnav.html" %}
   <br>
@@ -56,9 +56,8 @@
     ready_project_buttons, 
     get_metrics,
     get_repo_names_page,
-    set_repository_select,
-    set_nav_click,
-    set_default_page
+    set_default_page,
+    set_component_navigation
 
   } from '/static/js/utils.js';
   import {ready_nav} from '/static/js/nav.js';
@@ -70,22 +69,49 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
 
+
     // set the default page
     set_default_page(registry, name, repository, version);
-
+    
     }
 
   );
 
-  // ready the main nav
-  ready_nav();
-
-  // handle repository select dynamics
-  set_repository_select();
+  set_component_navigation();
 
 
-  // handle nav link click
-  set_nav_click();
+  // handle back button (revert history)
+  window.onpopstate = function (event) {
+
+    let artifact_page = document.getElementById("ArtifactPage");
+
+    
+    artifact_page.innerHTML = "";
+    artifact_page.innerHTML = event.state.html;
+
+    if (event.state.page_type == "repository") {
+
+      let select = document.getElementById("DropdownSelect");
+      select.innerHTML = "";
+  
+      // set the default page
+      select.innerHTML = '<select id="RepositoriesSelect"></select>';
+      get_repo_names_page(event.state.registry, event.state.repository);
+  
+      $('#RepositoriesSelect').select2().on('select2:select', function(e){
+        let repo =  e.params.data.id;
+        let registry = document.getElementById("registry-type").dataset.registry;
+        get_repo_names_page(registry, repo);
+  
+    });
+    }
+    set_component_navigation();
+    // set #RepositoriesSelect innerhtml to none
+   
+    
+
+  };
+
 
 
 

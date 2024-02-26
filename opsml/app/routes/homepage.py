@@ -47,6 +47,14 @@ async def opsml_homepage(
     )
 
 
+@router.get("/opsml/registry")
+async def opsml_registry_page(
+    request: Request,
+    registry: str,
+) -> HTMLResponse:
+    return opsml_homepage(request, registry=registry)
+
+
 @router.get("/opsml/repository")
 async def opsml_repositories(
     request: Request,
