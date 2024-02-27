@@ -428,7 +428,8 @@ class ModelRouteHelper(RouteHelper):
             modelcard=card,
         )
 
-        metadata = card.metadata
+        metadata = card.model_metadata
+
         metadata_json = json.dumps(metadata.model_dump(), indent=4)
         model_filename = Path(metadata.model_uri)
 
@@ -448,7 +449,7 @@ class ModelRouteHelper(RouteHelper):
 
         processor_uris = self._get_processor_uris(metadata)
 
-        return {
+        card_metadata = {
             "modelcard": card.model_dump(),
             "runcard": runcard.model_dump(),
             "metadata_json": metadata_json,
@@ -457,6 +458,8 @@ class ModelRouteHelper(RouteHelper):
             "processor_uris": processor_uris,
             "project_num": project_num,
         }
+
+        return card_metadata
 
 
 class ProjectRouteHelper(RouteHelper):

@@ -285,21 +285,19 @@ def delete_card(
         ) from error
 
 
-@router.post("/cards/ui", response_model=ListCardResponse, name="card_ui_data")
+@router.post("/cards/ui", name="card_ui_data")
 def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dict[str, Any]:
     """Lists a Card"""
-
     try:
         registry_type = get_registry_type_from_table(
             table_name=payload.table_name,
             registry_type=payload.registry_type,
         )
-
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
         card = registry.load_card(name=payload.name, repository=payload.repository, version=payload.version)
 
         if isinstance(card, ModelCard):
-            return ModelRouteHelper().get_card_metadata(card=card)
+            return ModelRouteHelper().get_card_metadata(request, card)
 
     except Exception as error:
         raise HTTPException(

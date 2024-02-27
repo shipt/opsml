@@ -29,24 +29,53 @@ function create_version_elements(card_versions, active_version) {
 
 }
 
+function get_model_metadata_page(data) {
+
+    let model_version_header = document.getElementById("MetadataHeader");
+    model_version_header.innerHTML = "Model";
+
+    //model_version_header.value = "Model";
+    let card_tab_box = document.createElement("div");
+    card_tab_box.id = "CardTabBox";
+
+    let meta_span = document.createElement("span");
+    let meta_button = document.createElement("button");
+    meta_button.setAttribute("class", "btn btn-success");
+    meta_button.id = "metadata-button";
+    meta_button.type = "button";
+    meta_button.innerHTML = "Metadata";
+    meta_span.appendChild(meta_button);
+
+    let summary_span = document.createElement("span");
+    let summary_button = document.createElement("button");
+    summary_button.setAttribute("class", "btn btn-success");
+    summary_button.id = "summary-button";
+    summary_button.type = "button";
+    summary_button.innerHTML= "Summary";
+    summary_span.appendChild(summary_button);
+
+    card_tab_box.appendChild(meta_span);
+    card_tab_box.appendChild(summary_span);
+    model_version_header.appendChild(card_tab_box);
+}
+
 function create_active_version_card(registry, repository, name, version) {
     var list_data = {"registry_type": registry, "repository": repository, "name": name, "version": version};
 
+
     $.ajax({
-        url: LIST_CARD_PATH,
+        url: ACTIVE_CARD_PATH,
         type: "POST",
         dataType: "json",
         contentType: "application/json",
         data: JSON.stringify(list_data),
         success: function(data) {
-            let card_versions = data["cards"];
 
-            // check if version is not set
-            if (version === undefined) {
-                version = card_versions[0];
+            if (registry === "model"){
+
+                alert("model");
+                get_model_metadata_page(data);
             }
-
-            create_version_elements(card_versions, version);
 
         },
 
@@ -77,6 +106,7 @@ function get_versions(registry, name, repository, version) {
             }
 
             create_version_elements(card_versions, version);
+            create_active_version_card(registry, repository, name, version["version"]);
 
         },
 
@@ -104,7 +134,10 @@ function set_version_page(registry, repository, name) {
 
 
     document.getElementById("version-header").innerHTML = name;
-    let card_versions = get_versions(registry, name, repository);
+    get_versions(registry, name, repository);
+
+
+
 
     //alert(JSON.stringify(card_versions));
     //let active_version = card_versions[0];  // set the first version as the active version
