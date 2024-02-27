@@ -293,7 +293,6 @@ function set_dropdown(data, registry, repository){
             var registry = document.getElementById("registry-type").dataset.registry;
             var repository = document.getElementById("active-repo").dataset.repo;
             set_version_page(registry, repository, name);
-            hljs.highlightBlock(document.getElementById("metadata-code"));
         }
     )});
 

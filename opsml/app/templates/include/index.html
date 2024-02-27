@@ -45,7 +45,6 @@
 <script src="/static/chart/modules/exporting.js"></script>
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
-<script src="/static/code_highlight/highlight.js"></script>
 <script type="module">
   import { 
     generate_html_from_data, 
@@ -62,7 +61,6 @@
   } from '/static/js/utils.js';
   import {ready_nav} from '/static/js/nav.js';
 
-  hljs.highlightAll();
 
   $(document).ready( function() {
     let registry = "{{ registry }}";

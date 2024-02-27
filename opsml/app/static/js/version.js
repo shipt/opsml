@@ -323,7 +323,7 @@ function insert_model_extras(data) {
 <pre style="max-height: 500px; overflow: scroll;">
 <code id="MetadataCode">${html}</code></pre>
 `
-    alert("highlighting");
+
     //indow.Prism.highlightAll();
 
  
