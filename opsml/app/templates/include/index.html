@@ -62,7 +62,7 @@
   } from '/static/js/utils.js';
   import {ready_nav} from '/static/js/nav.js';
 
- 
+  hljs.highlightAll();
 
   $(document).ready( function() {
     let registry = "{{ registry }}";
@@ -73,6 +73,7 @@
 
     // set the default page
     set_default_page(registry, name, repository, version);
+    hljs.highlightAll();
     
     }
 
@@ -80,6 +81,9 @@
 
   set_component_navigation();
 
+  //Here is where you update your layout
+  hljs.initHighlighting.called = false;
+  hljs.initHighlighting();
 
 
   // handle back button (revert history)

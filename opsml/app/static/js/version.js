@@ -1,3 +1,32 @@
+
+
+// https://www.json.org/json-en.html
+Prism.languages.json = {
+	'property': {
+		pattern: /(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/,
+		lookbehind: true,
+		greedy: true
+	},
+	'string': {
+		pattern: /(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?!\s*:)/,
+		lookbehind: true,
+		greedy: true
+	},
+	'comment': {
+		pattern: /\/\/.*|\/\*[\s\S]*?(?:\*\/|$)/,
+		greedy: true
+	},
+	'number': /-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/i,
+	'punctuation': /[{}[\],]/,
+	'operator': /:/,
+	'boolean': /\b(?:false|true)\b/,
+	'null': {
+		pattern: /\bnull\b/,
+		alias: 'keyword'
+	}
+};
+Prism.languages.webmanifest = Prism.languages.json;
+
 const LIST_CARD_PATH = "/opsml/cards/list";
 const ACTIVE_CARD_PATH = "/opsml/cards/ui";
 
@@ -286,13 +315,24 @@ function insert_model_extras(data) {
         }
     }
   
-    let model_metadata = document.getElementById("MetadataCode");
+    let code = data["metadata"];
+    let model_metadata = document.getElementById("MetadataJson");
+    const html = Prism.highlight(code, Prism.languages.json, 'json');
 
-    let highlightedCode = hljs.highlight(
-        '<span>Hello World!</span>',
-      ).value;
-    alert("highlightedCode");
-    alert(highlightedCode);
+    model_metadata.innerHTML = `
+<pre style="max-height: 500px; overflow: scroll;">
+<code id="MetadataCode">${html}</code></pre>
+`
+    alert("highlighting");
+    //indow.Prism.highlightAll();
+
+ 
+
+
+   
+   
+
+
    
     
 
