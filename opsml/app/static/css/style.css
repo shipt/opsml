@@ -1270,3 +1270,7 @@ clipboard-copy:focus-visible {
 }
 
 
+pre { 
+  overflow-x: auto; 
+  background-color: #f4f4f4;
+}
