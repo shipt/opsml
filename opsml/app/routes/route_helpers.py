@@ -449,10 +449,15 @@ class ModelRouteHelper(RouteHelper):
 
         processor_uris = self._get_processor_uris(metadata)
 
+        if runcard is not None:
+            run = runcard.model_dump()
+        else:
+            run = None
+
         card_metadata = {
             "modelcard": card.model_dump(),
-            "runcard": runcard.model_dump(),
-            "metadata_json": metadata_json,
+            "runcard": run,
+            "metadata": metadata_json,
             "model_filename": model_save_filename,
             "onnx_filename": onnx_save_filename,
             "processor_uris": processor_uris,

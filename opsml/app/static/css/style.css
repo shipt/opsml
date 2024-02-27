@@ -746,6 +746,11 @@ p {
   border: 2px solid #04b78a;
 }
 
+#CardExtra{
+  padding: 0px;
+  margin: 0px;
+}
+
 #version-spacer {
   padding: 0px;
   margin: 0px;

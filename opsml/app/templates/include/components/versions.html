@@ -18,16 +18,35 @@
       </div>
 
       <div id="MetadataColumn">
-        <div class="card" style="width:100%;">
-          <div class="card-body">
-            <h4 id="MetadataHeader">
-            </h4>
+        <div class="card border-0" style="width:100%;">
+          <div class="card-body", id="MetadataHeader">
           </div>
         </div>
         <div class="card border-0" id="CardBox" style="width:100%;">
           <hr id="version-spacer">
-            <div class="card-body content" id="CardMetadata">
+            <div class="card-body" id="CardMetadata">
             </div>
+        </div>
+        <div class="card border-0" id="TagBox" style="width:100%;">
+          <hr id="version-spacer">
+            <div class="card-body" id="CardTags">
+            </div>
+        </div>
+        <hr id="version-spacer">
+        <div class="card border-0" id="ExtraBox" style="width:100%;">
+          <div class="card-body" id="CardExtra">
+            <div class="card-body" id="CardButtons">
+            </div>
+            <div class="card-body" id="MetadataJson" >
+              <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Metadata</font>
+                <clipboard-copy for="MetadataCode">
+                  Copy
+                  <span class="notice" hidden>Copied!</span>
+                </clipboard-copy>
+              </h5>
+                <pre><code id="MetadataCode" class="python"></code></pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
