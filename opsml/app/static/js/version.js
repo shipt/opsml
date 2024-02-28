@@ -255,16 +255,20 @@ function insert_model_tags(data) {
 
 function insert_model_extras(data) {
 
-    let model_buttons = document.getElementById("CardButtons");
-    model_buttons.innerHTML = "";
+    let model_extra = document.getElementById("ExtraBox");
+    model_extra.innerHTML = "";
+
+    let buttons = document.createElement("div");
+    buttons.setAttribute("id", "CardButtons");
+    buttons.setAttribute("class", "card-body");
 
     let metadata_button = document.createElement("button");
     metadata_button.setAttribute("id", "metadata-extra-button");
     metadata_button.setAttribute("type", "submit");
     metadata_button.setAttribute("class", "btn btn-success");
     metadata_button.innerHTML = "Metadata";
-
-    model_buttons.appendChild(metadata_button);
+    metadata_button.style.marginRight = "0.25%";
+    buttons.appendChild(metadata_button);
 
     if (data["runcard"] !== null) {
 
@@ -274,7 +278,8 @@ function insert_model_extras(data) {
             artifact_button.setAttribute("type", "submit");
             artifact_button.setAttribute("class", "btn btn-success");
             artifact_button.innerHTML = "Artifacts";
-            model_buttons.appendChild(artifact_button);
+            artifact_button.style.marginRight = "0.25%";
+            buttons.appendChild(artifact_button);
         }
         
         if (Object.keys(data["runcard"]["parameters"]).length > 0) {
@@ -283,22 +288,102 @@ function insert_model_extras(data) {
             param_button.setAttribute("type", "submit");
             param_button.setAttribute("class", "btn btn-success");
             param_button.innerHTML = "Params";
-            model_buttons.appendChild(param_button);
+            param_button.style.marginRight = "0.25%";
+            buttons.appendChild(param_button);
         }
     }
-  
+    model_extra.appendChild(buttons);
+
+    // insert metadata
     let code = data["metadata"];
-    let model_metadata = document.getElementById("MetadataJson");
-    const html = Prism.highlight(code, Prism.languages.json, 'json');
+    let html = Prism.highlight(code, Prism.languages.json, 'json');
+    let metadata_code = `
+    <div class="card-body" id="MetadataJson" style="display:none;">
+    <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Metadata</font>
+      <clipboard-copy for="MetadataCode">
+        Copy
+        <span class="notice" hidden>Copied!</span>
+      </clipboard-copy>
+    </h5>
+      <pre style="max-height: 500px; overflow: scroll;"><code id="MetadataCode" class="json">${html}</code></pre>
+    </div>
+    `
+    model_extra.innerHTML += metadata_code;
+  
+    if (data["runcard"] !== null) {
+       if (Object.keys(data["runcard"]["artifact_uris"]).length > 0) {
+            let artifact_div = `
+            <div class="card-body" id="Artifacts" style="display:none">
+            <h5><i class="fa-solid fa-floppy-disk" style="color:#04b78a"></i> <font color="#999">Artifacts</font></h5>
+            <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+        
+                <colgroup>
+                    <col span="1" style="width: 15%;">
+                    <col span="1" style="width: 50%;">
+                </colgroup>
+            
+                <tbody id="artifact-uri-body">
+                </tbody>
+            </table>
+            </div>
+          `
+            model_extra.innerHTML += artifact_div;
 
-    model_metadata.innerHTML = `
-<pre style="max-height: 500px; overflow: scroll;">
-<code id="MetadataCode">${html}</code></pre>
-`
+            let artifact_uris_div = document.getElementById("artifact-uri-body");
+            for (var name in data["runcard"]["artifact_uris"]) {
+                let value = data["runcard"]["artifact_uris"][name];
+                let path_parts = value.remote_path.split("/");
+                let download_name = path_parts[path_parts.length - 1];
+                artifact_uris_div.innerHTML += `
+                <tr>
+                    <td><font color="#999">${name}</font></td>
+                    <td>
+                        <a href="/opsml/files/download?path=${value.remote_path}" download='${download_name}'>
+                        <button id="download-button" type="submit" class="btn btn-success">Download</button>
+                        </a>
+                    </td>
+                </tr>
+                `
+            }
+        }
 
-    //indow.Prism.highlightAll();
+        if (Object.keys(data["runcard"]["parameters"]).length > 0) {
+            let param_div = `
+            <div class="card-body" id="Params" >
+            <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
+            <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+        
+                <thead style="background:white;">
+                    <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Value</th>
+                    </tr>
+                </thead>
 
- 
+                <colgroup>
+                    <col span="1" style="width: 15%;">
+                    <col span="1" style="width: 15%;">
+                </colgroup>
+                
+                <tbody id="param-body">
+                </tbody>
+            </table>
+            </div>
+          `
+            model_extra.innerHTML += param_div;
+
+            let param_body = document.getElementById("param-body");
+            for (var name in data["runcard"]["parameters"]) {
+                let value = data["runcard"]["parameters"][name];
+                param_body.innerHTML += `
+                <tr>
+                    <td><font color="#999">${name}</font></td>
+                    <td>${value[0]["value"]}</td>
+                </tr>
+                `
+            }
+        }
+    }
 
 
    
