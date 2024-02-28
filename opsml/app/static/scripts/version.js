@@ -188,7 +188,7 @@ function set_card_view(request){
 }
 
 function get_versions(registry, name, repository, version) {
-    var request = {"registry_type": registry, "repository": repository, "name": name, "version": version};
+    var request = {"registry_type": registry, "repository": repository, "name": name};
 
     return $.ajax({
         url: LIST_CARD_PATH,
@@ -198,7 +198,7 @@ function get_versions(registry, name, repository, version) {
         data: JSON.stringify(request),
         success: function(data) {
             let card_versions = data["cards"];
-            alert("called_once");
+      
             // check if version is not set
             if (version === undefined) {
                 version = card_versions[0]["version"];
@@ -232,10 +232,6 @@ function get_model_page(registry, name, repository, version) {
         $("#audit-version-page").hide();
         $("#model-version-page").show();
     });
-  
-
-   
-
 }
 
 function set_version_page(registry, name, repository, version){
@@ -245,6 +241,7 @@ function set_version_page(registry, name, repository, version){
         // get model page
         get_model_page(registry, name, repository, version);
     }
+    
     // get version page
     // get_version_page(registry, name, repository, version);
     var available = document.getElementById("versions");
