@@ -181,6 +181,7 @@ p {
   float:left;
   width:80%;
   padding-right: 1%;
+  padding-bottom: 100px;
 }
 
 #MetricSelectColumn {
@@ -1083,3 +1084,4 @@ pre {
   overflow-x: auto; 
   background-color: #f4f4f4;
 }
+

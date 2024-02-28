@@ -159,6 +159,95 @@ function insert_tags(data) {
     }
 }
 
+function insert_extras(data) {
+    // hide extra buttons
+    $("#Params").hide();
+    $("#MetadataJson").hide();
+   
+
+    let runcard = data["runcard"];
+
+    if (runcard !== null) {
+
+        // check params
+        if (Object.keys(runcard["parameters"]).length > 0) {
+
+            let param_body = document.getElementById("param-body");
+            param_body.innerHTML = "";
+
+            for (var name in data["runcard"]["parameters"]) {
+                let value = data["runcard"]["parameters"][name];
+                param_body.innerHTML += `
+                <tr>
+                    <td><font color="#999">${name}</font></td>
+                    <td>${value[0]["value"]}</td>
+                </tr>
+                `
+            }
+            // show Params on click
+            document.getElementById("param-button").onclick = function() {
+                $("#Params").toggle();
+            }
+            $("#param-button").show();
+        } else {
+            $("#param-button").hide();
+        }
+
+        // check artifacts
+        if (Object.keys(runcard["artifact_uris"]).length > 0) {
+
+            
+            let artifact_body = document.getElementById("artifact-uris");
+            artifact_body.innerHTML = "";
+
+            for (var name in runcard["artifact_uris"]) {
+               
+                let value = runcard["artifact_uris"][name];
+                let path_parts = value.remote_path.split("/");
+                let download_name = path_parts[path_parts.length - 1];
+                
+
+                artifact_body.innerHTML += `
+                <tr>
+                    <td><font color="#999">${name}</font></td>
+                    <td>
+                        <a href="/opsml/files/download?path=${value.remote_path}" download='${download_name}'>
+                        <button id="download-button" type="submit" class="btn btn-success">Download</button>
+                        </a>
+                    </td>
+                </tr>
+                `
+                }
+            // show artifacts on click
+            document.getElementById("artifact-button").onclick = function() {
+                $("#Artifacts").toggle();
+            }
+            $("#artifact-button").show();
+        } else {
+            $("#artifact-button").hide();
+        }
+
+    }
+    else {
+        $("#param-button").hide();
+        $("#artifact-button").hide();
+    }
+
+    let code = data["metadata"];
+    let html = Prism.highlight(code, Prism.languages.json, 'json');
+    document.getElementById("MetadataCode").innerHTML = html;
+
+    document.getElementById("metadata-extra-button").onclick = function() {
+        $("#MetadataJson").toggle();
+    }
+
+    $("#ExtraBox").show();
+
+
+
+   
+}
+
 function set_card_view(request){
 
     $.ajax({
@@ -169,14 +258,14 @@ function set_card_view(request){
         data: JSON.stringify(request),
         success: function(data) {
 
-            $("#model-version-page").hide();
             // set the card view
             insert_card_metadata(data);
             insert_tags(data);
+            insert_extras(data);
 
             var url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
             window.history.pushState("version_page", null, url.toString());
-            $("#model-version-page").show();
+    
 
         },
 

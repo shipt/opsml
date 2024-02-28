@@ -1,0 +1,55 @@
+
+<div class="card-body" id="CardButtons" >
+  <button id="metadata-extra-button" type="submit" class="btn btn-success" >Metadata</button>
+  <button id="param-button" style="display: none;" type="submit" class="btn btn-success" >Params</button>
+  <button id="artifact-button" style="display: none;" type="submit" class="btn btn-success" >Artifacts</button>
+</div>
+
+<div class="card-body" id="MetadataJson" style="display:none;">
+  <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Metadata</font>
+    <clipboard-copy for="MetadataCode">
+      Copy
+      <span class="notice" hidden>Copied!</span>
+    </clipboard-copy>
+  </h5>
+    <pre style="max-height: 500px; overflow: scroll;"><code id="MetadataCode"></code></pre>
+</div>
+  
+<div class="card-body" id="Params" style="display:none">
+  <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+
+    <thead style="background:white;">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+
+    <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+    </colgroup>
+
+    <tbody id="param-body">
+    </tbody>
+  </table>
+</div>
+
+<div class="card-body" id="Artifacts" style="display:none">
+  <h5><i class="fa-solid fa-floppy-disk" style="color:#04b78a"></i> <font color="#999">Artifacts</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+    <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 50%;">
+    </colgroup>
+    <tbody id="artifact-uris">
+    </tbody>
+  </table>
+</div>
+
+
+      
+    
+    
+   
