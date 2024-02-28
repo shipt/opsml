@@ -28,6 +28,23 @@ async def opsml_homepage(
     repository: Optional[str] = None,
     version: Optional[str] = None,
 ) -> HTMLResponse:
+    return await opsml_ui_page(
+        request,
+        registry=registry,
+        name=name,
+        repository=repository,
+        version=version,
+    )
+
+
+@router.get("/opsml/ui")
+async def opsml_ui_page(
+    request: Request,
+    registry: Optional[str] = None,
+    name: Optional[str] = None,
+    repository: Optional[str] = None,
+    version: Optional[str] = None,
+) -> HTMLResponse:
     # validate registry type
     if registry:
         try:
@@ -48,23 +65,6 @@ async def opsml_homepage(
             "repository": repository,
             "version": version,
         },
-    )
-
-
-@router.get("/opsml/ui")
-async def opsml_registry_page(
-    request: Request,
-    registry: Optional[str] = None,
-    name: Optional[str] = None,
-    repository: Optional[str] = None,
-    version: Optional[str] = None,
-) -> HTMLResponse:
-    return await opsml_homepage(
-        request,
-        registry=registry,
-        name=name,
-        repository=repository,
-        version=version,
     )
 
 

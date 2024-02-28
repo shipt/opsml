@@ -16,6 +16,7 @@
 
   <!-- repository page --> 
   <div id="repository-page" style="display: none;">
+    {% include "include/components/repository_select.html" %}
   </div>
   
   <br>
@@ -51,7 +52,7 @@
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
 <script type="module">
-  import { set_nav_link} from '/static/scripts/utils.js';
+  import { set_nav_link, set_repository_page} from '/static/scripts/utils.js';
 
   $( document ).ready(function() {
     let registry = "{{ registry }}";
@@ -59,6 +60,7 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
     set_nav_link(registry);
+    set_repository_page(registry, repository);
 
   });
 
