@@ -1,0 +1,35 @@
+
+<div style="padding-top:20px;">
+    <div class="container-fluid" id="VersionContainer">
+        <div class="page-header">
+          <h2 id="model-version-header"></h2>
+        </div>
+    </div>
+  
+    <div class"containter" id="split-column">
+       <!---Create vesion tables ------>
+      <div class="boxes" id="VersionContainer">
+        <div id="VersionColumn">
+          <div class="list-group" id="model-version-list">
+          </div>
+        </div>
+  
+        <div id="MetadataColumn">
+          <div class="card" style="width:100%;">
+            <div class="card-body">
+              <h4>Model 
+                <div id="CardTabBox">
+                <span><button id="metadata-button" type="button" class="btn btn-success" >Metadata</button></span>
+                <span><button id="summary-button" type="button" class="btn btn-success">Summary</button></span>
+                </div>
+              </h4>
+          </div>
+  
+          <div class="card border-0" id="CardBox" style="width:100%;">
+            {% include "include/components/model/metadata.html" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

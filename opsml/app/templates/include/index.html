@@ -22,6 +22,7 @@
   <br>
   <!-- Model, Data, Run Pages -->
   <div id="model-version-page" style="display: none;">
+    {% include "include/components/model/version.html" %}
   </div>
 
    <!-- Model, Data, Run Pages -->
@@ -52,7 +53,7 @@
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
 <script type="module">
-  import { set_nav_link, set_repository_page} from '/static/scripts/utils.js';
+  import { set_nav_link, set_page } from '/static/scripts/utils.js';
 
   $( document ).ready(function() {
     let registry = "{{ registry }}";
@@ -60,7 +61,9 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
     set_nav_link(registry);
-    set_repository_page(registry, repository);
+
+
+    set_page(registry, repository, name, version);
 
   });
 

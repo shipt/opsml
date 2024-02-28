@@ -1,41 +1,50 @@
-{% extends "base.html" %}
 
-{% set model_status = 'active' %}
-{% set data_status = none %}
-{% set audit_status = none %}
-{% set runs_status = none %}
-{% include "include/navbar.html" %}
-
-{% block title %}
-  <title>Version</title>
-{% endblock %}
-
-{% block content %}
-<body id="ModelVersionPage">
-  <div class="container" style="padding-top:65px;">
+<div style="padding-top:20px;">
+  <div class="container-fluid" id="VersionContainer">
+      <div class="page-header">
+        <h2 id="version-header"></h2>
+      </div>
   </div>
-
-{% set model_name_subnav = none %}
-{% set model_version_subnav = 'active' %}
-{% include "include/model/model_subnav.html" %}
-
-<br>
-
-<div class="container-fluid" style="padding-top:50px;" id="VersionContainer">
-  <div class="row">
-    <h5 class="display-8">Available Model Versions</h5>
-  </div>
-</div>
-
 
 
 <!---- Model version table -------->
-<div class="container-fluid" id="VersionContainer">
-  <div class="page-header">
-    <h2>{{selected_model["name"]}}</h2>
+<div style="padding-top:20px;">
+  <div class="container-fluid" id="VersionContainer">
+      <div class="page-header">
+        <h2 id="version-header"></h2>
+      </div>
+  </div>
+
+  <div class"containter" id="split-column">
+     <!---Create vesion tables ------>
+    <div class="boxes" id="VersionContainer">
+      <div id="VersionColumn">
+        <div class="list-group" id="version-list">
+        </div>
+      </div>
+
+      <div id="MetadataColumn">
+
+        <div class="card" style="width:100%;">
+          <div class="card-body">
+            <h4>Model 
+              <div id="CardTabBox">
+              <span><button id="metadata-button" type="button" class="btn btn-success" >Metadata</button></span>
+              <span><button id="summary-button" type="button" class="btn btn-success">Summary</button></span>
+              </div>
+            </h4>
+        </div>
+
+        <div class="card border-0" id="CardBox" style="width:100%;">
+          {% include "include/model/model_metadata.html" %}
+        </div>
+
+
+      </div>
+    </div>
   </div>
 </div>
-<br>
+
 
 
 <div class"containter" id="split-column">

@@ -90,7 +90,7 @@ function set_dropdown(data, registry, repository){
 
             var card_text = document.createElement('a');
             card_text.className = "stretched-link";
-            card_text.href = '/opsml/ui?registry=${registry}&repository=${repository}&name=${names[i]}';
+            card_text.href = `/opsml/ui?registry=${registry}&repository=${repository}&name=${names[i]}`;
             card_text.value = names[i];
             card_text.id = "artifact-card-name";
             card_col.appendChild(card_text);
@@ -116,7 +116,7 @@ function set_dropdown(data, registry, repository){
     // set available to active
     var available = document.getElementById("available");
     available.classList.add("active");
-    
+
     let results = [registry, repository];
     return results;
 
