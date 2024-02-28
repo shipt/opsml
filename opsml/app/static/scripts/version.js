@@ -163,10 +163,7 @@ function insert_tags(data) {
                 `
             }
         }
-        $("#TagBox").show();
-    } else {
-        $("#TagBox").hide();
-    }
+    } 
 }
 
 function insert_extras(data) {
@@ -250,8 +247,6 @@ function insert_extras(data) {
     document.getElementById("metadata-extra-button").onclick = function() {
         $("#MetadataJson").toggle();
     }
-
-    $("#ExtraBox").show();
 }
 
 function insert_summary(data) {
@@ -315,6 +310,7 @@ function insert_summary(data) {
 }
 
 function set_card_view(request){
+
 
     $.ajax({
         url: ACTIVE_CARD_PATH,

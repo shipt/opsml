@@ -31,8 +31,8 @@
     "web": "https://github.com/showdownjs/showdown"
   },
   "funding": {
-    "type" : "individual",
-    "url" : "https://www.paypal.me/tiviesantos"
+    "type": "individual",
+    "url": "https://www.paypal.me/tiviesantos"
   },
   "license": "MIT",
   "main": "./dist/showdown.js",
