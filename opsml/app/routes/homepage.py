@@ -33,7 +33,11 @@ async def opsml_homepage(
         try:
             RegistryType.from_str(registry)
         except NotImplementedError:
-            registry = None
+            registry = RegistryType.MODEL.value
+
+    # default to model
+    else:
+        registry = RegistryType.MODEL.value
 
     return templates.TemplateResponse(
         "include/index.html",
@@ -47,12 +51,21 @@ async def opsml_homepage(
     )
 
 
-@router.get("/opsml/registry")
+@router.get("/opsml/ui")
 async def opsml_registry_page(
     request: Request,
-    registry: str,
+    registry: Optional[str] = None,
+    name: Optional[str] = None,
+    repository: Optional[str] = None,
+    version: Optional[str] = None,
 ) -> HTMLResponse:
-    return await opsml_homepage(request, registry=registry)
+    return await opsml_homepage(
+        request,
+        registry=registry,
+        name=name,
+        repository=repository,
+        version=version,
+    )
 
 
 @router.get("/opsml/repository")

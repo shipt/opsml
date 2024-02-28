@@ -455,6 +455,11 @@ function set_component_navigation() {
 
 }
 
+function set_nav_link(registry) {
+    var nav_link = document.getElementById("nav-" + registry);
+    nav_link.classList.add("active");
+}
+
 
 
 export {
@@ -472,4 +477,5 @@ export {
     set_default_page,
     set_component_navigation,
     ready_nav,
+    set_nav_link
 };

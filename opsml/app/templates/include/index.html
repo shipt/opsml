@@ -2,7 +2,6 @@
 
 <!-- navbar component --> 
 {% include "include/components/navbar.html" %}
-
 <!-- main page component --> 
 
 {% block content %}
@@ -10,24 +9,30 @@
 <body id="ArtifactPage">
 
   <div class="container" style="padding-top:65px;"></div>
-  <div id="page-content"></div>
-  <div hidden data-registry="None" id="registry-type"></div>
-  <div hidden data-model_repo="None" id="selected-model-repo"></div>
-  <div hidden data-data_repo="None" id="selected-data-repo"></div>
-  <div hidden data-run_repo="None" id="selected-run-repo"></div>
+
 
   {% include "include/components/subnav.html" %}
   <br>
 
   <!-- repository page --> 
   <div id="repository-page" style="display: none;">
-        {% include "include/components/repository_select.html" %}
   </div>
   
   <br>
   <!-- Model, Data, Run Pages -->
-  <div id="version-page" style="display: none;">
-    {% include "include/components/versions.html" %}
+  <div id="model-version-page" style="display: none;">
+  </div>
+
+   <!-- Model, Data, Run Pages -->
+  <div id="data-version-page" style="display: none;">
+  </div>
+
+  <!-- Model, Data, Run Pages -->
+  <div id="run-version-page" style="display: none;">
+  </div>
+
+  <!-- Model, Data, Run Pages -->
+  <div id="audit-version-page" style="display: none;">
   </div>
 
 
@@ -46,84 +51,20 @@
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
 <script type="module">
-  import { 
-    generate_html_from_data, 
-    ready_project_page, 
-    call_graphics, 
-    call_metadata, 
-    ready_project_toggles, 
-    ready_project_buttons, 
-    get_metrics,
-    get_repo_names_page,
-    set_default_page,
-    set_component_navigation,
-    ready_nav
+  import { set_nav_link} from '/static/scripts/utils.js';
 
-  } from '/static/js/utils.js';
-  import {set_version_page} from '/static/js/version.js';
-
-
-  $(document).ready( function() {
+  $( document ).ready(function() {
     let registry = "{{ registry }}";
     let name   = "{{ name }}";
     let repository = "{{ repository }}";
     let version = "{{ version }}";
+    set_nav_link(registry);
 
-    // set the default page
-    set_default_page(registry, name, repository, version);
-    }
+  });
 
-  );
-
-  set_component_navigation();
-
-  // handle back button (revert history)
-  window.onpopstate = function (event) {
-    
-    let artifact_page = document.getElementById("ArtifactPage");
-
-    artifact_page.innerHTML = "";
-    artifact_page.innerHTML = event.state.html;
-
-    if (event.state.page_type == "repository") {
-
-      let select = document.getElementById("DropdownSelect");
-      select.innerHTML = "";
   
-      // set the default page
-      select.innerHTML = '<select id="RepositoriesSelect"></select>';
-      get_repo_names_page(event.state.registry, event.state.repository);
+
   
-      $('#RepositoriesSelect').select2().on('select2:select', function(e){
-        let repo =  e.params.data.id;
-        let registry = document.getElementById("registry-type").dataset.registry;
-        get_repo_names_page(registry, repo);
-  
-      });
-
-      $("#version-page").hide();
-      $("#repository-page").show();
-      set_component_navigation();
-
-    } 
-
-    else if (event.state.page_type == "version") {
-
-      set_version_page(
-        event.state.registry, 
-        event.state.repository, 
-        event.state.name, 
-        event.state.version, 
-        save_state=false
-      );
-
-      ready_nav();
-
-     
-  }
- 
-  };
-
 
 
 
