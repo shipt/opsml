@@ -35,15 +35,58 @@ function create_version_elements(card_versions, active_version, registry, name) 
     }
 }
 
+function insert_card_data(data) {
+
+    let modelcard = data["modelcard"];
+    let metadata = JSON.parse(data["metadata"]);
+
+ 
+
+    document.getElementById("model-uid").innerHTML = modelcard["uid"];
+    document.getElementById("model-name").innerHTML = modelcard["name"];
+    document.getElementById("model-version").innerHTML = modelcard["version"];
+    document.getElementById("model-repo").innerHTML = modelcard["repository"];
+    document.getElementById("model-interface").innerHTML = metadata.model_interface;
+    document.getElementById("model-type").innerHTML = metadata.model_type;
+
+    // check 
+}
+
+function set_card_view(request){
+
+    $.ajax({
+        url: ACTIVE_CARD_PATH,
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        data: JSON.stringify(request),
+        success: function(data) {
+
+            
+            // set the card view
+            insert_card_data(data);
+
+            var url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
+            window.history.pushState("version_page", null, url.toString());
+
+        },
+
+        error: function(xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            alert(err.Message);
+          }
+    });
+}
+
 function get_versions(registry, name, repository, version) {
-    var list_data = {"registry_type": registry, "repository": repository, "name": name, "version": version};
+    var request = {"registry_type": registry, "repository": repository, "name": name, "version": version};
 
     $.ajax({
         url: LIST_CARD_PATH,
         type: "POST",
         dataType: "json",
         contentType: "application/json",
-        data: JSON.stringify(list_data),
+        data: JSON.stringify(request),
         success: function(data) {
             let card_versions = data["cards"];
 
@@ -54,6 +97,10 @@ function get_versions(registry, name, repository, version) {
 
             create_version_elements(card_versions, version, registry, name);
 
+            // set version in request
+            request["version"] = version;
+            set_card_view(request);
+
         },
 
         error: function(xhr, status, error) {
@@ -61,6 +108,7 @@ function get_versions(registry, name, repository, version) {
             alert(err.Message);
           }
     });
+   
 
 }
 
