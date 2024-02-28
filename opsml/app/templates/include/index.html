@@ -56,10 +56,11 @@
     get_metrics,
     get_repo_names_page,
     set_default_page,
-    set_component_navigation
+    set_component_navigation,
+    ready_nav
 
   } from '/static/js/utils.js';
-  import {ready_nav} from '/static/js/nav.js';
+  import {set_version_page} from '/static/js/version.js';
 
 
   $(document).ready( function() {
@@ -68,28 +69,19 @@
     let repository = "{{ repository }}";
     let version = "{{ version }}";
 
-
     // set the default page
     set_default_page(registry, name, repository, version);
-    hljs.highlightAll();
-    
     }
 
   );
 
   set_component_navigation();
 
-  //Here is where you update your layout
-  hljs.initHighlighting.called = false;
-  hljs.initHighlighting();
-
-
   // handle back button (revert history)
   window.onpopstate = function (event) {
-
+    
     let artifact_page = document.getElementById("ArtifactPage");
 
-    
     artifact_page.innerHTML = "";
     artifact_page.innerHTML = event.state.html;
 
@@ -107,13 +99,29 @@
         let registry = document.getElementById("registry-type").dataset.registry;
         get_repo_names_page(registry, repo);
   
-    });
-    }
-    set_component_navigation();
-    // set #RepositoriesSelect innerhtml to none
-   
-    
+      });
 
+      $("#version-page").hide();
+      $("#repository-page").show();
+      set_component_navigation();
+
+    } 
+
+    else if (event.state.page_type == "version") {
+
+      set_version_page(
+        event.state.registry, 
+        event.state.repository, 
+        event.state.name, 
+        event.state.version, 
+        save_state=false
+      );
+
+      ready_nav();
+
+     
+  }
+ 
   };
 
 

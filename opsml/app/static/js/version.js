@@ -11,6 +11,7 @@ function create_version_elements(card_versions, active_version) {
     // get the version list
     let version_list = document.getElementById("version-list");
     version_list.innerHTML = "";  // clear the version list
+    version_list.display = "block";
 
 
     // loop through each item and create an "a" tag for each version
@@ -22,7 +23,7 @@ function create_version_elements(card_versions, active_version) {
         version_link.setAttribute("href", "");
         
         // set the active version
-        if (version === active_version) {
+        if (version["version"] === active_version) {
             version_link.setAttribute("class", "list-group-item list-group-item-action active");
         } else {
             version_link.setAttribute("class", "list-group-item list-group-item-action");
@@ -349,7 +350,7 @@ function insert_model_extras(data) {
 
         if (Object.keys(data["runcard"]["parameters"]).length > 0) {
             let param_div = `
-            <div class="card-body" id="Params" >
+            <div class="card-body" id="Params" style="display:none">
             <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
             <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
         
@@ -384,34 +385,11 @@ function insert_model_extras(data) {
             }
         }
     }
-
-
-   
-   
-
-
-   
-    
-
-    // create divs for each extra
-    //let metadata_div = document.createElement("div");
-    //metadata_div.setAttribute("class", "card-body");
-    //metadata_div.setAttribute("id", "MetadataJson");
-//
-    //metadata_div.innerHTML = `<code id="metadata-code" class="json"><pre>{hello: blah}</pred></code>`;
-//
-    //model_extras.appendChild(metadata_div);
-
-
-  
-
-
-
     
 }
 
 
-function create_active_version_card(registry, repository, name, version) {
+function create_active_version_card(registry, repository, name, version, save_state) {
     var list_data = {"registry_type": registry, "repository": repository, "name": name, "version": version};
 
 
@@ -424,11 +402,16 @@ function create_active_version_card(registry, repository, name, version) {
         success: function(data) {
 
             if (registry === "model"){
-
                 insert_model_metadata_header(data);
                 insert_model_metadata(data);
                 insert_model_tags(data);
                 insert_model_extras(data);
+            }
+
+            if (save_state) {
+                var url = "/opsml/registry?registry=" + registry + "&repository=" + repository + "&name=" + name + "&version=" + version;
+                var stateObj = { html: document.getElementById("ArtifactPage").innerHTML, page_type: "version", registry: registry, repository: repository, name: name, version: version};
+                window.history.pushState(stateObj, null, url.toString());
             }
 
         },
@@ -442,8 +425,9 @@ function create_active_version_card(registry, repository, name, version) {
 
 }
 
-function get_versions(registry, name, repository, version) {
+function get_versions(registry, name, repository, version, save_state) {
     var list_data = {"registry_type": registry, "repository": repository, "name": name, "version": version};
+
 
     $.ajax({
         url: LIST_CARD_PATH,
@@ -456,11 +440,11 @@ function get_versions(registry, name, repository, version) {
 
             // check if version is not set
             if (version === undefined) {
-                version = card_versions[0];
+                version = card_versions[0]["version"];
             }
 
             create_version_elements(card_versions, version);
-            create_active_version_card(registry, repository, name, version["version"]);
+            create_active_version_card(registry, repository, name, version, save_state);
 
         },
 
@@ -477,34 +461,14 @@ function get_versions(registry, name, repository, version) {
 
 //function to get version pages
 // this could be in it's own separate file
-function set_version_page(registry, repository, name) {
+function set_version_page(registry, repository, name, version, save_state=true) {
 
-    // hide repository page
-    //$("#repository-page").hide();
-    // display version page
-    //document.getElementById("version-page").style.display = "block";
-    // hide repository page and show version page
     $("#repository-page").hide();
-
-
     document.getElementById("version-header").innerHTML = name;
-    get_versions(registry, name, repository);
-
-
-
-
-    //alert(JSON.stringify(card_versions));
-    //let active_version = card_versions[0];  // set the first version as the active version
-
-    //create_version_elements(card_versions, active_version);
-    
-    // create version card
-
-
+    get_versions(registry, name, repository, version, save_state);
     $("#version-page").show();
 
-
-
 }
+
 
 export {set_version_page};

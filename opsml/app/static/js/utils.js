@@ -316,7 +316,6 @@ function get_repo_names_page(registry, repository, save_state=true) {
         success: function(data) {
             // get repository and names from dictionary
 
-        
             let results = set_dropdown(data, registry, repository);
 
             if (save_state) {
@@ -330,8 +329,6 @@ function get_repo_names_page(registry, repository, save_state=true) {
                 var stateObj = { html: document.getElementById("ArtifactPage").innerHTML, page_type: "repository", registry: results[0], repository: results[1]};
                 window.history.pushState(stateObj, null, url.toString());
             }
-
-    
                 
     },
 
@@ -352,10 +349,8 @@ function set_repository_select() {
         let repo =  e.params.data.id;
         let registry = document.getElementById("registry-type").dataset.registry;
         get_repo_names_page(registry, repo);
-
+        
     });
-
-
 }
 
 
@@ -371,9 +366,7 @@ function set_default_page(registry, name, repository, version) {
 
         // get all artifacts
         $("#repository-page").show();
-
-        // make nav-model active
-        
+        $("#version-page").hide();
 
         // if repository is none, set it to null
         if (repository == "None"){
@@ -394,19 +387,8 @@ function set_default_page(registry, name, repository, version) {
             get_repo_names_page(registry, repo);
     
         });
-
-        
-       
-
-        //// get html from ArtifactPage and save it as state
-        //var current_page_content = document.getElementById("ArtifactPage").innerHTML;
-        //var stateObj = { html: current_page_content, page_type: "repository", registry: registry, repository: repository};
-        //
-        //window.history.pushState(stateObj, null, url.toString());
-  
     }
-
-    }
+}
 
 
 // Function to set up click event for navbar items
@@ -414,6 +396,10 @@ function set_default_page(registry, name, repository, version) {
 function set_nav_click() {
     // get clicked navbar-toggler
     $('.nav-link').click(function(){
+
+        let version_list = document.getElementById("version-list");
+        version_list.innerHTML = "";
+
         var registry = $(this).attr('data-type');
 
         // get repository name 
@@ -429,7 +415,6 @@ function set_nav_click() {
         if (repository == "None") {
             repository = undefined;
         }
-     
         get_repo_names_page(registry, repository);
         // add logic for run and audit pages
       });
@@ -485,6 +470,6 @@ export {
     set_repository_select,
     set_nav_click,
     set_default_page,
-    set_component_navigation
-
+    set_component_navigation,
+    ready_nav,
 };
