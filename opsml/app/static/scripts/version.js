@@ -127,6 +127,16 @@ function insert_card_metadata(data) {
     } else {
         $("#runcard-uid-display").hide();
     }
+
+    // set metadata button
+    // summary-button on click
+    document.getElementById("metadata-button").onclick = function() {
+        $("#CardBox").show();
+        $("#TagBox").show();
+        $("#ExtraBox").show();
+        $("#SummaryBox").hide();
+        $(this).addClass("active");
+    }
         
     
 }
@@ -242,10 +252,66 @@ function insert_extras(data) {
     }
 
     $("#ExtraBox").show();
+}
+
+function insert_summary(data) {
+    
+    let modelcard = data["modelcard"];
+
+    let card_metadata = modelcard["metadata"];
+ 
+    
+    if (card_metadata["description"]["summary"] !== null) {
+      
+        var converter = new showdown.Converter();
+        converter.setFlavor('github');
+        let text = converter.makeHtml(card_metadata["description"]["summary"]);
+        document.getElementById("summary-markdown").innerHTML = text;
+        $("#summary-display").show();
+        $("#SummaryText").hide();
+
+    } else {
+        $("#summary-display").hide();
+        $("#SummaryText").show();
+
+    }
+
+    if (card_metadata["description"]["sample_code"] !== null) {
+
+        let code = card_metadata["description"]["sample_code"];
+        let html = Prism.highlight(code, Prism.languages.python, 'python');
+        document.getElementById("user-sample-code").innerHTML = html;
+        $("SampleCode").show();
+    } else {
+        $("#SampleCode").hide();
+    }
+
+    var opsml_code = `
+    from opsml import CardRegistry
+
+    model_registry = CardRegistry("model")
+    modelcard = model_registry.load_card(
+        name="${modelcard["name"]}", 
+        repository="${modelcard["repository"]}",
+        version="${modelcard["version"]}",
+    )
+    modelcard.load_model() # load the train model
+    `
+
+    let html = Prism.highlight(opsml_code, Prism.languages.python, 'python');
+    document.getElementById("opsml-sample-code").innerHTML = html;
 
 
+    // summary-button on click
+    document.getElementById("summary-button").onclick = function() {
+        $("#CardBox").hide();
+        $("#TagBox").hide();
+        $("#ExtraBox").hide();
+        $("#SummaryBox").show();
+        $(this).addClass("active");
+    }
 
-   
+
 }
 
 function set_card_view(request){
@@ -262,6 +328,7 @@ function set_card_view(request){
             insert_card_metadata(data);
             insert_tags(data);
             insert_extras(data);
+            insert_summary(data);
 
             var url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
             window.history.pushState("version_page", null, url.toString());
