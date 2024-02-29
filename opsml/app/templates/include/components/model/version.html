@@ -15,15 +15,30 @@
         </div>
   
         <div id="MetadataColumn">
-          <div class="card" style="width:100%;">
-            <div class="card-body">
-              <h4>Model 
-                <div id="CardTabBox">
-                <span><button id="metadata-button" type="button" class="btn btn-success" >Metadata</button></span>
-                <span><button id="summary-button" type="button" class="btn btn-success">Summary</button></span>
-                </div>
-              </h4>
-          </div>
+
+          {% if registry == 'model' %}
+            <div class="card" style="width:100%;">
+              <div class="card-body">
+                <h4>Model 
+                  <div id="CardTabBox">
+                  <span><button id="metadata-button" type="button" class="btn btn-success" >Metadata</button></span>
+                  <span><button id="summary-button" type="button" class="btn btn-success">Summary</button></span>
+                  </div>
+                </h4>
+            </div>
+
+          {% elif registry == 'data' %}
+            <div class="card" style="width:100%;">
+              <div class="card-body">
+                <h4>Data
+                  <div id="CardTabBox">
+                    <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
+                    <span><button id="download-button" type="submit" class="btn btn-success" >Summary</button></span>
+                    <span><button id="download-button" type="submit" class="btn btn-success focus" >Data Profile</button></span>
+                  </div>
+                </h4>
+            </div>
+          {% endif %}
   
           <div class="card border-0" id="CardBox" style="width:100%;">
             {% include "include/components/model/metadata.html" %}

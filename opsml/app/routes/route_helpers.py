@@ -455,7 +455,7 @@ class ModelRouteHelper(RouteHelper):
             run = None
 
         card_metadata = {
-            "modelcard": card.model_dump(),
+            "card": card.model_dump(),
             "runcard": run,
             "metadata": metadata_json,
             "model_filename": model_save_filename,
