@@ -9,7 +9,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from opsml.app.core.dependencies import swap_opsml_root
-from opsml.app.routes.utils import error_to_500
+
+# from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
 from opsml import CardRegistry, RunCard
@@ -24,7 +25,7 @@ router = APIRouter()
 
 
 @router.get("/runs/graphics", name="graphic_uris", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def get_graphic_page(request: Request, run_uid: str) -> HTMLResponse:
     """Method for generating presigned urls and html for graphics page
 

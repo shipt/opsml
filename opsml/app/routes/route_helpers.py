@@ -257,28 +257,6 @@ class AuditRouteHelper(RouteHelper):
 class DataRouteHelper(RouteHelper):
     """Route helper for DataCard pages"""
 
-    def get_homepage(self, request: Request, repository: Optional[str] = None) -> _TemplateResponse:
-        """Retrieves homepage
-
-        Args:
-            request:
-                The incoming HTTP request.
-            repository:
-                The repository name.
-        """
-        registry: CardRegistry = request.app.state.registries.data
-
-        info = list_repository_name_info(registry, repository)
-        return templates.TemplateResponse(
-            "include/data/data.html",
-            {
-                "request": request,
-                "all_repositories": info.repositories,
-                "selected_repository": info.selected_repository,
-                "data": info.names,
-            },
-        )
-
     def _check_splits(self, card: DataCard) -> Optional[str]:
         if len(card.data_splits) > 0:
             return json.dumps(
@@ -287,88 +265,55 @@ class DataRouteHelper(RouteHelper):
             )
         return None
 
-    def _load_profile(self, request: Request, load_profile: bool, datacard: DataCard) -> Tuple[Optional[str], bool, bool]:
+    def _get_profile_uri(self, request: Request, datacard: DataCard) -> Optional[str]:
         """If load_profile is True, attempts to load the data profile
 
         Args:
             request:
                 The incoming HTTP request.
-            load_profile:
-                Whether to load the data profile.
             datacard:
                 The data card.
 
         Returns:
-            `Tuple[str, bool]`
+            Optional string contained pre-signed url
         """
+
         storage_client = request.app.state.storage_client
+        storage_root = request.app.state.storage_root
 
         data_html_path = (datacard.uri / SaveName.DATA_PROFILE.value).with_suffix(Suffix.HTML.value)
         html_exists = storage_client.exists(data_html_path)
 
-        if load_profile and html_exists:
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                lpath = Path(tmp_dir) / data_html_path.name
-                storage_client.get(data_html_path, lpath)
+        if html_exists:
+            remote_path = data_html_path.relative_to(storage_root)
+            return storage_client.generate_presigned_url(remote_path, expiration=600)
 
-                file_size = lpath.stat().st_size
-                if file_size / (1024 * 1024) <= 50:
-                    with lpath.open("r", encoding="utf-8") as html_file:
-                        return html_file.read(), True, html_exists
+        return None
 
-                else:
-                    return "Data profile too large to display. Please download to view.", False, html_exists
-
-        return None, False, html_exists
-
-    def get_versions_page(
-        self,
-        request: Request,
-        name: str,
-        load_profile: bool,
-        version: Optional[str] = None,
-    ) -> _TemplateResponse:
+    def get_card_metadata(self, request: Request, card: DataCard) -> Dict[str, Any]:
         """Given a data name, returns the data versions page
 
         Args:
             request:
                 The incoming HTTP request.
-            name:
-                The data name.
-            load_profile:
-                Whether to load the data profile.
-            version:
-                The data version.
+            card:
+                The data card.
         """
 
-        registry: CardRegistry = request.app.state.registries.data
-        versions = registry.list_cards(name=name, limit=50)
+        data_splits = self._check_splits(card=card)
+        profile_uri = self._get_profile_uri(request, card)
 
-        datacard, version = self._check_version(registry, name, versions, version)
-        datacard = cast(DataCard, datacard)
-
-        data_splits = self._check_splits(card=datacard)
-        data_profile, render_profile, html_exists = self._load_profile(request, load_profile, datacard)
-
-        data_filename = Path(SaveName.DATA.value).with_suffix(datacard.interface.data_suffix)
+        data_filename = Path(SaveName.DATA.value).with_suffix(card.interface.data_suffix)
         data_profile_filename = Path(SaveName.DATA_PROFILE.value).with_suffix(Suffix.HTML.value)
 
-        return templates.TemplateResponse(
-            "include/data/data_version.html",
-            {
-                "request": request,
-                "versions": versions,
-                "selected_data": datacard,
-                "selected_version": version,
-                "data_splits": data_splits,
-                "data_profile": data_profile,
-                "render_profile": render_profile,
-                "load_profile": load_profile,
-                "html_exists": html_exists,
-                "data_filename": data_filename,
-                "data_profile_filename": data_profile_filename,
-            },
-        )
+        card_metadata = {
+            "card": card.model_dump(),
+            "data_splits": data_splits,
+            "profile_uri": profile_uri,
+            "data_filename": data_filename,
+            "data_profile_filename": data_profile_filename,
+        }
+        return card_metadata
 
 
 class ModelRouteHelper(RouteHelper):

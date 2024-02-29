@@ -6,12 +6,9 @@ import csv
 import io
 import os
 import re
-import traceback
-from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
-from fastapi import Request
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from streaming_form_data.targets import FileTarget
@@ -21,7 +18,6 @@ from opsml.cards.audit import AuditCard, AuditSections
 from opsml.cards.run import RunCard
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.registry import CardRegistries, CardRegistry
-from opsml.settings.config import config
 from opsml.storage.client import LocalStorageClient, StorageClient
 from opsml.types import RegistryType
 
@@ -111,32 +107,6 @@ def get_runcard_from_model(
         return cast(RunCard, registries.run.load_card(uid=run_uid))
 
     return None
-
-
-def error_to_500(func: Callable[..., Any]) -> Any:
-    """Function for wrapping errors in the opsml UI"""
-
-    @wraps(func)
-    async def wrapper(request: Request, *args: Any, **kwargs: Any) -> Any:
-        try:
-            return await func(request, *args, **kwargs)
-
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            trace_back = traceback.format_exc()
-            logger.error("exceptions: {} {}", exc, trace_back)
-
-            if config.opsml_testing:
-                raise ValueError(f"Exception: {exc}, {trace_back}") from exc
-
-            return templates.TemplateResponse(
-                "include/500.html",
-                {
-                    "request": request,
-                    "error_message": str(exc),
-                },
-            )
-
-    return wrapper
 
 
 def get_registry_type_from_table(

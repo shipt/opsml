@@ -11,7 +11,8 @@ from fastapi.templating import Jinja2Templates
 
 from opsml.app.routes.files import download_artifacts_ui, download_file
 from opsml.app.routes.route_helpers import DataRouteHelper
-from opsml.app.routes.utils import error_to_500
+
+# from opsml.app.routes.utils import error_to_500
 from opsml.cards.data import DataCard
 from opsml.registry.registry import CardRegistry
 from opsml.types import SaveName
@@ -29,7 +30,7 @@ router = APIRouter()
 
 
 @router.get("/data/list/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def data_list_homepage(request: Request, repository: Optional[str] = None) -> HTMLResponse:
     """UI home for listing models in model registry
 
@@ -46,7 +47,7 @@ async def data_list_homepage(request: Request, repository: Optional[str] = None)
 
 
 @router.get("/data/versions/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def data_versions_page(
     request: Request,
     load_profile: bool = False,
@@ -65,7 +66,7 @@ async def data_versions_page(
 
 
 @router.get("/data/versions/uid/")
-@error_to_500
+# @error_to_500
 async def data_versions_uid_page(request: Request, uid: str) -> HTMLResponse:
     registry: CardRegistry = request.app.state.registries.data
     selected_data = registry.list_cards(uid=uid)[0]

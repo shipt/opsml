@@ -20,7 +20,8 @@ from opsml.app.routes.pydantic_models import (
     RegisterModelRequest,
 )
 from opsml.app.routes.route_helpers import ModelRouteHelper
-from opsml.app.routes.utils import error_to_500
+
+# from opsml.app.routes.utils import error_to_500
 from opsml.cards.model import ModelCard
 from opsml.cards.run import RunCard
 from opsml.helpers.logging import ArtifactLogger
@@ -42,7 +43,7 @@ router = APIRouter()
 
 
 @router.get("/models/list/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def model_list_homepage(request: Request, repository: Optional[str] = None) -> HTMLResponse:
     """UI home for listing models in model registry
     Args:
@@ -58,7 +59,7 @@ async def model_list_homepage(request: Request, repository: Optional[str] = None
 
 
 @router.get("/models/versions/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def model_versions_page(
     request: Request,
     model: Optional[str] = None,

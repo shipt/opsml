@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from starlette.testclient import TestClient
 
 from opsml.app.routes.pydantic_models import AuditFormRequest, CommentSaveRequest
-from opsml.app.routes.utils import error_to_500, list_repository_name_info
+from opsml.app.routes.utils import list_repository_name_info
 from opsml.cards import (
     AuditCard,
     DataCard,
@@ -708,12 +708,12 @@ def test_audit(test_app: TestClient, populate_model_data_for_route: Tuple[ModelC
     assert response.status_code == 200
 
 
-def test_error_wrapper() -> None:
-    @error_to_500
-    async def fail(request):
-        raise ValueError("Fail")
-
-    fail("fail")
+#def test_error_wrapper() -> None:
+#    @error_to_500
+#    async def fail(request):
+#        raise ValueError("Fail")
+#
+#    fail("fail")
 
 
 def test_registry_name_fail(test_app: TestClient) -> None:

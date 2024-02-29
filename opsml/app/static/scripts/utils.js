@@ -37,8 +37,9 @@ function set_page(registry, repository, name, version) {
         if (version == "None"){
             version = undefined;
         }
-        
+
         set_version_page(registry, name, repository, version);
+
         
     // return default model page
     } else {

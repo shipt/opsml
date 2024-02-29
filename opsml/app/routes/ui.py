@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 from opsml.types import RegistryType
 from opsml import CardRegistry
 from opsml.helpers.logging import ArtifactLogger
+from opsml.app.routes.pydantic_models import ErrorMessage
 
 # Constants
 TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
@@ -108,3 +109,18 @@ async def opsml_repositories(
 @router.get("/")
 async def homepage(request: Request) -> RedirectResponse:
     return RedirectResponse("/opsml")
+
+
+@router.post("/opsml/ui/error")
+async def error_to_500(request: Request, payload: ErrorMessage) -> HTMLResponse:
+    try:
+        return templates.TemplateResponse(
+            "include/500.html",
+            {
+                "request": request,
+                "error_message": payload.message,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Error rendering 500 page: {e}")
+        return HTMLResponse(status_code=500, content="Internal Server Error")

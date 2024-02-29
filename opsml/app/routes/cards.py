@@ -26,8 +26,8 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
-from opsml import ModelCard
-from opsml.app.routes.route_helpers import ModelRouteHelper
+from opsml import ModelCard, DataCard
+from opsml.app.routes.route_helpers import ModelRouteHelper, DataRouteHelper
 
 logger = ArtifactLogger.get_logger()
 
@@ -293,14 +293,17 @@ def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dic
             table_name=payload.table_name,
             registry_type=payload.registry_type,
         )
+
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
         card = registry.load_card(name=payload.name, repository=payload.repository, version=payload.version)
 
         if isinstance(card, ModelCard):
             return ModelRouteHelper().get_card_metadata(request, card)
+        if isinstance(card, DataCard):
+            return DataRouteHelper().get_card_metadata(request, card)
 
     except Exception as error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"""Error listing cards. {error}""",
+            detail=f"""Error getting card data. {error}""",
         ) from error

@@ -1,6 +1,7 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+from email import message
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import File, Form, UploadFile
@@ -186,6 +187,10 @@ class TableNameResponse(BaseModel):
 
 class NamesResponse(BaseModel):
     names: List[str] = []
+
+
+class ErrorMessage(BaseModel):
+    message: str
 
 
 class ListFileRequest(BaseModel):

@@ -13,7 +13,8 @@ from fastapi.templating import Jinja2Templates
 
 from opsml.app.routes.pydantic_models import ProjectIdResponse
 from opsml.app.routes.route_helpers import ProjectRouteHelper
-from opsml.app.routes.utils import error_to_500
+
+# from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.sql.base.server import ServerProjectCardRegistry
 
@@ -28,7 +29,7 @@ project_route_helper = ProjectRouteHelper()
 
 
 @router.get("/projects/list/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def project_list_page(
     request: Request,
     project: Optional[str] = None,
@@ -58,7 +59,7 @@ async def project_list_page(
 
 
 @router.get("/projects/runs/plot/", response_class=HTMLResponse)
-@error_to_500
+# @error_to_500
 async def project_metric_page(
     request: Request,
     run_uid: str,

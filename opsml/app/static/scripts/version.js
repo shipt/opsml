@@ -1,4 +1,6 @@
 import {build_model_version_ui} from './model_version.js';
+import {build_data_version_ui} from './data_version.js';
+import { error_to_page } from './error.js';
 const LIST_CARD_PATH = "/opsml/cards/list";
 const ACTIVE_CARD_PATH = "/opsml/cards/ui";
 
@@ -7,14 +9,12 @@ const ACTIVE_CARD_PATH = "/opsml/cards/ui";
 // active_version: the active version
 function create_version_elements(card_versions, active_version, registry, name) {
 
-
     // get the version list
-    let version_header = document.getElementById(`${registry}-version-header`);
+    let version_header = document.getElementById("version-header");
     version_header.innerHTML = name;
 
-    let version_list = document.getElementById(`${registry}-version-list`);
+    let version_list = document.getElementById("version-list");
     version_list.innerHTML = "";  // clear the version list
-
 
     // loop through each item and create an "a" tag for each version
     for (let i = 0; i < card_versions.length; i++) {
@@ -67,18 +67,14 @@ function build_card(data) {
     if (data["registry"] === "model") {
         build_model_version_ui(data);
     } else if (data["registry"] === "data") {
-        insert_data_metadata(data);
+        build_data_version_ui(data);
     }
-
-    
 }
-
-
 
 function set_card_view(request){
 
 
-    $.ajax({
+    return $.ajax({
         url: ACTIVE_CARD_PATH,
         type: "POST",
         dataType: "json",
@@ -91,23 +87,24 @@ function set_card_view(request){
 
             // set the card view
             build_card(data);
-        
 
             var url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
             window.history.pushState("version_page", null, url.toString());
     
-
         },
 
         error: function(xhr, status, error) {
-            var err = eval("(" + xhr.responseText + ")");
-            alert(err.Message);
+            // send request to error route on error
+            var err = JSON.parse(xhr.responseText);
+            error_to_page(JSON.stringify(err));
+
           }
     });
 }
 
 function get_versions(registry, name, repository, version) {
     var request = {"registry_type": registry, "repository": repository, "name": name};
+
 
     return $.ajax({
         url: LIST_CARD_PATH,
@@ -123,8 +120,9 @@ function get_versions(registry, name, repository, version) {
                 version = card_versions[0]["version"];
             }
 
-            create_version_elements(card_versions, version, registry, name);
 
+            create_version_elements(card_versions, version, registry, name);
+          
             // set version in request
             request["version"] = version;
             set_card_view(request);
@@ -132,34 +130,26 @@ function get_versions(registry, name, repository, version) {
         },
 
         error: function(xhr, status, error) {
-            var err = eval("(" + xhr.responseText + ")");
-            alert(err.Message);
+            // send request to error route on error
+
+            var err = JSON.parse(xhr.responseText);
+            error_to_page(JSON.stringify(err));
+            
           }
     });
    
 
 }
 
-function get_model_page(registry, name, repository, version) {
-    $("#model-version-page").hide();
-
-    // get model page
-    $.when(get_versions(registry, name, repository, version)).done(function() {
-        $("#repository-page").hide();
-        $("#data-version-page").hide();
-        $("#run-version-page").hide();
-        $("#audit-version-page").hide();
-        $("#model-version-page").show();
-    });
-}
 
 function set_version_page(registry, name, repository, version){
     // set active class on nav item
-   
-    if (registry == 'model') {
-        // get model page
-        get_model_page(registry, name, repository, version);
-    }
+
+    $("#card-version-page").hide();
+
+    $.when(get_versions(registry, name, repository, version)).done(function() {
+        $("#card-version-page").show();
+    });
     
     // get version page
     // get_version_page(registry, name, repository, version);
@@ -168,6 +158,7 @@ function set_version_page(registry, name, repository, version){
 
     var available = document.getElementById("available");
     available.classList.remove("active");
+
 }
 
 export {
