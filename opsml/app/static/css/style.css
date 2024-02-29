@@ -1085,3 +1085,17 @@ pre {
   background-color: #f4f4f4;
 }
 
+
+#attribution-button {
+  position: fixed;
+  bottom: 3px;
+  right: 10px;
+  font-size: 13px;
+  color: #929292;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #929292;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}

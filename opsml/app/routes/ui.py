@@ -68,6 +68,11 @@ async def opsml_ui_page(
     )
 
 
+@router.get("/opsml/ui/attribution")
+async def opsml_attribution_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("include/components/attribution.html", {"request": request})
+
+
 @router.get("/opsml/repository")
 async def opsml_repositories(
     request: Request,

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+<!-- navbar component --> 
+{% include "include/components/navbar.html" %}
+<!-- main page component --> 
+
+{% block content %}
+
+<body id="ArtifactPage">
+
+  <div class="container" style="padding-top:65px;"></div>
+
+  <div class="container" style="padding-top:50px;">
+    <div class="row">
+      <h3 class="text-center">Attributions</h3>
+    </div>
+    <div>Icons</div>
+    <div><a href="https://www.flaticon.com/free-icons/brain" title="brain icons">Brain icons created by Freepik - Flaticon</a></div>
+    <div><a href="https://www.flaticon.com/free-icons/machine-learning" title="machine learning icons">Machine learning icons created by Muhammad Atif - Flaticon</a></div>
+  </div>
+
+
+  
+ 
+  <a id="attribution-button" class="btn btn-success active" href="/opsml/ui/attribution" >Attribution</a>
+
+</body>
+
+{% endblock %}
