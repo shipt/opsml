@@ -26,41 +26,40 @@
                   </div>
                 </h4>
               </div>
-            </div>
 
           {% elif registry == 'data' %}
             <div class="card" style="width:100%;">
               <div class="card-body">
                 <h4>Data
                   <div id="CardTabBox">
-                    <span><button id="download-button" type="submit" class="btn btn-success" >Metadata</button></span>
-                    <span><button id="download-button" type="submit" class="btn btn-success" >Summary</button></span>
-                    <span><button id="download-button" type="submit" class="btn btn-success focus" >Data Profile</button></span>
+                    <span><button id="metadata-button" type="submit" class="btn btn-success">Metadata</button></span>
+                    <span><button id="summary-button" type="submit" class="btn btn-success" >Summary</button></span>
+                    <span><button id="profile-button" type="submit" class="btn btn-success" style="display: none;">Data Profile</button></span>
                   </div>
                 </h4>
               </div>
-            </div>
+
           {% endif %}
   
-          <div class="card border-0" id="CardBox" style="width:100%;">
-            {% include "include/components/model/metadata.html" %}
-          </div>
+            <div class="card border-0" id="CardBox" style="width:100%;">
+              {% include "include/components/model/metadata.html" %}
+            </div>
         
-          {% if registry == 'model' %}
-          <div class="card border-0" id="TagBox" style="width:100%;">
-            {% include "include/components/tags.html" %}
-          </div>
-          {% endif %}
+        
+            {% if registry == 'model' %}
+            <div class="card border-0" id="TagBox" style="width:100%;">
+              {% include "include/components/tags.html" %}
+            </div>
+            {% endif %}
 
-          <hr id="version-spacer">
-          <div class="card border-0" id="ExtraBox" style="width:100%;">
-              {% include "include/components/model/extras.html" %}
-          </div>
+            <div class="card border-0" id="ExtraBox" style="width:100%;">
+                {% include "include/components/model/extras.html" %}
+            </div>
 
-          <div class="card border-0" style="display: None; width:100%;" id="SummaryBox">
-            {% include "include/components/model/summary.html" %}
+            <div class="card border-0" style="display: none; width:100%;" id="SummaryBox">
+              {% include "include/components/model/summary.html" %}
+            </div>
           </div>
-
         </div>
       </div>
     </div>

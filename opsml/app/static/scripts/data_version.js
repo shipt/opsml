@@ -16,6 +16,15 @@ function insert_data_metadata(data, datacard, metadata) {
         $("#data-profile").show();
     }
 
+    // set metadata button
+    // summary-button on click
+    document.getElementById("metadata-button").onclick = function() {
+        $("#CardBox").show();
+        $("#ExtraBox").show();
+        $("#SummaryBox").hide();
+        $(this).addClass("active");
+    }
+
 
 }
 
@@ -140,15 +149,58 @@ function insert_data_extras(data, datacard, metadata) {
         }
 
     }
+}
+
+function insert_summary(datacard, metadata) {
+
+    if (metadata["description"]["summary"] !== null) {
+        
+        var converter = new showdown.Converter();
+        converter.setFlavor('github');
+        let text = converter.makeHtml(metadata["description"]["summary"]);
+        document.getElementById("summary-markdown").innerHTML = text;
+        $("#summary-display").show();
+        $("#SummaryText").hide();
+
+    } else {
+        $("#summary-display").hide();
+        $("#SummaryText").show();
+
+    }
+
+    if (metadata["description"]["sample_code"] !== null) {
+
+        let code = metadata["description"]["sample_code"];
+        let html = Prism.highlight(code, Prism.languages.python, 'python');
+        document.getElementById("user-sample-code").innerHTML = html;
+        $("SampleCode").show();
+    } else {
+        $("#SampleCode").hide();
+    }
 
 
-    // check if sql is not null
+    var opsml_code = `
+    from opsml import CardRegistry
 
-    
+    data_registry = CardRegistry("data")
+    datacard = model_registry.load_card(
+        name="${datacard["name"]}", 
+        repository="${datacard["repository"]}",
+        version="${datacard["version"]}",
+    )
+    datacard.load_data()
+    `
 
+    let html = Prism.highlight(opsml_code, Prism.languages.python, 'python');
+    document.getElementById("opsml-sample-code").innerHTML = html;
 
-
-
+    // summary-button on click
+    document.getElementById("summary-button").onclick = function() {
+        $("#CardBox").hide();
+        $("#ExtraBox").hide();
+        $("#SummaryBox").show();
+        $(this).addClass("active");
+    }
 }
 
 function build_data_version_ui(data) {
@@ -158,6 +210,7 @@ function build_data_version_ui(data) {
 
     insert_data_metadata(data, datacard, metadata);
     insert_data_extras(data, datacard, metadata);
+    insert_summary(datacard, metadata);
 
 }
 
