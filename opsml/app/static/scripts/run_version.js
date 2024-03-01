@@ -84,9 +84,7 @@ function setPage(registry, repository, name, version) {
   });
 }
 
-
 function resolveParams(repository, name, version) {
-
   let providedRepo = repository;
   let providedName = name;
   let providedVersion = version;
@@ -106,15 +104,20 @@ function resolveParams(repository, name, version) {
   return [providedRepo, providedName, providedVersion];
 }
 
-
 function setRunPage(registry, repository, name, version) {
   let providedRepo = repository;
   let providedName = name;
   let providedVersion = version;
 
-  providedRepo, providedName, providedVersion = resolveParams(providedRepo, providedName, providedVersion);
-  setPage(registry, providedRepo, providedName, providedVersion);
+  [providedRepo, providedName, providedVersion] = resolveParams(
+    providedRepo,
+    providedName,
+    providedVersion,
+  );
 
+  setPage(registry, providedRepo, providedName, providedVersion);
 }
 
-export { setRunPage, setDropdown, setPage, resolveParams };
+export {
+  setRunPage, setDropdown, setPage, resolveParams,
+};
