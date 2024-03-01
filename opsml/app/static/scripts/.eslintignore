@@ -1,5 +1,2 @@
-{
-    "ignorePatterns": [
-        "*.test.js"
-    ]
-}
+babel.config.js
+*.test.js
