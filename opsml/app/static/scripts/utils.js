@@ -1,57 +1,52 @@
-
-import { get_repo_names_page } from './repositories.js';
-import { set_version_page } from './version.js';
-import { set_run_page } from './run_version.js';
-
+import $ from 'jquery';
+import { getRepoNamesPage } from './repositories';
+import { setVersionPage } from './version';
+import { setRunPage } from './run_version';
 
 // set active class on nav item
 // registry: string
-function set_nav_link(registry) {
-    var nav_link = document.getElementById("nav-" + registry);
-    nav_link.classList.add("active");
+function setNavLink(registry) {
+  const navLink = document.getElementById(`nav-${registry}`);
+  navLink.classList.add('active');
 }
 
-function set_repository_page(registry, repository) {
+function setRepositoryPage(registry, repository) {
+  let providedRepo = repository;
 
-        $("#card-version-page").hide();
-        $("#run-version-page").hide();
-        $("#audit-version-page").hide();
-    
-        // if repository is none, set it to null
-        if (repository == "None"){
-            repository = undefined;
-        }
-    
-        get_repo_names_page(registry, repository);
-        $("#repository-page").show();
+  $('#card-version-page').hide();
+  $('#run-version-page').hide();
+  $('#audit-version-page').hide();
+
+  // if repository is none, set it to null
+  if (providedRepo === 'None') {
+    providedRepo = undefined;
+  }
+
+  getRepoNamesPage(registry, repository);
+  $('#repository-page').show();
+}
+
+function setPage(registry, repository, name, version) {
+  let providedName = name;
+
+  // if vars are passed, get specific page
+  if (registry !== 'None' && name !== 'None' && repository !== 'None') {
+    if (providedName === 'None') {
+      providedName = undefined;
     }
 
-function set_page(registry, repository, name, version) {
+    setVersionPage(registry, name, repository, version);
 
-    // if vars are passed, get specific page
-    if (registry != "None" && name != "None" && repository != "None"){
-
-        if (version == "None"){
-            version = undefined;
-        }
-
-        set_version_page(registry, name, repository, version);
-
-        
     // return default model page
-    } else if (registry === "run" ){
-
-        set_run_page(registry, repository);
-    
-    } else {
-
-        set_repository_page(registry, repository);
-
-    }
+  } else if (registry === 'run') {
+    setRunPage(registry, repository);
+  } else {
+    setRepositoryPage(registry, repository);
+  }
 }
 
 export {
-    set_nav_link,
-    set_repository_page,
-    set_page
+  setNavLink,
+  setRepositoryPage,
+  setPage,
 };
