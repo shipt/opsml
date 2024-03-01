@@ -138,12 +138,12 @@ function get_repo_names_page(registry, repository) {
             let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             window.history.pushState('repo_page', null, url.toString());
  
-    },
+        },
 
         error: function() {
             alert('error loading from database...');
             }
-      });
+        });
 
     
     $('#RepositoriesSelect').select2().on('select2:select', function(e){

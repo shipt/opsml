@@ -14,27 +14,36 @@
     <a id="attribution-button" class="btn btn-success active" href="/opsml/ui/attribution" >Attributions</a>
   </div>
 
-  <div class="container" style="padding-top:65px;"></div>
-  {% include "include/components/subnav.html" %}
-  <br>
+  {% if registry == 'run' %}
 
-  <!-- repository page --> 
-  <div id="repository-page" style="display: none;">
-    {% include "include/components/repository_select.html" %}
-  </div>
-  
-  <br>
-
-  <!-- Model, Data, Run Pages -->
-  <div id="card-version-page" style="display: none;">
-    {% include "include/components/model/version.html" %}
-  </div>
-
-  <!-- Model, Data, Run Pages -->
-  <div id="audit-version-page" style="display: none;">
-  </div>
+    <div id="run-version-page">
+      {% include "include/components/model/project.html" %}
+    </div>
  
+  {% else %}
 
+    <div class="container" style="padding-top:65px;"></div>
+    {% include "include/components/subnav.html" %}
+    <br>
+
+    <!-- repository page --> 
+    <div id="repository-page" style="display: none;">
+      {% include "include/components/repository_select.html" %}
+    </div>
+    
+    <br>
+
+    <!-- Model, Data, Run Pages -->
+    <div id="card-version-page" style="display: none;">
+      {% include "include/components/model/version.html" %}
+    </div>
+
+    <!-- Model, Data, Run Pages -->
+    <div id="audit-version-page" style="display: none;">
+    </div>
+
+  {% endif %}
+ 
 </body>
 
 {% endblock %}

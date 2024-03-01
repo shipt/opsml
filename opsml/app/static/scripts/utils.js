@@ -1,6 +1,7 @@
 
 import { get_repo_names_page } from './repositories.js';
 import { set_version_page } from './version.js';
+import { set_run_page } from './run_version.js';
 
 
 // set active class on nav item
@@ -11,12 +12,9 @@ function set_nav_link(registry) {
 }
 
 
-
 function set_repository_page(registry, repository) {
 
-        
-        $("#model-version-page").hide();
-        $("#data-version-page").hide();
+        $("#card-version-page").hide();
         $("#run-version-page").hide();
         $("#audit-version-page").hide();
     
@@ -26,6 +24,7 @@ function set_repository_page(registry, repository) {
         }
     
         get_repo_names_page(registry, repository);
+
         $("#repository-page").show();
     }
 
@@ -42,9 +41,15 @@ function set_page(registry, repository, name, version) {
 
         
     // return default model page
+    } else if (registry === "run" ){
+
+       
+        set_run_page(registry, repository);
+    
     } else {
 
         set_repository_page(registry, repository);
+
     }
 }
 
