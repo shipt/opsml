@@ -1,5 +1,8 @@
 import $ from 'jquery';
-import Prism from 'prismjs';
+import * as Prism from 'prismjs';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-python';
 import showdown from 'showdown';
 
 function insertDataMetadata(data, datacard, metadata) {
@@ -223,4 +226,4 @@ function buildDataVersionUI(data) {
   insertHtmlIframe(data);
 }
 
-export default buildDataVersionUI;
+export { buildDataVersionUI }; // eslint-disable-line import/prefer-default-export
