@@ -1,5 +1,7 @@
 
-import { set_dropdown } from './run_version.js';
+import { exportAllDeclaration } from '@babel/types';
+import * as run_utils from './run_version';
+import { run } from 'jest-cli';
 
 test('test-run-dropdown', () => {
 
@@ -17,5 +19,14 @@ test('test-run-dropdown', () => {
         "repositories": ["repo1", "repo2", "repo3"]
   }
 
-  set_dropdown(fake_data, "repo1");
+  run_utils.setDropdown(fake_data, "repo1");
+  expect(document.getElementById('ProjectRepositoriesSelect').innerHTML).toBe('<option value="repo1">repo1</option><option value="repo2">repo2</option><option value="repo3">repo3</option>')
+
+
   });
+
+test("test params", () => {
+  run_utils.resolveParams();
+});
+
+

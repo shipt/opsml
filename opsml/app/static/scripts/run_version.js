@@ -1,16 +1,18 @@
 import { moduleExpression } from '@babel/types'; // eslint-disable-line no-unused-vars
-import { get_versions } from './version';
-import { error_to_page } from './error';
+import $ from 'jquery';
+import { getVersions } from './version';
+import { errorToPage } from './error';
 
 const REPO_NAMES_PATH = '/opsml/repository';
 
 // creates dropdown for repositories
 function setDropdown(data, repository) {
+  let providedRepo = repository;
   const { repositories } = data;
 
   // if repository is undefined, set it to the first repository
-  if (repository == undefined) {
-    repository = repositories[0];
+  if (providedRepo === undefined) {
+    [providedRepo] = repositories;
   }
 
   if (repositories.length > 0) {
@@ -19,13 +21,13 @@ function setDropdown(data, repository) {
     // remove all content from select before adding new content
     select.innerHTML = '';
 
-    for (let i = 0; i < repositories.length; i++) {
+    for (let i = 0; i < repositories.length; i += 1) {
       const opt = document.createElement('option');
       const repo = repositories[i];
       opt.value = repo;
       opt.innerHTML = repo;
 
-      if (repo == repository) {
+      if (repo === providedRepo) {
         opt.selected = true;
       }
 
@@ -45,33 +47,34 @@ function setDropdown(data, repository) {
 
 //
 function setPage(registry, repository, name, version) {
-  const repo_request = { registry, repository };
+  let providedName = name;
+  const repoRequest = { registry, repository };
 
   $.ajax({
     url: REPO_NAMES_PATH,
     type: 'GET',
     dataType: 'json',
-    data: repo_request,
+    data: repoRequest,
     success(data) {
       // get repository and names from dictionary
 
-      set_dropdown(data, repository);
+      setDropdown(data, repository);
 
-      if (name === undefined) {
-        name = data.names[0];
+      if (providedName === undefined) {
+        [providedName] = data.names;
       }
 
-      get_versions(registry, name, repository, version);
+      getVersions(registry, providedName, repository, version);
 
       // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
       // window.history.pushState('repo_page', null, url.toString());
     },
 
-    error(xhr, status, error) {
+    error(xhr, status, error) { // eslint-disable-line no-unused-vars
       // send request to error route on error
 
       const err = JSON.parse(xhr.responseText);
-      error_to_page(JSON.stringify(err));
+      errorToPage(JSON.stringify(err));
     },
   });
 
@@ -81,20 +84,37 @@ function setPage(registry, repository, name, version) {
   });
 }
 
-function setRunPage(registry, repository, name, version) {
-  if (repository == 'None') {
-    repository = undefined;
+
+function resolveParams(repository, name, version) {
+
+  let providedRepo = repository;
+  let providedName = name;
+  let providedVersion = version;
+
+  if (providedRepo === 'None') {
+    providedRepo = undefined;
   }
 
-  if (name == 'None') {
-    name = undefined;
+  if (providedName === 'None') {
+    providedName = undefined;
   }
 
-  if (version == 'None') {
-    version = undefined;
+  if (providedVersion === 'None') {
+    providedVersion = undefined;
   }
 
-  setPage(registry, repository, name, version);
+  return [providedRepo, providedName, providedVersion];
 }
 
-export { setRunPage, setDropdown };
+
+function setRunPage(registry, repository, name, version) {
+  let providedRepo = repository;
+  let providedName = name;
+  let providedVersion = version;
+
+  providedRepo, providedName, providedVersion = resolveParams(providedRepo, providedName, providedVersion);
+  setPage(registry, providedRepo, providedName, providedVersion);
+
+}
+
+export { setRunPage, setDropdown, setPage, resolveParams };

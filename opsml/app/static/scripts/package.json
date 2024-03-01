@@ -13,6 +13,7 @@
     "@babel/preset-env": "^7.24.0",
     "@babel/types": "^7.24.0",
     "babel-jest": "^29.7.0",
+    "jquery": "^3.7.1",
     "ts-jest": "^29.1.2"
   },
   "jest": {
