@@ -21,8 +21,8 @@
               <div class="card-body">
                 <h4>Model 
                   <div id="CardTabBox">
-                  <span><button id="metadata-button" type="button" class="btn btn-success" >Metadata</button></span>
-                  <span><button id="summary-button" type="button" class="btn btn-success">Summary</button></span>
+                  <button id="metadata-button" type="button" class="btn btn-success" >Metadata</button>
+                  <button id="summary-button" type="button" class="btn btn-success">Summary</button>
                   </div>
                 </h4>
               </div>
@@ -32,9 +32,9 @@
               <div class="card-body">
                 <h4>Data
                   <div id="CardTabBox">
-                    <span><button id="metadata-button" type="submit" class="btn btn-success">Metadata</button></span>
-                    <span><button id="summary-button" type="submit" class="btn btn-success" >Summary</button></span>
-                    <span><button id="profile-button" type="submit" class="btn btn-success" style="display: none;">Data Profile</button></span>
+                    <button id="metadata-button" type="submit" class="btn btn-success">Metadata</button>
+                    <button id="summary-button" type="submit" class="btn btn-success">Summary</button>
+                    <button id="data-profile-button" type="submit" class="btn btn-success" style="display: none;">Data Profile</button>
                   </div>
                 </h4>
               </div>
@@ -59,6 +59,12 @@
             <div class="card border-0" style="display: none; width:100%;" id="SummaryBox">
               {% include "include/components/model/summary.html" %}
             </div>
+
+            {% if registry == 'data' %}
+            <div id="ProfileBox" class="card border-0" style="display: None; width: 100%; border-radius: 0%;">
+              <iframe id="data-profile-html" style="min-height:950px;" class="html-iframe" width="100%" height="100%" frameborder="0" class></iframe>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>

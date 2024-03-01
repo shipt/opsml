@@ -22,6 +22,7 @@ function insert_data_metadata(data, datacard, metadata) {
         $("#CardBox").show();
         $("#ExtraBox").show();
         $("#SummaryBox").hide();
+        $("#ProfileBox").hide();
         $(this).addClass("active");
     }
 
@@ -198,9 +199,30 @@ function insert_summary(datacard, metadata) {
     document.getElementById("summary-button").onclick = function() {
         $("#CardBox").hide();
         $("#ExtraBox").hide();
+        $("#ProfileBox").hide();
         $("#SummaryBox").show();
         $(this).addClass("active");
     }
+}
+
+function insert_html_iframe(data) {
+
+    if (data["profile_uri"] !== null) {
+        $("#data-profile-button").show();
+        let html_iframe = document.getElementById("data-profile-html");
+        html_iframe.setAttribute("src", data["profile_uri"]);
+    }
+
+    // profile-button on click
+    document.getElementById("data-profile-button").onclick = function() {
+        $("#CardBox").hide();
+        $("#ExtraBox").hide();
+        $("#SummaryBox").hide();
+        $("#ProfileBox").show();
+        $(this).addClass("active");
+    }
+
+
 }
 
 function build_data_version_ui(data) {
@@ -211,6 +233,7 @@ function build_data_version_ui(data) {
     insert_data_metadata(data, datacard, metadata);
     insert_data_extras(data, datacard, metadata);
     insert_summary(datacard, metadata);
+    insert_html_iframe(data);
 
 }
 

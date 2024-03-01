@@ -343,79 +343,6 @@ p {
 
 }
 
-#metadata-button.btn-success {
-  font-size: 13px;
-  color: #04b78a;
-  letter-spacing: 1px;
-  line-height: 15px;
-  border: 2px solid #04b78a;
-  border-radius: 40px;
-  background: transparent;
-  transition: all 0.3s ease 0s;
-}
-
-#metadata-button.btn-success:hover {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
-#metadata-button.btn-success:active {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
-#metadata-button.btn-success:focus {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
-
-#summary-button.btn-success {
-  font-size: 13px;
-  color: #04b78a;
-  letter-spacing: 1px;
-  line-height: 15px;
-  border: 2px solid #04b78a;
-  border-radius: 40px;
-  background: transparent;
-  transition: all 0.3s ease 0s;
-}
-
-#summary-button.btn-success:hover {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
-#summary-button.btn-success:active {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
-#summary-button.btn-success:focus {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-#metadata-button.btn-success,
-#metrics-button.btn-success,
-#graphs-button.btn-success,
-#graphics-button.btn-success,
-#download-button.btn-success {
-  font-size: 13px;
-  color: #04b78a;
-  letter-spacing: 1px;
-  line-height: 15px;
-  border: 2px solid #04b78a;
-  border-radius: 40px;
-  background: transparent;
-  transition: all 0.3s ease 0s;
-}
-
 #CardDropdownSelect .dropdown-toggle {
   font-size: 13px;
   color: #04b78a;
@@ -445,6 +372,25 @@ p {
 
 }
 
+#summary-button.btn-success,
+#data-profile-button.btn-success,
+#metadata-button.btn-success,
+#metrics-button.btn-success,
+#graphs-button.btn-success,
+#graphics-button.btn-success,
+#download-button.btn-success {
+  font-size: 13px;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  border-radius: 40px;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#summary-button.btn-success:hover,
+#data-profile-button.btn-success:hover,
 #metadata-button.btn-success:hover,
 #metrics-button.btn-success:hover,
 #graphs-button.btn-success:hover,
@@ -455,6 +401,8 @@ p {
   border: 2px solid #04b78a;
 }
 
+#summary-button.btn-success:active,
+#data-profile-button.btn-success:active,
 #metadata-button.btn-success:active,
 #metrics-button.btn-success:active,
 #graphs-button.btn-success:active,
@@ -466,6 +414,8 @@ p {
 }
 
 
+#summary-button.btn-success:focus,
+#data-profile-button.btn-success:focus,
 #metadata-button.btn-success:focus,
 #metrics-button.btn-success:focus,
 #graphs-button.btn-success:focus,
