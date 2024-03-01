@@ -1,3 +1,4 @@
+import { error_to_page } from "./error";
 const REPO_NAMES_PATH = "/opsml/repository";
 
 // creates dropdown for repositories
@@ -140,9 +141,12 @@ function get_repo_names_page(registry, repository) {
  
         },
 
-        error: function() {
-            alert('error loading from database...');
-            }
+        error: function(xhr, status, error) {
+            // send request to error route on error
+            var err = JSON.parse(xhr.responseText);
+            error_to_page(JSON.stringify(err));
+            
+          }
         });
 
     

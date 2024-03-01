@@ -1,13 +1,12 @@
 import { get_versions } from './version.js';
+import { error_to_page } from './error.js';
 
 const REPO_NAMES_PATH = "/opsml/repository";
 
 
 // creates dropdown for repositories
 function set_dropdown(data, repository){
-
     var repositories = data["repositories"];
-
 
     // if repository is undefined, set it to the first repository
     if (repository == undefined) {
@@ -34,6 +33,7 @@ function set_dropdown(data, repository){
             select.appendChild(opt);
         }
     } else {
+
         var select = document.getElementById("ProjectRepositoriesSelect");
         // remove all content from select before adding new content
         select.innerHTML = "";
@@ -70,13 +70,15 @@ function set_page(registry, repository, name, version) {
             //let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             //window.history.pushState('repo_page', null, url.toString());
 
-            
- 
         },
 
-        error: function() {
-            alert('error loading from database...');
-            }
+        error: function(xhr, status, error) {
+            // send request to error route on error
+
+            var err = JSON.parse(xhr.responseText);
+            error_to_page(JSON.stringify(err));
+            
+          }
         });
 
     

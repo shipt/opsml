@@ -11,7 +11,6 @@ function set_nav_link(registry) {
     nav_link.classList.add("active");
 }
 
-
 function set_repository_page(registry, repository) {
 
         $("#card-version-page").hide();
@@ -24,7 +23,6 @@ function set_repository_page(registry, repository) {
         }
     
         get_repo_names_page(registry, repository);
-
         $("#repository-page").show();
     }
 

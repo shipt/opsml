@@ -1,6 +1,5 @@
 function insert_model_metadata(data, modelcard, metadata) {
     
-
     document.getElementById("metadata-interface").innerHTML = metadata.model_interface;
     document.getElementById("metadata-type").innerHTML = metadata.model_type;
 

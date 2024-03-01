@@ -118,7 +118,6 @@ function get_versions(registry, name, repository, version) {
 
             create_version_elements(card_versions, version, registry, name);
             
-          
             // set version in request
             request["version"] = version;
             set_card_view(request);
