@@ -1,10 +1,15 @@
 {
   "devDependencies": {
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/jest": "^29.5.12",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.2"
   },
   "scripts": {
     "test": "jest --verbose"
@@ -12,11 +17,11 @@
   "dependencies": {
     "@babel/preset-env": "^7.24.0",
     "@babel/types": "^7.24.0",
+    "@types/jquery": "^3.5.29",
     "babel-jest": "^29.7.0",
     "jquery": "^3.7.1",
     "prismjs": "^1.29.0",
-    "showdown": "^2.1.0",
-    "ts-jest": "^29.1.2"
+    "showdown": "^2.1.0"
   },
   "jest": {
     "testEnvironment": "jsdom"

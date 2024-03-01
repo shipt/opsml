@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES6", 
+        "module": "commonjs", 
+        "rootDir": "typescript/",
+        "outDir": "dist/",
+        "esModuleInterop": true,
+    },  
+    "include": [
+        "typescript/*"
+    ],
+    "exclude": [
+        "typescript/*.test.ts"
+    ]
+}

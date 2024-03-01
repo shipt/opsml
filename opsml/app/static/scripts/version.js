@@ -53,6 +53,8 @@ function setCardView(request) {
 // creates version element list for version page
 // card_versions: list of card versions
 // active_version: the active version
+// registry: the registry type
+// name: the card name
 function createVersionElements(cardVersions, activeVersion, registry, name) {
   // get the version list
   const versionHeader = document.getElementById('version-header');
@@ -146,4 +148,5 @@ function setVersionPage(registry, name, repository, version) {
 export {
   setVersionPage,
   getVersions,
+  createVersionElements,
 };
