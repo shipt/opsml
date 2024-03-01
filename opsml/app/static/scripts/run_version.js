@@ -1,9 +1,13 @@
+import { get_versions } from './version.js';
+
 const REPO_NAMES_PATH = "/opsml/repository";
 
+
 // creates dropdown for repositories
-function set_dropdown(data, registry, repository){
+function set_dropdown(data, repository){
 
     var repositories = data["repositories"];
+
 
     // if repository is undefined, set it to the first repository
     if (repository == undefined) {
@@ -12,7 +16,7 @@ function set_dropdown(data, registry, repository){
 
     if (repositories.length > 0) {
       
-        var select = document.getElementById("RepositoriesSelect");
+        var select = document.getElementById("ProjectRepositoriesSelect");
 
         // remove all content from select before adding new content
         select.innerHTML = "";
@@ -30,7 +34,7 @@ function set_dropdown(data, registry, repository){
             select.appendChild(opt);
         }
     } else {
-        var select = document.getElementById("RepositoriesSelect");
+        var select = document.getElementById("ProjectRepositoriesSelect");
         // remove all content from select before adding new content
         select.innerHTML = "";
     
@@ -40,25 +44,33 @@ function set_dropdown(data, registry, repository){
         select.appendChild(opt);
     }
 
-    return names[0]
-
 }
 
 //
-function set_repos(registry, repository) {
-    var uri_data = {"registry": registry, "repository": repository};
+function set_page(registry, repository, name, version) {
+    var repo_request = {"registry": registry, "repository": repository};
+
 
     $.ajax({
         url: REPO_NAMES_PATH,
         type: "GET",
         dataType:"json",
-        data: uri_data,
+        data: repo_request,
         success: function(data) {
             // get repository and names from dictionary
 
-            let results = set_dropdown(data, registry, repository);
+            set_dropdown(data, repository);
+
+            if (name === undefined) {
+                name = data["names"][0];
+            }
+
+            get_versions(registry, name, repository, version);
+
             //let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             //window.history.pushState('repo_page', null, url.toString());
+
+            
  
         },
 
@@ -68,18 +80,32 @@ function set_repos(registry, repository) {
         });
 
     
-    $('#RepositoriesSelect').select2().on('select2:select', function(e){
+    $('#ProjectRepositoriesSelect').select2().on('select2:select', function(e){
         let repo =  e.params.data.id;
-        get_repo_names_page(registry, repo);
+        set_dropdown(registry, repo);
     });
+
 
 
 }
 
 
-function set_run_page(registry, repository) {
+function set_run_page(registry, repository, name, version) {
 
-    set_repos(registry, repository);
+    if (repository == "None"){
+        repository = undefined;
+    }
+
+    if (name == "None"){
+        name = undefined;
+    }
+    
+    if (version == "None"){
+        version = undefined;
+    }
+
+
+    set_page(registry, repository, name, version);
 }
 
 export { set_run_page };

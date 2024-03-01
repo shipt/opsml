@@ -43,7 +43,6 @@ function set_page(registry, repository, name, version) {
     // return default model page
     } else if (registry === "run" ){
 
-       
         set_run_page(registry, repository);
     
     } else {

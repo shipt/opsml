@@ -49,10 +49,6 @@ function create_version_elements(card_versions, active_version, registry, name) 
 }
 
 
-function insert_data_metadata(data) {
-
-}
-
 
 // insert card data into the model card ui
 // data: card data from ajax response
@@ -105,7 +101,6 @@ function set_card_view(request){
 function get_versions(registry, name, repository, version) {
     var request = {"registry_type": registry, "repository": repository, "name": name};
 
-
     return $.ajax({
         url: LIST_CARD_PATH,
         type: "POST",
@@ -114,14 +109,15 @@ function get_versions(registry, name, repository, version) {
         data: JSON.stringify(request),
         success: function(data) {
             let card_versions = data["cards"];
-      
+
+            
             // check if version is not set
             if (version === undefined) {
                 version = card_versions[0]["version"];
             }
 
-
             create_version_elements(card_versions, version, registry, name);
+            
           
             // set version in request
             request["version"] = version;
@@ -162,5 +158,6 @@ function set_version_page(registry, name, repository, version){
 }
 
 export {
-    set_version_page
+    set_version_page,
+    get_versions
 }
