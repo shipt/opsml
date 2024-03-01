@@ -122,6 +122,7 @@ notebooks/
 .local_integration/
 .test_local.py
 lightning_logs/
+node_modules/
 
 # git
 **/*.orig

@@ -1,4 +1,4 @@
-function insert_model_metadata(data, modelcard, metadata) {
+function insertModelMetadata(data, modelcard, metadata) {
     
     document.getElementById("metadata-interface").innerHTML = metadata.model_interface;
     document.getElementById("metadata-type").innerHTML = metadata.model_type;
@@ -82,7 +82,7 @@ function insert_model_metadata(data, modelcard, metadata) {
 
 // insert tags into the model card ui
 // data: card data from ajax response
-function insert_model_tags(data) {
+function insertModelTags(data) {
     let runcard = data["runcard"];
 
     if (runcard !== null) {
@@ -105,7 +105,7 @@ function insert_model_tags(data) {
     } 
 }
 
-function insert_model_extras(data) {
+function insertModelExtras(data) {
     // hide extra buttons
     $("#Params").hide();
     $("#MetadataJson").hide();
@@ -188,7 +188,7 @@ function insert_model_extras(data) {
     }
 }
 
-function insert_model_summary(data, modelcard) {
+function insertModelSummary(modelcard) {
     
 
     let card_metadata = modelcard["metadata"];
@@ -247,15 +247,15 @@ function insert_model_summary(data, modelcard) {
 
 }
 
-function build_model_version_ui(data) {
+function buildModelVersionUI(data) {
     let modelcard = data["card"];
     let metadata = JSON.parse(data["metadata"]);
 
-    insert_model_metadata(data, modelcard, metadata);
-    insert_model_tags(data);
-    insert_model_extras(data);
-    insert_model_summary(data, modelcard);
+    insertModelMetadata(data, modelcard, metadata);
+    insertModelTags(data);
+    insertModelExtras(data);
+    insertModelSummary(data, modelcard);
 
 }
 
-export { build_model_version_ui };
+export { buildModelVersionUI };

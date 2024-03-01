@@ -1,4 +1,4 @@
-function insert_data_metadata(data, datacard, metadata) {
+function insertDataMetadata(data, datacard, metadata) {
     
 
     document.getElementById("metadata-interface").innerHTML = metadata["interface_type"];
@@ -29,7 +29,7 @@ function insert_data_metadata(data, datacard, metadata) {
 
 }
 
-function insert_data_extras(data, datacard, metadata) {
+function insertDataExtras(data, datacard, metadata) {
 
 
     if (data["data_splits"] !== null) {
@@ -152,7 +152,7 @@ function insert_data_extras(data, datacard, metadata) {
     }
 }
 
-function insert_summary(datacard, metadata) {
+function insertSummary(datacard, metadata) {
 
     if (metadata["description"]["summary"] !== null) {
         
@@ -205,7 +205,7 @@ function insert_summary(datacard, metadata) {
     }
 }
 
-function insert_html_iframe(data) {
+function insertHtmlIframe(data) {
 
     if (data["profile_uri"] !== null) {
         $("#data-profile-button").show();
@@ -225,16 +225,16 @@ function insert_html_iframe(data) {
 
 }
 
-function build_data_version_ui(data) {
+function buildDataVersionUI(data) {
 
     let datacard = data["card"];
     let metadata = datacard["metadata"];
 
-    insert_data_metadata(data, datacard, metadata);
-    insert_data_extras(data, datacard, metadata);
-    insert_summary(datacard, metadata);
-    insert_html_iframe(data);
+    insertDataMetadata(data, datacard, metadata);
+    insertDataExtras(data, datacard, metadata);
+    insertSummary(datacard, metadata);
+    insertHtmlIframe(data);
 
 }
 
-export { build_data_version_ui };
+export { buildDataVersionUI };

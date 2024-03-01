@@ -1,8 +1,8 @@
 const ACTIVE_CARD_PATH = "/opsml/ui/error";
 
-function error_to_page(message) {
+function errorToPage(message) {
 
-    var request = {"message": message};
+    let request = {"message": message};
 
     return $.ajax({
         url: ACTIVE_CARD_PATH,
@@ -12,7 +12,6 @@ function error_to_page(message) {
         data: JSON.stringify(request),
         success: function(data) {
 
-   
             document.open();
             document.write(data);
             document.close();
@@ -27,4 +26,4 @@ function error_to_page(message) {
     });
 }
 
-export { error_to_page };
+export { errorToPage };

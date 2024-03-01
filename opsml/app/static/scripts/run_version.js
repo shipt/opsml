@@ -1,113 +1,100 @@
-import { get_versions } from './version.js';
-import { error_to_page } from './error.js';
+import { moduleExpression } from '@babel/types'; // eslint-disable-line no-unused-vars
+import { get_versions } from './version';
+import { error_to_page } from './error';
 
-const REPO_NAMES_PATH = "/opsml/repository";
-
+const REPO_NAMES_PATH = '/opsml/repository';
 
 // creates dropdown for repositories
-function set_dropdown(data, repository){
-    var repositories = data["repositories"];
+function setDropdown(data, repository) {
+  const { repositories } = data;
 
-    // if repository is undefined, set it to the first repository
-    if (repository == undefined) {
-        repository = repositories[0];
+  // if repository is undefined, set it to the first repository
+  if (repository == undefined) {
+    repository = repositories[0];
+  }
+
+  if (repositories.length > 0) {
+    const select = document.getElementById('ProjectRepositoriesSelect');
+
+    // remove all content from select before adding new content
+    select.innerHTML = '';
+
+    for (let i = 0; i < repositories.length; i++) {
+      const opt = document.createElement('option');
+      const repo = repositories[i];
+      opt.value = repo;
+      opt.innerHTML = repo;
+
+      if (repo == repository) {
+        opt.selected = true;
+      }
+
+      select.appendChild(opt);
     }
+  } else {
+    const select = document.getElementById('ProjectRepositoriesSelect');
+    // remove all content from select before adding new content
+    select.innerHTML = '';
 
-    if (repositories.length > 0) {
-      
-        var select = document.getElementById("ProjectRepositoriesSelect");
-
-        // remove all content from select before adding new content
-        select.innerHTML = "";
-
-        for (var i = 0; i < repositories.length; i++) {
-            var opt = document.createElement('option');
-            var repo = repositories[i];
-            opt.value = repo;
-            opt.innerHTML = repo;
-
-            if (repo == repository) {
-                opt.selected = true;
-            }
-
-            select.appendChild(opt);
-        }
-    } else {
-
-        var select = document.getElementById("ProjectRepositoriesSelect");
-        // remove all content from select before adding new content
-        select.innerHTML = "";
-    
-        var opt = document.createElement('option');
-        opt.value = "No repositories found";
-        opt.innerHTML = "No repositories found";
-        select.appendChild(opt);
-    }
-
+    const opt = document.createElement('option');
+    opt.value = 'No repositories found';
+    opt.innerHTML = 'No repositories found';
+    select.appendChild(opt);
+  }
 }
 
 //
-function set_page(registry, repository, name, version) {
-    var repo_request = {"registry": registry, "repository": repository};
+function setPage(registry, repository, name, version) {
+  const repo_request = { registry, repository };
 
+  $.ajax({
+    url: REPO_NAMES_PATH,
+    type: 'GET',
+    dataType: 'json',
+    data: repo_request,
+    success(data) {
+      // get repository and names from dictionary
 
-    $.ajax({
-        url: REPO_NAMES_PATH,
-        type: "GET",
-        dataType:"json",
-        data: repo_request,
-        success: function(data) {
-            // get repository and names from dictionary
+      set_dropdown(data, repository);
 
-            set_dropdown(data, repository);
+      if (name === undefined) {
+        name = data.names[0];
+      }
 
-            if (name === undefined) {
-                name = data["names"][0];
-            }
+      get_versions(registry, name, repository, version);
 
-            get_versions(registry, name, repository, version);
+      // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
+      // window.history.pushState('repo_page', null, url.toString());
+    },
 
-            //let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
-            //window.history.pushState('repo_page', null, url.toString());
+    error(xhr, status, error) {
+      // send request to error route on error
 
-        },
+      const err = JSON.parse(xhr.responseText);
+      error_to_page(JSON.stringify(err));
+    },
+  });
 
-        error: function(xhr, status, error) {
-            // send request to error route on error
-
-            var err = JSON.parse(xhr.responseText);
-            error_to_page(JSON.stringify(err));
-            
-          }
-        });
-
-    
-    $('#ProjectRepositoriesSelect').select2().on('select2:select', function(e){
-        let repo =  e.params.data.id;
-        set_dropdown(registry, repo);
-    });
-
-
-
+  $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => {
+    const repo = e.params.data.id;
+    setDropdown(registry, repo);
+  });
 }
 
+function setRunPage(registry, repository, name, version) {
+  if (repository == 'None') {
+    repository = undefined;
+  }
 
-function set_run_page(registry, repository, name, version) {
+  if (name == 'None') {
+    name = undefined;
+  }
 
-    if (repository == "None"){
-        repository = undefined;
-    }
+  if (version == 'None') {
+    version = undefined;
+  }
 
-    if (name == "None"){
-        name = undefined;
-    }
-    
-    if (version == "None"){
-        version = undefined;
-    }
-
-
-    set_page(registry, repository, name, version);
+  setPage(registry, repository, name, version);
 }
 
-export { set_run_page };
+export { setRunPage, setDropdown };

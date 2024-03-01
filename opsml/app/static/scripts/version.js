@@ -1,13 +1,13 @@
-import {build_model_version_ui} from './model_version.js';
-import {build_data_version_ui} from './data_version.js';
-import { error_to_page } from './error.js';
+import { buildModelVersionUI } from './model_version';
+import { buildDataVersionUI } from './data_version';
+import { errorToPage } from './error';
 const LIST_CARD_PATH = "/opsml/cards/list";
 const ACTIVE_CARD_PATH = "/opsml/cards/ui";
 
 // creates version element list for version page
 // card_versions: list of card versions
 // active_version: the active version
-function create_version_elements(card_versions, active_version, registry, name) {
+function createVersionElements(card_versions, active_version, registry, name) {
 
     // get the version list
     let version_header = document.getElementById("version-header");
@@ -52,7 +52,7 @@ function create_version_elements(card_versions, active_version, registry, name) 
 
 // insert card data into the model card ui
 // data: card data from ajax response
-function build_card(data) {
+function buildCard(data) {
     // see 'include/components/model/metadata.html'
  
     document.getElementById("metadata-uid").innerHTML = data["card"]["uid"];
@@ -61,14 +61,13 @@ function build_card(data) {
     document.getElementById("metadata-repo").innerHTML = data["card"]["repository"];
 
     if (data["registry"] === "model") {
-        build_model_version_ui(data);
+        buildModelVersionUI(data);
     } else if (data["registry"] === "data") {
-        build_data_version_ui(data);
+        buildDataVersionUI(data);
     }
 }
 
-function set_card_view(request){
-
+function setCardView(request){
 
     return $.ajax({
         url: ACTIVE_CARD_PATH,
@@ -82,24 +81,24 @@ function set_card_view(request){
             data["registry"] = request["registry_type"];
 
             // set the card view
-            build_card(data);
+            buildCard(data);
 
-            var url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
+            let url = "/opsml/ui?registry=" + request["registry_type"] + "&repository=" + request["repository"] + "&name=" + request["name"] + "&version=" + request["version"];
             window.history.pushState("version_page", null, url.toString());
     
         },
 
         error: function(xhr, status, error) {
             // send request to error route on error
-            var err = JSON.parse(xhr.responseText);
-            error_to_page(JSON.stringify(err));
+            let err = JSON.parse(xhr.responseText);
+            errorToPage(JSON.stringify(err));
 
           }
     });
 }
 
-function get_versions(registry, name, repository, version) {
-    var request = {"registry_type": registry, "repository": repository, "name": name};
+function getVersions(registry, name, repository, version) {
+    let request = {"registry_type": registry, "repository": repository, "name": name};
 
     return $.ajax({
         url: LIST_CARD_PATH,
@@ -116,11 +115,11 @@ function get_versions(registry, name, repository, version) {
                 version = card_versions[0]["version"];
             }
 
-            create_version_elements(card_versions, version, registry, name);
+            createVersionElements(card_versions, version, registry, name);
             
             // set version in request
             request["version"] = version;
-            set_card_view(request);
+            setCardView(request);
 
         },
 
@@ -128,7 +127,7 @@ function get_versions(registry, name, repository, version) {
             // send request to error route on error
 
             var err = JSON.parse(xhr.responseText);
-            error_to_page(JSON.stringify(err));
+            errorToPage(JSON.stringify(err));
             
           }
     });
@@ -137,12 +136,12 @@ function get_versions(registry, name, repository, version) {
 }
 
 
-function set_version_page(registry, name, repository, version){
+function setVersionPage(registry, name, repository, version){
     // set active class on nav item
 
     $("#card-version-page").hide();
 
-    $.when(get_versions(registry, name, repository, version)).done(function() {
+    $.when(getVersions(registry, name, repository, version)).done(function() {
         $("#card-version-page").show();
     });
     
@@ -157,6 +156,6 @@ function set_version_page(registry, name, repository, version){
 }
 
 export {
-    set_version_page,
-    get_versions
+    setVersionPage,
+    getVersions
 }
