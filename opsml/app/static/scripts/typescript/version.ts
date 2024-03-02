@@ -176,4 +176,5 @@ export {
   setVersionPage,
   getVersions,
   createVersionElements,
+  Card,
 };
