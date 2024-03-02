@@ -297,4 +297,4 @@ function buildModelVersionUI(data: Data) {
   insertModelSummary(modelcard);
 }
 
-export { buildModelVersionUI, Data }; // eslint-disable-line
+export { buildModelVersionUI, Data, Card }; // eslint-disable-line

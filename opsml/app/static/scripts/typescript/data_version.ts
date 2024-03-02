@@ -261,4 +261,4 @@ function buildDataVersionUI(data: Data) {
   insertHtmlIframe(data);
 }
 
-export { buildDataVersionUI, Data }; // eslint-disable-line import/prefer-default-export
+export { buildDataVersionUI, Data, Card }; // eslint-disable-line import/prefer-default-export
