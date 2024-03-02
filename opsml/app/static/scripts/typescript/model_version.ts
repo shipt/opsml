@@ -224,6 +224,7 @@ function insertModelExtras(data: Data) {
   }
 
   const code: string = data.metadata;
+  // @ts-expect-error: Package is not defined
   const html: string = Prism.highlight(code, Prism.languages.json, 'json');
   document.getElementById('MetadataCode')!.innerHTML = html;
 
@@ -236,6 +237,7 @@ function insertModelSummary(modelcard: Card) {
   const cardMetadata: CardMetadata = modelcard.metadata;
 
   if (cardMetadata.description.summary !== null) {
+    // @ts-expect-error: Package is not defined
     const converter = new showdown.Converter();
     converter.setFlavor('github');
     const text: string = converter.makeHtml(cardMetadata.description.summary);
@@ -249,6 +251,7 @@ function insertModelSummary(modelcard: Card) {
 
   if (cardMetadata.description.sample_code !== null) {
     const code: string = cardMetadata.description.sample_code;
+    // @ts-expect-error: Package is not defined
     const html: string = Prism.highlight(code, Prism.languages.python, 'python');
     document.getElementById('user-sample-code')!.innerHTML = html;
     $('SampleCode').show();
@@ -268,6 +271,7 @@ function insertModelSummary(modelcard: Card) {
     modelcard.load_model() # load the train model
     `;
 
+  // @ts-expect-error: Package is not defined
   const html: string = Prism.highlight(opsmlCode, Prism.languages.python, 'python');
   document.getElementById('opsml-sample-code')!.innerHTML = html;
 

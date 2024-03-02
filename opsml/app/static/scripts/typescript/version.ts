@@ -117,7 +117,7 @@ function createVersionElements(
   }
 }
 
-function getVersions(registry:string, name:string, repository: string, version?: string) {
+function getVersions(registry:string, repository: string, name:string, version?: string) {
   let providedVersion = version;
   const request = { registry_type: registry, repository, name };
 
@@ -156,12 +156,12 @@ function getVersions(registry:string, name:string, repository: string, version?:
   });
 }
 
-function setVersionPage(registry:string, name:string, repository:string, version?:string) {
+function setVersionPage(registry:string, repository:string, name:string, version?:string) {
   // set active class on nav item
 
   $('#card-version-page').hide();
 
-  $.when(getVersions(registry, name, repository, version)).done(() => {
+  $.when(getVersions(registry, repository, name, version)).done(() => {
     $('#card-version-page').show();
   });
 

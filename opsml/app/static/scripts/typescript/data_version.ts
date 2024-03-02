@@ -64,6 +64,7 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
   if (data.data_splits !== null) {
     $('#split-button').show();
     const code: string = data.data_splits;
+    // @ts-expect-error: Package is not defined
     const html: string = Prism.highlight(code, Prism.languages.json, 'json');
     document.getElementById('DataSplitCode').innerHTML = html;
 
@@ -161,6 +162,7 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
       Object.keys(sqlLogic).forEach((key) => {
         const value: string = sqlLogic[key];
 
+        // @ts-expect-error: Package is not defined
         const htmlLogic = Prism.highlight(value, Prism.languages.sql, 'sql');
         sqlDiv.innerHTML += `
                 <h6><i style="color:#04b78a"></i> <font color="#999">${key}</font>
@@ -182,6 +184,7 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
 
 function insertSummary(datacard: Card, metadata: CardMetadata) {
   if (metadata.description.summary !== null) {
+    // @ts-expect-error: Package is not defined
     const converter = new showdown.Converter();
     converter.setFlavor('github');
     const text: string = converter.makeHtml(metadata.description.summary);
@@ -195,6 +198,7 @@ function insertSummary(datacard: Card, metadata: CardMetadata) {
 
   if (metadata.description.sample_code !== null) {
     const code: string = metadata.description.sample_code;
+    // @ts-expect-error: Package is not defined
     const html:string = Prism.highlight(code, Prism.languages.python, 'python');
     document.getElementById('user-sample-code').innerHTML = html;
     $('SampleCode').show();
@@ -214,6 +218,7 @@ function insertSummary(datacard: Card, metadata: CardMetadata) {
     datacard.load_data()
     `;
 
+  // @ts-expect-error: Package is not defined
   const html: string = Prism.highlight(opsmlCode, Prism.languages.python, 'python');
   document.getElementById('opsml-sample-code').innerHTML = html;
 

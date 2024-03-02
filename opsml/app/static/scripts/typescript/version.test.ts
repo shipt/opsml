@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+//@ts-nocheck
 import { createVersionElements, Card } from './version';
 
 test('test-create-version-elements', () => {

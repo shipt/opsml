@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+//@ts-nocheck
 import { setRepositoryPage } from './utils';
 import * as repoUtils from './repositories';
 

@@ -1,7 +1,12 @@
 {
   "devDependencies": {
+    "@babel/preset-env": "^7.24.0",
     "@babel/preset-typescript": "^7.23.3",
+    "@babel/types": "^7.24.0",
     "@types/jest": "^29.5.12",
+    "@types/jquery": "^3.5.29",
+    "@types/prismjs": "^1.26.3",
+    "@types/showdown": "^2.0.6",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
@@ -15,9 +20,6 @@
     "test": "jest --verbose typescript/"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.24.0",
-    "@babel/types": "^7.24.0",
-    "@types/jquery": "^3.5.29",
     "babel-jest": "^29.7.0",
     "jquery": "^3.7.1",
     "prismjs": "^1.29.0",

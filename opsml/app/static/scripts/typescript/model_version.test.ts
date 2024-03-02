@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import { buildModelVersionUI, Data } from './model_version';
 
 test('test-buildModelVersionUI', () => {
