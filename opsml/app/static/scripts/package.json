@@ -12,7 +12,7 @@
     "ts-jest": "^29.1.2"
   },
   "scripts": {
-    "test": "jest --verbose"
+    "test": "jest --verbose typescript/"
   },
   "dependencies": {
     "@babel/preset-env": "^7.24.0",
@@ -24,6 +24,16 @@
     "showdown": "^2.1.0"
   },
   "jest": {
-    "testEnvironment": "jsdom"
-  }
+    "testEnvironment": "jsdom",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
+  },
+  "eslintIgnore": [
+    "babel.config.js",
+    "typescript/*.test.js"
+  ]
 }

@@ -14,8 +14,26 @@
         "parser": "@typescript-eslint/parser"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "import"
       ],
-    "rules": {
+      "rules": {
+        "import/extensions": [
+           "error",
+           "ignorePackages",
+           {
+             "jsx": "never",
+             "ts": "never",
+             "tsx": "never",
+             "": "never"
+           }
+        ]
+     },
+    "settings": {
+    "import/resolver": {
+        "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+        }
     }
+ }
 }

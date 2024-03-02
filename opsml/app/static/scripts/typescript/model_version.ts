@@ -48,7 +48,7 @@ interface ArtifactUris {
 interface Runcard {
     uid: string;
     tags: {[key: string]: string};
-    parameters: {[key: string]: {value: string}};
+    parameters: {[key: string]: [{value: string}]};
     artifact_uris: {[key: string]: ArtifactUris};
 }
 
@@ -67,7 +67,7 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
 
   // check if onnx_uri exists
   if (metadata.onnx_uri !== null) {
-    const onnxUri = document.getElementById('onnx-uri')!;
+    const onnxUri: HTMLElement = document.getElementById('onnx-uri')!;
     onnxUri.setAttribute('href', `/opsml/files/download/ui?path=${metadata.onnx_uri}`);
     onnxUri.setAttribute('download', data.onnx_filename);
     $('#onnx-uri-display').show();
@@ -76,13 +76,13 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
   }
 
   // insert trained model
-  const modelUri = document.getElementById('model-uri')!;
+  const modelUri: HTMLElement = document.getElementById('model-uri')!;
   modelUri.setAttribute('href', `/opsml/files/download/ui?path=${metadata.model_uri}`);
   modelUri.setAttribute('download', data.model_filename);
 
   // check preprocessor
   if (data.processor_uris.preprocessor.filename !== null) {
-    const preprocessorUri = document.getElementById('preprocessor-uri')!;
+    const preprocessorUri: HTMLElement = document.getElementById('preprocessor-uri')!;
     preprocessorUri.setAttribute('href', `/opsml/files/download/ui?path=${data.processor_uris.preprocessor.rpath}`);
     preprocessorUri.setAttribute('download', data.processor_uris.preprocessor.filename);
     $('#preprocessor-uri-display').show();
@@ -92,7 +92,7 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
 
   // check tokenizer
   if (data.processor_uris.tokenizer.filename !== null) {
-    const tokenizerUri = document.getElementById('tokenizer-uri')!;
+    const tokenizerUri: HTMLElement = document.getElementById('tokenizer-uri')!;
     tokenizerUri.setAttribute('href', `/opsml/files/download/ui?path=${data.processor_uris.tokenizer.rpath}`);
     tokenizerUri.setAttribute('download', data.processor_uris.tokenizer.filename);
     $('#tokenizer-uri-display').show();
@@ -101,7 +101,7 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
   }
 
   if (data.processor_uris.feature_extractor.filename !== null) {
-    const extractorUri = document.getElementById('feature-extractor-uri')!;
+    const extractorUri: HTMLElement = document.getElementById('feature-extractor-uri')!;
     extractorUri.setAttribute('href', `/opsml/files/download/ui?path=${data.processor_uris.feature_extractor.rpath}`);
     extractorUri.setAttribute('download', data.processor_uris.feature_extractor.filename);
     $('#feature-extractor-uri-display').show();
@@ -110,11 +110,11 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
   }
 
   // auditcard
-  const auditLink = document.getElementById('audit-link')!;
+  const auditLink: HTMLElement = document.getElementById('audit-link')!;
   auditLink.setAttribute('href', `/opsml/audit/?repository=${modelcard.repository}&model=${modelcard.name}&version=${modelcard.version}`);
 
   if (modelcard.datacard_uid !== null) {
-    const datacardLink = document.getElementById('datacard-link')!;
+    const datacardLink: HTMLElement = document.getElementById('datacard-link')!;
     datacardLink.setAttribute('href', `/opsml/ui?registry=data&uid=${modelcard.datacard_uid}`);
     $('#datacard-uid-display').show();
   } else {
@@ -122,7 +122,7 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
   }
 
   if (data.runcard !== null) {
-    const runcardLink = document.getElementById('runcard-link')!;
+    const runcardLink: HTMLElement = document.getElementById('runcard-link')!;
     runcardLink.setAttribute('href', `/opsml/ui?registry=run&uid=${data.runcard.uid}`);
     $('#runcard-uid-display').show();
   } else {
@@ -146,11 +146,11 @@ function insertModelTags(data: Data) {
   const { runcard } = data;
   if (runcard !== null) {
     if (Object.keys(data.runcard.tags).length > 0) {
-      const modelTagBody = document.getElementById('tag-body')!;
+      const modelTagBody: HTMLElement = document.getElementById('tag-body')!;
       modelTagBody.innerHTML = '';
 
       Object.keys(data.runcard.tags).forEach((name) => {
-        const value = data.runcard.tags[name];
+        const value: string = data.runcard.tags[name];
         modelTagBody.innerHTML += `
                 <tr>
                     <td><font color="#999">${name}:</font></td>
@@ -172,11 +172,11 @@ function insertModelExtras(data: Data) {
   if (runcard !== null) {
     // check params
     if (Object.keys(runcard.parameters).length > 0) {
-      const paramBody = document.getElementById('param-body')!;
+      const paramBody: HTMLElement = document.getElementById('param-body')!;
       paramBody.innerHTML = '';
 
       Object.keys(data.runcard.parameters).forEach((name) => {
-        const value = data.runcard.parameters[name];
+        const value: [{'value': string}] = data.runcard.parameters[name];
         paramBody.innerHTML += `
                 <tr>
                     <td><font color="#999">${name}</font></td>
@@ -196,13 +196,13 @@ function insertModelExtras(data: Data) {
 
     // check artifacts
     if (Object.keys(runcard.artifact_uris).length > 0) {
-      const artifactBody = document.getElementById('artifact-uris')!;
+      const artifactBody: HTMLElement = document.getElementById('artifact-uris')!;
       artifactBody.innerHTML = '';
 
       Object.keys(runcard.artifact_uris).forEach((name) => {
-        const value = runcard.artifact_uris[name];
-        const pathParts = value.remote_path.split('/');
-        const downloadName = pathParts[pathParts.length - 1];
+        const value: ArtifactUris = runcard.artifact_uris[name];
+        const pathParts: string[] = value.remote_path.split('/');
+        const downloadName: string = pathParts[pathParts.length - 1];
 
         artifactBody.innerHTML += `
                 <tr>
@@ -229,8 +229,8 @@ function insertModelExtras(data: Data) {
     $('#artifact-button').hide();
   }
 
-  const code = data.metadata;
-  const html = Prism.highlight(code, Prism.languages.json, 'json');
+  const code: string = data.metadata;
+  const html: string = Prism.highlight(code, Prism.languages.json, 'json');
   document.getElementById('MetadataCode')!.innerHTML = html;
 
   document.getElementById('metadata-extra-button')!.onclick = function extraToggle() {
@@ -238,13 +238,13 @@ function insertModelExtras(data: Data) {
   };
 }
 
-function insertModelSummary(modelcard) {
-  const cardMetadata = modelcard.metadata;
+function insertModelSummary(modelcard: Card) {
+  const cardMetadata: CardMetadata = modelcard.metadata;
 
   if (cardMetadata.description.summary !== null) {
     const converter = new showdown.Converter();
     converter.setFlavor('github');
-    const text = converter.makeHtml(cardMetadata.description.summary);
+    const text: string = converter.makeHtml(cardMetadata.description.summary);
     document.getElementById('summary-markdown')!.innerHTML = text;
     $('#summary-display').show();
     $('#SummaryText').hide();
@@ -254,15 +254,15 @@ function insertModelSummary(modelcard) {
   }
 
   if (cardMetadata.description.sample_code !== null) {
-    const code = cardMetadata.description.sample_code;
-    const html = Prism.highlight(code, Prism.languages.python, 'python');
+    const code: string = cardMetadata.description.sample_code;
+    const html: string = Prism.highlight(code, Prism.languages.python, 'python');
     document.getElementById('user-sample-code')!.innerHTML = html;
     $('SampleCode').show();
   } else {
     $('#SampleCode').hide();
   }
 
-  const opsmlCode = `
+  const opsmlCode: string = `
     from opsml import CardRegistry
 
     model_registry = CardRegistry("model")
@@ -274,7 +274,7 @@ function insertModelSummary(modelcard) {
     modelcard.load_model() # load the train model
     `;
 
-  const html = Prism.highlight(opsmlCode, Prism.languages.python, 'python');
+  const html: string = Prism.highlight(opsmlCode, Prism.languages.python, 'python');
   document.getElementById('opsml-sample-code')!.innerHTML = html;
 
   // summary-button on click
@@ -287,9 +287,9 @@ function insertModelSummary(modelcard) {
   };
 }
 
-function buildModelVersionUI(data) {
-  const modelcard = data.card;
-  const metadata = JSON.parse(data.metadata);
+function buildModelVersionUI(data: Data) {
+  const modelcard: Card = data.card;
+  const metadata: ModelMetadata = JSON.parse(data.metadata);
 
   insertModelMetadata(data, modelcard, metadata);
   insertModelTags(data);
@@ -297,4 +297,4 @@ function buildModelVersionUI(data) {
   insertModelSummary(modelcard);
 }
 
-export { buildModelVersionUI }; // eslint-disable-line
+export { buildModelVersionUI, Data }; // eslint-disable-line

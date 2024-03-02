@@ -1,9 +1,7 @@
-import { buildModelVersionUI } from "./model_version";
+import { buildModelVersionUI, Data } from './model_version';
 
 test('test-buildModelVersionUI', () => {
-
-
-    // Set up our document body
+  // Set up our document body
   document.body.innerHTML = `
   <div class="card-body">
       <h4>Data
@@ -54,62 +52,63 @@ test('test-buildModelVersionUI', () => {
       <div id="SampleCode"></div>
       <div id="opsml-sample-code"></div>
   </div>
-  `
+  `;
 
-  let fakeData = {
-    "card": {
-      "name": "test",
-      "repository": "test",
-      "version": "test",
-      "uid": "test",
-      "datacard_uid": "test",
-      "metadata": {
-        "description": {
-          "summary": "test", 
-          "sample_code": "test"
-        }
-      },
-    },
-    "metadata":JSON.stringify({
-        "model_interface": "test",
-        "model_type": "test",
-        "onnx_uri": "test",
-        "model_uri": "test",
-    }),
-    "onnx_filename": "test",
-    "model_filename": "test",
-    "processor_uris": {
-      "preprocessor": 
-        {
-          "filename": "test",
-          "rpath" : "test"
+  const fakeData = ({
+    card: {
+      name: 'test',
+      repository: 'test',
+      version: 'test',
+      uid: 'test',
+      datacard_uid: 'test',
+      metadata: {
+        description: {
+          summary: 'test',
+          sample_code: 'test',
         },
-      "tokenizer" :{
-        "filename": "test",
-        "rpath" : "test"
       },
-      "feature_extractor" :{
-        "filename": "test",
-        "rpath" : "test"
-      }
     },
-    "runcard": {
-      "uid": "test",
-      "tags": {"var1": "var1"},
-      "parameters": {"var1": [{"value": "test"}]},
-      "artifact_uris": {"var1": {"remote_path": "test/test.txt"}},
-    }
-    }
-  buildModelVersionUI(fakeData)
+    metadata: JSON.stringify({
+      model_interface: 'test',
+      model_type: 'test',
+      onnx_uri: 'test',
+      model_uri: 'test',
+    }),
+    onnx_filename: 'test',
+    model_filename: 'test',
+    processor_uris: {
+      preprocessor:
+        {
+          filename: 'test',
+          rpath: 'test',
+        },
+      tokenizer: {
+        filename: 'test',
+        rpath: 'test',
+      },
+      feature_extractor: {
+        filename: 'test',
+        rpath: 'test',
+      },
+    },
+    runcard: {
+      uid: 'test',
+      tags: { var1: 'var1' },
+      parameters: { var1: [{ value: 'test' }] },
+      artifact_uris: { var1: { remote_path: 'test/test.txt' } },
+    },
+  } as unknown) as Data;
+
+  buildModelVersionUI(fakeData);
   expect(document.getElementById('metadata-interface')?.innerHTML).toBe('test');
   expect(document.getElementById('metadata-type')?.innerHTML).toBe('test');
-  expect(document.getElementById('onnx-uri')?.getAttribute('href')).toBe(`/opsml/files/download/ui?path=test`);
-  expect(document.getElementById('model-uri')?.getAttribute('href'))?.toBe(`/opsml/files/download/ui?path=test`);
+  expect(document.getElementById('onnx-uri')?.getAttribute('href')).toBe('/opsml/files/download/ui?path=test');
+  expect(document.getElementById('model-uri')?.getAttribute('href'))?.toBe('/opsml/files/download/ui?path=test');
   expect(document.getElementById('preprocessor-uri')?.getAttribute('href')).toBe(`/opsml/files/download/ui?path=${fakeData.processor_uris.preprocessor.rpath}`);
   expect(document.getElementById('tokenizer-uri')?.getAttribute('href')).toBe(`/opsml/files/download/ui?path=${fakeData.processor_uris.tokenizer.rpath}`);
   expect(document.getElementById('feature-extractor-uri')?.getAttribute('href')).toBe(`/opsml/files/download/ui?path=${fakeData.processor_uris.feature_extractor.rpath}`);
-  expect(document.getElementById('datacard-link')?.getAttribute('href')).toBe(`/opsml/ui?registry=data&uid=test`);
-  expect(document.getElementById('runcard-link')?.getAttribute('href')).toBe(`/opsml/ui?registry=run&uid=test`);
+  expect(document.getElementById('datacard-link')?.getAttribute('href')).toBe('/opsml/ui?registry=data&uid=test');
+  expect(document.getElementById('runcard-link')?.getAttribute('href')).toBe('/opsml/ui?registry=run&uid=test');
   expect(document.getElementById('tag-body')?.innerHTML).not.toBe('');
   expect(document.getElementById('param-body')?.innerHTML).not.toBe('');
   expect(document.getElementById('artifact-uris')?.innerHTML).not.toBe('');
@@ -117,5 +116,4 @@ test('test-buildModelVersionUI', () => {
   expect(document.getElementById('summary-markdown')?.innerHTML).not.toBe('');
   expect(document.getElementById('user-sample-code')?.innerHTML).not.toBe('');
   expect(document.getElementById('opsml-sample-code')?.innerHTML).not.toBe('');
-
 });

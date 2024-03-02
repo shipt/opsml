@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
-        "target": "ES6", 
-        "module": "commonjs", 
+        "module": "es6", 
         "rootDir": "typescript/",
-        "outDir": "dist/",
+        "outDir": "js/",
         "esModuleInterop": true,
+        "moduleResolution":"node",
+        "lib": ["ES2022"],
     },  
     "include": [
         "typescript/*"
