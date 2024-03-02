@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import { buildModelVersionUI } from './model_version';
-import { buildDataVersionUI } from './data_version';
+import { buildModelVersionUI } from './model_version.js';
+import { buildDataVersionUI } from './data_version.js';
 import { errorToPage } from './error';
 import * as dataVer from './data_version';
 import * as modelVer from './model_version';
