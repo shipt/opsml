@@ -1,7 +1,5 @@
-import { moduleExpression } from '@babel/types'; // eslint-disable-line no-unused-vars
-import $ from 'jquery';
-import { getVersions } from './version.js';
-import { errorToPage } from './error.js';
+import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
+import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 
 const REPO_NAMES_PATH = '/opsml/repository';
 
@@ -70,7 +68,7 @@ function setPage(registry, repository, name, version) {
       // window.history.pushState('repo_page', null, url.toString());
     },
 
-    error(xhr, status, error) { // eslint-disable-line no-unused-vars
+    error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       // send request to error route on error
 
       const err = JSON.parse(xhr.responseText);

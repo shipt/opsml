@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 const ACTIVE_CARD_PATH: string = '/opsml/ui/error';
 
 function errorToPage(message: string) {

@@ -7,9 +7,13 @@
 {% block content %}
 
 
-
 <body id="ArtifactPage">
-  
+
+  <div id="registry" value="{{ registry }}" style="display: none;"></div>
+  <div id="name" value="{{ name }}" style="display: none;"></div>
+  <div id="repository" value="{{ repository }}" style="display: none;"></div>
+  <div id="version" value="{{ version }}" style="display: none;"></div>
+
   <div>
     <a id="attribution-button" class="btn btn-success active" href="/opsml/ui/attribution" >Attributions</a>
   </div>
@@ -58,17 +62,18 @@
 <script src="/static/chart/modules/export-data.js"></script>
 <script src="/static/chart/modules/accessibility.js"></script>
 <script type="module">
-  import { set_nav_link, set_page } from '/static/scripts/utils.js';
+  import { setNavLink, setPage } from '/static/scripts/js/utils.js';
+  
 
   $( document ).ready(function() {
-    let registry = "{{ registry }}";
-    let name   = "{{ name }}";
-    let repository = "{{ repository }}";
-    let version = "{{ version }}";
-    set_nav_link(registry);
 
+    let registry =  document.getElementById("registry").getAttribute ("value")
+    let name =  document.getElementById("name").getAttribute ("value")
+    let repository =  document.getElementById("repository").getAttribute ("value")
+    let version =  document.getElementById("version").getAttribute ("value")
 
-    set_page(registry, repository, name, version);
+    setNavLink(registry);
+    setPage(registry, repository, name, version);
 
   });
 

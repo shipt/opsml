@@ -1,6 +1,4 @@
 /* eslint-disable */
-
-import { exportAllDeclaration } from '@babel/types';
 import * as repo_utils from './repositories';
 
 test('test-dropdown', () => {

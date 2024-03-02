@@ -30,7 +30,10 @@
     ],
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
-    }
+    },
+    "setupFiles": [
+      "./setup-jest.js"
+    ]
   },
   "eslintIgnore": [
     "babel.config.js",

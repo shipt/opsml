@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 
 const REPO_NAMES_PATH: string = '/opsml/repository';
@@ -119,7 +118,7 @@ function setDropdown(data: RepositoryData, registry: string, repository?: string
   const available: HTMLElement = document.getElementById('available');
   available.classList.add('active');
 
-  const results: string[] = [registry, repository];
+  const results: string[] = [registry, providedRepo];
   return results;
 }
 

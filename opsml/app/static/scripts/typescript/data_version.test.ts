@@ -1,4 +1,3 @@
-import { exportAllDeclaration } from '@babel/types'; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { buildDataVersionUI, Data } from './data_version';
 
 // write test for buildDataVersionUI

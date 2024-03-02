@@ -1,9 +1,3 @@
-import * as Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-python';
-import $ from 'jquery';
-import showdown from 'showdown';
-
 interface CardMetadata {
     description: {
         summary: string;

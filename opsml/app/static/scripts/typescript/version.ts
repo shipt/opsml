@@ -1,7 +1,6 @@
-import $ from 'jquery';
-import { buildModelVersionUI } from './model_version.js';
-import { buildDataVersionUI } from './data_version.js';
-import { errorToPage } from './error';
+import { buildModelVersionUI } from './model_version.js'; // eslint-disable-line import/no-unresolved
+import { buildDataVersionUI } from './data_version.js'; // eslint-disable-line import/no-unresolved
+import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 import * as dataVer from './data_version';
 import * as modelVer from './model_version';
 
