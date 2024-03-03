@@ -98,6 +98,9 @@ async def opsml_repositories(
 
     repositories = _registry._registry.unique_repositories
 
+    if not repositories:
+        return {"repositories": [], "names": []}
+
     if repository is None:
         repository = repositories[0]
 
