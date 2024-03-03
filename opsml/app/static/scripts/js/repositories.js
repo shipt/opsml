@@ -102,14 +102,10 @@ function getRepoNamesPage(registry, repository) {
         success: function (data) {
             // get repository and names from dictionary
             var results = setDropdown(data, registry, repository);
-
-            // check if repository is undefined
-            if (results[1] === undefined) {
-                var url = "/opsml/ui?registry=".concat(results[0]);
-            } else {
-                var url = "/opsml/ui?registry=".concat(results[0], "&repository=").concat(results[1]);
+            var url = '/opsml/ui?registry='.concat(results[0]);
+            if (results[1] !== undefined) {
+                url = url.concat('&repository=').concat(results[1]);
             }
-
             window.history.pushState('repo_page', null, url.toString());
         },
         error: function (xhr, status, error) {

@@ -135,7 +135,12 @@ function getRepoNamesPage(registry:string, repository:string) {
       // get repository and names from dictionary
 
       const results: string[] = setDropdown(data, registry, repository);
-      const url: string = `/opsml/ui?registry=${results[0]}&repository=${results[1]}`;
+      let url: string = '/opsml/ui?registry='.concat(results[0]);
+
+      if (results[1] !== undefined) {
+        url = url.concat('&repository=').concat(results[1]);
+      }
+
       window.history.pushState('repo_page', null, url.toString());
     },
 
