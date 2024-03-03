@@ -1,10 +1,15 @@
 import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 
-const REPO_NAMES_PATH = '/opsml/repository';
+const REPO_NAMES_PATH: string = '/opsml/repository';
+
+interface Data {
+  repositories: string[];
+  names: string[];
+}
 
 // creates dropdown for repositories
-function setDropdown(data, repository) {
+function setDropdown(data: Data, repository?: string) {
   let providedRepo = repository;
   const { repositories } = data;
 
@@ -14,14 +19,14 @@ function setDropdown(data, repository) {
   }
 
   if (repositories.length > 0) {
-    const select = document.getElementById('ProjectRepositoriesSelect');
+    const select: HTMLElement = document.getElementById('ProjectRepositoriesSelect');
 
     // remove all content from select before adding new content
     select.innerHTML = '';
 
     for (let i = 0; i < repositories.length; i += 1) {
-      const opt = document.createElement('option');
-      const repo = repositories[i];
+      const opt: HTMLOptionElement = document.createElement('option');
+      const repo: string = repositories[i];
       opt.value = repo;
       opt.innerHTML = repo;
 
@@ -32,19 +37,28 @@ function setDropdown(data, repository) {
       select.appendChild(opt);
     }
   } else {
-    const select = document.getElementById('ProjectRepositoriesSelect');
+    const select: HTMLElement = document.getElementById('ProjectRepositoriesSelect');
     // remove all content from select before adding new content
     select.innerHTML = '';
 
-    const opt = document.createElement('option');
+    const opt: HTMLOptionElement = document.createElement('option');
     opt.value = 'No repositories found';
     opt.innerHTML = 'No repositories found';
     select.appendChild(opt);
   }
 }
 
-//
-function setPage(registry, repository, name, version) {
+// sets page for run registry
+// registry: string
+// repository: string
+// name: string
+// version: string
+function setPage(
+  registry: string,
+  repository:string,
+  name?: string,
+  version?: string,
+) {
   let providedName = name;
   const repoRequest = { registry, repository };
 
@@ -77,12 +91,16 @@ function setPage(registry, repository, name, version) {
   });
 
   $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => {
-    const repo = e.params.data.id;
-    setDropdown(registry, repo);
+    // const repo = e.params.data.id;
+    // setDropdown(registry, repo);
   });
 }
 
-function resolveParams(repository, name, version) {
+function resolveParams(
+  repository: string, 
+  name: string, 
+  version: string) {
+    
   let providedRepo = repository;
   let providedName = name;
   let providedVersion = version;
@@ -102,7 +120,12 @@ function resolveParams(repository, name, version) {
   return [providedRepo, providedName, providedVersion];
 }
 
-function setRunPage(registry, repository, name, version) {
+function setRunPage(
+  registry:string,
+  repository:string,
+  name:string,
+  version:string,
+) {
   let providedRepo = repository;
   let providedName = name;
   let providedVersion = version;

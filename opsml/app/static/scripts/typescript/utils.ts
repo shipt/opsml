@@ -2,6 +2,13 @@ import { getRepoNamesPage } from './repositories.js'; // eslint-disable-line imp
 import { setVersionPage } from './version.js'; // eslint-disable-line import/no-unresolved
 import { setRunPage } from './run_version.js'; // eslint-disable-line import/no-unresolved
 
+// add select2 to jquery typing
+declare global {
+  interface JQuery {
+      select2(): any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  }
+}
+
 // set active class on nav item
 // registry: string
 function setNavLink(registry: string) {
