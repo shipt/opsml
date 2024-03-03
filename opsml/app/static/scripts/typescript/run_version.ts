@@ -90,17 +90,17 @@ function setPage(
     },
   });
 
-  $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => {
+  $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     // const repo = e.params.data.id;
     // setDropdown(registry, repo);
   });
 }
 
 function resolveParams(
-  repository: string, 
-  name: string, 
-  version: string) {
-    
+  repository: string,
+  name: string,
+  version: string,
+) {
   let providedRepo = repository;
   let providedName = name;
   let providedVersion = version;
