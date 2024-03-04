@@ -581,7 +581,7 @@ p {
   display: grid;
   grid-template-columns: repeat(auto-fit, 20%);
   column-gap: 3%;
-  row-gap: 5%;
+  row-gap: 12%;
   min-width: 10%;
 }
 
