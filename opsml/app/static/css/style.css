@@ -244,10 +244,8 @@ p {
 
   
 #MainNav  {
-    background: #241239;
-    border: none;
-    border-radius: 0;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    background: rgb(75, 57, 120);
+    box-shadow:  0 4px 0 0 black;
     color: white !important;
     width: 100%;
     position: fixed;
