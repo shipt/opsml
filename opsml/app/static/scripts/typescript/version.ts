@@ -20,6 +20,7 @@ interface Card {
     version: string;
     date: string;
     repository: string;
+    name: string;
     }
 
 // insert card data into the model card ui
@@ -77,6 +78,10 @@ function createVersionElements(
   registry:string,
   name:string,
 ) {
+
+  // set active name
+  var activeName: string = name;
+
   // get the version list
   const versionHeader: HTMLElement = document.getElementById('version-header');
   versionHeader.innerHTML = name;
@@ -86,6 +91,8 @@ function createVersionElements(
 
   // loop through each item and create an "a" tag for each version
   for (let i = 0; i < cardVersions.length; i += 1) {
+
+    var cardName: string = cardVersions[i].name;
     const version: Card = cardVersions[i];
     const versionLink: HTMLAnchorElement = document.createElement('a');
 
@@ -94,7 +101,10 @@ function createVersionElements(
     versionLink.dataset.version = version.version;
     versionLink.onclick = function setCardRequest() {
       const request: CardRequest = {
-        registry_type: registry, repository: version.repository, name, version: version.version,
+        registry_type: registry, 
+        repository: version.repository, 
+        name: cardName, version: 
+        version.version,
       };
       setCardView(request);
 
@@ -107,18 +117,26 @@ function createVersionElements(
     };
 
     // set the active version
-    if (version.version === activeVersion) {
+    if (version.version === activeVersion && activeName === version.name) {
       versionLink.setAttribute('class', 'list-group-item list-group-item-action active');
     } else {
       versionLink.setAttribute('class', 'list-group-item list-group-item-action');
     }
-    versionLink.innerHTML = `v${version.version}--${version.date}`;
+
+    if (registry === 'run') {
+      versionLink.innerHTML = "v".concat(version.name, "--").concat(version.date);
+    } else {
+        versionLink.innerHTML = "v".concat(version.version, "--").concat(version.date);
+    }
+
     versionList.appendChild(versionLink);
   }
 }
 
 function getVersions(registry:string, repository: string, name:string, version?: string) {
   let providedVersion = version;
+  var providedName = name;
+
   const request = { registry_type: registry, repository, name };
 
   return $.ajax({
@@ -135,13 +153,17 @@ function getVersions(registry:string, repository: string, name:string, version?:
         providedVersion = cardVersions[0].version;
       }
 
-      createVersionElements(cardVersions, providedVersion, registry, name);
+      if (providedName === undefined) {
+        providedName = cardVersions[0].name;
+      }
+
+      createVersionElements(cardVersions, providedVersion, registry, providedName);
 
       // set version in request
       const cardRequest: CardRequest = {
         registry_type: registry,
         repository,
-        name,
+        name: providedName,
         version: providedVersion,
       };
       setCardView(cardRequest);

@@ -47,21 +47,28 @@ function setCardView(request) {
 // registry: the registry type
 // name: the card name
 function createVersionElements(cardVersions, activeVersion, registry, name) {
+    // set active name
+    var activeName = name;
+
     // get the version list
     var versionHeader = document.getElementById('version-header');
     versionHeader.innerHTML = name;
     var versionList = document.getElementById('version-list');
     versionList.innerHTML = ''; // clear the version list
+
+
     var _loop_1 = function (i) {
+        var cardName = cardVersions[i].name;
         var version = cardVersions[i];
         var versionLink = document.createElement('a');
+
         // version_link should be clickable
         versionLink.href = '#';
         versionLink.dataset.version = version.version;
         versionLink.onclick = function setCardRequest() {
             var request = {
                 registry_type: registry, repository: version.repository,
-                name: name,
+                name: cardName,
                 version: version.version,
             };
             setCardView(request);
@@ -73,14 +80,20 @@ function createVersionElements(cardVersions, activeVersion, registry, name) {
             this.setAttribute('class', 'list-group-item list-group-item-action active');
         };
         // set the active version
-        if (version.version === activeVersion) {
+        if (version.version === activeVersion && activeName === version.name) {
             versionLink.setAttribute('class', 'list-group-item list-group-item-action active');
         }
         else {
             versionLink.setAttribute('class', 'list-group-item list-group-item-action');
         }
-        versionLink.innerHTML = "v".concat(version.version, "--").concat(version.date);
+
+        if (registry === 'run') {
+            versionLink.innerHTML = "v".concat(version.name, "--").concat(version.date);
+        } else {
+            versionLink.innerHTML = "v".concat(version.version, "--").concat(version.date);
+        }
         versionList.appendChild(versionLink);
+        
     };
     // loop through each item and create an "a" tag for each version
     for (var i = 0; i < cardVersions.length; i += 1) {
@@ -89,7 +102,11 @@ function createVersionElements(cardVersions, activeVersion, registry, name) {
 }
 function getVersions(registry, repository, name, version) {
     var providedVersion = version;
+    var providedName = name;
+
     var request = { registry_type: registry, repository: repository, name: name };
+
+
     return $.ajax({
         url: LIST_CARD_PATH,
         type: 'POST',
@@ -98,16 +115,22 @@ function getVersions(registry, repository, name, version) {
         data: JSON.stringify(request),
         success: function (data) {
             var cardVersions = data.cards;
+
             // check if version is not set
             if (providedVersion === undefined) {
                 providedVersion = cardVersions[0].version;
             }
-            createVersionElements(cardVersions, providedVersion, registry, name);
+
+            if (providedName === undefined) {
+                providedName = cardVersions[0].name;
+            }
+
+            createVersionElements(cardVersions, providedVersion, registry, providedName);
             // set version in request
             var cardRequest = {
                 registry_type: registry,
                 repository: repository,
-                name: name,
+                name: providedName,
                 version: providedVersion,
             };
             setCardView(cardRequest);

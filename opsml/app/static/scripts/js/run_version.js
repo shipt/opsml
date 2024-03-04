@@ -2,9 +2,9 @@ import { getVersions } from './version.js'; // eslint-disable-line import/no-unr
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
 // creates dropdown for repositories
-function setDropdown(data, repository) {
+function setDropdown(repositories, repository) {
     var providedRepo = repository;
-    var repositories = data.repositories;
+    var repositories = repositories;
     // if repository is undefined, set it to the first repository
     if (providedRepo === undefined) {
         providedRepo = repositories[0];
@@ -41,7 +41,10 @@ function setDropdown(data, repository) {
 // version: string
 function setPage(registry, repository, name, version) {
     var providedName = name;
+    var providedRepo = repository;
     var repoRequest = { registry: registry, repository: repository };
+
+   
     $.ajax({
         url: REPO_NAMES_PATH,
         type: 'GET',
@@ -49,13 +52,28 @@ function setPage(registry, repository, name, version) {
         data: repoRequest,
         success: function (data) {
             // get repository and names from dictionary
-            setDropdown(data, repository);
+            setDropdown(data.repositories, repository);
+
             if (providedName === undefined) {
                 providedName = data.names[0];
             }
-            getVersions(registry, providedName, repository, version);
+
+            if (providedRepo === undefined) {
+                providedRepo = data.repositories[0];
+            }
+
+            // we want all versions and names for a given repository
+            // do not need to send version or name
+            getVersions(registry, providedRepo);
+            
             // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             // window.history.pushState('repo_page', null, url.toString());
+
+            $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
+                const repo = e.params.data.id;
+                setDropdown(data.repositories, repo);
+            });
+
         },
         error: function (xhr, status, error) {
             // send request to error route on error
@@ -63,10 +81,7 @@ function setPage(registry, repository, name, version) {
             errorToPage(JSON.stringify(err));
         },
     });
-    $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
-        // const repo = e.params.data.id;
-        // setDropdown(registry, repo);
-    });
+
 }
 function resolveParams(repository, name, version) {
     var providedRepo = repository;
