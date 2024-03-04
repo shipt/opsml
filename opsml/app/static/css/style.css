@@ -21,6 +21,8 @@ body {
     font-weight: normal;
     background-image: url( '/static/images/opsml-background2.svg' );
     min-height: 100vh;
+    min-width: 50vw;
+
 }
 
 
@@ -170,7 +172,7 @@ p {
 
 
 .list-group .active {
-    background-color: #5d0fb778;
+    background-color: rgb(75, 57, 120);
     border-color: #5e0fb7;
     border: none;
     color: white;
@@ -575,6 +577,13 @@ p {
     background-color: #241239;
 }
 
+#artifact-card-div {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 20%);
+  column-gap: 3%;
+  row-gap: 5%;
+  min-width: 10%;
+}
 
 #artifact-card:hover{
     transform: scale(1.05);
@@ -582,12 +591,14 @@ p {
 }
 
 #artifact-card {
-    width: fit-content;
     background-repeat: no-repeat;
     background-position: right;
     background-size: 80px;
     border-radius: 25px !important;
     box-shadow:  -8px 8px 0 0 black;
+    min-width: 20%;
+  
+    
     
 }
 

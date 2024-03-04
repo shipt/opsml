@@ -62,15 +62,10 @@ function setDropdown(data: RepositoryData, registry: string, repository?: string
     artifactCardDiv.innerHTML = '';
 
     for (let i = 0; i < names.length; i += 1) {
-      const cardOuterDiv: HTMLDivElement = document.createElement('div');
-      cardOuterDiv.className = 'col-12';
 
       const card: HTMLDivElement = document.createElement('div');
-      card.className = 'card text-left rounded m-1';
-      card.setAttribute('style', 'width: 14rem;');
+      card.className = 'card text-left rounded';
       card.id = 'artifact-card';
-
-      cardOuterDiv.appendChild(card);
 
       const cardBody: HTMLDivElement = document.createElement('div');
       cardBody.className = 'card-body';
@@ -109,8 +104,7 @@ function setDropdown(data: RepositoryData, registry: string, repository?: string
 
       cardColImg.appendChild(cardImg);
       cardRow.appendChild(cardColImg);
-
-      artifactCardDiv.appendChild(cardOuterDiv);
+      artifactCardDiv.appendChild(card);
     }
   }
 

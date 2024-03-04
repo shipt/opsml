@@ -58,13 +58,23 @@ function setDropdown(data, registry, repository) {
     const artifactCardDiv = document.getElementById('artifact-card-div');
     artifactCardDiv.innerHTML = '';
 
+    // create 4 cards per row evenly spaced
+    var arrays = [], size = 4;
+
+    while (names.length > 0) {
+      arrays.push(names.slice(cardCount, size));
+    }
+
+    alert(arrays);
+
     for (let i = 0; i < names.length; i += 1) {
+
+      
       const cardOuterDiv = document.createElement('div');
-      cardOuterDiv.className = 'col-12';
+      cardOuterDiv.className = 'row';
 
       const card = document.createElement('div');
       card.className = 'card text-left rounded m-1';
-      card.style = 'width: 14rem;';
       card.id = 'artifact-card';
 
       cardOuterDiv.appendChild(card);
