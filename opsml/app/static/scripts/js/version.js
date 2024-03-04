@@ -108,7 +108,7 @@ function getVersions(registry, repository, name, version) {
                 registry_type: registry,
                 repository: repository,
                 name: name,
-                version: version,
+                version: providedVersion,
             };
             setCardView(cardRequest);
         },

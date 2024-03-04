@@ -87,6 +87,12 @@ function insertModelTags(data) {
             });
         }
     }
+    else {
+        var modelTagBody_1 = document.getElementById('tag-body');
+        modelTagBody_1.innerHTML = '';
+        modelTagBody_1.innerHTML += "<tr><td><font color=\"#999\">None</font></td><tr>";
+
+    }
 }
 function insertModelExtras(data) {
     // hide extra buttons

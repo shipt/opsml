@@ -19,7 +19,7 @@
 body {
     font-family: Boing;
     font-weight: normal;
-    background: #fafafa;
+    background-image: url( '/static/images/opsml-background2.svg' );
     min-height: 100vh;
 }
 
@@ -52,7 +52,7 @@ body {
     font-family: Boing;
     font-weight: medium;
     background: #fafafa;
-    background-image: url(/static/images/machine-learning.png);
+    background-image: url(/static/images/opsml-background2.svg);
     background-attachment:fixed;
     background-position: right center;
     background-repeat: no-repeat;
@@ -205,25 +205,32 @@ p {
 
 
 
-#CardBox{
+#CardBox,
+#SummaryBox,
+#ProfileBox {
   float:left;
   width:80%;
 }
 
-#SummaryBox{
-  float:left;
-  width:80%;
-}
-
-#ProfileBox{
-  float:left;
-  width:80%;
-}
 
 #VersionTabBox {
   float:left;
 }
 
+#CardTags{
+  padding: 0px;
+  margin: 0px;
+}
+
+#CardMetadata {  
+  padding-top: 0px;
+}
+
+#TagBox,
+#CardMetadata,
+#CardUpperBox {  
+  padding-bottom: 0px;
+}
 
 
 #VersionTable td {
@@ -271,28 +278,9 @@ p {
 }
 
 
-
-#MetaSubnav {
-    background: #fafafa;
-    color: black !important;
-    width: 100%;
-    position: fixed;
-
-}
-
-#MetaSubnav .active {
-    color:            #040404;
-    border-bottom: 1px solid rgb(0, 0, 0);
-    bottom: -10px;
-}
-
-
 #ModelSubnav {
-    background: #fafafa;
     color: black !important;
     width: 100%;
-    position: fixed;
-    z-index: 4;
 
 }
 
@@ -516,6 +504,7 @@ p {
 #version-spacer {
   padding: 0px;
   margin: 0px;
+  padding-bottom: 10px !important;
 }
 
 #page-spacer {
@@ -591,16 +580,24 @@ p {
 
 #artifact-card:hover{
     transform: scale(1.05);
-    box-shadow: 0px 10px 20px rgba(26, 255, 163, 0.24);
+    box-shadow:  -8px 8px 0 0 black;
 }
 
 #artifact-card {
     width: fit-content;
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
     background-repeat: no-repeat;
     background-position: right;
     background-size: 80px;
+    border-radius: 25px !important;
+    box-shadow:  -8px 8px 0 0 black;
+    
 }
+
+#meta-column {
+  box-shadow:  -8px 8px 0 0 black;
+  border-radius: 25px !important;
+}
+
 
 
 #comment-card {

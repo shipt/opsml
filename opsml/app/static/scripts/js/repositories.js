@@ -48,7 +48,7 @@ function setDropdown(data, registry, repository) {
             var cardOuterDiv = document.createElement('div');
             cardOuterDiv.className = 'col-12';
             var card = document.createElement('div');
-            card.className = 'card text-left rounded m-1';
+            card.className = 'card text-left rounded';
             card.setAttribute('style', 'width: 14rem;');
             card.id = 'artifact-card';
             cardOuterDiv.appendChild(card);

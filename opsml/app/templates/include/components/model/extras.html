@@ -1,6 +1,8 @@
 
 {% if registry == 'model' %}
+<hr id="version-spacer">
 
+<h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
 <div class="card-body" id="CardButtons" >
   <button id="metadata-extra-button" type="submit" class="btn btn-success" >Metadata</button>
   <button id="param-button" style="display: none;" type="submit" class="btn btn-success" >Params</button>
@@ -20,7 +22,6 @@
 <div class="card-body" id="Params" style="display:none">
   <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
   <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-
     <thead style="background:white;">
       <tr>
         <th scope="col">Name</th>
@@ -36,6 +37,8 @@
     <tbody id="param-body">
     </tbody>
   </table>
+  <br>
+  <br>
 </div>
 
 <div class="card-body" id="Artifacts" style="display:none">
@@ -53,13 +56,14 @@
 {% elif registry == 'data' %}
 
 <hr id="version-spacer">
+<h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
 
 <div class="card-body" id="CardButtons" >
   <button id="split-button" type="submit" class="btn btn-success" style="display: none;">Splits</button>
   <button id="dep-var-button" type="submit" class="btn btn-success" style="display: none;">Dependent Vars</button>
+  <button id="sql-button" type="submit" class="btn btn-success" style="display: none;">SQL</button>
   <button id="feature-map-button" type="submit" class="btn btn-success" style="display: none;">Feature Map</button>
   <button id="feature-desc-button" type="submit" class="btn btn-success" style="display: none;">Feature Descriptions</button>
-  <button id="sql-button" type="submit" class="btn btn-success" style="display: none;">SQL</button>
 </div>
 
 
@@ -92,29 +96,35 @@
     <tbody id="depen-var-body">
     </tbody>
   </table>
+  <br>
+  <br>
+</div>
+
+<div class="card-body" id="SQL" style="display:none">
+  <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">SQL</font></h5>
+    <div id="sql-div"></div>
 </div>
 
 <div class="card-body" id="FeatureMap" style="display:none">
-<h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Map</font></h5>
-  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
-
-    <thead style="background:white;">
-    <tr>
-        <th scope="col">Feature</th>
-        <th scope="col">Type</th>
-    </tr>
-    </thead>
-
-    <colgroup>
-    <col span="1" style="width: 15%;">
-    <col span="1" style="width: 15%;">
-    </colgroup>
-
-    <tbody id="feature-map-body">
-    </tbody>
-  </table>
+  <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Map</font></h5>
+    <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+  
+      <thead style="background:white;">
+      <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Type</th>
+      </tr>
+      </thead>
+  
+      <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+      </colgroup>
+  
+      <tbody id="feature-map-body">
+      </tbody>
+    </table>
 </div>
-
 
 <div class="card-body" id="FeatureDesc" style="display:none">
 <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Descriptions</font></h5>
@@ -137,11 +147,6 @@
   </table>
 </div>
 
-
-<div class="card-body" id="SQL" style="display:none">
-<h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">SQL</font></h5>
-  <div id="sql-div"></div>
-</div>
 
 {% endif %}
     

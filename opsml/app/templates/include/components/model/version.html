@@ -1,5 +1,5 @@
 
-<div style="padding-top:20px;">
+<div>
     <div class="container-fluid" id="VersionContainer">
         <div class="page-header">
           <h2 id="version-header"></h2>
@@ -17,8 +17,8 @@
         <div id="MetadataColumn">
 
           {% if registry == 'model' %}
-            <div class="card" style="width:100%;">
-              <div class="card-body">
+            <div class="card" style="width:100%;" id="meta-column">
+              <div class="card-body" id='CardUpperBox'>
                 <h4>Model 
                   <div id="CardTabBox">
                   <button id="metadata-button" type="button" class="btn btn-success" >Metadata</button>
@@ -28,8 +28,8 @@
               </div>
 
           {% elif registry == 'data' %}
-            <div class="card" style="width:100%;">
-              <div class="card-body">
+            <div class="card" style="width:100%;" id="meta-column">
+              <div class="card-body" id='CardUpperBox'>
                 <h4>Data
                   <div id="CardTabBox">
                     <button id="metadata-button" type="submit" class="btn btn-success">Metadata</button>
@@ -47,12 +47,12 @@
         
         
             {% if registry == 'model' %}
-            <div class="card border-0" id="TagBox" style="width:100%;">
+            <div class="card-body border-0" id="TagBox" style="width:100%;">
               {% include "include/components/tags.html" %}
             </div>
             {% endif %}
 
-            <div class="card border-0" id="ExtraBox" style="width:100%;">
+            <div class="card-body border-0" id="ExtraBox" style="width:100%;">
                 {% include "include/components/model/extras.html" %}
             </div>
 

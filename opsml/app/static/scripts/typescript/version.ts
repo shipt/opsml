@@ -142,7 +142,7 @@ function getVersions(registry:string, repository: string, name:string, version?:
         registry_type: registry,
         repository,
         name,
-        version,
+        version: providedVersion,
       };
       setCardView(cardRequest);
     },

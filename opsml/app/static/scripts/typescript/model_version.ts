@@ -153,6 +153,10 @@ function insertModelTags(data: Data) {
                 `;
       });
     }
+  } else {
+    const modelTagBody: HTMLElement = document.getElementById('tag-body');
+    modelTagBody.innerHTML = '';
+    modelTagBody.innerHTML += '<tr><td><font color="#999">None</font></td><tr>';
   }
 }
 
