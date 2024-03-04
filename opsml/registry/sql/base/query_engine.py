@@ -503,9 +503,6 @@ class RunQueryEngine(QueryEngine):
             List of run metrics
         """
         column_to_query = distinct(MetricSchema.name) if names_only else MetricSchema
-
-        column_to_query = distinct(MetricSchema.name) if names_only else MetricSchema
-
         query = select(column_to_query).filter(MetricSchema.run_uid == run_uid)
 
         if name is not None:

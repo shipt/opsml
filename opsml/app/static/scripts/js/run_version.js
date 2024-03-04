@@ -2,9 +2,9 @@ import { getVersions } from './version.js'; // eslint-disable-line import/no-unr
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
 // creates dropdown for repositories
-function setDropdown(repositories, repository) {
+function setDropdown(data, repository) {
     var providedRepo = repository;
-    var repositories = repositories;
+    var repositories = data.repositories;
     // if repository is undefined, set it to the first repository
     if (providedRepo === undefined) {
         providedRepo = repositories[0];
@@ -43,8 +43,6 @@ function setPage(registry, repository, name) {
     var providedName = name;
     var providedRepo = repository;
     var repoRequest = { registry: registry, repository: repository };
-
-   
     $.ajax({
         url: REPO_NAMES_PATH,
         type: 'GET',
@@ -52,28 +50,22 @@ function setPage(registry, repository, name) {
         data: repoRequest,
         success: function (data) {
             // get repository and names from dictionary
-            setDropdown(data.repositories, repository);
-
+            setDropdown(data, repository);
             if (providedName === undefined) {
                 providedName = data.names[0];
             }
-
             if (providedRepo === undefined) {
                 providedRepo = data.repositories[0];
             }
-
             // we want all versions and names for a given repository
             // do not need to send version or name
             getVersions(registry, providedRepo);
-
             // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             // window.history.pushState('repo_page', null, url.toString());
-
             $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
-                const repo = e.params.data.id;
+                var repo = e.params.data.id;
                 setDropdown(data.repositories, repo);
             });
-
         },
         error: function (xhr, status, error) {
             // send request to error route on error
@@ -81,7 +73,6 @@ function setPage(registry, repository, name) {
             errorToPage(JSON.stringify(err));
         },
     });
-
 }
 function resolveParams(repository, name, version) {
     var providedRepo = repository;
@@ -104,6 +95,19 @@ function setRunPage(registry, repository, name, version) {
     var providedName = name;
     var providedVersion = version;
     _a = resolveParams(providedRepo, providedName, providedVersion), providedRepo = _a[0], providedName = _a[1], providedVersion = _a[2];
-    setPage(registry, providedRepo, providedName, providedVersion);
+    setPage(registry, providedRepo, providedName);
 }
+
+
+function insertRunMetadata(runcard) {
+}
+
+function buildRunVersionUI(data) {
+    var runcard = data.card;
+
+    insertRunMetadata(runcard);
+
+}
+
+
 export { setRunPage, setDropdown, setPage, resolveParams, };

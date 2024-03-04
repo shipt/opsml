@@ -11,7 +11,6 @@ from opsml.app.routes import (
     healthcheck,
     metrics,
     models,
-    projects,
     registry,
     runs,
     ui,
@@ -26,6 +25,5 @@ api_router.include_router(data.router, tags=["data"], prefix="/opsml")
 api_router.include_router(audit.router, tags=["audit"], prefix="/opsml")
 api_router.include_router(ui.router, tags=["ui"])
 api_router.include_router(registry.router, tags=["registry"], prefix="/opsml")
-api_router.include_router(projects.router, tags=["project"], prefix="/opsml")
 api_router.include_router(metrics.router, tags=["metrics"], prefix="/opsml")
 api_router.include_router(runs.router, tags=["runs"], prefix="/opsml")

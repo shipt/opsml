@@ -42,44 +42,35 @@ function setDropdown(data, registry, repository) {
         repoHeading.dataset.repo = providedRepo;
         repoHeading.id = 'active-repo';
         repoHeader.appendChild(repoHeading);
-
         var artifactCardDiv = document.getElementById('artifact-card-div');
         artifactCardDiv.innerHTML = '';
         for (var i = 0; i < names.length; i += 1) {
-
             var card = document.createElement('div');
-            card.className = 'card text-left rounded m-1';
+            card.className = 'card text-left rounded';
             card.id = 'artifact-card';
-        
             var cardBody = document.createElement('div');
             cardBody.className = 'card-body';
             card.appendChild(cardBody);
-
             var cardRow = document.createElement('div');
             cardRow.className = 'row';
             cardBody.appendChild(cardRow);
-
             var cardCol = document.createElement('div');
             cardCol.className = 'col-sm-8';
             cardRow.appendChild(cardCol);
-
             var cardTitle = document.createElement('h5');
             cardTitle.className = 'card-title';
             cardTitle.innerHTML = names[i];
             cardCol.appendChild(cardTitle);
-
             var cardText = document.createElement('a');
             cardText.className = 'stretched-link';
             cardText.href = "/opsml/ui?registry=".concat(registry, "&repository=").concat(providedRepo, "&name=").concat(names[i]);
             cardText.setAttribute('value', names[i]);
             cardText.id = 'artifact-card-name';
             cardCol.appendChild(cardText);
-
             /// / create image column
             var cardColImg = document.createElement('div');
             cardColImg.className = 'col-sm-4';
             cardColImg.id = 'artifact-card-img';
-            
             var cardImg = document.createElement('img');
             cardImg.className = 'center-block';
             cardImg.src = '/static/images/chip.png';
@@ -107,14 +98,10 @@ function getRepoNamesPage(registry, repository) {
         success: function (data) {
             // get repository and names from dictionary
             var results = setDropdown(data, registry, repository);
-
-            // check if repository is undefined
-            if (results[1] === undefined) {
-                var url = "/opsml/ui?registry=".concat(results[0]);
-            } else {
-                var url = "/opsml/ui?registry=".concat(results[0], "&repository=").concat(results[1]);
+            var url = '/opsml/ui?registry='.concat(results[0]);
+            if (results[1] !== undefined) {
+                url = url.concat('&repository=').concat(results[1]);
             }
-
             window.history.pushState('repo_page', null, url.toString());
         },
         error: function (xhr, status, error) {

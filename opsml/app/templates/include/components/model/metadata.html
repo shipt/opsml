@@ -34,39 +34,41 @@
       </tr>
   
 
-      <tr>
-        <td><i class="fa-solid fa-brain" style="color:#04b78a"></i></td>
+      {% if registry in ['model', 'data'] %}
+      
+        <tr>
+          <td><i class="fa-solid fa-brain" style="color:#04b78a;"></i></td>
+          {% if registry == 'model' %}
+            <td><font color="#999">Model Interface:</font></td>
+          {% elif registry == 'data' %}
+            <td><font color="#999">Data Interface:</font></td>
+          {% endif %}
+          <td id='metadata-interface'></td>
+        </tr>
+      
+        <tr>
+          <td><i class="fa fa-file" style="color:#04b78a;"></i></td>
 
-        {% if registry == 'model' %}
-          <td><font color="#999">Model Interface:</font></td>
-          {% else %}
-          <td><font color="#999">Data Interface:</font></td>
-        {% endif %}
-        <td id='metadata-interface'></td>
-      </tr>
+          {% if registry == 'model' %}
+            <td><font color="#999">Model Type:</font></td>
+          {% elif registry == 'data' %}
+            <td><font color="#999">Data Type:</font></td>
+          {% endif %}
+            <td id='metadata-type'></td>
+        </tr>
 
+      {% endif %}
 
-      <tr>
-        <td><i class="fa fa-file" style="color:#04b78a"></i></td>
-
-        {% if registry == 'model' %}
-          <td><font color="#999">Model Type:</font></td>
-          {% else %}
-          <td><font color="#999">Data Type:</font></td>
-        {% endif %}
-          <td id='metadata-type'></td>
-      </tr>
-
-      {% if registry == 'data' %}
-      <tr>
-        <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
-        <td><font color="#999">Data:</font></td>
-        <td>
-            <a id='data-uri'>
-              <button id="download-button" type="submit" class="btn btn-success" >Download</button>
-            </a>
-        </td>
-      </tr>
+        {% if registry == 'data' %}
+        <tr>
+          <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
+          <td><font color="#999">Data:</font></td>
+          <td>
+              <a id='data-uri'>
+                <button id="download-button" type="submit" class="btn btn-success" >Download</button>
+              </a>
+          </td>
+        </tr>
 
       <tr id="data-profile" style="display: none;">
         <td><i class="fa-solid fa-download" style="color:#04b78a"></i></td>
@@ -159,6 +161,31 @@
             </a>
         </td>
         </tr>
+      {% endif %}
+
+      {% if registry == 'run' %}
+
+      <tr id="datacard-uid-display" style="display: none;">
+        <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
+        <td><font color="#999">DataCard:</font></td>
+        <td>
+          <a id="datacard-link" >
+            <button id="download-button" type="submit" class="btn btn-success" >Link</button>
+          </a>
+      </td>
+      </tr>
+
+
+      <tr id="datacard-uid-display" style="display: none;">
+        <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
+        <td><font color="#999">ModelCard:</font></td>
+        <td>
+          <a id="modelcard-link" >
+            <button id="download-button" type="submit" class="btn btn-success" >Link</button>
+          </a>
+      </td>
+      </tr>
+
       {% endif %}
 
 

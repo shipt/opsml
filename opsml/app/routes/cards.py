@@ -26,8 +26,8 @@ from opsml.app.routes.pydantic_models import (
 from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
-from opsml import ModelCard, DataCard
-from opsml.app.routes.route_helpers import ModelRouteHelper, DataRouteHelper
+from opsml import ModelCard, DataCard, RunCard
+from opsml.app.routes.route_helpers import ModelRouteHelper, DataRouteHelper, RunRouteHelper
 
 logger = ArtifactLogger.get_logger()
 
@@ -301,6 +301,8 @@ def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dic
             return ModelRouteHelper().get_card_metadata(request, card)
         if isinstance(card, DataCard):
             return DataRouteHelper().get_card_metadata(request, card)
+        if isinstance(card, RunCard):
+            return RunRouteHelper().get_card_metadata(request, card)
 
     except Exception as error:
         raise HTTPException(

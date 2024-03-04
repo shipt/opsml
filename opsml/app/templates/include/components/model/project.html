@@ -1,16 +1,44 @@
 
-<div id="VersionContainer" style="padding-top:80px; ">
-  <h5 class="display-8">Select a project to view available runs</h5>
-  <div id="DropdownSelect">
-    <select id="ProjectRepositoriesSelect"></select>
+
+<div>
+  <div id="VersionContainer" style="padding-top:80px; ">
+    <h5 class="display-8">Select a project to view available runs</h5>
+    <div id="DropdownSelect">
+      <select id="ProjectRepositoriesSelect"></select>
+    </div>
   </div>
-</div>
 
+  <div class"containter" id="split-column">
+    <div class="boxes" id="VersionContainer">
+      <div id="VersionColumn">
+        <div id="version-header" style="display: none;"></div>
+        <div class="list-group" id="version-list">
+        </div>
+      </div>
 
-<div class="boxes" id="VersionContainer">
-  <div id="VersionColumn">
-    <div id="version-header" style="display: none;"></div>
-    <div class="list-group" id="version-list">
+      <div id="MetadataColumn">
+
+        <div class="card" style="width:100%;" id="meta-column">
+          <div class="card-body" id='CardUpperBox'>
+            <h4>Run 
+              <div id="CardTabBox">
+              <button id="metadata-button" type="button" class="btn btn-success" >Metadata</button>
+              <button id="graphics-button" type="button" class="btn btn-success">Graphics</button>
+              <button id="metrics-button" type="button" class="btn btn-success">Metrics</button>
+              </div>
+            </h4>
+          </div>
+
+          <div class="card border-0" id="CardBox" style="width:100%;">
+            {% include "include/components/model/metadata.html" %}
+          </div>
+
+          <div class="card-body border-0" id="TagBox" style="width:100%;">
+            {% include "include/components/tags.html" %}
+          </div>
+
+      </div>
+
     </div>
   </div>
 </div>

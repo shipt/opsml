@@ -412,10 +412,10 @@ class ModelRouteHelper(RouteHelper):
         return card_metadata
 
 
-class ProjectRouteHelper(RouteHelper):
-    """Route helper for DataCard pages"""
+class RunRouteHelper(RouteHelper):
+    """Route helper for RunCard pages"""
 
-    def get_run_metrics(self, request: Request, run_uid: str) -> _TemplateResponse:
+    def get_run_metrics(self, request: Request, run_uid: str, name: List[str]) -> _TemplateResponse:
         """Retrieve homepage
 
         Args:
@@ -425,30 +425,7 @@ class ProjectRouteHelper(RouteHelper):
                 The run uid.
         """
         run_registry: CardRegistry = request.app.state.registries.run
-        runcard: RunCard = run_registry.load_card(uid=run_uid)
-
-        # load metrics from sql db
-        runcard.load_metrics()
-
-        return templates.TemplateResponse(
-            "include/project/metric_page.html",
-            {
-                "request": request,
-                "runcard": runcard.model_dump(),
-            },
-        )
-
-    def get_unique_projects(self, project_registry: CardRegistry) -> List[str]:
-        """Get unique projects
-
-        Args:
-            project_registry:
-                The project registry.
-        """
-
-        projects = project_registry.list_cards(limit=1000)
-
-        return sorted(list(set(project["name"] for project in projects)))
+        run_registry._registry.get_metric(run_uid=run_uid, name=name)
 
     def load_graphs(self, runcard: RunCard) -> Dict[str, Any]:
         """Load graphs from runcard
@@ -478,22 +455,6 @@ class ProjectRouteHelper(RouteHelper):
 
         return loaded_graphs
 
-    def get_project_runs(self, project: str, run_registry: CardRegistry) -> List[Dict[str, Any]]:
-        """Get runs for a project
-
-        Args:
-            project:
-                The selected project.
-            run_registry:
-                The run registry.
-        """
-        project_runs = run_registry._registry.list_cards(
-            limit=100,
-            query_terms={"project": project},
-        )
-
-        return sorted(project_runs, key=lambda k: k["timestamp"], reverse=True)
-
     def get_graphics_uris(self, runcard: RunCard) -> Dict[str, str]:
         """Get graphics uris
 
@@ -509,85 +470,22 @@ class ProjectRouteHelper(RouteHelper):
 
         return graphics_uris
 
-    def get_project_run(
-        self,
-        request: Request,
-        project: Optional[str] = None,
-        run_uid: Optional[str] = None,
-        metadata_only: bool = False,
-    ) -> _TemplateResponse:
-        """Retrieve homepage
+    def get_card_metadata(self, request: Request, card: RunCard) -> Dict[str, Any]:
+        """Returns data for a run card
 
         Args:
             request:
                 The incoming HTTP request.
-            project:
-                The project name.
-            run_uid:
-                The run uid.
+            card:
+                RunCard.
         """
-        project_registry: CardRegistry = request.app.state.registries.project
-        run_registry: CardRegistry = request.app.state.registries.run
+        metrics = card._registry.get_metric(run_uid=card.uid, names_only=True)
 
-        unique_projects = self.get_unique_projects(project_registry)
+        card_metadata = {
+            "card": card.model_dump(),
+            "metrics": metrics,
+            "graphic_uris": self.get_graphics_uris(card),
+        }
 
-        logger.debug(f"unique_projects: {unique_projects}")
-
-        if len(unique_projects) == 0:
-            return templates.TemplateResponse(
-                "include/project/no_projects.html",
-                {"request": request},
-            )
-
-        if project is None:
-            selected_project = unique_projects[0]
-        else:
-            selected_project = project
-
-        # get projects
-        project_runs = self.get_project_runs(selected_project, run_registry)
-
-        logger.debug("Found {} runs", len(project_runs))
-
-        if run_uid is not None:
-            runcard: RunCard = run_registry.load_card(uid=run_uid)
-        else:
-            if len(project_runs) == 0:
-                return templates.TemplateResponse(
-                    "include/project/projects.html",
-                    {
-                        "request": request,
-                        "all_projects": unique_projects,
-                        "selected_project": selected_project,
-                        "project_runs": project_runs,
-                    },
-                )
-
-            runcard: RunCard = run_registry.load_card(uid=project_runs[0]["uid"])  # type: ignore[no-redef]
-
-        # get metric keys
-        metrics = runcard._registry.get_metric(run_uid=runcard.uid, names_only=True)
-
-        if metadata_only:
-            return templates.TemplateResponse(
-                "include/project/metadata.html",
-                {
-                    "request": request,
-                    "runcard": runcard.model_dump(),
-                    "metrics": metrics,
-                },
-            )
-
-        return templates.TemplateResponse(
-            "include/project/projects.html",
-            {
-                "request": request,
-                "all_projects": unique_projects,
-                "selected_project": selected_project,
-                "project_runs": project_runs,
-                "runcard": runcard.model_dump(),
-                "metrics": metrics,
-                "graphs": self.load_graphs(runcard),
-                "graphics": self.get_graphics_uris(runcard),
-            },
-        )
+        print(card_metadata)
+        return card_metadata
