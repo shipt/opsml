@@ -57,9 +57,9 @@ function setPage(
   registry: string,
   repository:string,
   name?: string,
-  version?: string,
 ) {
   let providedName = name;
+  let providedRepo = repository;
   const repoRequest = { registry, repository };
 
   $.ajax({
@@ -76,10 +76,21 @@ function setPage(
         [providedName] = data.names;
       }
 
-      getVersions(registry, providedName, repository, version);
+      if (providedRepo === undefined) {
+        [providedRepo] = data.repositories;
+      }
+
+      // we want all versions and names for a given repository
+      // do not need to send version or name
+      getVersions(registry, providedRepo);
 
       // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
       // window.history.pushState('repo_page', null, url.toString());
+
+      $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => {
+        const repo = e.params.data.id;
+        setDropdown(data.repositories, repo);
+      });
     },
 
     error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -88,11 +99,6 @@ function setPage(
       const err = JSON.parse(xhr.responseText);
       errorToPage(JSON.stringify(err));
     },
-  });
-
-  $('#ProjectRepositoriesSelect').select2().on('select2:select', (e) => { // eslint-disable-line @typescript-eslint/no-unused-vars
-    // const repo = e.params.data.id;
-    // setDropdown(registry, repo);
   });
 }
 
@@ -136,7 +142,7 @@ function setRunPage(
     providedVersion,
   );
 
-  setPage(registry, providedRepo, providedName, providedVersion);
+  setPage(registry, providedRepo, providedName);
 }
 
 export {

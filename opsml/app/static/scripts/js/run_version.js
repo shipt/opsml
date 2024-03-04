@@ -39,7 +39,7 @@ function setDropdown(repositories, repository) {
 // repository: string
 // name: string
 // version: string
-function setPage(registry, repository, name, version) {
+function setPage(registry, repository, name) {
     var providedName = name;
     var providedRepo = repository;
     var repoRequest = { registry: registry, repository: repository };
@@ -65,7 +65,7 @@ function setPage(registry, repository, name, version) {
             // we want all versions and names for a given repository
             // do not need to send version or name
             getVersions(registry, providedRepo);
-            
+
             // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             // window.history.pushState('repo_page', null, url.toString());
 

@@ -62,7 +62,6 @@ function setDropdown(data: RepositoryData, registry: string, repository?: string
     artifactCardDiv.innerHTML = '';
 
     for (let i = 0; i < names.length; i += 1) {
-
       const card: HTMLDivElement = document.createElement('div');
       card.className = 'card text-left rounded';
       card.id = 'artifact-card';
