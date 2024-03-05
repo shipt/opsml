@@ -1,0 +1,68 @@
+<hr id="version-spacer">
+<h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
+
+<div class="card-body" id="CardButtons" >
+  <button id="metric-button" type="submit" class="btn btn-success" style="display: none;">Metrics</button>
+  <button id="param-button" type="submit" class="btn btn-success" style="display: none;">Params</button>
+  <button id="artifact-button" type="submit" class="btn btn-success" style="display: none;">Artifacts</button>
+</div>
+
+
+<div class="card-body" id="Metrics" style="display:none">
+    
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+    <h5><i class="fa-solid fa-chart-simple" style="color:#04b78a"></i> <font color="#999">Metrics</font></h5>
+    <thead style="background:white;">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value</th>
+        <th scope="col">Step</th>
+        <th scope="col">Timestamp</th>
+      </tr>
+    </thead>
+    
+    <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+
+  </colgroup>
+    <tbody id="metric-body">
+    </tbody>
+  </table>
+</div>
+
+<div class="card-body" id="Params" style="display:none">
+  <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Parameters</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+    <thead style="background:white;">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+
+    <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+    </colgroup>
+
+    <tbody id="param-body">
+    </tbody>
+  </table>
+  <br>
+
+</div>
+
+<div class="card-body" id="Artifacts" style="display:none">
+  <h5><i class="fa-solid fa-floppy-disk" style="color:#04b78a"></i> <font color="#999">Artifacts</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+    <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 50%;">
+    </colgroup>
+    <tbody id="artifact-uris">
+    </tbody>
+  </table>
+</div>

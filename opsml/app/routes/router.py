@@ -14,6 +14,7 @@ from opsml.app.routes import (
     registry,
     runs,
     ui,
+    projects,
 )
 
 api_router = APIRouter(responses={404: {"description": "Not found"}})
@@ -27,3 +28,4 @@ api_router.include_router(ui.router, tags=["ui"])
 api_router.include_router(registry.router, tags=["registry"], prefix="/opsml")
 api_router.include_router(metrics.router, tags=["metrics"], prefix="/opsml")
 api_router.include_router(runs.router, tags=["runs"], prefix="/opsml")
+api_router.include_router(projects.router, tags=["project"], prefix="/opsml")

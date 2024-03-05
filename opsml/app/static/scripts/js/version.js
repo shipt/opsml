@@ -34,7 +34,6 @@ function setCardView(request) {
             // this is being assigned; not reassigned
             data.registry = request.registry_type; // eslint-disable-line no-param-reassign
 
-
             // set the card view
             buildCard(data);
 

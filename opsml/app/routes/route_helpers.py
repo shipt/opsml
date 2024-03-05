@@ -487,5 +487,4 @@ class RunRouteHelper(RouteHelper):
             "graphic_uris": self.get_graphics_uris(card),
         }
 
-        print(card_metadata)
         return card_metadata

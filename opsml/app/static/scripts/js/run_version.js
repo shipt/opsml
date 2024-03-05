@@ -1,6 +1,8 @@
 import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
+var METRIC_PATH = '/opsml/metrics';
+
 // creates dropdown for repositories
 function setDropdown(data, repository) {
     var providedRepo = repository;
@@ -58,12 +60,8 @@ function setPage(registry, repository, name) {
                 providedRepo = data.repositories[0];
             }
 
-            // we want all versions and names for a given repository
-            // do not need to send version or name
             getVersions(registry, providedRepo);
-            
-            // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
-            // window.history.pushState('repo_page', null, url.toString());
+
             $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
                 var repo = e.params.data.id;
                 setDropdown(data.repositories, repo);
@@ -101,52 +99,199 @@ function setRunPage(registry, repository, name, version) {
 }
 
 
-function insertDropdown(registry, dropdownId) {
+function insertCardLink(registry, dropdownId, uids) {
 
-    var dropdown = document.getElementById(dropdownId);
-    dropdown.innerHTML = '';
+    if (uids.length > 1) {
+        var dropdown = document.getElementById(dropdownId);
+        dropdown.innerHTML = '';
 
-    for (var i = 0; i < dataUids.length; i+= 1) {
-        var Uid = dataUids[i];
+        for (var i = 0; i < uids.length; i+= 1) {
+            var uid = uids[i];
 
-        let item = document.createElement('a');
-        item.href = `/opsml/${registry}/versions/uid/?uid=${Uid}`;
-        item.innerHTML = Uid;
-        item.classList.add('dropdown-item');
-        dropdown.appendChild(item);
+            let item = document.createElement('a');
+            item.href = `/opsml/${registry}/versions/uid/?uid=${uid}`;
+            item.innerHTML = uid;
+            item.classList.add('dropdown-item');
+            dropdown.appendChild(item);
+        }
+    } else {
+
+        var dropdown = document.getElementById(`${registry}card-link`);
+        dropdown.href = `/opsml/ui?registry=${registry}&uid=${uids[0]}`;
+
     }
 }
 
 function insertRunMetadata(runcard) {
+
     // check datacard uids
     var dataUids = runcard.datacard_uids;
+    var modelUids = runcard.modelcard_uids;
+
     if (dataUids.length > 0) {
-        if (dataUids.length > 1) {
-            insertDropdown('data', 'datacard-dropdown');
-        }
-        else {
-
-            var dropdown = document.getElementById('datacard-link');
-            dropdown.href = `/opsml/ui?registry=data&uid=${dataUids[0]}`;
-
-        }
-
-        
+        insertCardLink('data', 'datacard-dropdown', dataUids);
+        // show datacard-uid-display
+        $('#datacard-uid-display').show();
     }
-    // show datacard-uid-display
-    $('#datacard-uid-display').show();
+
+    if (modelUids.length > 0) {
+        insertCardLink('model', 'modelcard-dropdown', modelUids);
+         // show modelcard-uid-display
+         $('#modelcard-uid-display').show();
+    }
+}
 
 
+// insert tags into the runcard ui
+// data: card data from ajax response
+function insertRunTags(runcard) {
+    var tags= runcard.tags;
+
+    if (Object.keys(tags).length > 0) {
+        var modelTagBody_1 = document.getElementById('tag-body');
+        modelTagBody_1.innerHTML = '';
+        Object.keys(tags).forEach(function (name) {
+            var value = tags[name];
+            modelTagBody_1.innerHTML += "\n                <tr>\n                    <td><font color=\"#999\">".concat(name, ":</font></td>\n                    <td>").concat(value, "</td>\n                </tr>\n                ");
+        });
+    }
+    else {
+        var modelTagBody = document.getElementById('tag-body');
+        modelTagBody.innerHTML = '';
+        modelTagBody.innerHTML += '<tr><td><font color="#999">None</font></td><tr>';
+    }
+}
 
 
+function insertRunMetrics(runcard) {
+  
+    // check if hidden
+    if ($('#Metrics').is(':hidden')) {
+
+        var request = { run_uid: runcard.uid };
+     
+        $.ajax({
+            url: METRIC_PATH,
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: function (data) {
+        
+
+                let metrics = data.metric;
+        
+                if (metrics !== undefined && metrics.length > 0) {
+                
+                    for (let i = 0; i < metrics.length; i += 1) {
+                        let metric = metrics[i];
+                        let metricBody = document.getElementById('metric-body');
+                        metricBody.innerHTML += `
+                        <tr>
+                            <td><font color="#999">${metric.name}</font></td>
+                            <td>${metric.value}</td>
+                            <td>${metric.step}</td>
+                            <td>${metric.timestamp}</td>
+                        </tr>
+                        `;
+                    }
+                } else {
+                    let metricBody = document.getElementById('metric-body');
+                    metricBody.innerHTML = '';
+                    metricBody.innerHTML += '<tr><td><font color="#999">None</font></td><tr>';
+                }
+                $('#Metrics').toggle();
+            },
+            error: function (xhr, status, error) {
+                // send request to error route on error
+                var err = JSON.parse(xhr.responseText);
+                errorToPage(JSON.stringify(err));
+            },
+        });
+    } else {
+        $('#Metrics').toggle();
+    }   
+}
+
+function insertParams(runcard) {
+    // check params
+    if (Object.keys(runcard.parameters).length > 0) {
+        var paramBody_1 = document.getElementById('param-body');
+        paramBody_1.innerHTML = '';
+        Object.keys(runcard.parameters).forEach(function (name) {
+            var value = runcard.parameters[name];
+            paramBody_1.innerHTML += "\n                <tr>\n                    <td><font color=\"#999\">".concat(name, "</font></td>\n                    <td>").concat(value[0].value, "</td>\n                </tr>\n                ");
+        });
+        // show Params on click
+        document.getElementById('param-button').onclick = function paramToggle() {
+            $('#Params').toggle();
+        };
+        $('#param-button').show();
+    }
+    else {
+        $('#param-button').hide();
+    }
 
 
 }
+
+function insertArtifactUris(runcard) {
+
+    if (Object.keys(runcard.artifact_uris).length > 0) {
+        var artifactBody_1 = document.getElementById('artifact-uris');
+        artifactBody_1.innerHTML = '';
+        Object.keys(runcard.artifact_uris).forEach(function (name) {
+            var value = runcard.artifact_uris[name];
+            var pathParts = value.remote_path.split('/');
+            var downloadName = pathParts[pathParts.length - 1];
+            artifactBody_1.innerHTML += "\n                <tr>\n                    <td><font color=\"#999\">".concat(name, "</font></td>\n                    <td>\n                        <a href=\"/opsml/files/download?path=").concat(value.remote_path, "\" download='").concat(downloadName, "'>\n                        <button id=\"download-button\" type=\"submit\" class=\"btn btn-success\">Download</button>\n                        </a>\n                    </td>\n                </tr>\n                ");
+        });
+        // show artifacts on click
+        document.getElementById('artifact-button').onclick = function artifactToggle() {
+            $('#Artifacts').toggle();
+        };
+        $('#artifact-button').show();
+    }
+    else {
+        $('#artifact-button').hide();
+    }
+
+}
+
+function insertRunExtras(data) {
+    var runcard = data.card;
+    var metrics = data.metrics;
+
+    // hide extra buttons
+    $('#Params').hide();
+    $('#Metrics').hide();
+    $('#Artifacts').hide();
+
+   
+    if (metrics !== undefined && metrics.length > 0) {
+         // set metric button on click
+        $('#metric-button').click(function () {
+            insertRunMetrics(runcard);
+        });
+        $('#metric-button').show();
+    } else {
+        $('#metric-button').hide();
+    }
+   
+    insertParams(runcard);
+    insertArtifactUris(runcard);
+    
+}
+
 
 function buildRunVersionUI(data) {
     var runcard = data.card;
 
     insertRunMetadata(runcard);
+    insertRunTags(runcard);
+    insertRunExtras(data);
+    $('#run-version-page').show();
+
 
 }
 

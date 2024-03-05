@@ -183,12 +183,29 @@
               </div>
             </div>
           </div>
-
-      </td>
+        </td>
       </tr>
 
+      <tr id="modelcard-uid-display" style="display: none;">
+        <td><i class="fa-solid fa-link" style="color:#04b78a"></i></td>
+        <td><font color="#999">ModelCard:</font></td>
+        <td>
+          <a id="modelcard-link" >
+            <button id="download-button" type="submit" class="btn btn-success" >Link</button>
+          </a>
 
-
+          <div class="btn-group" style="display: none;">
+            <div class="dropdown" id="CardDropdownSelect">
+              <a class="btn dropdown-toggle m-1" href="#" role="button" id="dropdownMenuLink" data-bs-display="html" data-bs-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+                Link
+              </a>
+            
+              <div id="modelcard-dropdown" class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenuLink">
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
       {% endif %}
 
 
