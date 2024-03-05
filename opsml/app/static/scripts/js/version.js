@@ -1,5 +1,6 @@
 import { buildModelVersionUI } from './model_version.js'; // eslint-disable-line import/no-unresolved
 import { buildDataVersionUI } from './data_version.js'; // eslint-disable-line import/no-unresolved
+import { buildRunVersionUI } from './run_version.js'; // eslint-disable-line import/no-unresolved
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 var LIST_CARD_PATH = '/opsml/cards/list';
 var ACTIVE_CARD_PATH = '/opsml/cards/ui';
@@ -17,6 +18,9 @@ function buildCard(data) {
     else if (data.registry === 'data') {
         buildDataVersionUI(data);
     }
+    else if (data.registry === 'run') {
+        buildRunVersionUI(data);
+    }
 }
 function setCardView(request) {
     return $.ajax({
@@ -29,8 +33,11 @@ function setCardView(request) {
             // add registry type to data
             // this is being assigned; not reassigned
             data.registry = request.registry_type; // eslint-disable-line no-param-reassign
+
+
             // set the card view
             buildCard(data);
+
             var url = "/opsml/ui?registry=".concat(request.registry_type, "&repository=").concat(request.repository, "&name=").concat(request.name, "&version=").concat(request.version);
             window.history.pushState('version_page', null, url.toString());
         },
@@ -108,13 +115,23 @@ function getVersions(registry, repository, name, version) {
         data: JSON.stringify(request),
         success: function (data) {
             var cardVersions = data.cards;
+
+            // sort cardversion array by timestamp
+            if (registry === 'run') {
+                cardVersions.sort(function (a, b) {
+                    return b.timestamp - a.timestamp;
+                });
+            }
+
             // check if version is not set
             if (providedVersion === undefined) {
                 providedVersion = cardVersions[0].version;
             }
+
             if (providedName === undefined) {
                 providedName = cardVersions[0].name;
             }
+
             createVersionElements(cardVersions, providedVersion, registry, providedName);
             // set version in request
             var cardRequest = {

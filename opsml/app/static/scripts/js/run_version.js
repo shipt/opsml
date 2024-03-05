@@ -57,9 +57,11 @@ function setPage(registry, repository, name) {
             if (providedRepo === undefined) {
                 providedRepo = data.repositories[0];
             }
+
             // we want all versions and names for a given repository
             // do not need to send version or name
             getVersions(registry, providedRepo);
+            
             // let url = "/opsml/ui?registry=" + results[0] + "&repository=" + results[1];
             // window.history.pushState('repo_page', null, url.toString());
             $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
@@ -99,7 +101,46 @@ function setRunPage(registry, repository, name, version) {
 }
 
 
+function insertDropdown(registry, dropdownId) {
+
+    var dropdown = document.getElementById(dropdownId);
+    dropdown.innerHTML = '';
+
+    for (var i = 0; i < dataUids.length; i+= 1) {
+        var Uid = dataUids[i];
+
+        let item = document.createElement('a');
+        item.href = `/opsml/${registry}/versions/uid/?uid=${Uid}`;
+        item.innerHTML = Uid;
+        item.classList.add('dropdown-item');
+        dropdown.appendChild(item);
+    }
+}
+
 function insertRunMetadata(runcard) {
+    // check datacard uids
+    var dataUids = runcard.datacard_uids;
+    if (dataUids.length > 0) {
+        if (dataUids.length > 1) {
+            insertDropdown('data', 'datacard-dropdown');
+        }
+        else {
+
+            var dropdown = document.getElementById('datacard-link');
+            dropdown.href = `/opsml/ui?registry=data&uid=${dataUids[0]}`;
+
+        }
+
+        
+    }
+    // show datacard-uid-display
+    $('#datacard-uid-display').show();
+
+
+
+
+
+
 }
 
 function buildRunVersionUI(data) {
@@ -110,4 +151,4 @@ function buildRunVersionUI(data) {
 }
 
 
-export { setRunPage, setDropdown, setPage, resolveParams, };
+export { setRunPage, setDropdown, setPage, resolveParams, buildRunVersionUI};

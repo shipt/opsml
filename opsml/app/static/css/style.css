@@ -21,34 +21,7 @@ body {
     font-weight: normal;
     background-image: url( '/static/images/opsml-background2.svg' );
     min-height: 100vh;
-    min-width: 50vw;
-
 }
-
-
-#metadata-table {
-  caption-side: top;
-  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
-}
-
-#feature-table {
-  caption-side: top;
-  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.24);
-}
-
-
-#opsml-card {
-  background-color: #241239;
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-#opsml-card:hover{
-  transform: scale(1.05);
-  box-shadow: 0px 10px 20px rgba(150, 79, 201, 0.469);
-}
-
 
 #ArtifactPage {
     font-family: Boing;
@@ -60,84 +33,11 @@ body {
     background-repeat: no-repeat;
 }
 
-#RunPage {
-  font-family: Boing;
-  font-weight: medium;
-  background: #fafafa;
-  background-image: url(/static/images/machine-learning.png);
-  background-attachment:fixed;
-  background-position: right center;
-  background-repeat: no-repeat;
-}
-
-#DataPage {
-  font-family: Boing;
-  font-weight: medium;
-  background: #fafafa;
-  background-image: url(/static/images/machine-learning.png);
-  background-attachment:fixed;
-  background-position: right center;
-  background-repeat: no-repeat;
-
-}
-
-#DataVersionPage {
-  font-family: Boing;
-  font-weight: medium;
-  background: #fafafa;
-  background-image: url(/static/images/machine-learning.png);
-  background-attachment:fixed;
-  background-position: right center;
-  background-repeat: no-repeat;
-  padding-bottom: 50%;
-}
-
-#HomePage {
-    font-family: Boing;
-    font-weight: medium;
-    background: #fafafa;
-    background-image: url(/static/images/homepage_background.jpg);
-    background-attachment:fixed;
-    background-size: cover;
-    background-position: right center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
-
-
-#ModelVersionPage {
-    font-family: Boing;
-    font-weight: medium;
-    background: #fafafa;
-    background-image: url(/static/images/machine-learning.png);
-    background-attachment:fixed;
-    background-position: right center;
-    background-repeat: no-repeat;
-    padding-bottom: 50%;
-}
-
-#ModelMetadataPage {
-    font-family: Boing;
-    font-weight: medium;
-    background: #fafafa;
-    background-image: url(/static/images/machine-learning.png);
-    background-attachment:fixed;
-    background-position: right center;
-    background-repeat: no-repeat;
-}
-
-#ModelVersionTable { 
-    box-shadow: 5px 5px 10px rgba(0, 2, 1, 0.7);
-}
-
-#code-container {
-    height: 100px;
-    float: left;
-  }
 
 .model-metadata {
   margin-left: 1%;
 }
+
 
 p {
     font-family: Boing;
@@ -183,7 +83,8 @@ p {
   float:left;
   width:80%;
   padding-right: 1%;
-  padding-bottom: 100px;
+  padding-bottom: 10%;
+
 }
 
 #MetricSelectColumn {
@@ -255,7 +156,6 @@ p {
     
     
 }
-
 
 .navbar-btn {
     box-shadow: none;

@@ -45,6 +45,7 @@ async def opsml_ui_page(
     name: Optional[str] = None,
     repository: Optional[str] = None,
     version: Optional[str] = None,
+    uid: Optional[str] = None,
 ) -> HTMLResponse:
     # validate registry type
     if registry:
@@ -56,6 +57,15 @@ async def opsml_ui_page(
     # default to model
     else:
         registry = RegistryType.MODEL.value
+
+    if uid:
+        _registry: CardRegistry = getattr(request.app.state.registries, registry)
+        card = _registry.list_cards(uid=uid)
+
+        if card:
+            name = card[0]["name"]
+            repository = card[0]["repository"]
+            version = card[0]["version"]
 
     return templates.TemplateResponse(
         "include/index.html",
