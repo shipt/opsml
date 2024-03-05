@@ -22,7 +22,7 @@ function setRepositoryPage(registry, repository) {
 function setPage(registry, repository, name, version) {
     var providedVersion = version;
     // if vars are passed, get specific page
-    if (registry !== 'None' && name !== 'None' && repository !== 'None') {
+    if (registry !== 'None' && name !== 'None' && repository !== 'None' && registry !== 'run') {
         if (providedVersion === 'None') {
             providedVersion = undefined;
         }
@@ -30,7 +30,10 @@ function setPage(registry, repository, name, version) {
         // return default model page
     }
     else if (registry === 'run') {
-        setRunPage(registry, repository, name, version);
+        if (providedVersion === 'None') {
+            providedVersion = undefined;
+        }
+        setRunPage(registry, repository, name, providedVersion);
     }
     else {
         setRepositoryPage(registry, repository);

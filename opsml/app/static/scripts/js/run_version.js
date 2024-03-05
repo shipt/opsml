@@ -41,9 +41,11 @@ function setDropdown(data, repository) {
 // repository: string
 // name: string
 // version: string
-function setPage(registry, repository, name) {
+function setPage(registry, repository, name, version) {
     var providedName = name;
     var providedRepo = repository;
+    var providedVersion = version;
+
     var repoRequest = { registry: registry, repository: repository };
     $.ajax({
         url: REPO_NAMES_PATH,
@@ -60,12 +62,9 @@ function setPage(registry, repository, name) {
                 providedRepo = data.repositories[0];
             }
 
-            getVersions(registry, providedRepo);
+            alert(`ProvidedRepo: ${providedRepo}, ProvidedName: ${providedName}, ProvidedVersion: ${providedVersion}`);
+            getVersions(registry, providedRepo, providedName, providedVersion);
 
-            $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
-                var repo = e.params.data.id;
-                setDropdown(data.repositories, repo);
-            });
         },
         error: function (xhr, status, error) {
             // send request to error route on error
@@ -90,12 +89,20 @@ function resolveParams(repository, name, version) {
     return [providedRepo, providedName, providedVersion];
 }
 function setRunPage(registry, repository, name, version) {
-    var _a;
     var providedRepo = repository;
     var providedName = name;
     var providedVersion = version;
-    _a = resolveParams(providedRepo, providedName, providedVersion), providedRepo = _a[0], providedName = _a[1], providedVersion = _a[2];
-    setPage(registry, providedRepo, providedName);
+    
+    var params = resolveParams(providedRepo, providedName, providedVersion);
+
+
+    setPage(registry, params[0], params[1], params[2]);
+
+    $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
+        var repo = e.params.data.id;
+        setPage(registry, repo);
+    });
+
 }
 
 

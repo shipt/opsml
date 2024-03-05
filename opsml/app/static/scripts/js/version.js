@@ -105,7 +105,7 @@ function createVersionElements(cardVersions, activeVersion, registry, name) {
 function getVersions(registry, repository, name, version) {
     var providedVersion = version;
     var providedName = name;
-    var request = { registry_type: registry, repository: repository, name: name };
+    var request = { registry_type: registry, repository: repository};
     return $.ajax({
         url: LIST_CARD_PATH,
         type: 'POST',
@@ -122,6 +122,8 @@ function getVersions(registry, repository, name, version) {
                 });
             }
 
+            
+
             // check if version is not set
             if (providedVersion === undefined) {
                 providedVersion = cardVersions[0].version;
@@ -130,6 +132,8 @@ function getVersions(registry, repository, name, version) {
             if (providedName === undefined) {
                 providedName = cardVersions[0].name;
             }
+
+            alert(providedName);
 
             createVersionElements(cardVersions, providedVersion, registry, providedName);
             // set version in request
