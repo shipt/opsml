@@ -133,8 +133,6 @@ function getVersions(registry, repository, name, version) {
                 providedName = cardVersions[0].name;
             }
 
-            alert(providedName);
-
             createVersionElements(cardVersions, providedVersion, registry, providedName);
             // set version in request
             var cardRequest = {

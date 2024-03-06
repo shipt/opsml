@@ -5,8 +5,8 @@
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from typing import Dict
 
 from opsml.app.core.dependencies import swap_opsml_root
 
@@ -24,9 +24,9 @@ templates = Jinja2Templates(directory=TEMPLATE_PATH)
 router = APIRouter()
 
 
-@router.get("/runs/graphics", name="graphic_uris", response_class=HTMLResponse)
+@router.get("/runs/graphics", name="graphic_uris")
 # @error_to_500
-async def get_graphic_page(request: Request, run_uid: str) -> HTMLResponse:
+async def get_graphic_page(request: Request, run_uid: str) -> Dict[str, str]:
     """Method for generating presigned urls and html for graphics page
 
     Args:
@@ -56,4 +56,4 @@ async def get_graphic_page(request: Request, run_uid: str) -> HTMLResponse:
             remote_path = remote_path.relative_to(storage_root)
             uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
 
-    return templates.TemplateResponse("include/project/graphics.html", {"request": request, "uris": uris})
+    return uris

@@ -2,6 +2,7 @@ import { getVersions } from './version.js'; // eslint-disable-line import/no-unr
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
 var METRIC_PATH = '/opsml/metrics';
+var GRAPHICS_PATH = '/opsml/runs/graphics';
 
 // creates dropdown for repositories
 function setDropdown(data, repository) {
@@ -11,6 +12,7 @@ function setDropdown(data, repository) {
     if (providedRepo === undefined) {
         providedRepo = repositories[0];
     }
+
     if (repositories.length > 0) {
         var select = document.getElementById('ProjectRepositoriesSelect');
         // remove all content from select before adding new content
@@ -55,16 +57,20 @@ function setPage(registry, repository, name, version) {
         success: function (data) {
             // get repository and names from dictionary
             setDropdown(data, repository);
-            if (providedName === undefined) {
-                providedName = data.names[0];
-            }
-            if (providedRepo === undefined) {
-                providedRepo = data.repositories[0];
-            }
 
-            alert(`ProvidedRepo: ${providedRepo}, ProvidedName: ${providedName}, ProvidedVersion: ${providedVersion}`);
-            getVersions(registry, providedRepo, providedName, providedVersion);
-
+            if (data.names.length > 0 && data.repositories.length > 0) {
+            
+                if (providedName === undefined) {
+                    providedName = data.names[0];
+                }
+                if (providedRepo === undefined) {
+                    providedRepo = data.repositories[0];
+                }
+    //
+                getVersions(registry, providedRepo, providedName, providedVersion);
+                $('#MetadataColumn').show();
+                
+            }
         },
         error: function (xhr, status, error) {
             // send request to error route on error
@@ -99,12 +105,12 @@ function setRunPage(registry, repository, name, version) {
     setPage(registry, params[0], params[1], params[2]);
 
     $('#ProjectRepositoriesSelect').select2().on('select2:select', function (e) {
-        var repo = e.params.data.id;
-        setPage(registry, repo);
+       var repo = e.params.data.id;
+       setPage(registry, repo);
     });
 
+    $('#run-version-page').toggle();
 }
-
 
 function insertCardLink(registry, dropdownId, uids) {
 
@@ -170,55 +176,60 @@ function insertRunTags(runcard) {
 }
 
 
-function insertRunMetrics(runcard) {
+function insertRunMetrics(runcard, metrics) {
   
-    // check if hidden
-    if ($('#Metrics').is(':hidden')) {
+  if (metrics !== undefined && metrics.length > 0) {
+    var request = { run_uid: runcard.uid };
 
-        var request = { run_uid: runcard.uid };
-     
-        $.ajax({
-            url: METRIC_PATH,
-            type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify(request),
-            success: function (data) {
-        
+    $.ajax({
+      url: METRIC_PATH,
+      type: 'POST',
+      dataType: 'json',
+      contentType: 'application/json',
+      data: JSON.stringify(request),
+      success: function (data) {
 
-                let metrics = data.metric;
+        let metrics = data.metric;
+
+        if (metrics !== undefined && metrics.length > 0) {
         
-                if (metrics !== undefined && metrics.length > 0) {
-                
-                    for (let i = 0; i < metrics.length; i += 1) {
-                        let metric = metrics[i];
-                        let metricBody = document.getElementById('metric-body');
-                        metricBody.innerHTML += `
-                        <tr>
-                            <td><font color="#999">${metric.name}</font></td>
-                            <td>${metric.value}</td>
-                            <td>${metric.step}</td>
-                            <td>${metric.timestamp}</td>
-                        </tr>
-                        `;
-                    }
-                } else {
-                    let metricBody = document.getElementById('metric-body');
-                    metricBody.innerHTML = '';
-                    metricBody.innerHTML += '<tr><td><font color="#999">None</font></td><tr>';
-                }
-                $('#Metrics').toggle();
-            },
-            error: function (xhr, status, error) {
-                // send request to error route on error
-                var err = JSON.parse(xhr.responseText);
-                errorToPage(JSON.stringify(err));
-            },
-        });
-    } else {
-        $('#Metrics').toggle();
-    }   
+          for (let i = 0; i < metrics.length; i += 1) {
+            let metric = metrics[i];
+            let metricBody = document.getElementById('metric-body');
+            metricBody.innerHTML += `
+            <tr>
+                <td><font color="#999">${metric.name}</font></td>
+                <td>${metric.value}</td>
+                <td>${metric.step}</td>
+                <td>${metric.timestamp}</td>
+            </tr>
+            `;
+          }
+        } else {
+            let metricBody = document.getElementById('metric-body');
+            metricBody.innerHTML = '';
+            metricBody.innerHTML += '<tr><td><font color="#999">None</font></td><tr>';
+        }
+      },
+      error: function (xhr, status, error) {
+          // send request to error route on error
+          var err = JSON.parse(xhr.responseText);
+          errorToPage(JSON.stringify(err));
+      },
+    });
+
+
+    document.getElementById('run-metrics-button').onclick = function artifactToggle() {
+        $('#RunMetrics').toggle();
+    };
+    $('#run-metrics-button').show();
+  
+  } else {
+  $('#run-metrics-button').hide();
+  }
 }
+ 
+
 
 function insertParams(runcard) {
     // check params
@@ -238,8 +249,6 @@ function insertParams(runcard) {
     else {
         $('#param-button').hide();
     }
-
-
 }
 
 function insertArtifactUris(runcard) {
@@ -271,23 +280,87 @@ function insertRunExtras(data) {
 
     // hide extra buttons
     $('#Params').hide();
-    $('#Metrics').hide();
+    $('#RunMetrics').hide();
     $('#Artifacts').hide();
 
-   
-    if (metrics !== undefined && metrics.length > 0) {
-         // set metric button on click
-        $('#metric-button').click(function () {
-            insertRunMetrics(runcard);
-        });
-        $('#metric-button').show();
-    } else {
-        $('#metric-button').hide();
-    }
-   
+
+    insertRunMetrics(runcard, metrics);
     insertParams(runcard);
     insertArtifactUris(runcard);
     
+}
+
+function insertGraphics(run_uid) {
+
+  var request = { run_uid: run_uid };
+
+  $.ajax({
+    url: GRAPHICS_PATH,
+    type: 'GET',
+    dataType: 'json',
+    data: request,
+    success: function (data) {
+
+      // get GraphicsContainer
+      var graphicsContainer = document.getElementById('GraphicsContainer');
+      graphicsContainer.innerHTML = '';
+
+      // insert graphics from data dictionary
+      Object.keys(data).forEach(function (name) {
+        var value = data[name];
+
+        // create graphic div
+        var graphic = document.createElement('div');
+        graphic.className = "graphics-child";
+        graphic.setAttribute("id", `graph_${name}`);
+         // make clickable
+
+        // create a
+        var a = document.createElement('a');
+        a.setAttribute("data-bs-toggle", "modal");
+        a.setAttribute("data-bs-target", "#ImageModal");
+        a.setAttribute("data-whatever", value);
+        a.setAttribute("data-name", name);
+        a.setAttribute("href", "#");
+
+        // create img
+        var img = document.createElement('img');
+        img.src = value;
+        img.className = "image";
+
+        // append img to a
+        a.appendChild(img);
+        // append a to graphic
+        graphic.appendChild(a);
+        // append graphic to graphicsContainer
+        graphicsContainer.appendChild(graphic);
+      });
+        
+    },
+    error: function (xhr, status, error) {
+      // send request to error route on error
+      var err = JSON.parse(xhr.responseText);
+      errorToPage(JSON.stringify(err));
+      
+    },
+  });
+
+  // Function to execute the image modal
+  $('#ImageModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var uri = button.data('whatever') // Extract info from data-* attributes
+      var name = button.data('name') // Extract info from data-* attributes
+      var modal = $(this)
+  
+  
+      modal.find('.modal-title').text(name)
+      modal.find('#modal-download').attr('href', uri)
+      modal.find('#modal-download').attr('download', name)
+      modal.find('#modal_img').attr('src', uri)
+  
+  });
+  
+   
 }
 
 
@@ -298,6 +371,29 @@ function buildRunVersionUI(data) {
     insertRunTags(runcard);
     insertRunExtras(data);
     $('#run-version-page').show();
+
+
+    // set scripts for loading graphics on click
+    $('#graphics-button').click(function () {
+        insertGraphics(runcard.uid);
+
+        // toggle others
+        $('#CardBox').hide();
+        $('#TagBox').hide();
+        $('#ExtraBox').hide();
+        $('#GraphicsBox').show();
+    });
+
+    // set scripts for loading graphics on click
+    $('#metadata-button').click(function () {
+      insertGraphics(runcard.uid);
+
+      // toggle others
+      $('#CardBox').show();
+      $('#TagBox').show();
+      $('#ExtraBox').show();
+      $('#GraphicsBox').hide();
+  });
 
 
 }

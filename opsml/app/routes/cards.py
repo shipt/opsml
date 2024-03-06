@@ -27,7 +27,10 @@ from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry import CardRegistry
 from opsml import ModelCard, DataCard, RunCard
+from opsml.model import ModelInterface
+from opsml.data import DataInterface
 from opsml.app.routes.route_helpers import ModelRouteHelper, DataRouteHelper, RunRouteHelper
+from opsml.types import RegistryType
 
 logger = ArtifactLogger.get_logger()
 
@@ -295,12 +298,22 @@ def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dic
         )
 
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
-        card = registry.load_card(name=payload.name, repository=payload.repository, version=payload.version)
+
+        # pass generic interface to load_card
+        interface = ModelInterface if registry_type == RegistryType.MODEL else DataInterface
+        card = registry.load_card(
+            name=payload.name,
+            repository=payload.repository,
+            version=payload.version,
+            interface=interface,
+        )
 
         if isinstance(card, ModelCard):
             return ModelRouteHelper().get_card_metadata(request, card)
+
         if isinstance(card, DataCard):
             return DataRouteHelper().get_card_metadata(request, card)
+
         if isinstance(card, RunCard):
             return RunRouteHelper().get_card_metadata(request, card)
 
