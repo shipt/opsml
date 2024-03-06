@@ -24,6 +24,7 @@
               <div id="CardTabBox">
               <button id="metadata-button" type="button" class="btn btn-success" >Metadata</button>
               <button id="graphics-button" type="button" class="btn btn-success">Graphics</button>
+              <button id="plots-button" type="button" class="btn btn-success">Plots</button>
               <button id="metrics-button" type="button" class="btn btn-success">Metrics</button>
               </div>
             </h4>
@@ -43,6 +44,10 @@
 
           <div class="card-body border-0" id="GraphicsBox" style="width:100%; display: none;">
             {% include "include/components/model/runcard_graphics.html" %}
+          </div>
+
+          <div class="card-body border-0" id="MetricsTab" style="width:100%; display: none;">
+            {% include "include/components/model/run_metrics.html" %}
           </div>
 
       </div>

@@ -381,6 +381,7 @@ function buildRunVersionUI(data) {
         $('#CardBox').hide();
         $('#TagBox').hide();
         $('#ExtraBox').hide();
+        $('#MetricsTab').hide();
         $('#GraphicsBox').show();
     });
 
@@ -392,8 +393,20 @@ function buildRunVersionUI(data) {
       $('#CardBox').show();
       $('#TagBox').show();
       $('#ExtraBox').show();
+      $('#MetricsTab').hide();
       $('#GraphicsBox').hide();
   });
+
+    // set metrics on click 
+    $('#metrics-button').click(function () {
+        $('#MetricsTab').toggle();
+        $('#CardBox').hide();
+        $('#TagBox').hide();
+        $('#ExtraBox').hide();
+        $('#GraphicsBox').hide();
+
+    });
+
 
 
 }
