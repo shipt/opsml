@@ -547,10 +547,10 @@ function insertGraphics(run_uid) {
    
 }
 
-function insertPlots(runcard_uri) {
+function insertPlots(runcard) {
 
-  var request = { runcard_uri: runcard_uri };
-  GraphContainer = document.getElementById('GraphContainer').innerHTML = '';
+  var request = { runcard_uri: `${runcard.repository}/${runcard.name}/v${runcard.version}` };
+
 
   $.ajax({
     url: GRAPH_PATH,
@@ -559,32 +559,33 @@ function insertPlots(runcard_uri) {
     data: request,
     success: function (data) {
 
-      keys = Object.keys(data);
-      for (var key in keys) {
+      // get GraphicsContainer
+      var GraphContainer = document.getElementById('GraphContainer');
 
-        // add figure
+      $.each(data,function(key,value){
+        
+ 
         var figure = document.createElement('figure');
-        figure.className.add("highcharts-figure");
-
+        
+        figure.classList.add("highcharts-figure");
+    
         // add div
         var div = document.createElement('div');
         div.setAttribute("id", `graph_${key}`);
-        div.className.add("graph-child");
+        div.classList.add("graph-child");
 
         // add div to figure
         figure.appendChild(div);
         GraphContainer.appendChild(figure);
 
-        var graph = graphs[key];
-        var graph_type = graph["graph_type"];
+        var graph_type = value["graph_type"];
 
         if (graph_type == "single") {
-          build_xy_chart(graph);
+          build_xy_chart(value);
         } else {
-          build_multixy_chart(graph);
+          build_multixy_chart(value);
         }
-
-      }
+     })
     },
 
     error: function (xhr, status, error) {
@@ -647,7 +648,7 @@ function buildRunVersionUI(data) {
 
     // set scripts for loading graphs on click
     $('#graph-button').click(function () {
-        //insertPlots(runcard.uri);
+        insertPlots(runcard);
      
         // toggle others
         $('#CardBox').hide();

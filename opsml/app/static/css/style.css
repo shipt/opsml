@@ -259,13 +259,14 @@ p {
   transition: all 0.3s ease 0s;
 
 }
-#plot-metric.btn-success,
-#plots-button.btn-success,
+
+
+
 #summary-button.btn-success,
 #data-profile-button.btn-success,
 #metadata-button.btn-success,
 #metrics-button.btn-success,
-#graphs-button.btn-success,
+#graph-button.btn-success,
 #graphics-button.btn-success,
 #download-button.btn-success {
   font-size: 13px;
@@ -278,13 +279,11 @@ p {
   transition: all 0.3s ease 0s;
 }
 
-#plot-metric.btn-success:hover,
-#plots-button.btn-success:hover,
 #summary-button.btn-success:hover,
 #data-profile-button.btn-success:hover,
 #metadata-button.btn-success:hover,
 #metrics-button.btn-success:hover,
-#graphs-button.btn-success:hover,
+#graph-button.btn-success:hover,
 #graphics-button.btn-success:hover,
 #download-button.btn-success:hover {
   color: #FFF;
@@ -292,13 +291,11 @@ p {
   border: 2px solid #04b78a;
 }
 
-#plot-metric.btn-success:active,
-#plots-button.btn-success:active,
 #summary-button.btn-success:active,
 #data-profile-button.btn-success:active,
 #metadata-button.btn-success:active,
 #metrics-button.btn-success:active,
-#graphs-button.btn-success:active,
+#graph-button.btn-success:active,
 #graphics-button.btn-success:active,
 #download-button.btn-success:active {
   color: #FFF;
@@ -306,13 +303,11 @@ p {
   border: 2px solid #04b78a;
 }
 
-#plot-metric.btn-success:focus,
-#plots-button.btn-success:focus,
 #summary-button.btn-success:focus,
 #data-profile-button.btn-success:focus,
 #metadata-button.btn-success:focus,
 #metrics-button.btn-success:focus,
-#graphs-button.btn-success:focus,
+#graph-button.btn-success:focus,
 #graphics-button.btn-success:focus,
 #download-button.btn-success:focus {
   color: #FFF;

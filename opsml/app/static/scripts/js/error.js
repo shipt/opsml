@@ -1,4 +1,15 @@
 var ACTIVE_CARD_PATH = '/opsml/ui/error';
+
+function GoBackWithRefresh(event) {
+    if ('referrer' in document) {
+        window.location = document.referrer;
+        /* OR */
+        //location.replace(document.referrer);
+    } else {
+        window.history.back();
+    }
+}
+
 function errorToPage(message) {
     var request = { message: message };
     return $.ajax({
@@ -11,6 +22,9 @@ function errorToPage(message) {
             document.open();
             document.write(data);
             document.close();
+            $(document).ready(function () {
+                $('#back-button').click(GoBackWithRefresh);
+            });
         },
         error: function (xhr, status, error) {
             // send request to error route on error

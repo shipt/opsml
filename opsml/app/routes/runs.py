@@ -10,6 +10,7 @@ from typing import Any, Dict
 import joblib
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
+from fastapi import HTTPException, status
 
 from opsml import CardRegistry, RunCard
 from opsml.app.core.dependencies import swap_opsml_root
@@ -17,7 +18,7 @@ from opsml.app.core.dependencies import swap_opsml_root
 # from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
-from opsml.types import SaveName
+from opsml.types import SaveName, RegistryTableNames
 
 logger = ArtifactLogger.get_logger()
 
@@ -62,8 +63,8 @@ async def get_graphic_uris(request: Request, run_uid: str) -> Dict[str, str]:
     return uris
 
 
-@router.post("/runs/graphs", name="graphs")
-async def get_graph_plots(request: Request, runcard_uri: str) -> Dict[str, str]:
+@router.get("/runs/graphs", name="graphs")
+async def get_graph_plots(request: Request, runcard_uri: str) -> Dict[str, Any]:
     """Method for loading plots for a run
 
     Args:
@@ -76,11 +77,13 @@ async def get_graph_plots(request: Request, runcard_uri: str) -> Dict[str, str]:
         Dict[str, str]: A dictionary of plot names and their corresponding plots.
     """
     storage_client: StorageClientBase = request.app.state.storage_client
+    storage_root = request.app.state.storage_root
 
     loaded_graphs: Dict[str, Any] = {}
-    uri = swap_opsml_root(request, Path(runcard_uri))
+    uri = Path(f"{storage_root}/{RegistryTableNames.RUN.value}/{runcard_uri}")
 
     graph_path = uri / SaveName.GRAPHS.value
+
     path_exists = storage_client.exists(graph_path)
 
     # skip if path does not exist
@@ -88,14 +91,20 @@ async def get_graph_plots(request: Request, runcard_uri: str) -> Dict[str, str]:
         return loaded_graphs
 
     paths = storage_client.ls(graph_path)
+
     logger.debug("Found {} graphs in {}", paths, graph_path)
     if paths:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            for path in paths:
-                rpath = graph_path / Path(path).name
-                lpath = Path(tmp_dir) / rpath.name
-                storage_client.get(rpath, lpath)
-                graph: Dict[str, Any] = joblib.load(lpath)
-                loaded_graphs[graph["name"]] = graph
+        try:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                for path in paths:
+                    rpath = graph_path / Path(path).name
+                    lpath = Path(tmp_dir) / rpath.name
 
-        return loaded_graphs
+                    storage_client.get(rpath, lpath)
+                    graph: Dict[str, Any] = joblib.load(lpath)
+                    loaded_graphs[graph["name"]] = graph
+
+            return loaded_graphs
+        except Exception as error:
+            logger.error(f"Failed to load graphs: {error}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{error}") from error
