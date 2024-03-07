@@ -1,19 +1,23 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+import tempfile
+
 # pylint: disable=protected-access
 from pathlib import Path
+from typing import Any, Dict
 
+import joblib
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
-from typing import Dict
 
+from opsml import CardRegistry, RunCard
 from opsml.app.core.dependencies import swap_opsml_root
 
 # from opsml.app.routes.utils import error_to_500
 from opsml.helpers.logging import ArtifactLogger
 from opsml.storage.client import StorageClientBase
-from opsml import CardRegistry, RunCard
+from opsml.types import SaveName
 
 logger = ArtifactLogger.get_logger()
 
@@ -25,18 +29,17 @@ router = APIRouter()
 
 
 @router.get("/runs/graphics", name="graphic_uris")
-# @error_to_500
-async def get_graphic_page(request: Request, run_uid: str) -> Dict[str, str]:
-    """Method for generating presigned urls and html for graphics page
+async def get_graphic_uris(request: Request, run_uid: str) -> Dict[str, str]:
+    """Method for generating presigned urls for graphics page
 
     Args:
         request:
             The incoming HTTP request.
-        payload:
-            ArtifactURIs
+        run_uid:
+            The uid of the run.
 
     Returns:
-        Generated HTML for graphics
+        Dict[str, str]: A dictionary of artifact names and their corresponding presigned urls.
     """
     uris = {}
 
@@ -57,3 +60,42 @@ async def get_graphic_page(request: Request, run_uid: str) -> Dict[str, str]:
             uris[name] = storage_client.generate_presigned_url(remote_path, expiration=600)
 
     return uris
+
+
+@router.post("/runs/graphs", name="graphs")
+async def get_graph_plots(request: Request, runcard_uri: str) -> Dict[str, str]:
+    """Method for loading plots for a run
+
+    Args:
+        request:
+            The incoming HTTP request.
+        run_uid:
+            The uid of the run.
+
+    Returns:
+        Dict[str, str]: A dictionary of plot names and their corresponding plots.
+    """
+    storage_client: StorageClientBase = request.app.state.storage_client
+
+    loaded_graphs: Dict[str, Any] = {}
+    uri = swap_opsml_root(request, Path(runcard_uri))
+
+    graph_path = uri / SaveName.GRAPHS.value
+    path_exists = storage_client.exists(graph_path)
+
+    # skip if path does not exist
+    if not path_exists:
+        return loaded_graphs
+
+    paths = storage_client.ls(graph_path)
+    logger.debug("Found {} graphs in {}", paths, graph_path)
+    if paths:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            for path in paths:
+                rpath = graph_path / Path(path).name
+                lpath = Path(tmp_dir) / rpath.name
+                storage_client.get(rpath, lpath)
+                graph: Dict[str, Any] = joblib.load(lpath)
+                loaded_graphs[graph["name"]] = graph
+
+        return loaded_graphs

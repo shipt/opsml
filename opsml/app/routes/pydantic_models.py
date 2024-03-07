@@ -1,7 +1,6 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
-from email import message
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import File, Form, UploadFile
@@ -174,7 +173,9 @@ class RegisterModelRequest(BaseModel):
                     * "1.1.1" = registers 1.1.1 at "1.1.1"
                 """,
     )
-    onnx: bool = Field(True, description="Flag indicating if the onnx or non-onnx model should be registered. Default True.")
+    onnx: bool = Field(
+        True, description="Flag indicating if the onnx or non-onnx model should be registered. Default True."
+    )
 
 
 class RepositoriesResponse(BaseModel):

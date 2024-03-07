@@ -6,7 +6,7 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, List, Optional, Tuple
 
 import joblib
 from fastapi import Request
@@ -16,16 +16,13 @@ from starlette.templating import _TemplateResponse
 from opsml.app.routes.pydantic_models import AuditReport
 from opsml.app.routes.utils import (
     get_names_repositories_versions,
-    list_repository_name_info,
 )
 from opsml.cards.audit import AuditCard, AuditSections
 from opsml.cards.base import ArtifactCard
 from opsml.cards.data import DataCard
 from opsml.cards.model import ModelCard
 from opsml.cards.run import RunCard
-from opsml.data.interfaces import DataInterface
 from opsml.helpers.logging import ArtifactLogger
-from opsml.model import ModelInterface
 from opsml.registry import CardRegistry
 from opsml.storage import client
 from opsml.types import ModelMetadata, SaveName, Suffix

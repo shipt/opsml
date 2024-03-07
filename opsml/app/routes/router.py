@@ -11,10 +11,10 @@ from opsml.app.routes import (
     healthcheck,
     metrics,
     models,
+    projects,
     registry,
     runs,
     ui,
-    projects,
 )
 
 api_router = APIRouter(responses={404: {"description": "Not found"}})

@@ -20,9 +20,8 @@ from opsml.app.routes.pydantic_models import (
     CommentSaveRequest,
 )
 from opsml.app.routes.route_helpers import AuditRouteHelper
-from opsml.app.routes.utils import (
+from opsml.app.routes.utils import (  # error_to_500,
     AuditFormParser,
-    # error_to_500,
     get_names_repositories_versions,
     write_records_to_csv,
 )

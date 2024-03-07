@@ -163,6 +163,7 @@ def test_opsml_read_only(
     for m in metrics:
         assert m in ["m1", "m2"]
 
+
 def test_opsml_continue_run(db_registries: CardRegistries) -> None:
     """Verify a run con be continued"""
 

@@ -48,10 +48,10 @@ def test_opsml_project_id_creation(test_app: TestClient, api_registries: CardReg
     assert len(runcard.metrics) == nbr_metrics
 
     assert project.project_id == 1
-    
+
     metrics = runcard._registry.get_metric(run_uid=info.run_id, name=["m1", "m2"])
     assert len(metrics) == 2
-    
+
     metrics = runcard._registry.get_metric(run_uid=info.run_id, name=["m1", "m2"], names_only=True)
     assert len(metrics) == 2
     for m in metrics:
@@ -80,4 +80,3 @@ def test_opsml_project_id_creation(test_app: TestClient, api_registries: CardReg
     with project.run() as run:
         pass
     assert project.project_id == 1
-    

@@ -708,7 +708,7 @@ def test_audit(test_app: TestClient, populate_model_data_for_route: Tuple[ModelC
     assert response.status_code == 200
 
 
-#def test_error_wrapper() -> None:
+# def test_error_wrapper() -> None:
 #    @error_to_500
 #    async def fail(request):
 #        raise ValueError("Fail")
