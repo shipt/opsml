@@ -1,61 +1,63 @@
 
 
-<div>
-  <div id="VersionContainer" style="padding-top:80px; ">
-    <h5 class="display-8">Select a project to view available runs</h5>
-    <div id="DropdownSelect">
-      <select id="ProjectRepositoriesSelect"></select>
-    </div>
+
+<div id="VersionContainer" style="padding-top:80px; ">
+  <h5 class="display-8">Select a project to view available runs</h5>
+  <div id="DropdownSelect">
+    <select id="ProjectRepositoriesSelect"></select>
+  </div>
+</div>
+
+
+<div class="container-fluid" id="VersionContainer">
+  <div id="header" class="page-header">
+    <h3 id="version-header"></h3> 
+    <button id="version-toggle" type="button" class="version-toggle"><i class="fa-solid fa-caret-left"></i></button>
+  </div>
+</div>
+
+<div class="boxes" id="VersionListContainer">
+  <div id="VersionColumn">
+    <div class="list-group" id="version-list"></div>
   </div>
 
-
-  <div class"containter" id="split-column">
-    <button>Versions</button>
-    <div class="boxes" id="VersionContainer">
-      <div id="VersionColumn">
-        <div id="version-header" style="display: none;"></div>
-        <div class="list-group" id="version-list">
-        </div>
+  <div id="MetadataColumn" style="display: none;">
+    <div class="card" style="width:100%;" id="meta-column">
+      <div class="card-body" id='CardUpperBox'>
+        <h4>Run 
+          <div id="CardTabBox">
+            <button id="metadata-button" type="button" class="header-button" >Metadata</button>
+            <button id="graphics-button" type="button" class="header-button">Graphics</button>
+            <button id="graph-button" type="button" class="header-button">Graphs</button>
+            <button id="metrics-button" type="button" class="header-button">Metrics</button>
+          </div>
+        </h4>
       </div>
 
-      <div id="MetadataColumn" style="display: none;">
-        <div class="card" style="width:100%;" id="meta-column">
-          <div class="card-body" id='CardUpperBox'>
-            <h4>Run 
-              <div id="CardTabBox">
-              <button id="metadata-button" type="button" class="header-button" >Metadata</button>
-              <button id="graphics-button" type="button" class="header-button">Graphics</button>
-              <button id="graph-button" type="button" class="header-button">Graphs</button>
-              <button id="metrics-button" type="button" class="header-button">Metrics</button>
-              </div>
-            </h4>
-          </div>
-
-          <div class="card border-0" id="CardBox" style="width:100%;">
-            {% include "include/components/model/metadata.html" %}
-          </div>
-
-          <div class="card-body border-0" id="TagBox" style="width:100%;">
-            {% include "include/components/tags.html" %}
-          </div>
-
-          <div class="card-body border-0" id="ExtraBox" style="width:100%;">
-            {% include "include/components/model/run_extras.html" %}
-          </div>
-
-          <div class="card-body border-0" id="GraphicsBox" style="width:100%; display: none;">
-            {% include "include/components/model/run_graphics.html" %}
-          </div>
-
-          <div class="card-body border-0" id="MetricsTab" style="width:100%; display: none;">
-            {% include "include/components/model/run_metrics.html" %}
-          </div>
-
-          <div class="card-body border-0" id="GraphTab" style="width:100%; display: none; min-height:20%;">
-            {% include "include/components/model/run_graphs.html" %}
-          </div>
-
+      <div class="card border-0" id="CardBox" style="width:100%;">
+        {% include "include/components/model/metadata.html" %}
       </div>
+
+      <div class="card-body border-0" id="TagBox" style="width:100%;">
+        {% include "include/components/tags.html" %}
+      </div>
+
+      <div class="card-body border-0" id="ExtraBox" style="width:100%;">
+        {% include "include/components/model/run_extras.html" %}
+      </div>
+
+      <div class="card-body border-0" id="GraphicsBox" style="width:100%; display: none;">
+        {% include "include/components/model/run_graphics.html" %}
+      </div>
+
+      <div class="card-body border-0" id="MetricsTab" style="width:100%; display: none;">
+        {% include "include/components/model/run_metrics.html" %}
+      </div>
+
+      <div class="card-body border-0" id="GraphTab" style="width:100%; display: none; min-height:20%;">
+        {% include "include/components/model/run_graphs.html" %}
+      </div>
+
     </div>
   </div>
 </div>
@@ -75,5 +77,6 @@
     </div>
   </div>
 </div>
+
 
 

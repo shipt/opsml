@@ -294,6 +294,11 @@ function setRunPage(registry, repository, name, version) {
     });
 
     $('#run-version-page').toggle();
+
+    // set hide VersionContainer when version-toggle is clicked
+    $('#version-toggle').click(function () {
+      $('#VersionColumn').toggle();
+  });
 }
 
 function insertCardLink(registry, dropdownId, uids) {
