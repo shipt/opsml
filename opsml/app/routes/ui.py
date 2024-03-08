@@ -11,7 +11,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from opsml import CardRegistry
-from opsml.app.routes.pydantic_models import ErrorMessage
+from opsml.app.routes.pydantic_models import ErrorMessage, XYMetric, GetMetricRequest, Metrics
+from opsml.app.routes.metrics import get_metric
 from opsml.helpers.logging import ArtifactLogger
 from opsml.types import RegistryType
 
@@ -136,6 +137,27 @@ async def error_to_500(request: Request, payload: ErrorMessage) -> HTMLResponse:
                 "error_message": payload.message,
             },
         )
+    except Exception as e:
+        logger.error(f"Error rendering 500 page: {e}")
+        return HTMLResponse(status_code=500, content="Internal Server Error")
+
+
+@router.post("/opsml/ui/metrics")
+async def get_metrics_for_ui(request: Request, payload: GetMetricRequest) -> Dict[str, XYMetric]:
+    """Gets metrics from the metric table and formats for rendering in UI"""
+    try:
+        metric_dump = {}
+        metrics: Metrics = get_metric(request, payload)
+
+        for metric in metrics.metric:
+            if metric.name not in metric_dump:
+                metric_dump[metric.name] = {"x": [], "y": []}
+
+            metric_dump[metric.name]["x"].append(metric.step)
+            metric_dump[metric.name]["y"].append(metric.value)
+
+        return metric_dump
+
     except Exception as e:
         logger.error(f"Error rendering 500 page: {e}")
         return HTMLResponse(status_code=500, content="Internal Server Error")

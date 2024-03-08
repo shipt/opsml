@@ -1,7 +1,9 @@
 import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
+import { buildBarChart } from './highchart_helper.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
 var METRIC_PATH = '/opsml/metrics';
+var METRIC_UI_PATH = '/opsml/ui/metrics';
 var GRAPHICS_PATH = '/opsml/runs/graphics';
 var GRAPH_PATH = '/opsml/runs/graphs';
 
@@ -605,7 +607,35 @@ function insertPlots(runcard) {
 }
 
 
-function insertMetricPlots(metrics) {
+function getMetrics(runName, chartType, runUid, metricList) {
+
+  var request = { run_uid: runUid, name: metricList };
+
+  $.ajax({
+    url: METRIC_UI_PATH,
+    type: 'POST',
+    dataType: 'json',
+    contentType: 'application/json',
+    data: JSON.stringify(request),
+    success: function (data) {
+      
+
+      if (chartType == "bar") {
+        buildBarChart(runName, data);
+      }
+    },
+    
+    error: function (xhr, status, error) {
+      // send request to error route on error
+      var err = JSON.parse(xhr.responseText);
+      errorToPage(JSON.stringify(err));
+    },
+  });
+
+}
+
+
+function insertMetricPlots(runName, runUid, metrics) {
 
   var metricsContainer = document.getElementById('metric-card-block');
   metricsContainer.innerHTML = '';
@@ -633,14 +663,19 @@ function insertMetricPlots(metrics) {
     
   // find metric-card-button class when clicked and toggle metric-button-color class for all divs
   $('.metric-card-button').click(function () {
+    let chartType = $(this).data('value');
+
     $(this).toggleClass('metric-button-color');
     // find all metric-card-button classes and remove metric-button-color class
     $('.metric-card-button').not(this).removeClass('metric-button-color'); 
 
-    var getMetrics = [];
+    var metricList = [];
     $('#myForm input:checked').each(function() {;
-      getMetrics.push($(this).attr('name'));
+      metricList.push($(this).attr('name'));
     });
+
+  
+    getMetrics(runName, chartType, runUid, metricList);
 
     // call ajax and pass runcard_uid and getMetrics
   });
@@ -692,7 +727,7 @@ function buildRunVersionUI(data) {
         $('#ExtraBox').hide();
         $('#GraphTab').hide();
         $('#GraphicsBox').hide();
-        insertMetricPlots(data.metrics);
+        insertMetricPlots(runcard.name, runcard.uid, data.metrics);
 
     });
 
