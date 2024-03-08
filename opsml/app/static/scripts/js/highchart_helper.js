@@ -21,7 +21,11 @@ function buildBarChart (name, metrics) {
 
     Highcharts.chart('MetricChart', {
         chart: {
-          type: 'column'
+          type: 'column',
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          height: (9 / 16 * 90) + '%',
         },
         title: {
           text: `Metrics for ${name}`,

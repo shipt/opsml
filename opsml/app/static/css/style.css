@@ -76,23 +76,6 @@ p {
   padding-bottom: 10%;
 }
 
-#MetricContainer {
-  min-height: 20vh;
-  overflow: auto;
-}
-
-
-#PlotColumn {
-  padding-left: 1%;
-  min-width:70%;
-  padding-right: 5%;
-  overflow: auto;
-}
-
-#MetricChart {
-  min-height:60%;
-}
-
 
 .list-group {
   -webkit-overflow-scrolling: touch;
@@ -830,11 +813,19 @@ pre {
   border: 2px solid #04b78a;
 }
 
+
+#MetricContainer, #PlotColumn {
+  min-height: 55vh;
+  margin-bottom: 5vh;
+  overflow: auto;
+}
+
 #MetricSelectColumn {
+  float:left;
   min-width: 15%;
   max-width: 20%;
-  min-height: 20vh;
-  max-height: 40vh;
+  min-height: 20%;
+  max-height: 50%;
   overflow-x: scroll;
   overflow-y: scroll;
   margin-left: 1%;
@@ -843,6 +834,32 @@ pre {
   border-radius: 25px !important;
   border-color: #000000;
 }
+
+#PlotColumn {
+  padding-left: 1%;
+}
+
+#PlotCard {
+  min-height: 30%;
+  max-height: 50%;
+  min-width: 30%;
+  max-width: 50%;
+  box-shadow:  -0.5vw 0.5vw 0 0 black;
+  border-radius: 25px !important;
+  border-color: #000000;
+}
+
+#MetricChart {
+  margin-top: 3%;
+  margin-left: 2%;
+  min-height: 30%;
+  max-height: 50%;
+  min-width: 30%;
+  max-width: 95%;
+
+}
+
+
 
 #metric-card-header {
   background: rgb(75, 57, 120);
