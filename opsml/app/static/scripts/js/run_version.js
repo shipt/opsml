@@ -298,7 +298,8 @@ function setRunPage(registry, repository, name, version) {
     // set hide VersionContainer when version-toggle is clicked
     $('#version-toggle').click(function () {
       $('#VersionColumn').toggle();
-  });
+    });
+    
 }
 
 function insertCardLink(registry, dropdownId, uids) {
@@ -604,6 +605,49 @@ function insertPlots(runcard) {
 }
 
 
+function insertMetricPlots(metrics) {
+
+  var metricsContainer = document.getElementById('metric-card-block');
+  metricsContainer.innerHTML = '';
+
+  for (var i = 0; i < metrics.length; i += 1) {
+    var metric = metrics[i];
+    var metricDiv = document.createElement('div');
+    metricDiv.classList.add('form-check');
+    
+    var input = document.createElement('input');
+    input.classList.add('form-check-input');
+    input.setAttribute("type", "checkbox");
+    input.setAttribute("name", metric);
+    input.setAttribute("id", metric);
+
+    var label = document.createElement('label');
+    label.classList.add('form-check-label');
+    label.setAttribute("for", metric);
+    label.innerHTML = metric;
+
+    metricDiv.appendChild(label);
+    metricDiv.appendChild(input);
+    metricsContainer.appendChild(metricDiv);
+  }
+    
+  // find metric-card-button class when clicked and toggle metric-button-color class for all divs
+  $('.metric-card-button').click(function () {
+    $(this).toggleClass('metric-button-color');
+    // find all metric-card-button classes and remove metric-button-color class
+    $('.metric-card-button').not(this).removeClass('metric-button-color'); 
+
+    var getMetrics = [];
+    $('#myForm input:checked').each(function() {;
+      getMetrics.push($(this).attr('name'));
+    });
+
+    // call ajax and pass runcard_uid and getMetrics
+  });
+
+
+}
+
 function buildRunVersionUI(data) {
     var runcard = data.card;
 
@@ -648,6 +692,7 @@ function buildRunVersionUI(data) {
         $('#ExtraBox').hide();
         $('#GraphTab').hide();
         $('#GraphicsBox').hide();
+        insertMetricPlots(data.metrics);
 
     });
 

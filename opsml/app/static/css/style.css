@@ -57,7 +57,7 @@ p {
 }
 
 
-#VersionListContainer {
+#VersionListContainer, #MetadataColumn {
   overflow: auto;
 }
 
@@ -74,9 +74,25 @@ p {
   padding-left: .6%;
   padding-right: 1%;
   padding-bottom: 10%;
-  overflow: scroll;
-
 }
+
+#MetricContainer {
+  min-height: 20vh;
+  overflow: auto;
+}
+
+
+#PlotColumn {
+  padding-left: 1%;
+  min-width:70%;
+  padding-right: 5%;
+  overflow: auto;
+}
+
+#MetricChart {
+  min-height:60%;
+}
+
 
 .list-group {
   -webkit-overflow-scrolling: touch;
@@ -90,26 +106,6 @@ p {
     border: none;
     color: white;
 }
-
-#MetricSelectColumn {
-  float:left;
-  width:14%;
-  padding-right: 1%;
-  border: 2px solid #5e0fb7;
-  border-radius: 25px;
-}
-
-#PlotColumn {
-  float:left;
-  padding-left: 1%;
-  width:80%;
-  padding-right: 5%;
-}
-
-#MetricChart {
-  height:60%;
-}
-
 
 
 #CardBox,
@@ -222,23 +218,6 @@ p {
 
 }
 
-#CardDropdownSelect .dropdown-toggle {
-  font-size: 0.9vw;
-  color: #04b78a;
-  letter-spacing: 1px;
-  line-height: 15px;
-  border: 2px solid #04b78a;
-  border-radius: 40px;
-  background: transparent;
-  transition: all 0.3s ease 0s;
-}
-
-#CardDropdownSelect .dropdown-toggle:hover {
-  color: #FFF;
-  background: #04b78a;
-  border: 2px solid #04b78a;
-}
-
 
 .header-button {
   font-size: 13px;
@@ -348,7 +327,6 @@ p {
   padding-left: 2.5%;
   padding-right: 2.5%;
 }
-
 
 
 #VersionRow {
@@ -484,11 +462,6 @@ p {
   background-color: #5e0fb7;
   border-color: #5e0fb7;
 }
-
-#plot-button {
-  background-color: #f44336;
-}
-
 
 
 #project-button.btn-success {
@@ -633,13 +606,15 @@ clipboard-copy:focus-visible {
 }
 
 .select2.select2-container {
-  width: 25% !important;
+  min-width: 25% !important;
+  max-width: 30% !important;
 }
 
 .select2.select2-container .select2-selection {
   border: 1px solid #ccc;
   border-radius: 1%;
   height: 4vh;
+  max-height: 8vh;
   margin-bottom: 1vh;
   outline: none !important;
   transition: all .15s ease-in-out;
@@ -818,6 +793,11 @@ pre {
 
 #header {
   display: flex;
+  align-items: center; /* Vertical align the elements to the center */
+}
+
+#metric-card-footer {
+  display: flex;
   align-items: left; /* Vertical align the elements to the center */
 }
 
@@ -849,4 +829,73 @@ pre {
   background: #04b78a;
   border: 2px solid #04b78a;
 }
+
+#MetricSelectColumn {
+  min-width: 15%;
+  max-width: 20%;
+  min-height: 20vh;
+  max-height: 40vh;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  margin-left: 1%;
+  margin-right: 1%;
+  box-shadow:  -0.5vw 0.5vw 0 0 black;
+  border-radius: 25px !important;
+  border-color: #000000;
+}
+
+#metric-card-header {
+  background: rgb(75, 57, 120);
+  color: white !important;
+  text-align: center;
+}
+
+#metric-card-block {
+  text-align: left;
+  padding-left: 4%;
+  margin-top: 0%;
+  padding-top: 0%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+#submit-bar-plot,
+#submit-step-plot
+ {
+  width: 50%;
+  text-align: center;
+  padding-top: 1%;
+}
+
+
+#submit-bar-plot {
+  border-right: solid 1px white;
+}
+
+#metric-card-footer {
+  padding: 0px;
+  height: 4vh;
+}
+
+.metric-card-button {
+  color: #04b78a;
+  background: white;
+  transition: all 0.3s ease 0s;
+}
+
+.metric-card-button:hover,
+.metric-card-button:active,
+.metric-card-button:focus,
+.metric-card-button:visited {
+  color: #FFF;
+  background: #04b78a;
+}
+
+.metric-button-color {
+  color: #FFF;
+  background: #04b78a;
+}
+
+
+
 

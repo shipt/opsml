@@ -123,8 +123,6 @@ function getVersions(registry, repository, name, version) {
                 });
             }
 
-            
-
             // check if version is not set
             if (providedVersion === undefined) {
                 providedVersion = cardVersions[0].version;
