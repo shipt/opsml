@@ -58,6 +58,7 @@ function createVersionElements(cardVersions, activeVersion, registry, name) {
     // get the version list
     var versionHeader = document.getElementById('version-header');
     versionHeader.innerHTML = name;
+    
     var versionList = document.getElementById('version-list');
     versionList.innerHTML = ''; // clear the version list
     var _loop_1 = function (i) {
@@ -161,5 +162,11 @@ function setVersionPage(registry, repository, name, version) {
     // get_version_page(registry, name, repository, version);
     document.getElementById('versions').classList.add('active');
     document.getElementById('available').classList.remove('active');
+
+    // set hide VersionContainer when version-toggle is clicked
+    $('#version-toggle').click(function () {
+        $('#VersionColumn').toggle();
+    });
+
 }
 export { setVersionPage, getVersions, createVersionElements, };

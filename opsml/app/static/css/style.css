@@ -262,6 +262,7 @@ p {
 
 
 
+#plot-metric.btn-success,
 #summary-button.btn-success,
 #data-profile-button.btn-success,
 #metadata-button.btn-success,
@@ -279,6 +280,7 @@ p {
   transition: all 0.3s ease 0s;
 }
 
+#plot-metric.btn-success:hover,
 #summary-button.btn-success:hover,
 #data-profile-button.btn-success:hover,
 #metadata-button.btn-success:hover,
@@ -291,6 +293,7 @@ p {
   border: 2px solid #04b78a;
 }
 
+#plot-metric.btn-success:active,
 #summary-button.btn-success:active,
 #data-profile-button.btn-success:active,
 #metadata-button.btn-success:active,
@@ -303,6 +306,7 @@ p {
   border: 2px solid #04b78a;
 }
 
+#plot-metric.btn-success:focus,
 #summary-button.btn-success:focus,
 #data-profile-button.btn-success:focus,
 #metadata-button.btn-success:focus,
@@ -421,7 +425,7 @@ p {
   margin: 0px;
 }
 
-
+#VersionListContainer,
 #VersionContainer {
   padding-left: 2.5%;
   padding-right: 2.5%;
@@ -961,3 +965,39 @@ pre {
   background: transparent;
   transition: all 0.3s ease 0s;
 }
+
+#header {
+  border: 1px dotted black;
+  display: flex;
+  align-items: left; /* Vertical align the elements to the center */
+}
+
+
+#version-toggle.btn-success {
+  margin-left: 0.5em;
+  border-radius: 50%;
+  height: 2em;
+  width: 2em;
+  margin-top: 0.2em;
+  color: #04b78a;
+  letter-spacing: 1px;
+  line-height: 15px;
+  border: 2px solid #04b78a;
+  background: transparent;
+  transition: all 0.3s ease 0s;
+}
+
+#version-toggle i {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#version-toggle.btn-success:hover,
+#version-toggle.btn-success:active,
+#version-toggle.btn-success:focus {
+  color: #FFF;
+  background: #04b78a;
+  border: 2px solid #04b78a;
+}
+

@@ -1,18 +1,19 @@
 
 <div>
     <div class="container-fluid" id="VersionContainer">
-        <div class="page-header">
-          <h2 id="version-header"></h2>
+        <div id="header" class="page-header">
+          <h2 id="version-header"></h2> 
+          <button id="version-toggle" type="button" class="btn btn-success"><i class="fa-solid fa-caret-left"></i></button>
         </div>
     </div>
   
     <div class"containter" id="split-column">
-       <!---Create vesion tables ------>
-      <div class="boxes" id="VersionContainer">
-        <div id="VersionColumn">
-          <div class="list-group" id="version-list"></div>
-        </div>
+      <div class="boxes" id="VersionListContainer">
+          <div id="VersionColumn">
+            <div class="list-group" id="version-list"></div>
+         </div>
   
+
         <div id="MetadataColumn">
 
           {% if registry == 'model' %}
