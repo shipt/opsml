@@ -262,80 +262,43 @@ p {
 
 
 
-#plot-metric.btn-success,
-#summary-button.btn-success,
-#data-profile-button.btn-success,
-#metadata-button.btn-success,
-#metrics-button.btn-success,
-#graph-button.btn-success,
-#graphics-button.btn-success,
-#download-button.btn-success {
+.header-button {
   font-size: 13px;
   color: #04b78a;
   letter-spacing: 1px;
   line-height: 15px;
+  min-height: 2.2em;
+  min-width: 6em;
   border: 2px solid #04b78a;
   border-radius: 40px;
   background: transparent;
   transition: all 0.3s ease 0s;
 }
 
-#plot-metric.btn-success:hover,
-#summary-button.btn-success:hover,
-#data-profile-button.btn-success:hover,
-#metadata-button.btn-success:hover,
-#metrics-button.btn-success:hover,
-#graph-button.btn-success:hover,
-#graphics-button.btn-success:hover,
-#download-button.btn-success:hover {
+.header-button:hover {
   color: #FFF;
   background: #04b78a;
   border: 2px solid #04b78a;
 }
 
-#plot-metric.btn-success:active,
-#summary-button.btn-success:active,
-#data-profile-button.btn-success:active,
-#metadata-button.btn-success:active,
-#metrics-button.btn-success:active,
-#graph-button.btn-success:active,
-#graphics-button.btn-success:active,
-#download-button.btn-success:active {
+.header-button:active {
   color: #FFF;
   background: #04b78a;
   border: 2px solid #04b78a;
 }
 
-#plot-metric.btn-success:focus,
-#summary-button.btn-success:focus,
-#data-profile-button.btn-success:focus,
-#metadata-button.btn-success:focus,
-#metrics-button.btn-success:focus,
-#graph-button.btn-success:focus,
-#graphics-button.btn-success:focus,
-#download-button.btn-success:focus {
+.header-button:focus {
   color: #FFF;
   background: #04b78a;
   border: 2px solid #04b78a;
 }
 
-
-#run-metrics-button.btn-success,
-#metadata-extra-button.btn-success, 
-#artifact-button.btn-success,
-#metric-button.btn-success,
-#sample-data-button.btn-success,
-#param-button.btn-success,
-#split-button.btn-success,
-#dep-var-button.btn-success,
-#feature-map-button.btn-success,
-#feature-desc-button.btn-success,
-#sql-button.btn-success,
-#version-button.btn-success
-{
+.extra-button {
   font-size: 13px;
   color: #5e0fb7;
   letter-spacing: 1px;
+  min-height: 2.2em;
+  min-width: 6em;
   line-height: 15px;
   border: 2px solid #5e0fb7;
   border-radius: 40px;
@@ -343,37 +306,14 @@ p {
   transition: all 0.3s ease 0s;
 }
 
-#run-metrics-button.btn-success:hover,
-#metadata-extra-button.btn-success:hover, 
-#artifact-button.btn-success:hover, 
-#sample-data-button.btn-success:hover,
-#metric-button.btn-success:hover,
-#param-button.btn-success:hover,
-#split-button.btn-success:hover,
-#dep-var-button.btn-success:hover,
-#feature-map-button.btn-success:hover,
-#feature-desc-button.btn-success:hover,
-#sql-button.btn-success:hover,
-#artifact-button.btn-success:hover,
-#version-button.btn-success:hover
+.extra-button:hover
 {
   color: #FFF;
   background: #5e0fb7;
   border: 2px solid #5e0fb7;
 }
 
-#run-metrics-button.btn-success:focus,
-#metadata-extra-button.btn-success:focus,
-#metric-button.btn-success:focus,
-#sample-data-button.btn-success:focus,
-#param-button.btn-success:focus,
-#split-button.btn-success:focus,
-#dep-var-button.btn-success:focus,
-#feature-map-button.btn-success:focus,
-#feature-desc-button.btn-success:focus,
-#sql-button.btn-success:focus,
-#artifact-button.btn-success:focus,
-#version-button.btn-success:focus
+.extra-button:focus
 {
   color: #FFF;
   background: #5e0fb7;
