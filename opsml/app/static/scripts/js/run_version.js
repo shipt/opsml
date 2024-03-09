@@ -1,6 +1,6 @@
 import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
 import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
-import { buildBarChart } from './highchart_helper.js'; // eslint-disable-line import/no-unresolved
+import { buildBarChart, buildLineChart } from './highchart_helper.js'; // eslint-disable-line import/no-unresolved
 var REPO_NAMES_PATH = '/opsml/repository';
 var METRIC_PATH = '/opsml/metrics';
 var METRIC_UI_PATH = '/opsml/ui/metrics';
@@ -622,9 +622,11 @@ function getMetrics(runName, chartType, runUid, metricList) {
 
       if (chartType == "bar") {
         buildBarChart(runName, data);
+      } else {
+        buildLineChart(runName, data);
       }
     },
-    
+
     error: function (xhr, status, error) {
       // send request to error route on error
       var err = JSON.parse(xhr.responseText);
