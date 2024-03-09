@@ -816,7 +816,8 @@ pre {
 
 #MetricContainer, #PlotColumn {
   min-height: 55vh;
-  margin-bottom: 5vh;
+  max-height: 90%;
+  margin-bottom: 2vh;
   overflow: auto;
 }
 
@@ -828,7 +829,7 @@ pre {
   max-height: 50%;
   overflow-x: scroll;
   overflow-y: scroll;
-  margin-left: 1%;
+  margin-left: 5%;
   margin-right: 1%;
   box-shadow:  -0.5vw 0.5vw 0 0 black;
   border-radius: 25px !important;
@@ -840,13 +841,13 @@ pre {
 }
 
 #PlotCard {
-  min-height: 30%;
-  max-height: 50%;
   min-width: 30%;
-  max-width: 50%;
+  max-width: 90%;
   box-shadow:  -0.5vw 0.5vw 0 0 black;
   border-radius: 25px !important;
   border-color: #000000;
+  margin-bottom: 3%;
+  margin-left: 5%;
 }
 
 #MetricChart {
