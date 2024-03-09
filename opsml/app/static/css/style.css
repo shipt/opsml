@@ -915,5 +915,11 @@ pre {
 }
 
 
+#ProfileBox {
+  margin-bottom: 2%;
+}
 
-
+#data-profile-html {
+  min-height: 100vh;
+  max-height: 150vh;
+}
