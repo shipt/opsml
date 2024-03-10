@@ -1,5 +1,6 @@
 
-import _ from 'select2';
+import _ from 'select2';import showdown from 'showdown';
+import * as Prism from 'prismjs';
 
 import { getRepoNamesPage } from './repositories';
 import { setVersionPage } from './version';
@@ -12,7 +13,6 @@ declare global {
         select2(): any; // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   }
-
 
 // set active class on nav item
 // registry: string
