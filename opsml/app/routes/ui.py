@@ -161,3 +161,10 @@ async def get_metrics_for_ui(request: Request, payload: GetMetricRequest) -> Dic
     except Exception as e:
         logger.error(f"Error rendering 500 page: {e}")
         return HTMLResponse(status_code=500, content="Internal Server Error")
+
+
+@router.get("/opsml/dev")
+async def test(
+    request: Request,
+) -> HTMLResponse:
+    return templates.TemplateResponse("include/test.html", {"request": request})

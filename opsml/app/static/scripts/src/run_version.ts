@@ -1,6 +1,7 @@
-import { getVersions } from './version.js'; // eslint-disable-line import/no-unresolved
-import { errorToPage } from './error.js'; // eslint-disable-line import/no-unresolved
-import { buildBarChart, buildLineChart } from './highchart_helper.js'; // eslint-disable-line import/no-unresolved
+import { getVersions } from './version';
+import { errorToPage } from './error';
+import { buildBarChart, buildLineChart } from './highchart_helper';
+
 var REPO_NAMES_PATH = '/opsml/repository';
 var METRIC_PATH = '/opsml/metrics';
 var METRIC_UI_PATH = '/opsml/ui/metrics';

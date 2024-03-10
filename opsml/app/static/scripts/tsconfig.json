@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
         "module": "es6", 
-        "rootDir": "typescript/",
-        "outDir": "js/",
+        "outDir": "./dist/",
+        "noImplicitAny": true,
         "esModuleInterop": true,
         "moduleResolution":"node",
         "lib": ["ES2022", "DOM"],
+        "allowJs": true,
+        "sourceMap": true,
     },  
     "include": [
         "typescript/*"
