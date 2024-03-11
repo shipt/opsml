@@ -139,7 +139,7 @@ function insertModelMetadata(data: Data, modelcard: Card, metadata: ModelMetadat
     $('#TagBox').show();
     $('#ExtraBox').show();
     $('#SummaryBox').hide();
-    $(this).addClass('active');
+
   };
 }
 
@@ -290,7 +290,6 @@ function insertModelSummary(modelcard: Card) {
     $('#TagBox').hide();
     $('#ExtraBox').hide();
     $('#SummaryBox').show();
-    $(this).addClass('active');
   };
 }
 
@@ -302,6 +301,20 @@ function buildModelVersionUI(data: Data) {
   insertModelTags(data);
   insertModelExtras(data);
   insertModelSummary(modelcard);
+
+  // check if the button is not active
+  $('.header-tab').on('click', function(){
+    $('.header-tab').removeClass('selected');
+    $('.header-tab').css({'background-color': '#f1f1f1', "border": "2px solid #ffffff", "color": "rgb(85, 85, 85)"});
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+
+  });
+
+  // set metadata-button to default
+  $('#metadata-button').addClass('selected');
+  $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+
 }
 
 export { buildModelVersionUI, Data, Card }; // eslint-disable-line

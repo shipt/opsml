@@ -937,3 +937,33 @@ pre {
 #RepositoryContainer {
   margin-left: 5%;
 }
+
+
+.header-tab {
+  font-size: 14px;
+  color: rgb(85, 85, 85);
+  letter-spacing: 1px;
+  line-height: 15px;
+  min-height: 3em;
+  min-width: 7em;
+  background: #f1f1f1;
+  transition: all 0.3s ease 0s;
+  border: none;
+  border-top: 2px solid #ffffff;
+}
+
+
+.header-tab:hover,
+.header-tab:active,
+.header-tab:focus,
+.header-tab:selected {
+  background: #ffffff;
+  color: #04b78a;
+  border-top: 2px solid #04b78a;
+}
+
+#CardTabBox {
+  margin-top: 1%;
+}
+
+
