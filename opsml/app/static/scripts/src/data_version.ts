@@ -230,7 +230,6 @@ function insertSummary(datacard: Card, metadata: CardMetadata) {
       $('#ExtraBox').hide();
       $('#ProfileBox').hide();
       $('#SummaryBox').show();
-      $(this).addClass('active');
     };
 }
 
@@ -247,7 +246,6 @@ function insertHtmlIframe(data) {
       $('#ExtraBox').hide();
       $('#SummaryBox').hide();
       $('#ProfileBox').show();
-      $(this).addClass('active');
     };
 }
 
@@ -259,6 +257,19 @@ function buildDataVersionUI(data: Data) {
   insertDataExtras(data, datacard, metadata);
   insertSummary(datacard, metadata);
   insertHtmlIframe(data);
+
+  // check if the button is not active
+  $('.header-tab').on('click', function(){
+    $('.header-tab').removeClass('selected');
+    $('.header-tab').css({'background-color': '#f1f1f1', "border": "2px solid #ffffff", "color": "rgb(85, 85, 85)"});
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+
+  });
+
+  // set metadata-button to default
+  $('#metadata-button').addClass('selected');
+  $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
 }
 
 export { buildDataVersionUI, Data, Card }; // eslint-disable-line import/prefer-default-export
