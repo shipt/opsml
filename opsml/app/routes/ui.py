@@ -19,13 +19,13 @@ from opsml.types import RegistryType
 # Constants
 TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
-favicon_path = Path(__file__).parents[1] / "static" / "images" / "favicon.ico"
+favicon_path = Path(__file__).parents[1] / "static" / "favicon" / "favicon.ico"
 logger = ArtifactLogger.get_logger()
 
 router = APIRouter()
 
 
-@router.get("/favicon.ico", include_in_schema=False)
+@router.get("/favicon.ico", include_in_schema=True)
 async def favicon() -> FileResponse:
     return FileResponse(favicon_path)
 

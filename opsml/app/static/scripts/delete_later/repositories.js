@@ -110,7 +110,7 @@ function setDropdown(data, registry, repository) {
 
       const cardImg = document.createElement('img');
       cardImg.className = 'center-block';
-      cardImg.src = '/static/images/chip.png';
+      cardImg.src = '../images/chip.png';
       cardImg.width = '40';
       cardImg.height = '40';
 

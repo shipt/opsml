@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import '@github/clipboard-copy-element'
 
 import { getRepoNamesPage } from './repositories.js'; // eslint-disable-line import/no-unresolved
 import { setVersionPage } from './version.js'; // eslint-disable-line import/no-unresolved

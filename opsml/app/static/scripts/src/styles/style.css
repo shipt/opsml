@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: Boing;
-    src: url("/static/fonts/custom/medium.otf") format("opentype");
+    src: url("./fonts/medium.otf") format("opentype");
     font-style: normal;
     font-weight: medium;
     }
@@ -10,7 +10,7 @@
     
 @font-face {
     font-family: Boing;
-    src: url("/static/fonts/custom/bold.otf") format("opentype");
+    src: url("./fonts/bold.otf") format("opentype");
     font-style: normal;
     font-weight: bold;
     }
@@ -19,7 +19,7 @@
 body {
     font-family: Boing;
     font-weight: normal;
-    background-image: url( '/static/images/opsml-background2.svg' );
+    background-image: url( '../images/opsml-background2.svg' );
     min-height: 100vh;
 }
 
@@ -27,7 +27,7 @@ body {
     font-family: Boing;
     font-weight: medium;
     background: #fafafa;
-    background-image: url(/static/images/opsml-background2.svg);
+    background-image: url('../images/opsml-background2.svg');
     background-attachment:fixed;
     background-position: right center;
     background-repeat: no-repeat;
@@ -64,7 +64,7 @@ p {
 #VersionColumn {
   float:left;
   max-width:20%;
-  min-width:15%;
+  min-width:10%;
   padding-right: 1%;
   font-size: 15px;
 }
@@ -76,19 +76,6 @@ p {
   padding-bottom: 10%;
 }
 
-
-.list-group {
-  -webkit-overflow-scrolling: touch;
-  overflow-y:scroll; 
-  height: 700px;
-}
-
-.list-group .active {
-    background-color: rgb(75, 57, 120);
-    border-color: #5e0fb7;
-    border: none;
-    color: white;
-}
 
 
 #CardBox,
@@ -404,7 +391,7 @@ p {
 
 #homepage-cards {
 
-    background: url(static/images/opsml-logo.png);
+    background: url('../images/opsml-logo.png');
     z-index: 2;
 }
 
@@ -920,6 +907,33 @@ pre {
 }
 
 #data-profile-html {
-  min-height: 100vh;
-  max-height: 150vh;
+  min-height: 150vh;
+  max-height: 200vh;
+}
+
+.list-group {
+  -webkit-overflow-scrolling: touch;
+  overflow-y:scroll; 
+  height: 700px;
+}
+
+#version-link.active {
+  background-color: rgb(75, 57, 120);
+  border-color: #5e0fb7;
+  border: none;
+  color: white;
+}
+
+#navbar-logo {
+  content: url('../images/opsml-logo.png');
+  width: 40px;
+  height: 40px;
+}
+
+#artifact-card-center {
+  content: url('../images/chip.png');
+}
+
+#RepositoryContainer {
+  margin-left: 5%;
 }

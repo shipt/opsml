@@ -1,4 +1,16 @@
 import $ from 'jquery';
+require('select2');
+
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import '@github/clipboard-copy-element'
+import 'select2/dist/css/select2.css';
+import '@fortawesome/fontawesome-free/js/fontawesome'
+import '@fortawesome/fontawesome-free/js/solid'
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/prism.css';
+import './styles/style.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import { getRepoNamesPage } from './repositories';
 import { setVersionPage } from './version';

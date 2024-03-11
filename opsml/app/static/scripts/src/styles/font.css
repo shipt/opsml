@@ -1,7 +1,7 @@
 /* Scandia Fonts */
 @font-face {
     font-family: "Scandia";
-    src: url("/static/fonts/scandia/Scandia-Regular.otf") format("opentype"),
+    src: url("fonts/scandia/Scandia-Regular.otf") format("opentype"),
       url("/static/fonts/scandia/Scandia-Regular.eot") format("embedded-opentype"),
       url("/static/fonts/scandia/Scandia-Regular.woff2") format("woff2"),
       url("/static/fonts/scandia/Scandia-Regular.woff") format("woff");

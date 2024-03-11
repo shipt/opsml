@@ -1,3 +1,4 @@
+
 import { buildModelVersionUI } from './model_version';
 import { buildDataVersionUI } from './data_version';
 import { buildRunVersionUI } from './run_version';
@@ -97,6 +98,7 @@ function createVersionElements(
     const cardName: string = cardVersions[i].name;
     const version: Card = cardVersions[i];
     const versionLink: HTMLAnchorElement = document.createElement('a');
+    versionLink.id = 'version-link';
 
     // version_link should be clickable
     versionLink.href = '#';
