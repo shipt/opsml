@@ -1,5 +1,6 @@
 import { buildModelVersionUI } from './model_version';
 import { buildDataVersionUI } from './data_version';
+import { buildRunVersionUI } from './run_version';
 import { errorToPage } from './error';
 import * as dataVer from './data_version';
 import * as modelVer from './model_version';
@@ -37,6 +38,8 @@ function buildCard(data: CardData) {
     buildModelVersionUI(data as modelVer.Data);
   } else if (data.registry === 'data') {
     buildDataVersionUI(data as dataVer.Data);
+  } else if (data.registry === 'run') {
+    buildRunVersionUI(data);
   }
 }
 
@@ -55,7 +58,7 @@ function setCardView(request: CardRequest) {
       // set the card view
       buildCard(data);
 
-      const url: string = `/opsml/ui?registry=${request.registry_type}&repository=${request.repository}&name=${request.name}&version=${request.version}`;
+      const url: string = '/opsml/ui?registry='.concat(request.registry_type, '&repository=').concat(request.repository, '&name=').concat(request.name, '&version=').concat(request.version);
       window.history.pushState('version_page', 'version', url.toString());
     },
 
@@ -147,6 +150,11 @@ function getVersions(registry:string, repository: string, name?:string, version?
     success(data) {
       const cardVersions: Card[] = data.cards;
 
+      // sort cardversion array by timestamp
+      if (registry === 'run') {
+        cardVersions.sort((a, b) => b.timestamp - a.timestamp);
+      }
+
       // check if version is not set
       if (providedVersion === undefined) {
         providedVersion = cardVersions[0].version;
@@ -190,6 +198,11 @@ function setVersionPage(registry:string, repository:string, name:string, version
   // get_version_page(registry, name, repository, version);
   document.getElementById('versions')!.classList.add('active');
   document.getElementById('available')!.classList.remove('active');
+
+  // set hide VersionContainer when version-toggle is clicked
+  $('#version-toggle').click(() => {
+    $('#VersionColumn').toggle();
+  });
 }
 
 export {

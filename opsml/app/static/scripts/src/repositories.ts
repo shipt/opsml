@@ -1,4 +1,3 @@
-
 import { errorToPage } from './error'; // eslint-disable-line import/no-unresolved
 
 const REPO_NAMES_PATH: string = '/opsml/repository';

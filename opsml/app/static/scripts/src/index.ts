@@ -1,11 +1,9 @@
-
-import _ from 'select2';import showdown from 'showdown';
-import * as Prism from 'prismjs';
+import 'select2';
+import 'prismjs';
 
 import { getRepoNamesPage } from './repositories';
 import { setVersionPage } from './version';
 import { setRunPage } from './run_version';
-
 
 // add select2 to jquery typing
 declare global {
@@ -22,7 +20,7 @@ function setNavLink(registry: string) {
 }
 
 function setRepositoryPage(registry:string, repository?:string) {
-  var providedRepo: string | undefined = repository;
+  let providedRepo: string | undefined = repository;
 
   $('#card-version-page').hide();
   $('#run-version-page').hide();
@@ -50,7 +48,10 @@ function setPage(registry:string, repository:string, name:string, version:string
 
     // return default model page
   } else if (registry === 'run') {
-    setRunPage(registry, repository, name, version);
+    if (providedVersion === 'None') {
+      providedVersion = undefined;
+    }
+    setRunPage(registry, repository, name, providedVersion);
   } else {
     setRepositoryPage(registry, repository);
   }
