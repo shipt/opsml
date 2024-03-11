@@ -393,16 +393,14 @@ function insertPlots(runcard) {
       const GraphContainer = document.getElementById('GraphContainer');
 
       $.each(data, (key, value) => {
-        // cast key to string
-        key = key.toString();
-
         const figure = document.createElement('figure');
 
         figure.classList.add('highcharts-figure');
 
         // add div
         const div = document.createElement('div');
-        div.setAttribute('id', `graph_${key}`);
+        let idkey: string = String(`graph_${key}`);
+        div.setAttribute('id', idkey);
         div.classList.add('graph-child');
 
         // add div to figure
@@ -419,7 +417,7 @@ function insertPlots(runcard) {
       });
     },
 
-    error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    error(xhr, _, _) { // eslint-disable-line @typescript-eslint/no-unused-vars
     // send request to error route on error
       const err = JSON.parse(xhr.responseText);
       errorToPage(JSON.stringify(err));
@@ -445,7 +443,7 @@ function getMetrics(runName, chartType, runUid, metricList) {
       }
     },
 
-    error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    error(xhr, _, _) { // eslint-disable-line @typescript-eslint/no-unused-vars
     // send request to error route on error
       const err = JSON.parse(xhr.responseText);
       errorToPage(JSON.stringify(err));

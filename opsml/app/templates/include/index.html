@@ -54,34 +54,6 @@
 
 {% block scripts %}
 
-<script src="/static/chart/highcharts.js"></script>
-<script src="/static/chart/modules/data.js"></script>
-<script src="/static/chart/modules/series-label.js"></script>
-<script src="/static/chart/modules/exporting.js"></script>
-<script src="/static/chart/modules/export-data.js"></script>
-<script src="/static/chart/modules/accessibility.js"></script>
-<script type="module">
-  import { setNavLink, setPage } from '/static/scripts/js/utils.js';
-  
-
-  $( document ).ready(function() {
-
-    let registry =  document.getElementById("registry").getAttribute ("value")
-    let name =  document.getElementById("name").getAttribute ("value")
-    let repository =  document.getElementById("repository").getAttribute ("value")
-    let version =  document.getElementById("version").getAttribute ("value")
-
-    setNavLink(registry);
-    setPage(registry, repository, name, version);
-
-  });
-
-  
-
-  
-
-
-
-</script>
+<script src="/static/scripts/dist/bundle.js"></script>
 
 {% endblock %}

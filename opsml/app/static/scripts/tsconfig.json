@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "module": "es6", 
+        "rootDir": "./src/",
         "outDir": "./dist/",
-        "noImplicitAny": true,
         "esModuleInterop": true,
         "moduleResolution":"node",
         "lib": ["ES2022", "DOM"],
@@ -10,7 +10,7 @@
         "sourceMap": true,
     },  
     "include": [
-        "typescript/*"
+        "src/*"
     ],
     "exclude": [
         "typescript/*.test.ts"

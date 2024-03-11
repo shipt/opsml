@@ -1,6 +1,6 @@
 import { buildModelVersionUI } from './model_version';
 import { buildDataVersionUI } from './data_version';
-// mport { buildRunVersionUI } from './run_version';
+//mport { buildRunVersionUI } from './run_version';
 import { errorToPage } from './error';
 import * as dataVer from './data_version';
 import * as modelVer from './model_version';
@@ -39,9 +39,9 @@ function buildCard(data: CardData) {
     buildModelVersionUI(data as modelVer.Data);
   } else if (data.registry === 'data') {
     buildDataVersionUI(data as dataVer.Data);
-  } // else if (data.registry === 'run') {
-  // buildRunVersionUI(data);
-  // }
+  } //else if (data.registry === 'run') {
+   // buildRunVersionUI(data);
+  //}
 }
 
 function setCardView(request: CardRequest) {

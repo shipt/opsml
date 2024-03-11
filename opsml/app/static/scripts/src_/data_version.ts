@@ -187,6 +187,7 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
 
 function insertSummary(datacard: Card, metadata: CardMetadata) {
   if (metadata.description.summary !== null) {
+
     const converter = new showdown.Converter();
     converter.setFlavor('github');
     const text: string = converter.makeHtml(metadata.description.summary);
