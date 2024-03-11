@@ -1,5 +1,8 @@
 import showdown from 'showdown';
 import * as Prism from 'prismjs';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-python';
 
 interface CardMetadata {
     description: {
@@ -184,6 +187,7 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
 
 function insertSummary(datacard: Card, metadata: CardMetadata) {
   if (metadata.description.summary !== null) {
+
     const converter = new showdown.Converter();
     converter.setFlavor('github');
     const text: string = converter.makeHtml(metadata.description.summary);

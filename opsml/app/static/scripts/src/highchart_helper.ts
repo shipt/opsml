@@ -1,5 +1,17 @@
 import Highcharts from 'highcharts';
 
+import addExporting from 'highcharts/modules/exporting'
+import addExportData from 'highcharts/modules/export-data'
+import addBoost from 'highcharts/modules/boost';
+import addAccessibility from 'highcharts/modules/accessibility';
+import addSeriesLabel from 'highcharts/modules/series-label';
+
+addExporting(Highcharts);
+addExportData(Highcharts);
+addBoost(Highcharts);
+addAccessibility(Highcharts);
+addSeriesLabel(Highcharts);
+
 Highcharts.setOptions({
   colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb', '#e74c3c', '#e73c3c', '#f2cc35'],
 });

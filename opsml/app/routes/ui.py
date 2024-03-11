@@ -6,8 +6,8 @@
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
 from opsml import CardRegistry
@@ -19,9 +19,15 @@ from opsml.types import RegistryType
 # Constants
 TEMPLATE_PATH = Path(__file__).parents[1] / "templates"
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
+favicon_path = Path(__file__).parents[1] / "static" / "images" / "favicon.ico"
 logger = ArtifactLogger.get_logger()
 
 router = APIRouter()
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+async def favicon() -> FileResponse:
+    return FileResponse(favicon_path)
 
 
 @router.get("/opsml")
