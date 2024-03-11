@@ -68,7 +68,7 @@ function setPage(
 ) {
   let providedName = name;
   let providedRepo = repository;
-  var providedVersion = version;
+  const providedVersion = version;
 
   const repoRequest = { registry, repository };
 
@@ -79,6 +79,8 @@ function setPage(
     data: repoRequest,
     success(data) {
       // get repository and names from dictionary
+
+      console.log(JSON.stringify(data));
 
       setDropdown(data, repository);
 
@@ -393,16 +395,13 @@ function insertPlots(runcard) {
       const GraphContainer = document.getElementById('GraphContainer');
 
       $.each(data, (key, value) => {
-        // cast key to string
-        key = key.toString();
-
         const figure = document.createElement('figure');
 
         figure.classList.add('highcharts-figure');
 
         // add div
         const div = document.createElement('div');
-        div.setAttribute('id', `graph_${key}`);
+        div.setAttribute('id', `graph_${key.toString()}`);
         div.classList.add('graph-child');
 
         // add div to figure

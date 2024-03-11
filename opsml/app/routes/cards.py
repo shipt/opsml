@@ -304,7 +304,9 @@ def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dic
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
 
         # pass generic interface to load_card
-        interface = ModelInterface if registry_type == RegistryType.MODEL else DataInterface
+        interface: Union[type[ModelInterface], type[DataInterface], None] = (
+            ModelInterface if registry_type == RegistryType.MODEL else DataInterface
+        )
         card = registry.load_card(
             name=payload.name,
             repository=payload.repository,
@@ -320,6 +322,9 @@ def cards_ui_data(request: Request, payload: ListCardRequest = Body(...)) -> Dic
 
         if isinstance(card, RunCard):
             return RunRouteHelper().get_card_metadata(request, card)
+
+        else:
+            return {}
 
     except Exception as error:
         raise HTTPException(

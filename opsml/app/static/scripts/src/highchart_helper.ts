@@ -1,9 +1,4 @@
 import Highcharts from 'highcharts';
-import 'highcharts/modules/exporting';
-import 'highcharts/modules/export-data';
-import 'highcharts/modules/boost';
-import 'highcharts/modules/accessibility';
-import 'highcharts/modules/series-label';
 
 Highcharts.setOptions({
   colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb', '#e74c3c', '#e73c3c', '#f2cc35'],

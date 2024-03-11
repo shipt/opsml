@@ -229,8 +229,8 @@ class Metrics(BaseModel):
 
 
 class XYMetric(BaseModel):
-    x: List[Optional[Union[int, float]]]
-    y: List[Union[int, float]]
+    x: List[Optional[Union[int, float]]] = []
+    y: List[Optional[Union[int, float]]] = []
 
 
 class GetMetricRequest(BaseModel):

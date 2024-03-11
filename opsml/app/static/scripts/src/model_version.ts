@@ -1,8 +1,5 @@
 import showdown from 'showdown';
 import * as Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-python';
 
 interface CardMetadata {
     description: {

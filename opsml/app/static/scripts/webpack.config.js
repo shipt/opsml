@@ -3,6 +3,14 @@ const path = require('path');
 module.exports = {
   entry: './src/index.ts',
   devtool: 'inline-source-map',
+  externals: {
+    jquery: 'jQuery',
+    highcharts: 'Highcharts',
+    prismjs: 'Prism',
+    showdown: 'showdown',
+
+
+  },
   module: {
     rules: [
       {

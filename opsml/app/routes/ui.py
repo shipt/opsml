@@ -7,11 +7,11 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, HTTPException, status
 from fastapi.templating import Jinja2Templates
 
 from opsml import CardRegistry
-from opsml.app.routes.pydantic_models import ErrorMessage, XYMetric, GetMetricRequest, Metrics
+from opsml.app.routes.pydantic_models import ErrorMessage, XYMetric, GetMetricRequest, Metrics, Metric
 from opsml.app.routes.metrics import get_metric
 from opsml.helpers.logging import ArtifactLogger
 from opsml.types import RegistryType
@@ -119,6 +119,9 @@ async def opsml_repositories(
 
     card_names = _registry._registry.get_unique_card_names(repository=repository)
 
+    assert isinstance(card_names, list)
+    assert isinstance(repositories, list)
+
     return {"repositories": repositories, "names": card_names}
 
 
@@ -139,28 +142,36 @@ async def error_to_500(request: Request, payload: ErrorMessage) -> HTMLResponse:
         )
     except Exception as e:
         logger.error(f"Error rendering 500 page: {e}")
-        return HTMLResponse(status_code=500, content="Internal Server Error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post("/opsml/ui/metrics")
 async def get_metrics_for_ui(request: Request, payload: GetMetricRequest) -> Dict[str, XYMetric]:
     """Gets metrics from the metric table and formats for rendering in UI"""
     try:
-        metric_dump = {}
+        metric_dump: Dict[str, XYMetric] = {}
+
         metrics: Metrics = get_metric(request, payload)
 
-        for metric in metrics.metric:
-            if metric.name not in metric_dump:
-                metric_dump[metric.name] = {"x": [], "y": []}
+        assert isinstance(metrics.metric, list)
 
-            metric_dump[metric.name]["x"].append(metric.step)
-            metric_dump[metric.name]["y"].append(metric.value)
+        for metric in metrics.metric:
+            assert isinstance(metric, Metric)
+
+            if metric.name not in metric_dump:
+                metric_dump[metric.name] = XYMetric()
+
+            metric_dump[metric.name].x.append(metric.step)
+            metric_dump[metric.name].y.append(metric.value)
 
         return metric_dump
 
     except Exception as e:
         logger.error(f"Error rendering 500 page: {e}")
-        return HTMLResponse(status_code=500, content="Internal Server Error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve metrics for UI",
+        )
 
 
 @router.get("/opsml/dev")

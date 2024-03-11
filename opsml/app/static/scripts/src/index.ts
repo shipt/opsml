@@ -1,12 +1,6 @@
 import $ from 'jquery';
-import Highcharts from 'highcharts';
-import 'highcharts/modules/exporting';
-import 'highcharts/modules/export-data';
-import 'highcharts/modules/boost';
-import 'highcharts/modules/accessibility';
-import 'highcharts/modules/series-label';
 
-import { getRepoNamesPage } from './repositories'; 
+import { getRepoNamesPage } from './repositories';
 import { setVersionPage } from './version';
 import { setRunPage } from './run_version';
 
@@ -49,6 +43,11 @@ function setPage(registry, repository, name, version) {
     }
     setVersionPage(registry, repository, name, providedVersion);
     // return default model page
+  } else if (registry === 'run') {
+    if (providedVersion === 'None') {
+      providedVersion = undefined;
+    }
+    setRunPage(registry, repository, name, providedVersion);
   } else {
     setRepositoryPage(registry, repository);
   }
@@ -60,15 +59,12 @@ export {
   setPage,
 };
 
-
-$( document ).ready(function() {
-
-  let registry =  document.getElementById("registry").getAttribute ("value")
-  let name =  document.getElementById("name").getAttribute ("value")
-  let repository =  document.getElementById("repository").getAttribute ("value")
-  let version =  document.getElementById("version").getAttribute ("value")
+$(document).ready(() => {
+  const registry = document.getElementById('registry').getAttribute('value');
+  const name = document.getElementById('name').getAttribute('value');
+  const repository = document.getElementById('repository').getAttribute('value');
+  const version = document.getElementById('version').getAttribute('value');
 
   setNavLink(registry);
   setPage(registry, repository, name, version);
-
 });
