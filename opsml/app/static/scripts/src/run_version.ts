@@ -293,7 +293,16 @@ function insertArtifactUris(runcard) {
       const value = runcard.artifact_uris[name];
       const pathParts = value.remote_path.split('/');
       const downloadName = pathParts[pathParts.length - 1];
-      artifactUriBody.innerHTML += '\n                <tr>\n                    <td><font color="#999">'.concat(name, '</font></td>\n                    <td>\n                        <a href="/opsml/files/download?path=').concat(value.remote_path, "\" download='").concat(downloadName, "'>\n                        <button id=\"download-button\" type=\"submit\" class=\"btn btn-success\">Download</button>\n                        </a>\n                    </td>\n                </tr>\n                ");
+      artifactUriBody.innerHTML += `
+        <tr>
+          <td><font color="#999">${name}</font></td>
+          <td>
+              <a href="/opsml/files/download?path=${value.remote_path}" download='${downloadName}'>
+              <button id="download-button" type="submit" class="header-button">Download</button>
+              </a>
+          </td>
+        </tr>
+        `;
     });
     // show artifacts on click
     document.getElementById('artifact-button').onclick = function artifactToggle() {
@@ -506,6 +515,15 @@ function buildRunVersionUI(data) {
   insertRunExtras(data);
   $('#run-version-page').show();
 
+  
+  $('.header-tab').on('click', function(){
+    $('.header-tab').removeClass('selected');
+    $('.header-tab').css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+
+  });
+
   // set scripts for loading graphics on click
   $('#graphics-button').click(() => {
     insertGraphics(runcard.uid);
@@ -555,6 +573,39 @@ function buildRunVersionUI(data) {
     $('#GraphicsBox').hide();
     $('#GraphTab').show();
   });
+
+  // set metadata-button to default
+  // first check if summary is not selected
+  if (
+      !$('#graphics-button').hasClass('selected') && 
+      !$('#metrics-button').hasClass('selected') &&
+      !$('#graph-button').hasClass('selected')
+    ){
+      $('#metadata-button').addClass('selected');
+      $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+    }
+
+  // setup extra tabs
+  $('.extra-tab').on('click', function(){
+    
+    // loop over each and hide id
+    $('.extra-tab').each(function(){
+      $(this).removeClass('selected');
+      $(this).css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+      let tabID = $(this).data("id");
+      $(`#${tabID}`).hide();
+    });
+
+
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #5e0fb7", "color": "#5e0fb7"});
+    
+    let tabID = $(this).data("id");
+    $(`#${tabID}`).toggle();
+
+  });
+
+
 }
 
 export {

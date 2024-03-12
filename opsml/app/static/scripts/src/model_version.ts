@@ -170,9 +170,6 @@ function insertModelTags(data: Data) {
 }
 
 function insertModelExtras(data: Data) {
-  // hide extra buttons
-  $('#Params').hide();
-  $('#MetadataJson').hide();
 
   const { runcard } = data;
 
@@ -192,10 +189,6 @@ function insertModelExtras(data: Data) {
                 `;
       });
 
-      // show Params on click
-      document.getElementById('param-button')!.onclick = function paramToggle() {
-        $('#Params').toggle();
-      };
       $('#param-button').show();
     } else {
       $('#param-button').hide();
@@ -216,17 +209,13 @@ function insertModelExtras(data: Data) {
                     <td><font color="#999">${name}</font></td>
                     <td>
                         <a href="/opsml/files/download?path=${value.remote_path}" download='${downloadName}'>
-                        <button id="download-button" type="submit" class="btn btn-success">Download</button>
+                        <button id="download-button" type="submit" class="header-button">Download</button>
                         </a>
                     </td>
                 </tr>
                 `;
       });
 
-      // show artifacts on click
-      document.getElementById('artifact-button')!.onclick = function artifactToggle() {
-        $('#Artifacts').toggle();
-      };
       $('#artifact-button').show();
     } else {
       $('#artifact-button').hide();
@@ -240,9 +229,6 @@ function insertModelExtras(data: Data) {
   const html: string = Prism.highlight(code, Prism.languages.json, 'json');
   document.getElementById('MetadataCode')!.innerHTML = html;
 
-  document.getElementById('metadata-extra-button')!.onclick = function extraToggle() {
-    $('#MetadataJson').toggle();
-  };
 }
 
 function insertModelSummary(modelcard: Card) {
@@ -305,15 +291,39 @@ function buildModelVersionUI(data: Data) {
   // check if the button is not active
   $('.header-tab').on('click', function(){
     $('.header-tab').removeClass('selected');
-    $('.header-tab').css({'background-color': '#f1f1f1', "border": "2px solid #ffffff", "color": "rgb(85, 85, 85)"});
+    $('.header-tab').css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
     $(this).addClass('selected');
     $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
 
   });
 
   // set metadata-button to default
-  $('#metadata-button').addClass('selected');
-  $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+  // first check if sumamary is not selected
+  if (!$('#summary-button').hasClass('selected')){
+    $('#metadata-button').addClass('selected');
+    $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+  }
+
+  // setup extra tabs
+  $('.extra-tab').on('click', function(){
+    
+    // loop over each and hide id
+    $('.extra-tab').each(function(){
+      $(this).removeClass('selected');
+      $(this).css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+      let tabID = $(this).data("id");
+      $(`#${tabID}`).hide();
+    });
+
+
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #5e0fb7", "color": "#5e0fb7"});
+    
+    let tabID = $(this).data("id");
+    $(`#${tabID}`).toggle();
+
+  });
+
 
 }
 

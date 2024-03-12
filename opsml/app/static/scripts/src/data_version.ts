@@ -63,7 +63,6 @@ function insertDataMetadata(data: Data, datacard: Card, metadata: CardMetadata) 
       $('#ExtraBox').show();
       $('#SummaryBox').hide();
       $('#ProfileBox').hide();
-      $(this).addClass('active');
     };
 }
 
@@ -74,9 +73,6 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
     const html: string = Prism.highlight(code, Prism.languages.json, 'json');
       document.getElementById('DataSplitCode')!.innerHTML = html;
 
-      document.getElementById('split-button')!.onclick = function splitClick() {
-        $('#Splits').toggle();
-      };
   }
 
   // set depen vars
@@ -99,9 +95,6 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
                   `;
       }
 
-        document.getElementById('dep-var-button')!.onclick = function depVarClick() {
-          $('#DependentVars').toggle();
-        };
     }
   }
 
@@ -124,9 +117,6 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
           `;
     });
 
-      document.getElementById('feature-map-button')!.onclick = function featMapToggle() {
-        $('#FeatureMap').toggle();
-      };
   }
 
   // set feature descriptions
@@ -149,9 +139,6 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
               `;
       });
 
-        document.getElementById('feature-desc-button')!.onclick = function featDescToggle() {
-          $('#FeatureDesc').toggle();
-        };
     }
   }
 
@@ -178,10 +165,6 @@ function insertDataExtras(data: Data, datacard: Card, metadata: CardMetadata) {
                   <pre style="max-height: 500px; overflow: scroll;"><code id="${key}Code">${htmlLogic}</code></pre>
                   `;
       });
-
-        document.getElementById('sql-button')!.onclick = function sqlToggle() {
-          $('#SQL').toggle();
-        };
     }
   }
 }
@@ -261,15 +244,40 @@ function buildDataVersionUI(data: Data) {
   // check if the button is not active
   $('.header-tab').on('click', function(){
     $('.header-tab').removeClass('selected');
-    $('.header-tab').css({'background-color': '#f1f1f1', "border": "2px solid #ffffff", "color": "rgb(85, 85, 85)"});
+    $('.header-tab').css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
     $(this).addClass('selected');
     $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
 
   });
 
   // set metadata-button to default
-  $('#metadata-button').addClass('selected');
-  $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+  // first check if sumamary is not selected
+  if (!$('#summary-button').hasClass('selected') && !$('#data-profile-button').hasClass('selected')){
+    $('#metadata-button').addClass('selected');
+    $('#metadata-button').css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
+  }
+  
+
+
+  // setup extra tabs
+  $('.extra-tab').on('click', function(){
+    // loop over each and hide id
+    $('.extra-tab').each(function(){
+      $(this).removeClass('selected');
+      $(this).css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+      let tabID = $(this).data("id");
+      $(`#${tabID}`).hide();
+    });
+
+
+    $(this).addClass('selected');
+    $(this).css({'background-color':'white',  "border-top": "2px solid #5e0fb7", "color": "#5e0fb7"});
+    
+    let tabID = $(this).data("id");
+    $(`#${tabID}`).toggle();
+
+  });
+
 }
 
 export { buildDataVersionUI, Data, Card }; // eslint-disable-line import/prefer-default-export

@@ -220,34 +220,6 @@ p {
   border: 2px solid #04b78a;
 }
 
-.extra-button {
-  font-size: 13px;
-  color: #5e0fb7;
-  letter-spacing: 1px;
-  min-height: 2.2em;
-  min-width: 6em;
-  line-height: 15px;
-  border: 2px solid #5e0fb7;
-  border-radius: 40px;
-  background: transparent;
-  transition: all 0.3s ease 0s;
-}
-
-.extra-button:hover
-{
-  color: #FFF;
-  background: #5e0fb7;
-  border: 2px solid #5e0fb7;
-}
-
-.extra-button:focus
-{
-  color: #FFF;
-  background: #5e0fb7;
-  border: 2px solid #5e0fb7;
-}
-
-
 #RepositoriesSelect .dropdown-toggle {
     background:#04b78a;
     color:#fffefe !important;
@@ -964,6 +936,29 @@ pre {
 
 #CardTabBox {
   margin-top: 1%;
+  display: flex;
+}
+
+.extra-tab {
+  font-size: 14px;
+  color: rgb(85, 85, 85);
+  letter-spacing: 1px;
+  line-height: 15px;
+  min-height: 3em;
+  min-width: 7em;
+  background: #f1f1f1;
+  transition: all 0.3s ease 0s;
+  border: none;
+  border-top: 2px solid #ffffff;
+}
+
+.extra-tab:hover,
+.extra-tab:active,
+.extra-tab:focus,
+.extra-tab:selected {
+  background: #ffffff;
+  color: #5e0fb7;
+  border-top: 2px solid #5e0fb7;
 }
 
 

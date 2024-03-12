@@ -3,10 +3,10 @@
 <hr id="version-spacer">
 
 <h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
-<div class="card-body" id="CardButtons" >
-  <button id="metadata-extra-button" type="submit" class="extra-button" >Metadata</button>
-  <button id="param-button" style="display: none;" type="submit" class="extra-button" >Params</button>
-  <button id="artifact-button" style="display: none;" type="submit" class="extra-button" >Artifacts</button>
+<div class="card-body" id="CardButtons" style="display: flex;">
+  <button id="metadata-extra-button" data-id="MetadataJson" type="submit" class="extra-tab" >Metadata</button>
+  <button id="param-button" data-id="Params" style="display: none;" type="submit" class="extra-tab" >Params</button>
+  <button id="artifact-button" data-id="Artifacts" style="display: none;" type="submit" class="extra-tab" >Artifacts</button>
 </div>
 
 <div class="card-body" id="MetadataJson" style="display:none;">
@@ -58,12 +58,12 @@
 <hr id="version-spacer">
 <h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
 
-<div class="card-body" id="CardButtons" >
-  <button id="split-button" type="submit" class="extra-button" style="display: none;">Splits</button>
-  <button id="dep-var-button" type="submit" class="extra-button" style="display: none;">Dependent Vars</button>
-  <button id="sql-button" type="submit" class="extra-button" style="display: none;">SQL</button>
-  <button id="feature-map-button" type="submit" class="extra-button" style="display: none;">Feature Map</button>
-  <button id="feature-desc-button" type="submit" class="extra-button" style="display: none;">Feature Descriptions</button>
+<div class="card-body" id="CardButtons" style="display: flex;">
+  <button id="split-button" type="submit" data-id="Splits" class="extra-tab" style="display: none;">Splits</button>
+  <button id="dep-var-button" type="submit" data-id="DependentVars" class="extra-tab" style="display: none;">Dependent Vars</button>
+  <button id="sql-button" type="submit" data-id="SQL" class="extra-tab" style="display: none;">SQL</button>
+  <button id="feature-map-button" type="submit" data-id="FeatureMap" class="extra-tab" style="display: none;">Feature Map</button>
+  <button id="feature-desc-button" type="submit" data-id="FeatureDesc" class="extra-tab" style="display: none;">Feature Descriptions</button>
 </div>
 
 
