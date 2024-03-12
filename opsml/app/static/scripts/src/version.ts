@@ -144,6 +144,9 @@ function getVersions(registry:string, repository: string, name?:string, version?
 
   const request = { registry_type: registry, repository, name };
 
+  console.log('getVersions', JSON.stringify(request));
+  
+
   return $.ajax({
     url: LIST_CARD_PATH,
     type: 'POST',

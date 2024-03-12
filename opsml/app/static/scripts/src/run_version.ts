@@ -81,9 +81,6 @@ function setPage(
     data: repoRequest,
     success(data) {
       // get repository and names from dictionary
-
-      console.log(JSON.stringify(data));
-
       setDropdown(data, repository);
 
       if (data.names.length > 0 && data.repositories.length > 0) {
