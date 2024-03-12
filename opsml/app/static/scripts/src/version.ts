@@ -108,9 +108,9 @@ function createVersionElements(
         registry_type: registry,
         repository: version.repository,
         name: cardName,
-        version:
-        version.version,
+        version:version.version,
       };
+
       setCardView(request);
 
       // change active class
@@ -142,10 +142,7 @@ function getVersions(registry:string, repository: string, name?:string, version?
   let providedVersion = version;
   let providedName = name;
 
-  const request = { registry_type: registry, repository, name };
-
-  console.log('getVersions', JSON.stringify(request));
-  
+  const request = { registry_type: registry, repository};
 
   return $.ajax({
     url: LIST_CARD_PATH,
@@ -155,6 +152,7 @@ function getVersions(registry:string, repository: string, name?:string, version?
     data: JSON.stringify(request),
     success(data) {
       const cardVersions: Card[] = data.cards;
+
 
       // sort cardversion array by timestamp
       if (registry === 'run') {

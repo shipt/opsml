@@ -91,6 +91,7 @@ function setPage(
           [providedRepo] = data.repositories;
         }
         //
+        console.log(providedRepo, providedName, providedVersion);
         getVersions(registry, providedRepo, providedName, providedVersion);
         $('#MetadataColumn').show();
       }
@@ -424,6 +425,7 @@ function insertPlots(runcard) {
           buildMultiXyChart(value);
         }
       });
+
     },
 
     error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -500,6 +502,9 @@ function insertMetricPlots(runName, runUid, metrics) {
 
     getMetrics(runName, chartType, runUid, metricList);
 
+    // show PlotColumn
+    $('#PlotColumn').show();
+
   // call ajax and pass runcard_uid and getMetrics
   });
 }
@@ -549,7 +554,7 @@ function buildRunVersionUI(data) {
 
   // set metrics on click
   $('#metrics-button').click(() => {
-    $('#MetricsTab').toggle();
+    $('#MetricsTab').show();
     $('#CardBox').hide();
     $('#TagBox').hide();
     $('#ExtraBox').hide();
@@ -600,6 +605,13 @@ function buildRunVersionUI(data) {
     let tabID = $(this).data("id");
     $(`#${tabID}`).toggle();
 
+  });
+
+  $('.extra-tab').each(function(){
+    $(this).removeClass('selected');
+    $(this).css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+    let tabID = $(this).data("id");
+    $(`#${tabID}`).hide();
   });
 
 

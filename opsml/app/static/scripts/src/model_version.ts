@@ -324,6 +324,14 @@ function buildModelVersionUI(data: Data) {
 
   });
 
+  
+  $('.extra-tab').each(function(){
+    $(this).removeClass('selected');
+    $(this).css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+    let tabID = $(this).data("id");
+    $(`#${tabID}`).hide();
+  });
+
 
 }
 
