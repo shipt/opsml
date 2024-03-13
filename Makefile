@@ -32,6 +32,9 @@ lints.website:
 build.website:
 	cd opsml/app/static/scripts && npx tsc
 
+build.website.dev:
+	cd opsml/app/static/scripts && npm run develop
+
 setup: setup.sysdeps setup.python setup.project
 # setup.uninstall - handle in and out of project venvs
 setup.uninstall:

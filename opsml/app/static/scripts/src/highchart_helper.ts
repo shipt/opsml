@@ -80,6 +80,9 @@ function buildXyChart(graph: Graph) {
       borderWidth: 2,
       shadow: true,
       renderTo: chartName,
+      zooming: {  
+        type: 'xy',
+      },
     },
     title: {
       text: name,
@@ -152,6 +155,9 @@ function buildMultiXyChart(graph: Graph) {
       borderWidth: 2,
       shadow: true,
       renderTo: chartName,
+      zooming: {  
+        type: 'xy',
+      },
     },
     title: {
       text: name,
@@ -315,6 +321,9 @@ function buildLineChart(name, metrics) {
       type: 'line',
       height: `${(9 / 16) * 90}%`,
       renderTo: 'MetricChart',
+      zooming: {  
+        type: 'x',
+      },
     },
     title: {
       text: `Metrics for ${name}`,
