@@ -74,31 +74,32 @@ function setPage(registry, repository, name, version) {
   }
 }
 
-router.on("/opsml/ui", ({ data, params, queryString }) => {
-  // check registry, repository, name, and version
-  const registry = params.registry;
-  const repository = params.repository;
-  const name = params.name;
-  const version = params.version;
+function setNavigo() {
+  router.on("/opsml/ui", ({ data, params, queryString }) => {
+    // check registry, repository, name, and version
+    const registry = params.registry;
+    const repository = params.repository;
+    const name = params.name;
+    const version = params.version;
 
-  setPage(registry, repository, name, version);
+    setPage(registry, repository, name, version);
 
-  // resolve path
-  let baseUrl: string = "/opsml/ui";
-  if (registry !== undefined) {
-    baseUrl = baseUrl.concat("?registry=").concat(registry);
-  }
-  if (repository !== undefined) {
-    baseUrl = baseUrl.concat("&repository=").concat(repository);
-  }
-  if (name !== undefined) {
-    baseUrl = baseUrl.concat("&name=").concat(name);
-  }
-  if (version !== undefined) {
-    baseUrl = baseUrl.concat("&version=").concat(version);
-  }
-  router.resolve(baseUrl);
-});
+    // resolve path
+    let baseUrl: string = "/opsml/ui";
+    if (registry !== undefined) {
+      baseUrl = baseUrl.concat("?registry=").concat(registry);
+    }
+    if (repository !== undefined) {
+      baseUrl = baseUrl.concat("&repository=").concat(repository);
+    }
+    if (name !== undefined) {
+      baseUrl = baseUrl.concat("&name=").concat(name);
+    }
+    if (version !== undefined) {
+      baseUrl = baseUrl.concat("&version=").concat(version);
+    }
+  });
+}
 
 export { setNavLink, setRepositoryPage, setPage };
 
@@ -110,5 +111,6 @@ $(document).ready(() => {
     .getAttribute("value");
   const version = document.getElementById("version").getAttribute("value");
 
+  setNavigo();
   setNavLink(registry);
 });

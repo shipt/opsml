@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-{% extends "base.html" %}
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/scripts/dist/main.css">
+</head>
+
 
 <!-- navbar component --> 
 {% include "include/components/navbar.html" %}
 <!-- main page component --> 
-
-{% block content %}
 
 
 <body id="ArtifactPage">
@@ -40,22 +44,16 @@
 
     <!-- Model, Data, Run Pages -->
     <div id="data-version-page" class="version-page" style="display: none;">
-      {% include "include/components/model/version.html" %}
+      {% include "include/components/data/version.html" %}
     </div>
 
     <!-- Model, Data, Run Pages -->
     <div id="audit-version-page" class="version-page" style="display: none;">
     </div>
 
-  {% endif %}
  
 </body>
 
-{% endblock %}
-
-
-{% block scripts %}
-
 <script src="/static/scripts/dist/bundle.js"></script>
 
-{% endblock %}
+</html>
