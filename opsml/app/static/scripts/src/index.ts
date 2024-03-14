@@ -86,5 +86,5 @@ $(document).ready(() => {
 
   const router = new Navigo("/opsml");
 
-  router.resolve();
+  router.resolve()
 });
