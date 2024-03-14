@@ -100,9 +100,10 @@ function setDropdown(data: RepositoryData, registry: string, repository?: string
 
       const cardImg = document.createElement('img');
       cardImg.className = 'center-block';
+      cardImg.src = '../images/chip.png';
       cardImg.width = 40;
       cardImg.height = 40;
-      cardImg.id = 'artifact-card-center';
+      cardImg.id = 'artifact-center';
 
       cardColImg.appendChild(cardImg);
       cardRow.appendChild(cardColImg);

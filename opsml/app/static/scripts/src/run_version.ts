@@ -512,68 +512,37 @@ function insertMetricPlots(runName, runUid, metrics) {
 function buildRunVersionUI(data) {
   const runcard = data.card;
 
+  
   insertRunMetadata(runcard);
   insertRunTags(runcard);
   insertRunExtras(data);
-  $('#run-version-page').show();
 
+  $('#run-version-page').show();
   
   $('.header-tab').on('click', function(){
     $('.header-tab').removeClass('selected');
     $('.header-tab').css({'background-color': '#f1f1f1', "border": "none", "color": "rgb(85, 85, 85)"});
+
+    // hide all showable divs
+    $('.showable-div').hide();
+
     $(this).addClass('selected');
     $(this).css({'background-color':'white',  "border-top": "2px solid #04b78a", "color": "#04b78a"});
 
-  });
+    // get data-toggle
+    let tabID: string = $(this).data("toggle");
 
-  // set scripts for loading graphics on click
-  $('#graphics-button').click(() => {
-    insertGraphics(runcard.uid);
+    if (tabID === "GraphicsBox"){
+      insertGraphics(runcard.uid);
+    } else if (tabID === "MetricsTab"){
+      insertMetricPlots(runcard.name, runcard.uid, data.metrics);
+    } else if (tabID === "GraphTab"){
+      insertPlots(runcard);
+    }
 
-    // toggle others
-    $('#CardBox').hide();
-    $('#TagBox').hide();
-    $('#ExtraBox').hide();
-    $('#MetricsTab').hide();
-    $('#GraphTab').hide();
-    $('#GraphicsBox').show();
-  });
+    $(`.${tabID}`).show();
 
-  // set scripts for loading graphics on click
-  $('#metadata-button').click(() => {
-    insertGraphics(runcard.uid);
 
-    // toggle others
-    $('#CardBox').show();
-    $('#TagBox').show();
-    $('#ExtraBox').show();
-    $('#MetricsTab').hide();
-    $('#GraphTab').hide();
-    $('#GraphicsBox').hide();
-  });
-
-  // set metrics on click
-  $('#metrics-button').click(() => {
-    $('#MetricsTab').show();
-    $('#CardBox').hide();
-    $('#TagBox').hide();
-    $('#ExtraBox').hide();
-    $('#GraphTab').hide();
-    $('#GraphicsBox').hide();
-    insertMetricPlots(runcard.name, runcard.uid, data.metrics);
-  });
-
-  // set scripts for loading graphs on click
-  $('#graph-button').click(() => {
-    insertPlots(runcard);
-
-    // toggle others
-    $('#CardBox').hide();
-    $('#TagBox').hide();
-    $('#ExtraBox').hide();
-    $('#MetricsTab').hide();
-    $('#GraphicsBox').hide();
-    $('#GraphTab').show();
   });
 
   // set metadata-button to default

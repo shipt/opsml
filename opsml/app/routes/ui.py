@@ -25,7 +25,7 @@ logger = ArtifactLogger.get_logger()
 router = APIRouter()
 
 
-@router.get("/favicon.ico", include_in_schema=True)
+@router.get("/favicon.ico", include_in_schema=False)
 async def favicon() -> FileResponse:
     return FileResponse(favicon_path)
 
@@ -33,7 +33,7 @@ async def favicon() -> FileResponse:
 @router.get("/opsml")
 async def opsml_homepage(
     request: Request,
-    registry: Optional[str] = None,
+    registry: str = RegistryType.MODEL.value,
     name: Optional[str] = None,
     repository: Optional[str] = None,
     version: Optional[str] = None,
@@ -50,21 +50,16 @@ async def opsml_homepage(
 @router.get("/opsml/ui")
 async def opsml_ui_page(
     request: Request,
-    registry: Optional[str] = None,
+    registry: str = RegistryType.MODEL.value,
     name: Optional[str] = None,
     repository: Optional[str] = None,
     version: Optional[str] = None,
     uid: Optional[str] = None,
 ) -> HTMLResponse:
     # validate registry type
-    if registry:
-        try:
-            RegistryType.from_str(registry)
-        except NotImplementedError:
-            registry = RegistryType.MODEL.value
-
-    # default to model
-    else:
+    try:
+        RegistryType.from_str(registry)
+    except NotImplementedError:
         registry = RegistryType.MODEL.value
 
     if uid:

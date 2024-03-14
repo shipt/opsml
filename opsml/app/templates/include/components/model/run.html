@@ -26,35 +26,35 @@
       <div class="card-body" id='CardUpperBox'>
         <h4>Run 
           <div id="CardTabBox" style="display: flex;">
-            <button id="metadata-button" type="button" class="header-tab" >Metadata</button>
-            <button id="graphics-button" type="button" class="header-tab">Graphics</button>
-            <button id="graph-button" type="button" class="header-tab">Graphs</button>
-            <button id="metrics-button" type="button" class="header-tab">Metrics</button>
+            <button id="metadata-button" type="button" data-toggle="MetadataBox" class="header-tab" >Metadata</button>
+            <button id="graphics-button" type="button" data-toggle="GraphicsBox" class="header-tab">Graphics</button>
+            <button id="graph-button" type="button" data-toggle="GraphTab" class="header-tab">Graphs</button>
+            <button id="metrics-button" type="button" data-toggle="MetricsTab" class="header-tab">Metrics</button>
           </div>
         </h4>
       </div>
 
-      <div class="card border-0" id="CardBox" style="width:100%;">
+      <div class="card border-0 showable-div MetadataBox" style="width:100%;">
         {% include "include/components/model/metadata.html" %}
       </div>
 
-      <div class="card-body border-0" id="TagBox" style="width:100%;">
+      <div class="card-body border-0 showable-div MetadataBox" style="width:100%;">
         {% include "include/components/tags.html" %}
       </div>
 
-      <div class="card-body border-0" id="ExtraBox" style="width:100%;">
+      <div class="card-body border-0 showable-div MetadataBox" style="width:100%;">
         {% include "include/components/model/run_extras.html" %}
       </div>
 
-      <div class="card-body border-0" id="GraphicsBox" style="width:100%; display: none;">
+      <div class="card-body border-0 showable-div GraphicsBox" style="width:100%; display: none;">
         {% include "include/components/model/run_graphics.html" %}
       </div>
 
-      <div class="card-body border-0" id="MetricsTab" style="width:100%; display: none;">
+      <div class="card-body border-0 showable-div MetricsTab" style="width:100%; display: none;">
         {% include "include/components/model/run_metrics.html" %}
       </div>
 
-      <div class="card-body border-0" id="GraphTab" style="width:100%; display: none; min-height:20%;">
+      <div class="card-body border-0 showable-div GraphTab" style="width:100%; display: none; min-height:20%;">
         {% include "include/components/model/run_graphs.html" %}
       </div>
 

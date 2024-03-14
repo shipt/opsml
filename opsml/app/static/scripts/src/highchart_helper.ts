@@ -25,6 +25,27 @@ interface Graph {
     graph_style: string;
 }
 
+function getToolTip(graphStyle:string) {
+  let tooltip;
+  if (graphStyle === 'line') {
+    tooltip = {
+      valueDecimals: 2,
+      shared: true,
+      split: true,
+      crosshairs: true,
+    };
+  } else if (graphStyle === 'scatter') {
+    tooltip = {
+      pointFormat: '{point.y}',
+      shared: true,
+      split: true,
+      valueDecimals: 2,
+      crosshairs: true,
+    };
+  }
+  return tooltip;
+}
+
 function getPlotOptions(graphStyle:string) {
   let PlotOptions;
 
@@ -72,6 +93,8 @@ function buildXyChart(graph: Graph) {
   const chartName = `graph_${name}`;
   const graphStyle = graph.graph_style;
   const plotOptions = getPlotOptions(graphStyle);
+  const toolTip = getToolTip(graphStyle);
+
 
   Highcharts.chart({
     chart: {
@@ -119,6 +142,7 @@ function buildXyChart(graph: Graph) {
     // @ts-expect-error: skipping
     series: [{ data: y }],
     plotOptions,
+    tooltip: toolTip,
     credits: {
       enabled: false,
     },
@@ -147,6 +171,8 @@ function buildMultiXyChart(graph: Graph) {
   const ySeries = getYSeries(yKeys, y);
   const graphStyle = graph.graph_style;
   const plotOptions = getPlotOptions(graphStyle);
+  const toolTip = getToolTip(graphStyle);
+
 
   Highcharts.chart({
     chart: {
@@ -171,8 +197,9 @@ function buildMultiXyChart(graph: Graph) {
         // @ts-expect-error: skipping
         tickInterval: 5,
       },
+
       categories: x,
-      allowDecimals: false,
+      allowDecimals: true,
       title: {
         text: xLabel,
       },
@@ -194,7 +221,7 @@ function buildMultiXyChart(graph: Graph) {
 
     series: ySeries,
     plotOptions,
-
+    tooltip: toolTip,
     credits: {
       enabled: false,
     },
@@ -203,12 +230,6 @@ function buildMultiXyChart(graph: Graph) {
       align: 'left',
       verticalAlign: 'top',
       borderWidth: 0,
-    },
-    tooltip: {
-      shared: true,
-
-      // @ts-expect-error: skipping
-      crosshairs: true,
     },
   });
 }

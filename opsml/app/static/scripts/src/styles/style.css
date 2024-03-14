@@ -76,15 +76,12 @@ p {
   padding-bottom: 10%;
 }
 
-
-
-#CardBox,
+#MetadataBox,
 #SummaryBox,
 #ProfileBox {
   float:left;
   width:80%;
 }
-
 
 #VersionTabBox {
   float:left;
