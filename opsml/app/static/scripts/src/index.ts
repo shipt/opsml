@@ -17,6 +17,8 @@ import { getRepoNamesPage } from "./repositories";
 import { setVersionPage } from "./version";
 import { setRunPage } from "./run_version";
 
+const router = new Navigo("/");
+
 // add select2 to jquery typing
 declare global {
   interface JQuery {
@@ -44,6 +46,7 @@ function setRepositoryPage(registry: string, repository: string) {
   }
 
   getRepoNamesPage(registry, providedRepo);
+  $("#subnav").show();
   $("#repository-page").show();
 }
 
@@ -71,6 +74,32 @@ function setPage(registry, repository, name, version) {
   }
 }
 
+router.on("/opsml/ui", ({ data, params, queryString }) => {
+  // check registry, repository, name, and version
+  const registry = params.registry;
+  const repository = params.repository;
+  const name = params.name;
+  const version = params.version;
+
+  setPage(registry, repository, name, version);
+
+  // resolve path
+  let baseUrl: string = "/opsml/ui";
+  if (registry !== undefined) {
+    baseUrl = baseUrl.concat("?registry=").concat(registry);
+  }
+  if (repository !== undefined) {
+    baseUrl = baseUrl.concat("&repository=").concat(repository);
+  }
+  if (name !== undefined) {
+    baseUrl = baseUrl.concat("&name=").concat(name);
+  }
+  if (version !== undefined) {
+    baseUrl = baseUrl.concat("&version=").concat(version);
+  }
+  router.resolve(baseUrl);
+});
+
 export { setNavLink, setRepositoryPage, setPage };
 
 $(document).ready(() => {
@@ -81,10 +110,5 @@ $(document).ready(() => {
     .getAttribute("value");
   const version = document.getElementById("version").getAttribute("value");
 
-  //setNavLink(registry);
-  //setPage(registry, repository, name, version);
-
-  const router = new Navigo("/opsml");
-
-  router.resolve()
+  setNavLink(registry);
 });

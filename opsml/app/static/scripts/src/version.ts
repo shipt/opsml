@@ -1,46 +1,45 @@
+import { buildModelVersionUI } from "./model_version";
+import { buildDataVersionUI } from "./data_version";
+import { buildRunVersionUI } from "./run_version";
+import { errorToPage } from "./error";
+import * as dataVer from "./data_version";
+import * as modelVer from "./model_version";
 
-import { buildModelVersionUI } from './model_version';
-import { buildDataVersionUI } from './data_version';
-import { buildRunVersionUI } from './run_version';
-import { errorToPage } from './error';
-import * as dataVer from './data_version';
-import * as modelVer from './model_version';
-
-const LIST_CARD_PATH: string = '/opsml/cards/list';
-const ACTIVE_CARD_PATH: string = '/opsml/cards/ui';
+const LIST_CARD_PATH: string = "/opsml/cards/list";
+const ACTIVE_CARD_PATH: string = "/opsml/cards/ui";
 
 type CardData = dataVer.Data & modelVer.Data & { registry: string };
 
 interface CardRequest {
-    registry_type: string;
-    repository: string;
-    name: string;
-    version: string;
-    }
+  registry_type: string;
+  repository: string;
+  name: string;
+  version: string;
+}
 
 interface Card {
-    version: string;
-    date: string;
-    repository: string;
-    name: string;
-    timestamp: number;
-    }
+  version: string;
+  date: string;
+  repository: string;
+  name: string;
+  timestamp: number;
+}
 
 // insert card data into the model card ui
 // data: card data from ajax response
 function buildCard(data: CardData) {
   // see 'include/components/model/metadata.html'
 
-  document.getElementById('metadata-uid')!.innerHTML = data.card.uid;
-  document.getElementById('metadata-name')!.innerHTML = data.card.name;
-  document.getElementById('metadata-version')!.innerHTML = data.card.version;
-  document.getElementById('metadata-repo')!.innerHTML = data.card.repository;
+  document.getElementById("metadata-uid")!.innerHTML = data.card.uid;
+  document.getElementById("metadata-name")!.innerHTML = data.card.name;
+  document.getElementById("metadata-version")!.innerHTML = data.card.version;
+  document.getElementById("metadata-repo")!.innerHTML = data.card.repository;
 
-  if (data.registry === 'model') {
+  if (data.registry === "model") {
     buildModelVersionUI(data as modelVer.Data);
-  } else if (data.registry === 'data') {
+  } else if (data.registry === "data") {
     buildDataVersionUI(data as dataVer.Data);
-  } else if (data.registry === 'run') {
+  } else if (data.registry === "run") {
     buildRunVersionUI(data);
   }
 }
@@ -48,9 +47,9 @@ function buildCard(data: CardData) {
 function setCardView(request: CardRequest) {
   return $.ajax({
     url: ACTIVE_CARD_PATH,
-    type: 'POST',
-    dataType: 'json',
-    contentType: 'application/json',
+    type: "POST",
+    dataType: "json",
+    contentType: "application/json",
     data: JSON.stringify(request),
     success(data: CardData) {
       // add registry type to data
@@ -60,11 +59,16 @@ function setCardView(request: CardRequest) {
       // set the card view
       buildCard(data);
 
-      const url: string = '/opsml/ui?registry='.concat(request.registry_type, '&repository=').concat(request.repository, '&name=').concat(request.name, '&version=').concat(request.version);
-      window.history.pushState('version_page', 'version', url.toString());
+      const url: string = "/opsml/ui?registry="
+        .concat(request.registry_type, "&repository=")
+        .concat(request.repository, "&name=")
+        .concat(request.name, "&version=")
+        .concat(request.version);
+      window.history.pushState("version_page", "version", url.toString());
     },
 
-    error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    error(xhr, status, error) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       // send request to error route on error
       const err: string = JSON.parse(xhr.responseText);
       errorToPage(JSON.stringify(err));
@@ -79,83 +83,103 @@ function setCardView(request: CardRequest) {
 // name: the card name
 function createVersionElements(
   cardVersions: Card[],
-  activeVersion:string,
-  registry:string,
-  name:string,
+  activeVersion: string,
+  registry: string,
+  name: string
 ) {
   // set active name
   const activeName: string = name;
 
   // get the version list
-  const versionHeader: HTMLElement = document.getElementById('version-header')!;
+  const versionHeader: HTMLElement = document.getElementById("version-header")!;
   versionHeader.innerHTML = name;
 
-  const versionList: HTMLElement = document.getElementById('version-list')!;
-  versionList.innerHTML = ''; // clear the version list
+  const versionList: HTMLElement = document.getElementById("version-list")!;
+  versionList.innerHTML = ""; // clear the version list
 
   // loop through each item and create an "a" tag for each version
   for (let i = 0; i < cardVersions.length; i += 1) {
     const cardName: string = cardVersions[i].name;
     const version: Card = cardVersions[i];
-    const versionLink: HTMLAnchorElement = document.createElement('a');
-    versionLink.id = 'version-link';
+    const versionLink: HTMLAnchorElement = document.createElement("a");
+    versionLink.id = "version-link";
 
     // version_link should be clickable
-    versionLink.href = '#';
+    versionLink.href = "#";
     versionLink.dataset.version = version.version;
     versionLink.onclick = function setCardRequest() {
       const request: CardRequest = {
         registry_type: registry,
         repository: version.repository,
         name: cardName,
-        version:version.version,
+        version: version.version,
       };
 
       setCardView(request);
 
       // change active class
-      const versionLinks = versionList.getElementsByTagName('a');
+      const versionLinks = versionList.getElementsByTagName("a");
       for (let j = 0; j < versionLinks.length; j += 1) {
-        versionLinks[j].setAttribute('class', 'list-group-item list-group-item-action');
+        versionLinks[j].setAttribute(
+          "class",
+          "list-group-item list-group-item-action"
+        );
       }
-      (this as HTMLElement).setAttribute('class', 'list-group-item list-group-item-action active');
+      (this as HTMLElement).setAttribute(
+        "class",
+        "list-group-item list-group-item-action active"
+      );
     };
 
     // set the active version
     if (version.version === activeVersion && activeName === version.name) {
-      versionLink.setAttribute('class', 'list-group-item list-group-item-action active');
+      versionLink.setAttribute(
+        "class",
+        "list-group-item list-group-item-action active"
+      );
     } else {
-      versionLink.setAttribute('class', 'list-group-item list-group-item-action');
+      versionLink.setAttribute(
+        "class",
+        "list-group-item list-group-item-action"
+      );
     }
 
-    if (registry === 'run') {
-      versionLink.innerHTML = 'v'.concat(version.name, '--').concat(version.date);
+    if (registry === "run") {
+      versionLink.innerHTML = "v"
+        .concat(version.name, "--")
+        .concat(version.date);
     } else {
-      versionLink.innerHTML = 'v'.concat(version.version, '--').concat(version.date);
+      versionLink.innerHTML = "v"
+        .concat(version.version, "--")
+        .concat(version.date);
     }
 
     versionList.appendChild(versionLink);
   }
 }
 
-function getVersions(registry:string, repository: string, name?:string, version?: string) {
+function getVersions(
+  registry: string,
+  repository: string,
+  name?: string,
+  version?: string
+) {
   let providedVersion = version;
   let providedName = name;
 
-  const request = { registry_type: registry, repository};
+  const request = { registry_type: registry, repository };
 
   return $.ajax({
     url: LIST_CARD_PATH,
-    type: 'POST',
-    dataType: 'json',
-    contentType: 'application/json',
+    type: "POST",
+    dataType: "json",
+    contentType: "application/json",
     data: JSON.stringify(request),
     success(data) {
       const cardVersions: Card[] = data.cards;
 
-
       // sort cardversion array by timestamp
-      if (registry === 'run') {
+      if (registry === "run") {
         cardVersions.sort((a, b) => b.timestamp - a.timestamp);
       }
 
@@ -168,7 +192,12 @@ function getVersions(registry:string, repository: string, name?:string, version?
         providedName = cardVersions[0].name;
       }
 
-      createVersionElements(cardVersions, providedVersion, registry, providedName);
+      createVersionElements(
+        cardVersions,
+        providedVersion,
+        registry,
+        providedName
+      );
 
       // set version in request
       const cardRequest: CardRequest = {
@@ -180,7 +209,8 @@ function getVersions(registry:string, repository: string, name?:string, version?
       setCardView(cardRequest);
     },
 
-    error(xhr, status, error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    error(xhr, status, error) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       // send request to error route on error
 
       const err = JSON.parse(xhr.responseText);
@@ -189,29 +219,30 @@ function getVersions(registry:string, repository: string, name?:string, version?
   });
 }
 
-function setVersionPage(registry:string, repository:string, name:string, version?:string) {
+function setVersionPage(
+  registry: string,
+  repository: string,
+  name: string,
+  version?: string
+) {
   // set active class on nav item
-
-  $('#card-version-page').hide();
+  $("#subnav").hide();
+  $("#repository-page").hide();
+  $("#card-version-page").hide();
 
   $.when(getVersions(registry, repository, name, version)).done(() => {
-    $('#card-version-page').show();
+    $("#card-version-page").show();
   });
 
   // get version page
   // get_version_page(registry, name, repository, version);
-  document.getElementById('versions')!.classList.add('active');
-  document.getElementById('available')!.classList.remove('active');
+  document.getElementById("versions")!.classList.add("active");
+  document.getElementById("available")!.classList.remove("active");
 
   // set hide VersionContainer when version-toggle is clicked
-  $('#version-toggle').click(() => {
-    $('#VersionColumn').toggle();
+  $("#version-toggle").click(() => {
+    $("#VersionColumn").toggle();
   });
 }
 
-export {
-  setVersionPage,
-  getVersions,
-  createVersionElements,
-  Card,
-};
+export { setVersionPage, getVersions, createVersionElements, Card };

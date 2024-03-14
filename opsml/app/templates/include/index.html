@@ -19,15 +19,12 @@
     <a id="attribution-button" class="btn btn-success active" href="/opsml/ui/attribution" >Attributions</a>
   </div>
 
-  {% if registry == 'run' %}
-
-    <div id="run-version-page" style="display: none;">
+    <div id="run-version-page" class="version-page" style="display: none;">
       {% include "include/components/model/run.html" %}
     </div>
  
-  {% else %}
 
-    <div class="container" style="padding-top:65px;"></div>
+    <div class="container" id="subnav" style="padding-top:65px; display: none;"></div>
     {% include "include/components/subnav.html" %}
 
     <!-- repository page --> 
@@ -37,12 +34,17 @@
     
 
     <!-- Model, Data, Run Pages -->
-    <div id="card-version-page" style="display: none;">
+    <div id="model-version-page" class="version-page" style="display: none;">
       {% include "include/components/model/version.html" %}
     </div>
 
     <!-- Model, Data, Run Pages -->
-    <div id="audit-version-page" style="display: none;">
+    <div id="data-version-page" class="version-page" style="display: none;">
+      {% include "include/components/model/version.html" %}
+    </div>
+
+    <!-- Model, Data, Run Pages -->
+    <div id="audit-version-page" class="version-page" style="display: none;">
     </div>
 
   {% endif %}

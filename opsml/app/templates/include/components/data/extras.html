@@ -1,0 +1,95 @@
+
+<hr id="version-spacer">
+<h5><i class="fa fa-plug" style="color:#04b78a"></i> <font color="#999">Extra</font></h5>
+
+<div class="card-body" id="CardButtons" style="display: flex;">
+  <button id="split-button" type="submit" data-id="Splits" class="extra-tab" style="display: none;">Splits</button>
+  <button id="dep-var-button" type="submit" data-id="DependentVars" class="extra-tab" style="display: none;">Dependent Vars</button>
+  <button id="sql-button" type="submit" data-id="SQL" class="extra-tab" style="display: none;">SQL</button>
+  <button id="feature-map-button" type="submit" data-id="FeatureMap" class="extra-tab" style="display: none;">Feature Map</button>
+  <button id="feature-desc-button" type="submit" data-id="FeatureDesc" class="extra-tab" style="display: none;">Feature Descriptions</button>
+</div>
+
+
+<div class="card-body" id="Splits" style="display: none;">
+  <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">Data Splits</font>
+    <clipboard-copy for="DataSplitCode">
+      Copy
+      <span class="notice" hidden>Copied!</span>
+    </clipboard-copy>
+  </h5>
+      <pre style="max-height: 500px; overflow: scroll;"><code id="DataSplitCode"></code></pre>
+</div>
+
+
+<div class="card-body" id="DependentVars" style="display:none">
+  <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Dependent Vars</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+
+    <thead style="background:white;">
+    <tr>
+        <th scope="col">Name</th>
+    </tr>
+    </thead>
+
+    <colgroup>
+    <col span="1" style="width: 15%;">
+    <col span="1" style="width: 15%;">
+    </colgroup>
+
+    <tbody id="depen-var-body">
+    </tbody>
+  </table>
+  <br>
+  <br>
+</div>
+
+<div class="card-body" id="SQL" style="display:none">
+  <h5><i class="fa-solid fa-table" style="color:#04b78a"></i> <font color="#999">SQL</font></h5>
+    <div id="sql-div"></div>
+</div>
+
+<div class="card-body" id="FeatureMap" style="display:none">
+  <h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Map</font></h5>
+    <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+  
+      <thead style="background:white;">
+      <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Type</th>
+      </tr>
+      </thead>
+  
+      <colgroup>
+      <col span="1" style="width: 15%;">
+      <col span="1" style="width: 15%;">
+      </colgroup>
+  
+      <tbody id="feature-map-body">
+      </tbody>
+    </table>
+</div>
+
+<div class="card-body" id="FeatureDesc" style="display:none">
+<h5><i class="fa-solid fa-gear" style="color:#04b78a"></i> <font color="#999">Feature Descriptions</font></h5>
+  <table align="left" class="no-spacing" cellspacing="0" id="VersionTable">
+
+    <thead style="background:white;">
+    <tr>
+        <th scope="col">Feature</th>
+        <th scope="col">Description</th>
+    </tr>
+    </thead>
+
+    <colgroup>
+    <col span="1" style="width: 15%;">
+    <col span="1" style="width: 50%;">
+    </colgroup>
+
+    <tbody id="feature-desc-body">
+    </tbody>
+  </table>
+</div>
+
+    
+   
