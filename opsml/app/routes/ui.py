@@ -58,29 +58,33 @@ async def opsml_ui_page(
 ) -> HTMLResponse:
     # validate registry type
     try:
-        RegistryType.from_str(registry)
-    except NotImplementedError:
-        registry = RegistryType.MODEL.value
+        try:
+            RegistryType.from_str(registry)
+        except NotImplementedError:
+            registry = RegistryType.MODEL.value
 
-    if uid:
-        _registry: CardRegistry = getattr(request.app.state.registries, registry)
-        card = _registry.list_cards(uid=uid)
+        if uid:
+            _registry: CardRegistry = getattr(request.app.state.registries, registry)
+            card = _registry.list_cards(uid=uid)
 
-        if card:
-            name = card[0]["name"]
-            repository = card[0]["repository"]
-            version = card[0]["version"]
+            if card:
+                name = card[0]["name"]
+                repository = card[0]["repository"]
+                version = card[0]["version"]
 
-    return templates.TemplateResponse(
-        "include/index.html",
-        {
-            "request": request,
-            "registry": registry,
-            "name": name,
-            "repository": repository,
-            "version": version,
-        },
-    )
+        return templates.TemplateResponse(
+            "include/index.html",
+            {
+                "request": request,
+                "registry": registry,
+                "name": name,
+                "repository": repository,
+                "version": version,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Error rendering 500 page: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get("/opsml/ui/attribution")

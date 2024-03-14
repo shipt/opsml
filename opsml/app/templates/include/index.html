@@ -23,21 +23,22 @@
     <a id="attribution-button" class="btn btn-success active" href="/opsml/ui/attribution" >Attributions</a>
   </div>
 
+
+  <div id="subnav" style="padding-top: 8%;">
+  </div>
+
+  <!-- repository page --> 
+  <div class="top-level" id="repository-page" style="display: none;">
+    {% include "include/components/repository_select.html" %}
+  </div>
+  
+
+  <!-- Model, Data, Run Pages -->
+  <div class="top-level" id="version-page-toggle" style="display: none;">
     <div id="run-version-page" class="version-page" style="display: none;">
-      {% include "include/components/model/run.html" %}
+      {% include "include/components/run/run.html" %}
     </div>
- 
 
-    <div class="container" id="subnav" style="padding-top:65px; display: none;"></div>
-    {% include "include/components/subnav.html" %}
-
-    <!-- repository page --> 
-    <div id="repository-page" style="display: none;">
-      {% include "include/components/repository_select.html" %}
-    </div>
-    
-
-    <!-- Model, Data, Run Pages -->
     <div id="model-version-page" class="version-page" style="display: none;">
       {% include "include/components/model/version.html" %}
     </div>
@@ -50,6 +51,7 @@
     <!-- Model, Data, Run Pages -->
     <div id="audit-version-page" class="version-page" style="display: none;">
     </div>
+  </div>
 
  
 </body>

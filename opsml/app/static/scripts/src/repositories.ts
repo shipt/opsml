@@ -114,10 +114,6 @@ function setDropdown(
     }
   }
 
-  // set available to active
-  const available: HTMLElement = document.getElementById("available")!;
-  available.classList.add("active");
-
   const results: string[] = [registry, providedRepo];
   return results;
 }
@@ -138,13 +134,6 @@ function getRepoNamesPage(registry: string, repository?: string) {
       // get repository and names from dictionary
 
       const results: string[] = setDropdown(data, registry, repository);
-      let url: string = "/opsml/ui?registry=".concat(results[0]);
-
-      if (results[1] !== undefined) {
-        url = url.concat("&repository=").concat(results[1]);
-      }
-
-      window.history.pushState("repo_page", "repo", url.toString());
     },
 
     error(xhr, status, error) {

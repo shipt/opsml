@@ -19,6 +19,13 @@ import { setRunPage } from "./run_version";
 
 const router = new Navigo("/");
 
+enum Registries {
+  Model = "model",
+  Data = "data",
+  Run = "run",
+  Audit = "audit",
+}
+
 // add select2 to jquery typing
 declare global {
   interface JQuery {
@@ -29,16 +36,23 @@ declare global {
 // set active class on nav item
 // registry: string
 function setNavLink(registry: string) {
-  const navLink: HTMLElement = document.getElementById(`nav-${registry}`);
-  navLink.classList.add("active");
+  // set active class on nav-link click
+  $(".nav-link").click(function () {
+    $(".nav-link").removeClass("active");
+    $(this).addClass("active");
+  });
+}
+
+// function to close all top-level divs to reload dom content
+function closeTopLevel() {
+  $(".top-level").hide();
 }
 
 function setRepositoryPage(registry: string, repository: string) {
   let providedRepo: string = repository;
 
-  $("#card-version-page").hide();
-  $("#run-version-page").hide();
-  $("#audit-version-page").hide();
+  // close all top-level divs
+  closeTopLevel();
 
   // if repository is none, set it to null
   if (providedRepo === "None") {
@@ -52,6 +66,8 @@ function setRepositoryPage(registry: string, repository: string) {
 
 function setPage(registry, repository, name, version) {
   let providedVersion = version;
+
+  console.log(registry, repository, name, version);
   // if vars are passed, get specific page
   if (
     registry !== "None" &&
@@ -74,13 +90,33 @@ function setPage(registry, repository, name, version) {
   }
 }
 
+function executed() {
+  console.log("executed");
+}
+
 function setNavigo() {
   router.on("/opsml/ui", ({ data, params, queryString }) => {
+    var registry: string | undefined;
+    var repository: string | undefined;
+    var name: string | undefined;
+    var version: string | undefined;
+
     // check registry, repository, name, and version
-    const registry = params.registry;
-    const repository = params.repository;
-    const name = params.name;
-    const version = params.version;
+
+    console.log(params);
+
+    // check for params
+    if (params !== null) {
+      registry = params.registry || "None";
+      repository = params.repository || "None";
+      name = params.name || "None";
+      version = params.version || "None";
+    } else {
+      registry = Registries.Model;
+      repository = "None";
+      name = "None";
+      version = "None";
+    }
 
     setPage(registry, repository, name, version);
 
@@ -98,6 +134,9 @@ function setNavigo() {
     if (version !== undefined) {
       baseUrl = baseUrl.concat("&version=").concat(version);
     }
+
+    console.log(baseUrl);
+    executed();
   });
 }
 
@@ -113,4 +152,6 @@ $(document).ready(() => {
 
   setNavigo();
   setNavLink(registry);
+  setPage(registry, repository, name, version);
+  console.log("page loaded");
 });

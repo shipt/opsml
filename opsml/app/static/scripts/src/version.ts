@@ -58,13 +58,6 @@ function setCardView(request: CardRequest) {
 
       // set the card view
       buildCard(data);
-
-      const url: string = "/opsml/ui?registry="
-        .concat(request.registry_type, "&repository=")
-        .concat(request.repository, "&name=")
-        .concat(request.name, "&version=")
-        .concat(request.version);
-      window.history.pushState("version_page", "version", url.toString());
     },
 
     error(xhr, status, error) {
@@ -91,10 +84,14 @@ function createVersionElements(
   const activeName: string = name;
 
   // get the version list
-  const versionHeader: HTMLElement = document.getElementById("version-header")!;
+  const versionHeader: HTMLElement = document.getElementById(
+    `${registry}-version-header`
+  )!;
   versionHeader.innerHTML = name;
 
-  const versionList: HTMLElement = document.getElementById("version-list")!;
+  const versionList: HTMLElement = document.getElementById(
+    `${registry}-version-list`
+  )!;
   versionList.innerHTML = ""; // clear the version list
 
   // loop through each item and create an "a" tag for each version
@@ -156,6 +153,7 @@ function createVersionElements(
 
     versionList.appendChild(versionLink);
   }
+  console.log("version elements created");
 }
 
 function getVersions(
@@ -225,19 +223,14 @@ function setVersionPage(
   name: string,
   version?: string
 ) {
-  // set active class on nav item
-  $("#subnav").hide();
-  $("#repository-page").hide();
-  $("#card-version-page").hide();
+  // hide all top-level divs
+  $(".top-level").hide();
+  $("#version-page-toggle").hide();
 
   $.when(getVersions(registry, repository, name, version)).done(() => {
-    $("#card-version-page").show();
+    $(`#${registry}-version-page`).show();
+    $("#version-page-toggle").show();
   });
-
-  // get version page
-  // get_version_page(registry, name, repository, version);
-  document.getElementById("versions")!.classList.add("active");
-  document.getElementById("available")!.classList.remove("active");
 
   // set hide VersionContainer when version-toggle is clicked
   $("#version-toggle").click(() => {

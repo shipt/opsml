@@ -2,14 +2,14 @@
 
 <div class="container-fluid" id="VersionContainer">
     <div id="header" class="page-header">
-      <h3 id="version-header"></h3> 
-      <button id="version-toggle" type="button" class="version-toggle"><i class="fa-solid fa-caret-left"></i></button>
+      <h3 id="data-version-header"></h3> 
+      <button type="button" class="version-toggle"><i class="fa-solid fa-caret-left"></i></button>
     </div>
 </div>
 
 <div class="boxes" id="VersionListContainer">
   <div id="VersionColumn">
-    <div class="list-group" id="version-list"></div>
+    <div class="list-group" id="data-version-list"></div>
   </div>
     
   <div id="MetadataColumn">
@@ -28,12 +28,6 @@
       <div class="card border-0" id="CardBox" style="width:100%;">
         {% include "include/components/data/metadata.html" %}
       </div>
-  
-      {% if registry == 'model' %}
-      <div class="card-body border-0" id="TagBox" style="width:100%;">
-        {% include "include/components/tags.html" %}
-      </div>
-      {% endif %}
 
       <div class="card-body border-0" id="ExtraBox" style="width:100%;">
           {% include "include/components/data/extras.html" %}
