@@ -15,9 +15,12 @@
     },
     "plugins": [
         "@typescript-eslint",
-        "import"
+        "import",
+        "eslint-plugin-tsdoc"
       ],
       "rules": {
+        "import/prefer-default-export": "off",
+        "@typescript-eslint/no-unused-vars": "off",
         "import/extensions": [
            "error",
            "ignorePackages",

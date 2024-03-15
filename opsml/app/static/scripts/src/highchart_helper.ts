@@ -1,10 +1,10 @@
-import Highcharts from 'highcharts';
+import Highcharts from "highcharts";
 
-import addExporting from 'highcharts/modules/exporting'
-import addExportData from 'highcharts/modules/export-data'
-import addBoost from 'highcharts/modules/boost';
-import addAccessibility from 'highcharts/modules/accessibility';
-import addSeriesLabel from 'highcharts/modules/series-label';
+import addExporting from "highcharts/modules/exporting";
+import addExportData from "highcharts/modules/export-data";
+import addBoost from "highcharts/modules/boost";
+import addAccessibility from "highcharts/modules/accessibility";
+import addSeriesLabel from "highcharts/modules/series-label";
 
 addExporting(Highcharts);
 addExportData(Highcharts);
@@ -13,30 +13,38 @@ addAccessibility(Highcharts);
 addSeriesLabel(Highcharts);
 
 Highcharts.setOptions({
-  colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb', '#e74c3c', '#e73c3c', '#f2cc35'],
+  colors: [
+    "#04b78a",
+    "#5e0fb7",
+    "#bdbdbd",
+    "#009adb",
+    "#e74c3c",
+    "#e73c3c",
+    "#f2cc35",
+  ],
 });
 
 interface Graph {
-    name: string;
-    x_label: string;
-    y_label: string;
-    x: string[];
-    y: string[];
-    graph_style: string;
+  name: string;
+  x_label: string;
+  y_label: string;
+  x: string[];
+  y: string[];
+  graph_style: string;
 }
 
-function getToolTip(graphStyle:string) {
+function getToolTip(graphStyle: string) {
   let tooltip;
-  if (graphStyle === 'line') {
+  if (graphStyle === "line") {
     tooltip = {
       valueDecimals: 2,
       shared: true,
       split: true,
       crosshairs: true,
     };
-  } else if (graphStyle === 'scatter') {
+  } else if (graphStyle === "scatter") {
     tooltip = {
-      pointFormat: '{point.y}',
+      pointFormat: "{point.y}",
       shared: true,
       split: true,
       valueDecimals: 2,
@@ -46,10 +54,10 @@ function getToolTip(graphStyle:string) {
   return tooltip;
 }
 
-function getPlotOptions(graphStyle:string) {
+function getPlotOptions(graphStyle: string) {
   let PlotOptions;
 
-  if (graphStyle === 'line') {
+  if (graphStyle === "line") {
     PlotOptions = {
       series: {
         states: {
@@ -64,7 +72,7 @@ function getPlotOptions(graphStyle:string) {
         },
       },
     };
-  } else if (graphStyle === 'scatter') {
+  } else if (graphStyle === "scatter") {
     PlotOptions = {
       series: {
         states: {
@@ -95,26 +103,25 @@ function buildXyChart(graph: Graph) {
   const plotOptions = getPlotOptions(graphStyle);
   const toolTip = getToolTip(graphStyle);
 
-
   Highcharts.chart({
     chart: {
       type: graphStyle,
-      borderColor: '#390772',
+      borderColor: "#390772",
       borderWidth: 2,
       shadow: true,
       renderTo: chartName,
-      zooming: {  
-        type: 'xy',
+      zooming: {
+        type: "xy",
       },
     },
     title: {
       text: name,
-      align: 'left',
+      align: "left",
     },
 
     xAxis: {
       labels: {
-        format: '{value:.1f}',
+        format: "{value:.1f}",
         // @ts-expect-error: skipping
         tickInterval: 5,
       },
@@ -128,7 +135,7 @@ function buildXyChart(graph: Graph) {
 
     yAxis: {
       labels: {
-        format: '{value:.1f}',
+        format: "{value:.1f}",
         step: 1,
       },
       title: {
@@ -173,26 +180,25 @@ function buildMultiXyChart(graph: Graph) {
   const plotOptions = getPlotOptions(graphStyle);
   const toolTip = getToolTip(graphStyle);
 
-
   Highcharts.chart({
     chart: {
       type: graphStyle,
-      borderColor: '#390772',
+      borderColor: "#390772",
       borderWidth: 2,
       shadow: true,
       renderTo: chartName,
-      zooming: {  
-        type: 'xy',
+      zooming: {
+        type: "xy",
       },
     },
     title: {
       text: name,
-      align: 'left',
+      align: "left",
     },
 
     xAxis: {
       labels: {
-        format: '{value:.1f}',
+        format: "{value:.1f}",
 
         // @ts-expect-error: skipping
         tickInterval: 5,
@@ -208,7 +214,7 @@ function buildMultiXyChart(graph: Graph) {
 
     yAxis: {
       labels: {
-        format: '{value:.1f}',
+        format: "{value:.1f}",
         step: 1,
       },
       title: {
@@ -227,8 +233,8 @@ function buildMultiXyChart(graph: Graph) {
     },
 
     legend: {
-      align: 'left',
-      verticalAlign: 'top',
+      align: "left",
+      verticalAlign: "top",
       borderWidth: 0,
     },
   });
@@ -236,7 +242,7 @@ function buildMultiXyChart(graph: Graph) {
 
 function buildBarChart(name, metrics) {
   Highcharts.setOptions({
-    colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb'],
+    colors: ["#04b78a", "#5e0fb7", "#bdbdbd", "#009adb"],
   });
 
   const scores = [];
@@ -255,27 +261,27 @@ function buildBarChart(name, metrics) {
 
   Highcharts.chart({
     chart: {
-      type: 'column',
+      type: "column",
       plotBackgroundColor: null,
       plotBorderWidth: null,
       plotShadow: false,
       height: `${(9 / 16) * 90}%`,
-      renderTo: 'MetricChart',
+      renderTo: "MetricChart",
     },
     title: {
       text: `Metrics for ${name}`,
-      align: 'left',
+      align: "left",
     },
 
     xAxis: {
-      type: 'category',
+      type: "category",
       categories: metricNames,
       lineWidth: 1,
     },
     yAxis: {
       min: minyValue,
       title: {
-        text: 'Metric Value)',
+        text: "Metric Value)",
       },
       lineWidth: 1,
       tickLength: 10,
@@ -287,7 +293,7 @@ function buildBarChart(name, metrics) {
     plotOptions: {
       series: {
         borderWidth: 1,
-        borderColor: 'black',
+        borderColor: "black",
         states: {
           inactive: {
             opacity: 1,
@@ -298,13 +304,12 @@ function buildBarChart(name, metrics) {
     },
     series: [
       {
-        name: 'Metrics',
+        name: "Metrics",
         colorByPoint: true,
         data: scores,
-        colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb'],
+        colors: ["#04b78a", "#5e0fb7", "#bdbdbd", "#009adb"],
         pointPadding: 0,
-        type: 'column',
-
+        type: "column",
       },
     ],
   });
@@ -312,7 +317,7 @@ function buildBarChart(name, metrics) {
 
 function buildLineChart(name, metrics) {
   Highcharts.setOptions({
-    colors: ['#04b78a', '#5e0fb7', '#bdbdbd', '#009adb'],
+    colors: ["#04b78a", "#5e0fb7", "#bdbdbd", "#009adb"],
   });
 
   const metricNames = Object.keys(metrics);
@@ -339,28 +344,28 @@ function buildLineChart(name, metrics) {
 
   Highcharts.chart({
     chart: {
-      type: 'line',
+      type: "line",
       height: `${(9 / 16) * 90}%`,
-      renderTo: 'MetricChart',
-      zooming: {  
-        type: 'x',
+      renderTo: "MetricChart",
+      zooming: {
+        type: "x",
       },
     },
     title: {
       text: `Metrics for ${name}`,
-      align: 'left',
+      align: "left",
     },
 
     xAxis: {
-      type: 'category',
+      type: "category",
       title: {
-        text: 'Step',
+        text: "Step",
       },
       lineWidth: 1,
     },
     yAxis: {
       title: {
-        text: 'Value',
+        text: "Value",
       },
       lineWidth: 1,
       tickLength: 10,
@@ -384,6 +389,4 @@ function buildLineChart(name, metrics) {
   });
 }
 
-export {
-  buildXyChart, buildMultiXyChart, buildBarChart, buildLineChart,
-};
+export { buildXyChart, buildMultiXyChart, buildBarChart, buildLineChart };

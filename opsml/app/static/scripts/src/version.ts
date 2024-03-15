@@ -1,5 +1,4 @@
 import { buildModelVersionUI } from "./model_version";
-import { buildDataVersionUI } from "./data_version";
 import { buildRunVersionUI } from "./run_version";
 import { errorToPage } from "./error";
 import * as dataVer from "./data_version";
@@ -8,7 +7,7 @@ import * as modelVer from "./model_version";
 const LIST_CARD_PATH: string = "/opsml/cards/list";
 const ACTIVE_CARD_PATH: string = "/opsml/cards/ui";
 
-type CardData = dataVer.Data & modelVer.Data & { registry: string };
+type CardData = dataVer.dataPage & modelVer.Data & { registry: string };
 
 interface CardRequest {
   registry_type: string;
@@ -30,17 +29,21 @@ interface Card {
 function buildCard(data: CardData) {
   // see 'include/components/model/metadata.html'
 
-  document.getElementById("metadata-uid")!.innerHTML = data.card.uid;
-  document.getElementById("metadata-name")!.innerHTML = data.card.name;
-  document.getElementById("metadata-version")!.innerHTML = data.card.version;
-  document.getElementById("metadata-repo")!.innerHTML = data.card.repository;
+  document.getElementById(`${data.registry}-metadata-uid`)!.innerHTML =
+    data.card.uid;
+  document.getElementById(`${data.registry}-metadata-name`)!.innerHTML =
+    data.card.name;
+  document.getElementById(`${data.registry}-metadata-version`)!.innerHTML =
+    data.card.version;
+  document.getElementById(`${data.registry}-metadata-repo`)!.innerHTML =
+    data.card.repository;
 
   if (data.registry === "model") {
     buildModelVersionUI(data as modelVer.Data);
   } else if (data.registry === "data") {
-    buildDataVersionUI(data as dataVer.Data);
+    new dataVer.dataVersion(data as dataVer.dataPage).buildUI();
   } else if (data.registry === "run") {
-    buildRunVersionUI(data);
+    buildRunVersionUI(data as modelVer.Data);
   }
 }
 
@@ -62,6 +65,7 @@ function setCardView(request: CardRequest) {
 
     error(xhr, status, error) {
       // eslint-disable-line @typescript-eslint/no-unused-vars
+
       // send request to error route on error
       const err: string = JSON.parse(xhr.responseText);
       errorToPage(JSON.stringify(err));
@@ -102,31 +106,8 @@ function createVersionElements(
     versionLink.id = "version-link";
 
     // version_link should be clickable
-    versionLink.href = "#";
-    versionLink.dataset.version = version.version;
-    versionLink.onclick = function setCardRequest() {
-      const request: CardRequest = {
-        registry_type: registry,
-        repository: version.repository,
-        name: cardName,
-        version: version.version,
-      };
-
-      setCardView(request);
-
-      // change active class
-      const versionLinks = versionList.getElementsByTagName("a");
-      for (let j = 0; j < versionLinks.length; j += 1) {
-        versionLinks[j].setAttribute(
-          "class",
-          "list-group-item list-group-item-action"
-        );
-      }
-      (this as HTMLElement).setAttribute(
-        "class",
-        "list-group-item list-group-item-action active"
-      );
-    };
+    versionLink.href = `opsml/ui/versions?registry=${registry}&repository=${version.repository}&name=${cardName}&version=${version.version}`;
+    versionLink.setAttribute("data-navigo", "");
 
     // set the active version
     if (version.version === activeVersion && activeName === version.name) {
@@ -153,7 +134,6 @@ function createVersionElements(
 
     versionList.appendChild(versionLink);
   }
-  console.log("version elements created");
 }
 
 function getVersions(
@@ -238,4 +218,11 @@ function setVersionPage(
   });
 }
 
-export { setVersionPage, getVersions, createVersionElements, Card };
+export {
+  setVersionPage,
+  getVersions,
+  createVersionElements,
+  Card,
+  setCardView,
+  CardRequest,
+};

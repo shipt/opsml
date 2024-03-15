@@ -31,60 +31,18 @@ async def favicon() -> FileResponse:
 
 
 @router.get("/opsml")
-async def opsml_homepage(
-    request: Request,
-    registry: str = RegistryType.MODEL.value,
-    name: Optional[str] = None,
-    repository: Optional[str] = None,
-    version: Optional[str] = None,
-) -> HTMLResponse:
-    return await opsml_ui_page(
-        request,
-        registry=registry,
-        name=name,
-        repository=repository,
-        version=version,
-    )
+async def opsml_homepage(request: Request) -> HTMLResponse:
+    return await opsml_ui_page(request)
 
 
 @router.get("/opsml/ui")
-async def opsml_ui_page(
-    request: Request,
-    registry: str = RegistryType.MODEL.value,
-    name: Optional[str] = None,
-    repository: Optional[str] = None,
-    version: Optional[str] = None,
-    uid: Optional[str] = None,
-) -> HTMLResponse:
+async def opsml_ui_page(request: Request) -> HTMLResponse:
     # validate registry type
-    try:
-        try:
-            RegistryType.from_str(registry)
-        except NotImplementedError:
-            registry = RegistryType.MODEL.value
 
-        if uid:
-            _registry: CardRegistry = getattr(request.app.state.registries, registry)
-            card = _registry.list_cards(uid=uid)
-
-            if card:
-                name = card[0]["name"]
-                repository = card[0]["repository"]
-                version = card[0]["version"]
-
-        return templates.TemplateResponse(
-            "include/index.html",
-            {
-                "request": request,
-                "registry": registry,
-                "name": name,
-                "repository": repository,
-                "version": version,
-            },
-        )
-    except Exception as e:
-        logger.error(f"Error rendering 500 page: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return templates.TemplateResponse(
+        "include/index.html",
+        {"request": request},
+    )
 
 
 @router.get("/opsml/ui/attribution")
@@ -119,8 +77,16 @@ async def opsml_repositories(
     if not repositories:
         return {"repositories": [], "names": []}
 
+    print(repositories)
+    print(repository)
+    print(type(repository))
     if repository is None:
+        print("No repository specified")
+        print(repositories)
         repository = repositories[0]
+
+    print(repository)
+    print(_registry._registry)
 
     card_names = _registry._registry.get_unique_card_names(repository=repository)
 

@@ -27,7 +27,7 @@ lints: lints.format_check lints.ruff lints.pylint lints.mypy lints.gitleaks
 lints.ci: lints.format_check lints.ruff lints.pylint lints.mypy
 
 lints.website:
-	cd opsml/app/static/scripts && npx eslint "typescript/" --fix
+	cd opsml/app/static/scripts && npx eslint "src/" --fix
 
 build.website:
 	cd opsml/app/static/scripts && npx tsc

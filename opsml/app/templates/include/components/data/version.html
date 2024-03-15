@@ -18,23 +18,27 @@
       <div class="card-body" id='CardUpperBox'>
         <h4>Data
           <div id="CardTabBox" style="display: flex;">
-            <button id="metadata-button" type="button" class="header-tab">Metadata</button>
-            <button id="summary-button" type="button" class="header-tab">Summary</button>
+            <button id="data-metadata-button" type="button" class="header-tab">Metadata</button>
+            <button id="data-summary-button" type="button" class="header-tab">Summary</button>
             <button id="data-profile-button" type="button" class="header-tab" style="display: none;">Data Profile</button>
           </div>
         </h4>
       </div>
 
-      <div class="card border-0" id="CardBox" style="width:100%;">
-        {% include "include/components/data/metadata.html" %}
+      <div id="DataMetadata">
+        <div class="card border-0" id="CardBox" style="width:100%;">
+          {% include "include/components/data/metadata.html" %}
+        </div>
+
+        <div class="card-body border-0" id="ExtraBox" style="width:100%;">
+            {% include "include/components/data/extras.html" %}
+        </div>
       </div>
 
-      <div class="card-body border-0" id="ExtraBox" style="width:100%;">
-          {% include "include/components/data/extras.html" %}
-      </div>
-
-      <div class="card-body border-0" style="display: none; width:100%;" id="SummaryBox">
-        {% include "include/components/summary.html" %}
+      <div id="DataSummary" style="display: none;">
+        <div class="card-body border-0" style="width:100%;" id="SummaryBox">
+          {% include "include/components/data/summary.html" %}
+        </div>
       </div>
 
       <div id="ProfileBox" class="card border-0" style="display: None; width: 100%;">

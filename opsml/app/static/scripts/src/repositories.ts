@@ -93,7 +93,7 @@ function setDropdown(
       const cardText: HTMLAnchorElement = document.createElement("a");
       cardText.className = "stretched-link";
       cardText.href = `/opsml/ui?registry=${registry}&repository=${providedRepo}&name=${names[i]}`;
-      cardText.setAttribute("value", names[i]);
+      cardText.setAttribute("data-navigo", names[i]);
       cardText.id = "artifact-card-name";
       cardCol.appendChild(cardText);
 
@@ -119,8 +119,8 @@ function setDropdown(
 }
 
 //
-function getRepoNamesPage(registry: string, repository?: string) {
-  const uriData: { registry: string; repository?: string } = {
+function getRepoNamesPage(registry: string, repository?: string | undefined) {
+  const uriData: { registry: string; repository?: string | undefined } = {
     registry,
     repository,
   };
