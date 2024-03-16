@@ -12,7 +12,7 @@ import "./styles/prism.css";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-import { setNavigo, setRepositoryPage, Registries } from "./router";
+import { setNavigo, setPage, Registries, router } from "./router";
 
 // add select2 to jquery typing
 declare global {
@@ -23,7 +23,7 @@ declare global {
 
 // set active class on nav item
 // registry: string
-function setNavLink(registry: string) {
+function setNavLink() {
   // set active class on nav-link click
   $(".nav-link").click(function () {
     $(".nav-link").removeClass("active");
@@ -39,10 +39,18 @@ export { setNavLink };
 
 // default page to load
 $(document).ready(() => {
-  const registry: string = Registries.Model;
+  const searchParams = new URLSearchParams(window.location.search);
+
+  let registry: string | undefined = searchParams.get("registry");
+  let repository: string | undefined = searchParams.get("repository");
+  let name: string | undefined = searchParams.get("name");
+  let version: string | undefined = searchParams.get("version");
+
+  console.log("registryType: ", registry);
 
   setNavigo();
-  setNavLink(Registries.Model);
-  setRepositoryPage(registry);
-  console.log("page loaded");
+  setNavLink();
+  router.resolve();
+  //setRepositoryPage(registry);
+  //console.log("page loaded");
 });

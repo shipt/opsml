@@ -77,16 +77,8 @@ async def opsml_repositories(
     if not repositories:
         return {"repositories": [], "names": []}
 
-    print(repositories)
-    print(repository)
-    print(type(repository))
     if repository is None:
-        print("No repository specified")
-        print(repositories)
         repository = repositories[0]
-
-    print(repository)
-    print(_registry._registry)
 
     card_names = _registry._registry.get_unique_card_names(repository=repository)
 

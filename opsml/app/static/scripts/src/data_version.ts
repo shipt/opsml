@@ -324,6 +324,9 @@ class dataVersion extends Version {
 
     // setup extra tabs
     $(".extra-tab").on("click", function extraFunc() {
+      // check if current tab is selected
+      var hasSelected = $(this).hasClass("selected");
+
       // loop over each and hide id
       $(".extra-tab").each(function extraFunc2() {
         $(this).removeClass("selected");
@@ -336,15 +339,17 @@ class dataVersion extends Version {
         $(`#${tabID}`).hide();
       });
 
-      $(this).addClass("selected");
-      $(this).css({
-        "background-color": "white",
-        "border-top": "2px solid #5e0fb7",
-        color: "#5e0fb7",
-      });
+      if (!hasSelected) {
+        $(this).addClass("selected");
+        $(this).css({
+          "background-color": "white",
+          "border-top": "2px solid #5e0fb7",
+          color: "#5e0fb7",
+        });
 
-      const tabID = $(this).data("id");
-      $(`#${tabID}`).toggle();
+        const tabID = $(this).data("id");
+        $(`#${tabID}`).toggle();
+      }
     });
 
     // reset on new version

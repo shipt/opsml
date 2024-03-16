@@ -1,6 +1,7 @@
 import { buildModelVersionUI } from "./model_version";
 import { buildRunVersionUI } from "./run_version";
 import { errorToPage } from "./error";
+import { router, setNavigo } from "./router";
 import * as dataVer from "./data_version";
 import * as modelVer from "./model_version";
 
@@ -58,7 +59,6 @@ function setCardView(request: CardRequest) {
       // add registry type to data
       // this is being assigned; not reassigned
       data.registry = request.registry_type; // eslint-disable-line no-param-reassign
-
       // set the card view
       buildCard(data);
     },
@@ -103,22 +103,25 @@ function createVersionElements(
     const cardName: string = cardVersions[i].name;
     const version: Card = cardVersions[i];
     const versionLink: HTMLAnchorElement = document.createElement("a");
-    versionLink.id = "version-link";
-
-    // version_link should be clickable
-    versionLink.href = `opsml/ui/versions?registry=${registry}&repository=${version.repository}&name=${cardName}&version=${version.version}`;
-    versionLink.setAttribute("data-navigo", "");
+    let url = `/opsml/ui/version?registry=${registry}&repository=${version.repository}&name=${cardName}&version=${version.version}`;
+    versionLink.id = `${registry}-${version.version}-version-link`;
+    versionLink.onclick = () => {
+      router.navigate(url);
+    };
 
     // set the active version
     if (version.version === activeVersion && activeName === version.name) {
-      versionLink.setAttribute(
-        "class",
-        "list-group-item list-group-item-action active"
+      versionLink.classList.add(
+        "list-group-item",
+        "list-group-item-action",
+        "active",
+        "version-link"
       );
     } else {
-      versionLink.setAttribute(
-        "class",
-        "list-group-item list-group-item-action"
+      versionLink.classList.add(
+        "list-group-item",
+        "list-group-item-action",
+        "version-link"
       );
     }
 

@@ -63,14 +63,13 @@ p {
 
 #VersionColumn {
   float:left;
-  max-width:20%;
-  min-width:10%;
+  width:15vw;
   padding-right: 1%;
   font-size: 15px;
 }
 
 #MetadataColumn {
-  min-width:68%;
+  width:68vw;
   padding-left: .6%;
   padding-right: 1%;
   padding-bottom: 10%;
@@ -886,7 +885,7 @@ pre {
   height: 700px;
 }
 
-#version-link.active {
+.version-link.active {
   background-color: rgb(75, 57, 120);
   border-color: #5e0fb7;
   border: none;

@@ -1,6 +1,6 @@
 import Navigo from "navigo";
 import { getRepoNamesPage } from "./repositories";
-import { setVersionPage } from "./version";
+import { setVersionPage, setCardView, CardRequest } from "./version";
 import { setRunPage } from "./run_version";
 
 const OPSML_BASE_URL = "/opsml/ui";
@@ -38,7 +38,7 @@ function setRepositoryPage(registry: string, repository?: string | undefined) {
  *
  */
 function setPage(
-  registry: string,
+  registry?: string | undefined,
   repository?: string | undefined,
   name?: string | undefined,
   version?: string | undefined
@@ -60,44 +60,25 @@ function setPage(
 }
 
 function setNavigo() {
-  router.on(OPSML_BASE_URL, ({ data, params, queryString }) => {
-    var registry: string | undefined;
-    var repository: string | undefined;
-    var name: string | undefined;
-    var version: string | undefined;
-
-    // check registry, repository, name, and version
-
-    // check for params
-    if (params !== null) {
-      registry = params.registry || undefined;
-      repository = params.repository || undefined;
-      name = params.name || undefined;
-      version = params.version || undefined;
-    } else {
-      registry = Registries.Model;
-      repository = undefined;
-      name = undefined;
-      version = undefined;
-    }
-
-    setPage(registry, repository, name, version);
-
-    // resolve path
-    let baseUrl: string = OPSML_BASE_URL;
-    if (registry !== undefined) {
-      baseUrl = baseUrl.concat("?registry=").concat(registry);
-    }
-    if (repository !== undefined) {
-      baseUrl = baseUrl.concat("&repository=").concat(repository);
-    }
-    if (name !== undefined) {
-      baseUrl = baseUrl.concat("&name=").concat(name);
-    }
-    if (version !== undefined) {
-      baseUrl = baseUrl.concat("&version=").concat(version);
-    }
+  router.on(`${OPSML_BASE_URL}/card`, ({ data, params, queryString }) => {
+    setPage(params.registry, params.repository, params.name);
   });
+  router.on(`${OPSML_BASE_URL}/registry`, ({ data, params, queryString }) => {
+    setPage(params.registry, params.repository);
+  });
+  router.on(`${OPSML_BASE_URL}/version`, ({ data, params, queryString }) => {
+    if (!$("#repository-page").is(":hidden")) {
+      setPage(params.registry, params.repository, params.name, params.version);
+    }
+
+    setCardView({
+      registry_type: params.registry,
+      repository: params.repository,
+      name: params.name,
+      version: params.version,
+    });
+  });
+  router.resolve();
 }
 
-export { router, setNavigo, setRepositoryPage, Registries };
+export { router, setNavigo, setRepositoryPage, Registries, setPage };

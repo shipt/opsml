@@ -1,5 +1,5 @@
 import { errorToPage } from "./error"; // eslint-disable-line import/no-unresolved
-
+import { router } from "./router";
 const REPO_NAMES_PATH: string = "/opsml/repository";
 
 interface RepositoryData {
@@ -92,9 +92,12 @@ function setDropdown(
 
       const cardText: HTMLAnchorElement = document.createElement("a");
       cardText.className = "stretched-link";
-      cardText.href = `/opsml/ui?registry=${registry}&repository=${providedRepo}&name=${names[i]}`;
-      cardText.setAttribute("data-navigo", names[i]);
       cardText.id = "artifact-card-name";
+      cardText.onclick = function () {
+        router.navigate(
+          `/opsml/ui/card?registry=${registry}&repository=${providedRepo}&name=${names[i]}`
+        );
+      };
       cardCol.appendChild(cardText);
 
       /// / create image column
