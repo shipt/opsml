@@ -3,6 +3,9 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 export default {
 	kit: {
+		prerender: {
+			handleHttpError: 'ignore'
+		},
 		appDir: 'app',
 		paths: {
 			relative: false,

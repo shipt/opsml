@@ -8,6 +8,9 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from opsml.helpers.logging import ArtifactLogger
+
+logger = ArtifactLogger.get_logger()
 
 # Constants
 TEMPLATE_PATH = Path(__file__).parents[1] / "static" / "scripts"
@@ -31,7 +34,11 @@ async def homepage(request: Request) -> RedirectResponse:
 
 @router.get("/opsml")
 async def opsml_ui(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        "build/index.html",
-        {"request": request},
-    )
+    try:
+        return templates.TemplateResponse(
+            "build/index.html",
+            {"request": request},
+        )
+    except Exception as e:
+        logger.error(f"Error rendering UI: {e}")
+        raise e
