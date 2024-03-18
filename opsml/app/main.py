@@ -22,7 +22,7 @@ from opsml.types import StorageSystem
 logger = ArtifactLogger.get_logger()
 
 instrumentator = Instrumentator()
-BUILD_PATH = (Path(__file__).parent / "static" / "scripts" / "build").absolute()
+BUILD_PATH = (Path(__file__).parent / "static" / "site").absolute()
 
 
 class OpsmlApp:
@@ -40,8 +40,7 @@ class OpsmlApp:
 
     def build_app(self) -> None:
         self.app.include_router(api_router)
-        self.app.mount("/build", StaticFiles(directory=BUILD_PATH), name="build")
-        self.app.mount("/app", StaticFiles(directory=f"{BUILD_PATH}/app"), name="build")
+        self.app.mount("/site", StaticFiles(directory=BUILD_PATH), name="site")
 
         if config.storage_system == StorageSystem.LOCAL:
             # find path to storage root

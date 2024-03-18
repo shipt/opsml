@@ -13,10 +13,7 @@ from opsml.helpers.logging import ArtifactLogger
 logger = ArtifactLogger.get_logger()
 
 # Constants
-TEMPLATE_PATH = Path(__file__).parents[1] / "static" / "scripts"
-templates = Jinja2Templates(directory=TEMPLATE_PATH)
-
-
+TEMPLATE_PATH = Path(__file__).parents[1] / "static"
 templates = Jinja2Templates(directory=TEMPLATE_PATH)
 
 router = APIRouter()
@@ -36,7 +33,7 @@ async def homepage(request: Request) -> RedirectResponse:
 async def opsml_ui(request: Request) -> HTMLResponse:
     try:
         return templates.TemplateResponse(
-            "build/index.html",
+            "site/index.html",
             {"request": request},
         )
     except Exception as e:
