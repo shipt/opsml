@@ -28,7 +28,7 @@ interface ModelCardResponse {
   cards: ModelCardJson[];
 }
 
-async function getModelCards(): Promise<ModelCardResponse> {
+async function getModelCards(): Promise<ModelCardJson[]> {
   const modelcards = await fetch("/opsml/cards/list", {
     method: "POST",
     headers: {
@@ -38,7 +38,8 @@ async function getModelCards(): Promise<ModelCardResponse> {
     body: JSON.stringify({ registry_type: "model", limit: 10 }),
   });
 
-  return modelcards.json();
+  let response: ModelCardResponse = await modelcards.json();
+  return response.cards;
 }
 
 export { getModelCards };

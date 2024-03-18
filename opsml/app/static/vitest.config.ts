@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   test: {
-    include: ["src/routes/*.ts"],
+    include: ["src/lib/scripts/*.test.ts"],
     environment: "jsdom",
   },
 });
