@@ -26,6 +26,9 @@ lints.gitleaks:
 lints: lints.format_check lints.ruff lints.pylint lints.mypy lints.gitleaks
 lints.ci: lints.format_check lints.ruff lints.pylint lints.mypy
 
+lints.website:
+	cd opsml/app/static && npx eslint "src/" --fix
+
 setup: setup.sysdeps setup.python setup.project
 # setup.uninstall - handle in and out of project venvs
 setup.uninstall:
@@ -94,6 +97,12 @@ test.registry:
 
 test.doc_examples:
 	poetry run pytest tests/test_docs
+
+test.website:
+	cd opsml/app/statict && npm run test
+
+build.website:
+	cd opsml/app/static && npm run build
 
 poetry.pre.patch:
 	poetry version prepatch

@@ -3,6 +3,4 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [sveltekit()],
-  include: ["*.ts"],
-  environment: "jsdom",
 });

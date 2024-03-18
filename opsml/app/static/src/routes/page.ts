@@ -38,16 +38,7 @@ async function getModelCards(): Promise<ModelCardResponse> {
     body: JSON.stringify({ registry_type: "model", limit: 10 }),
   });
 
-  const cards: ModelCardResponse = modelcards.json();
-  return cards;
+  return modelcards.json();
 }
 
-function addTwo(a: number, b: number): number {
-  return a + b;
-}
-
-function addThree(): number {
-  // a ddTwo(1, 2);
-}
-
-export { getModelCards, addTwo };
+export { getModelCards };

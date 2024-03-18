@@ -1,8 +1,8 @@
 <script>
-    import "../app.css";
-    import Navbar from '$lib/Navbar.svelte';
-    import Footer from '$lib/Footer.svelte';
-    import favicon from '$lib/images/opsml-green.ico';
+  import "../app.css";
+  import Navbar from '$lib/Navbar.svelte';
+  import Footer from '$lib/Footer.svelte';
+  import favicon from '$lib/images/opsml-green.ico';
 
 </script>
 

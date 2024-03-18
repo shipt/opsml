@@ -41,6 +41,7 @@ class OpsmlApp:
     def build_app(self) -> None:
         self.app.include_router(api_router)
         self.app.mount("/site", StaticFiles(directory=BUILD_PATH), name="site")
+        self.app.mount("/app", StaticFiles(directory=f"{BUILD_PATH}/app"), name="build")
 
         if config.storage_system == StorageSystem.LOCAL:
             # find path to storage root
