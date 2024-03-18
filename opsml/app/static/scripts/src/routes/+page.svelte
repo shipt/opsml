@@ -1,7 +1,6 @@
 
 
 <script lang="ts">
-  /** @type {import('./$types').PageData} */
   import logo from '$lib/images/opsml-logo.png';
   import modelcard from '$lib/images/modelcard-circuit.svg';
   import { onMount } from 'svelte';
@@ -12,8 +11,13 @@
   }
 
   onMount(async () => {
-    const modelcards = await fetch("/opsml/healthcheck", {
-      method: "GET"
+    const modelcards = await fetch("/opsml/cards/list", {
+      method: "POST",
+      headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ registry_type: "model", limit: 10 }),
     });
     const item = await modelcards.json();
     console.log(JSON.stringify(item));
