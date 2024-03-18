@@ -23,7 +23,6 @@ build/
 develop-eggs/
 dist/
 eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -121,6 +120,7 @@ notebooks/
 .test_local.py
 lightning_logs/
 node_modules/
+.svelte-kit
 
 # git
 **/*.orig
