@@ -42,4 +42,12 @@ async function getModelCards(): Promise<ModelCardResponse> {
   return cards;
 }
 
+function addTwo(a: number, b: number): number {
+  return a + b;
+}
+
+function addThree(): number {
+  // a ddTwo(1, 2);
+}
+
 export { getModelCards, addTwo };
