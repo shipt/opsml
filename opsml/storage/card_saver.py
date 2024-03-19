@@ -64,10 +64,7 @@ class ModelInterfaceIncludeArgs:
 
     def get_save_args(
         self,
-    ) -> Union[
-        Dict[str, Union[bool, Dict[str, bool]]],
-        Dict[str, bool],
-    ]:
+    ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
         args = self.get_default_args()
 
         if self.interface_type == ModelInterfaceTypes.HUGGINGFACE.value:
@@ -526,7 +523,9 @@ def save_card_artifacts(card: ArtifactCard) -> None:
 
     """
 
-    card_saver = next(card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type))
+    card_saver = next(
+        card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type)
+    )
 
     saver = card_saver(card=card)
 

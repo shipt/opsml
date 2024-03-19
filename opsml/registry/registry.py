@@ -3,9 +3,9 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import textwrap
-from typing import Any, Dict, List, Optional, Type, Union, TypeVar
+from typing import Any, Dict, List, Optional, Type, Union
 
-from opsml.cards import ArtifactCard, CardInfo
+from opsml.cards import CardInfo, ModelCard, DataCard, RunCard, AuditCard, ProjectCard, PipelineCard
 from opsml.data import DataInterface
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import clean_string
@@ -16,8 +16,7 @@ from opsml.storage.card_loader import CardLoader
 from opsml.types import CommonKwargs, RegistryType
 
 logger = ArtifactLogger.get_logger()
-
-Card = TypeVar("Card", bound=ArtifactCard)
+CardType = Union[ModelCard, DataCard, RunCard, AuditCard, ProjectCard, PipelineCard]
 
 
 class CardRegistry:
@@ -131,7 +130,7 @@ class CardRegistry:
         info: Optional[CardInfo] = None,
         ignore_release_candidates: bool = False,
         interface: Optional[Union[Type[ModelInterface], Type[DataInterface]]] = None,
-    ) -> Card:
+    ) -> CardType:
         """Loads a specific card
 
         Args:
@@ -185,7 +184,7 @@ class CardRegistry:
 
     def register_card(
         self,
-        card: ArtifactCard,
+        card: CardType,
         version_type: Union[VersionType, str] = VersionType.MINOR,
         pre_tag: str = "rc",
         build_tag: str = "build",
@@ -226,7 +225,7 @@ class CardRegistry:
                 build_tag=build_tag,
             )
 
-    def update_card(self, card: ArtifactCard) -> None:
+    def update_card(self, card: CardType) -> None:
         """
         Update an artifact card based on current registry
 
@@ -252,7 +251,7 @@ class CardRegistry:
         results = self._registry.list_cards(uid=uid)[0]
         return {col: results[col] for col in columns}
 
-    def delete_card(self, card: ArtifactCard) -> None:
+    def delete_card(self, card: CardType) -> None:
         """
         Delete a specific Card
 

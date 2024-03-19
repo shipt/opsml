@@ -13,15 +13,7 @@ from venv import logger
 import joblib
 from pydantic import BaseModel
 
-from opsml.cards import (
-    ArtifactCard,
-    AuditCard,
-    DataCard,
-    ModelCard,
-    PipelineCard,
-    ProjectCard,
-    RunCard,
-)
+from opsml.cards import ArtifactCard, AuditCard, DataCard, ModelCard, PipelineCard, ProjectCard, RunCard
 from opsml.data.interfaces._base import DataInterface
 from opsml.data.interfaces.custom_data.base import Dataset
 from opsml.helpers.utils import all_subclasses
@@ -29,17 +21,28 @@ from opsml.model.interfaces.base import ModelInterface
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.settings.config import config
 from opsml.storage import client
-from opsml.types import CardType, RegistryTableNames, RegistryType, SaveName, Suffix
+from opsml.types import RegistryTableNames, RegistryType, SaveName, Suffix
 from opsml.types.model import ModelMetadata, OnnxModel
 
-table_name_card_map = {
-    RegistryType.DATA.value: DataCard,
-    RegistryType.MODEL.value: ModelCard,
-    RegistryType.RUN.value: RunCard,
-    RegistryType.PIPELINE.value: PipelineCard,
-    RegistryType.AUDIT.value: AuditCard,
-    RegistryType.PROJECT.value: ProjectCard,
-}
+CardType = Union[DataCard, ModelCard, RunCard, PipelineCard, AuditCard, ProjectCard]
+
+
+class CardMap:
+    @staticmethod
+    def get_card(card_type: str) -> Type[CardType]:
+        if card_type == RegistryType.DATA.value:
+            return DataCard
+        if card_type == RegistryType.MODEL.value:
+            return ModelCard
+        if card_type == RegistryType.RUN.value:
+            return RunCard
+        if card_type == RegistryType.PIPELINE.value:
+            return PipelineCard
+        if card_type == RegistryType.AUDIT.value:
+            return AuditCard
+        if card_type == RegistryType.PROJECT.value:
+            return ProjectCard
+        raise ValueError(f"Card type {card_type} not found")
 
 
 class CardLoadArgs(BaseModel):
@@ -195,7 +198,7 @@ class CardLoader:
             rpath = rpath or self.card.uri
             yield self.download(lpath, rpath, object_path, suffix)
 
-    def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> ArtifactCard:
+    def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> CardType:
         """Loads an ArtifactCard from card arguments
 
         Returns:
@@ -219,7 +222,7 @@ class CardLoader:
 
             loaded_card["interface"] = loaded_interface
 
-        return cast(ArtifactCard, table_name_card_map[self.registry_type](**loaded_card))
+        return CardMap.get_card(self.registry_type)(**loaded_card)
 
     @staticmethod
     def validate(card_type: str) -> bool:
