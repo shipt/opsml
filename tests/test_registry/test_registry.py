@@ -501,7 +501,7 @@ def test_datacard_failure(pandas_data: PandasData, db_registries: CardRegistries
 
     data_registry = db_registries.data
     data: PandasData = pandas_data
-    data.dependent_vars=[200, "test"]
+    data.dependent_vars = [200, "test"]
 
     # remove attr
     data.data = None

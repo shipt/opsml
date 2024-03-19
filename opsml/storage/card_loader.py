@@ -23,15 +23,20 @@ from opsml.cards import (
 )
 from opsml.data.interfaces._base import DataInterface
 from opsml.data.interfaces.custom_data.base import Dataset
-from opsml.data import TextDataset, ImageDataset
+from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import all_subclasses
 from opsml.model.interfaces.base import ModelInterface
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.settings.config import config
 from opsml.storage import client
-from opsml.types import RegistryTableNames, RegistryType, SaveName, Suffix, AllowedDataType
+from opsml.types import (
+    AllowedDataType,
+    RegistryTableNames,
+    RegistryType,
+    SaveName,
+    Suffix,
+)
 from opsml.types.model import ModelMetadata, OnnxModel
-from opsml.helpers.logging import ArtifactLogger
 
 CardType = Union[DataCard, ModelCard, RunCard, PipelineCard, AuditCard, ProjectCard]
 
@@ -429,9 +434,6 @@ class ModelCardLoader(CardLoader):
                 Remote path to load file
         """
 
-        if not isinstance(self.card.interface, HuggingFaceModel):
-            return
-
         load_rpath = Path(self.card.uri, SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
         if not self.storage_client.exists(load_rpath):
             return
@@ -542,6 +544,9 @@ class ModelCardLoader(CardLoader):
         load_path = self.download(lpath, rpath, save_name, "")
         self.card.interface.onnx_model = OnnxModel(onnx_version=self.card.metadata.data_schema.onnx_version)
         self.card.interface.load_onnx_model(load_path)
+
+        # load onnx config
+        self._load_onnx_config(lpath, rpath)
 
         return
 
@@ -720,10 +725,6 @@ class ModelCardLoader(CardLoader):
         if load_onnx:
             self._download_onnx_model(metadata, lpath, kwargs.get("quantize", False))
 
-            # load onnx config for huggingface models
-            if hasattr(metadata, "onnx_config_uri"):
-                rpath = Path(metadata.onnx_config_uri)
-                self._load_onnx_config(lpath, rpath)
         else:
             # download model
             self._download_model(metadata, lpath)

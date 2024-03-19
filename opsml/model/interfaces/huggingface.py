@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, cast
 
-from pydantic import field_validator, model_validator, ConfigDict
+from pydantic import ConfigDict, field_validator, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import get_class_name

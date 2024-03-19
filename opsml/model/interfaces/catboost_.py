@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 import joblib
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import model_validator, ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.helpers.utils import get_class_name

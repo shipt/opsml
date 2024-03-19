@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from pydantic import model_validator, ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from opsml.helpers.utils import OpsmlImportExceptions, get_class_name
 from opsml.model.interfaces.base import (
@@ -114,7 +114,9 @@ try:
             try:
                 if model_arch is not None:
                     # attempt to load checkpoint into model
-                    assert issubclass(model_arch, LightningModule), "Model architecture must be a subclass of LightningModule"
+                    assert issubclass(
+                        model_arch, LightningModule
+                    ), "Model architecture must be a subclass of LightningModule"
                     self.model = model_arch.load_from_checkpoint(checkpoint_path=path, **kwargs)
 
                 else:

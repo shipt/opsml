@@ -131,7 +131,9 @@ def test_delete_data_model_api(
     assert len(cards) == 1
 
     assert api_storage_client.exists(Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JOBLIB.value))
-    assert api_storage_client.exists(Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value))
+    assert api_storage_client.exists(
+        Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value)
+    )
     assert api_storage_client.exists(Path(modelcard.uri, SaveName.MODEL_METADATA.value).with_suffix(Suffix.JSON.value))
     assert api_storage_client.exists(Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value))
 
@@ -140,9 +142,15 @@ def test_delete_data_model_api(
     cards = model_registry.list_cards(name="pipeline_model", repository="mlops")
     assert len(cards) == 0
 
-    assert not api_storage_client.exists(Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JOBLIB.value))
-    assert not api_storage_client.exists(Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value))
-    assert not api_storage_client.exists(Path(modelcard.uri, SaveName.MODEL_METADATA.value).with_suffix(Suffix.JSON.value))
+    assert not api_storage_client.exists(
+        Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JOBLIB.value)
+    )
+    assert not api_storage_client.exists(
+        Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value)
+    )
+    assert not api_storage_client.exists(
+        Path(modelcard.uri, SaveName.MODEL_METADATA.value).with_suffix(Suffix.JSON.value)
+    )
     assert not api_storage_client.exists(Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value))
 
     # delete datacard

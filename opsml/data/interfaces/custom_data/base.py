@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 import pyarrow as pa
-from pydantic import BaseModel, model_validator, field_serializer
+from pydantic import BaseModel, field_serializer, model_validator
 
 from opsml.helpers.logging import ArtifactLogger
 from opsml.types import CommonKwargs, Description, Suffix

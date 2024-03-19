@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from pydantic import model_validator, ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from opsml.helpers.utils import get_class_name
 from opsml.model.interfaces.base import ModelInterface

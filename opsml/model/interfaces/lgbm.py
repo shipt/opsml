@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 import joblib
 import pandas as pd
 from numpy.typing import NDArray
-from pydantic import model_validator, ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from opsml.helpers.utils import get_class_name
 from opsml.model.interfaces.base import (

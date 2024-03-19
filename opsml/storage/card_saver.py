@@ -22,7 +22,15 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.model.metadata_creator import _TrainedModelMetadataCreator
 from opsml.storage import client
-from opsml.types import CardType, ModelInterfaceTypes, ModelMetadata, SaveName, Suffix, UriNames, AllowedDataType
+from opsml.types import (
+    AllowedDataType,
+    CardType,
+    ModelInterfaceTypes,
+    ModelMetadata,
+    SaveName,
+    Suffix,
+    UriNames,
+)
 
 logger = ArtifactLogger.get_logger()
 
@@ -58,10 +66,7 @@ class ModelInterfaceIncludeArgs:
 
     def get_save_args(
         self,
-    ) -> Union[
-        Dict[str, Union[bool, Dict[str, bool]]],
-        Dict[str, bool],
-    ]:
+    ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
         args = self.get_default_args()
 
         if self.interface_type == ModelInterfaceTypes.HuggingFaceModel.value:
@@ -301,12 +306,13 @@ class ModelCardSaver(CardSaver):
     def _save_onnx_config(self) -> None:
         """Saves onnx config to file system"""
 
-        if isinstance(self.card.interface, HuggingFaceModel):
-            if self.card.interface.onnx_args is not None:
-                if self.card.interface.onnx_args.config is not None:
-                    save_path = (self.lpath / SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
-                    joblib.dump(self.card.interface.onnx_args.config, save_path)
-                    self.card_uris.onnx_config_uri = save_path
+        assert isinstance(self.card.interface, HuggingFaceModel), "Expected HuggingFaceModel interface"
+
+        if self.card.interface.onnx_args is not None:
+            if self.card.interface.onnx_args.config is not None:
+                save_path = (self.lpath / SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
+                joblib.dump(self.card.interface.onnx_args.config, save_path)
+                self.card_uris.onnx_config_uri = save_path
 
     def _save_onnx_model(self) -> None:
         """If to_onnx is True, converts and saves a model to onnx format"""
@@ -319,6 +325,7 @@ class ModelCardSaver(CardSaver):
             metadata = self.card.interface.save_onnx(save_path)
 
             if isinstance(self.card.interface, HuggingFaceModel):
+                self._save_onnx_config()
                 assert self.card.interface.onnx_args is not None, "onnx_args must be set for HuggingFaceModel"
                 if self.card.interface.onnx_args.quantize:
                     self.card_uris.quantized_model_uri = self.lpath / SaveName.QUANTIZED_MODEL.value
@@ -553,7 +560,9 @@ def save_card_artifacts(card: ArtifactCard) -> None:
 
     """
 
-    card_saver = next(card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type))
+    card_saver = next(
+        card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type)
+    )
 
     saver = card_saver(card=card)
 

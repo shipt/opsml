@@ -29,6 +29,7 @@ class UriNames(str, Enum):
     QUANTIZED_MODEL_URI = "quantized_model_uri"
     TOKENIZER_URI = "tokenizer_uri"
     FEATURE_EXTRACTOR_URI = "feature_extractor_uri"
+    ONNX_CONFIG_URI = "onnx_config_uri"
 
 
 @unique
