@@ -78,6 +78,7 @@ class SaveName(str, Enum):
     FEATURE_EXTRACTOR = "feature_extractor"
     METADATA = "metadata"
     GRAPHS = "graphs"
+    ONNX_CONFIG = "onnx-config"
 
 
 @unique

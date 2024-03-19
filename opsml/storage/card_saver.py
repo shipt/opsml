@@ -64,7 +64,10 @@ class ModelInterfaceIncludeArgs:
 
     def get_save_args(
         self,
-    ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
+    ) -> Union[
+        Dict[str, Union[bool, Dict[str, bool]]],
+        Dict[str, bool],
+    ]:
         args = self.get_default_args()
 
         if self.interface_type == ModelInterfaceTypes.HUGGINGFACE.value:
@@ -85,6 +88,7 @@ class CardUris(BaseModel):
     quantized_model_uri: Optional[Path] = None
     tokenizer_uri: Optional[Path] = None
     feature_extractor_uri: Optional[Path] = None
+    onnx_config_uri: Optional[Path] = None
 
     lpath: Optional[Path] = None
     rpath: Optional[Path] = None
@@ -286,6 +290,16 @@ class ModelCardSaver(CardSaver):
         self.card.interface.save_sample_data(save_path)
         self.card_uris.sample_data_uri = save_path
 
+    def _save_onnx_config(self) -> None:
+        """Saves onnx config to file system"""
+
+        if isinstance(self.card.interface, HuggingFaceModel):
+            if self.card.interface.onnx_args is not None:
+                if self.card.interface.onnx_args.config is not None:
+                    save_path = (self.lpath / SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
+                    joblib.dump(self.card.interface.onnx_args.config, save_path)
+                    self.card_uris.onnx_config_uri = save_path
+
     def _save_onnx_model(self) -> None:
         """If to_onnx is True, converts and saves a model to onnx format"""
 
@@ -351,6 +365,9 @@ class ModelCardSaver(CardSaver):
             if self.card_uris.feature_extractor_uri is not None:
                 metadata.feature_extractor_uri = self.card_uris.resolve_path(UriNames.FEATURE_EXTRACTOR_URI.value)
                 metadata.feature_extractor_name = self.card.interface.feature_extractor_name
+
+            if self.card_uris.onnx_config_uri is not None:
+                metadata.onnx_config_uri = self.card_uris.resolve_path(UriNames.ONNX_CONFIG_URI.value)
 
         return metadata
 
@@ -509,9 +526,7 @@ def save_card_artifacts(card: ArtifactCard) -> None:
 
     """
 
-    card_saver = next(
-        card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type)
-    )
+    card_saver = next(card_saver for card_saver in CardSaver.__subclasses__() if card_saver.validate(card_type=card.card_type))
 
     saver = card_saver(card=card)
 
