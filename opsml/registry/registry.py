@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import textwrap
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, TypeVar
 
 from opsml.cards import ArtifactCard, CardInfo
 from opsml.data import DataInterface
@@ -16,6 +16,8 @@ from opsml.storage.card_loader import CardLoader
 from opsml.types import CommonKwargs, RegistryType
 
 logger = ArtifactLogger.get_logger()
+
+Card = TypeVar("Card", bound=ArtifactCard)
 
 
 class CardRegistry:
@@ -41,9 +43,7 @@ class CardRegistry:
             data_registry.list_cards()
         """
 
-        _registry_type = (
-            registry_type if isinstance(registry_type, RegistryType) else RegistryType.from_str(registry_type)
-        )
+        _registry_type = registry_type if isinstance(registry_type, RegistryType) else RegistryType.from_str(registry_type)
 
         self._registry = _set_registry(_registry_type)
         self.table_name = self._registry.table_name
@@ -131,7 +131,7 @@ class CardRegistry:
         info: Optional[CardInfo] = None,
         ignore_release_candidates: bool = False,
         interface: Optional[Union[Type[ModelInterface], Type[DataInterface]]] = None,
-    ) -> ArtifactCard:
+    ) -> Card:
         """Loads a specific card
 
         Args:
