@@ -69,7 +69,7 @@ def test_gcs_full_run(
         assert api_storage_client.exists(Path(run.runcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value))
 
         # check data assets
-        assert api_storage_client.exists(Path(datacard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value))
+        assert api_storage_client.exists(Path(datacard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value))
         assert api_storage_client.exists(Path(datacard.uri, SaveName.DATA.value).with_suffix(data.data_suffix))
         assert api_storage_client.exists(
             Path(datacard.uri, SaveName.DATA_PROFILE.value).with_suffix(Suffix.JOBLIB.value)
@@ -77,7 +77,7 @@ def test_gcs_full_run(
         assert api_storage_client.exists(Path(datacard.uri, SaveName.DATA_PROFILE.value).with_suffix(Suffix.HTML.value))
 
         # check model assets
-        assert api_storage_client.exists(Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value))
+        assert api_storage_client.exists(Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value))
         assert api_storage_client.exists(
             Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(model.model_suffix)
         )

@@ -23,12 +23,13 @@ from opsml.cards import (
 )
 from opsml.data.interfaces._base import DataInterface
 from opsml.data.interfaces.custom_data.base import Dataset
+from opsml.data import TextDataset, ImageDataset
 from opsml.helpers.utils import all_subclasses
 from opsml.model.interfaces.base import ModelInterface
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.settings.config import config
 from opsml.storage import client
-from opsml.types import RegistryTableNames, RegistryType, SaveName, Suffix
+from opsml.types import RegistryTableNames, RegistryType, SaveName, Suffix, AllowedDataType
 from opsml.types.model import ModelMetadata, OnnxModel
 from opsml.helpers.logging import ArtifactLogger
 
@@ -240,6 +241,20 @@ class CardLoader:
 
         return loaded_card
 
+    def _load_dataset(self, rpath: Path) -> Dict[str, Any]:
+        """Loads dataset from storage
+
+        Args:
+            interface:
+                Dataset interface
+            rpath:
+                Remote path to load file
+        """
+        with self._load_object(SaveName.DATASET.value, Suffix.JOBLIB.value, rpath) as lpath:
+            loaded_card: Dict[str, Any] = joblib.load(lpath)
+
+        return loaded_card
+
     def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> CardType:
         """Loads an ArtifactCard from card arguments
 
@@ -251,12 +266,15 @@ class CardLoader:
 
         # load interface logic
         if self.registry_type in (RegistryType.MODEL, RegistryType.DATA):
+            interface_type: str = loaded_card["metadata"]["interface_type"]
+
+            if interface_type in [AllowedDataType.IMAGE.value, AllowedDataType.TEXT.value]:
+                loaded_card["interface"] = self._load_dataset(rpath)
+
             if interface is not None:
-                loaded_interface = interface.model_validate_json(loaded_card["interface"])
+                loaded_interface = interface.model_validate(loaded_card["interface"])
 
             else:
-                # get interface type
-                interface_type: str = loaded_card["metadata"]["interface_type"]
                 interface = get_interface(self.registry_type, interface_type)
                 loaded_interface = interface.model_validate(loaded_card["interface"])
 

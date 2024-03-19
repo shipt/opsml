@@ -22,14 +22,7 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.model.metadata_creator import _TrainedModelMetadataCreator
 from opsml.storage import client
-from opsml.types import (
-    CardType,
-    ModelInterfaceTypes,
-    ModelMetadata,
-    SaveName,
-    Suffix,
-    UriNames,
-)
+from opsml.types import CardType, ModelInterfaceTypes, ModelMetadata, SaveName, Suffix, UriNames, AllowedDataType
 
 logger = ArtifactLogger.get_logger()
 
@@ -166,6 +159,12 @@ class DataCardSaver(CardSaver):
         save_path = self.lpath / SaveName.DATA.value
         self.card.interface.save_data(save_path)
 
+        dumped_interface = self.card.interface.model_dump()
+
+        # save dataset class to joblib
+        save_path = (self.lpath / SaveName.DATASET.value).with_suffix(Suffix.JOBLIB.value)
+        joblib.dump(dumped_interface, save_path)
+
     def _save_data_interface(self) -> None:
         """Logic for saving subclasses of DataInterface"""
 
@@ -213,6 +212,10 @@ class DataCardSaver(CardSaver):
         dumped_datacard = self.card.model_dump(exclude=exclude_attr)
 
         save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        if self.card.interface.name in [AllowedDataType.IMAGE.value, AllowedDataType.TEXT.value]:
+            # remove text and image dataset interface
+            dumped_datacard["interface"] = None
 
         # save json
         with save_path.open("w", encoding="utf-8") as file_:

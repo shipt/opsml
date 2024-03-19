@@ -79,6 +79,7 @@ class SaveName(str, Enum):
     METADATA = "metadata"
     GRAPHS = "graphs"
     ONNX_CONFIG = "onnx-config"
+    DATASET = "dataset"
 
 
 @unique
