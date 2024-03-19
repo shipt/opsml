@@ -296,7 +296,7 @@ def db_registries() -> YieldFixture[CardRegistries]:
         )
     )
     yield CardRegistries()
-    cleanup()
+    #cleanup()
 
 
 @pytest.fixture

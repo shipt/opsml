@@ -8,12 +8,19 @@ from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Type, Union, cast
-from venv import logger
 
 import joblib
 from pydantic import BaseModel
 
-from opsml.cards import ArtifactCard, AuditCard, DataCard, ModelCard, PipelineCard, ProjectCard, RunCard
+from opsml.cards import (
+    ArtifactCard,
+    AuditCard,
+    DataCard,
+    ModelCard,
+    PipelineCard,
+    ProjectCard,
+    RunCard,
+)
 from opsml.data.interfaces._base import DataInterface
 from opsml.data.interfaces.custom_data.base import Dataset
 from opsml.helpers.utils import all_subclasses
@@ -23,8 +30,11 @@ from opsml.settings.config import config
 from opsml.storage import client
 from opsml.types import RegistryTableNames, RegistryType, SaveName, Suffix
 from opsml.types.model import ModelMetadata, OnnxModel
+from opsml.helpers.logging import ArtifactLogger
 
 CardType = Union[DataCard, ModelCard, RunCard, PipelineCard, AuditCard, ProjectCard]
+
+logger = ArtifactLogger.get_logger()
 
 
 class CardMap:
@@ -198,6 +208,38 @@ class CardLoader:
             rpath = rpath or self.card.uri
             yield self.download(lpath, rpath, object_path, suffix)
 
+    def _load_card_from_storage(self, rpath: Path) -> Dict[str, Any]:
+        """Attempts to load pydantic card from storage. Newer versions of OpsML use JSON to save cards.
+        Older versions use joblib. This method attempts to load from JSON first, then falls back to joblib.
+
+        Args:
+            rpath:
+                Remote path to load file
+
+        Returns:
+            Loaded card
+        """
+        try:
+            # load card from JSON
+            with self._load_object(SaveName.CARD.value, Suffix.JSON.value, rpath) as lpath:
+                with lpath.open(encoding="utf-8") as lfile:
+                    loaded_card: Dict[str, Any] = json.load(lfile)
+
+        except Exception as e:
+            logger.warning(
+                """Error loading card JSON version of card. Falling back to joblib. Newer versions
+                of OpsML use JSON to save cards. Older versions use joblib. Error: {}""",
+                e,
+            )
+            try:
+                with self._load_object(SaveName.CARD.value, Suffix.JSON.value, rpath) as lpath:
+                    loaded_card: Dict[str, Any] = joblib.load(lpath)
+            except Exception as e:
+                logger.error("Error loading card: {}", e)
+                raise e
+
+        return loaded_card
+
     def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> CardType:
         """Loads an ArtifactCard from card arguments
 
@@ -205,9 +247,7 @@ class CardLoader:
             Loaded ArtifactCard
         """
         rpath = self.get_rpath_from_args()
-
-        with self._load_object(SaveName.CARD.value, Suffix.JOBLIB.value, rpath) as lpath:
-            loaded_card: Dict[str, Any] = joblib.load(lpath)
+        loaded_card = self._load_card_from_storage(rpath)
 
         # load interface logic
         if self.registry_type in (RegistryType.MODEL, RegistryType.DATA):

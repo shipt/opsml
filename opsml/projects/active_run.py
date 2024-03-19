@@ -9,13 +9,27 @@ from typing import Any, Dict, List, Optional, Union, cast
 
 from numpy.typing import NDArray
 
-from opsml.cards import ModelCard, DataCard, RunCard, ArtifactCard, ProjectCard, PipelineCard
+from opsml.cards import (
+    ArtifactCard,
+    DataCard,
+    ModelCard,
+    PipelineCard,
+    ProjectCard,
+    RunCard,
+)
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.registry import CardRegistries, CardRegistry
 from opsml.registry.semver import VersionType
 from opsml.storage import client
-from opsml.types import ArtifactUris, CardInfo, CardType, CommonKwargs, Metrics, Params, SaveName
-
+from opsml.types import (
+    ArtifactUris,
+    CardInfo,
+    CardType,
+    CommonKwargs,
+    Metrics,
+    Params,
+    SaveName,
+)
 
 logger = ArtifactLogger.get_logger()
 Card = Union[ModelCard, DataCard, RunCard, ProjectCard, PipelineCard]
