@@ -1,10 +1,11 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+import json
 import tempfile
 from functools import cached_property
 from pathlib import Path
-from typing import Optional, cast
+from typing import Dict, Optional, Union, cast
 
 import joblib
 from pydantic import BaseModel
@@ -21,10 +22,58 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.model.metadata_creator import _TrainedModelMetadataCreator
 from opsml.storage import client
-from opsml.types import CardType, ModelMetadata, SaveName, UriNames
-from opsml.types.extra import Suffix
+from opsml.types import (
+    CardType,
+    ModelInterfaceTypes,
+    ModelMetadata,
+    SaveName,
+    Suffix,
+    UriNames,
+)
 
 logger = ArtifactLogger.get_logger()
+
+
+class ModelInterfaceIncludeArgs:
+    """Helper class for defining include logic for saving modelcards"""
+
+    def __init__(self, interface_type: str):
+        self.interface_type = interface_type
+
+    def get_default_args(self) -> Dict[str, bool]:
+        return {
+            "task_type": True,
+            "model_type": True,
+            "data_type": True,
+            "modelcard_uid": True,
+            "preprocessor_name": True,
+            "onnx_args": True,
+        }
+
+    def get_vw_args(self) -> Dict[str, bool]:
+        return {"arguments": True}
+
+    def get_hf_args(self) -> Dict[str, Union[bool, Dict[str, bool]]]:
+        return {
+            "tokenizer_name": True,
+            "feature_extractor_name": True,
+            "is_pipeline": True,
+            "backend": True,
+            "onnx_args": {"quantize": True, "ort_type": True, "provider": True},
+        }
+
+    def get_save_args(
+        self,
+    ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
+        args = self.get_default_args()
+
+        if self.interface_type == ModelInterfaceTypes.HUGGINGFACE.value:
+            return {**args, **self.get_hf_args()}
+
+        if self.interface_type == ModelInterfaceTypes.VW.value:
+            return {**args, **self.get_vw_args()}
+
+        return args
 
 
 class CardUris(BaseModel):
@@ -316,17 +365,13 @@ class ModelCardSaver(CardSaver):
     def _save_modelcard(self) -> None:
         """Saves a modelcard to file system"""
 
-        dumped_model = self.card.model_dump(
-            exclude={
-                "interface": {"model", "preprocessor", "sample_data", "onnx_model", "feature_extractor", "tokenizer"},
-            }
-        )
-        if dumped_model["interface"].get("onnx_args") is not None:
-            if dumped_model["interface"]["onnx_args"].get("config") is not None:
-                dumped_model["interface"]["onnx_args"].pop("config")
+        include_args = ModelInterfaceIncludeArgs(self.card.interface.name()).get_save_args()
+        dumped_model = self.card.model_dump_json(include={"interface": include_args})
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
 
-        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_model, save_path)
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_model, file_)
 
     def save_artifacts(self) -> None:
         """Prepares and saves artifacts from a modelcard"""

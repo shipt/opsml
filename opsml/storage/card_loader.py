@@ -209,7 +209,7 @@ class CardLoader:
         # load interface logic
         if self.registry_type in (RegistryType.MODEL, RegistryType.DATA):
             if interface is not None:
-                loaded_interface = interface.model_validate(loaded_card["interface"])
+                loaded_interface = interface.model_validate_json(loaded_card["interface"])
 
             else:
                 # get interface type
