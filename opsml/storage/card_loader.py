@@ -361,6 +361,30 @@ class ModelCardLoader(CardLoader):
 
         return self.card.interface.load_sample_data(lpath)
 
+    def _load_onnx_config(self, lpath: Path, rpath: Path) -> None:
+        """Load onnx config for huggingface models
+
+        Args:
+            lpath:
+                Local path to save file
+            rpath:
+                Remote path to load file
+        """
+
+        if not isinstance(self.card.interface, HuggingFaceModel):
+            return
+
+        load_rpath = Path(self.card.uri, SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
+        if not self.storage_client.exists(load_rpath):
+            return
+
+        lpath = self.download(lpath, rpath, SaveName.ONNX_CONFIG.value, Suffix.JOBLIB.value)
+
+        config = joblib.load(lpath)
+        self.card.interface.onnx_args.config = config
+
+        return None
+
     def _load_huggingface_preprocessors(self, lpath: Path, rpath: Path) -> None:
         """Loads huggingface tokenizer and feature extractors. Skips if already loaded or not found
 
@@ -638,6 +662,10 @@ class ModelCardLoader(CardLoader):
         if load_onnx:
             self._download_onnx_model(metadata, lpath, kwargs.get("quantize", False))
 
+            # load onnx config for huggingface models
+            if hasattr(metadata, "onnx_config_uri"):
+                rpath = Path(metadata.onnx_config_uri)
+                self._load_onnx_config(lpath, rpath)
         else:
             # download model
             self._download_model(metadata, lpath)
