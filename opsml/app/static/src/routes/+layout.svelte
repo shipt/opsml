@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href={favicon} />
 </svelte:head>
 
-<div class="layout">
+<div class="layout overflow-auto">
     <Navbar />
     <div class="image"></div>
     <slot></slot>

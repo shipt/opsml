@@ -5,6 +5,7 @@
   import modelcard from '$lib/images/modelcard-circuit.svg';
   import { onMount } from 'svelte';
   import  { getModelCards } from '$lib/scripts/homepage';
+  import Card from '$lib/card.svelte';
 	
   interface CardRequest {
   registry_type: string;
@@ -28,14 +29,18 @@
         <img src={modelcard} class="w-24" alt="">
         ModelCards
       </h2>
-      <div class="mb-3 flex flex-col gap-2.5 rounded-xl bg-white/40 p-3 backdrop-blur-lg sm:mb-7">
+      <div class="mb-3 flex flex-col items-center gap-2.5 rounded-xl bg-white/40 p-3 backdrop-blur-lg sm:mb-7">
         {#await modelcards}
           <div>Loading...</div>
         {:then modelcards}
           {#each modelcards as modelcard}
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold">{modelcard.name}</h2>
-            </div>
+            <Card 
+              repository= {modelcard.repository} 
+              name= {modelcard.name}
+              version= {modelcard.version}
+              registry= {modelcard.registry}
+              date= {modelcard.date}
+            />
           {/each}
         {/await}
       </div>
@@ -45,6 +50,21 @@
         <img src={modelcard} class="w-24" alt="">
         DataCards
       </h2>
+      <div class="mb-3 flex flex-col items-center gap-2.5 rounded-xl bg-white/40 p-3 backdrop-blur-lg sm:mb-7">
+        {#await modelcards}
+          <div>Loading...</div>
+        {:then modelcards}
+          {#each modelcards as modelcard}
+            <Card 
+              repository= {modelcard.repository} 
+              name= {modelcard.name}
+              version= {modelcard.version}
+              registry= {modelcard.registry}
+              date= {modelcard.date}
+            />
+          {/each}
+        {/await}
+      </div>
     </div>
     <div class="relative col-span-1 flex flex-col items-stretch text-center">
       <h2 class="mb-5 flex items-center justify-center  text-lg font-semibold 2xl:mb-6 2xl:text-xl">

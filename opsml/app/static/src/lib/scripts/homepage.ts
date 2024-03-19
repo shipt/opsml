@@ -39,6 +39,7 @@ async function getModelCards(): Promise<ModelCardJson[]> {
   });
 
   let response: ModelCardResponse = await modelcards.json();
+  console.log(response);
   return response.cards;
 }
 
