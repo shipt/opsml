@@ -35,6 +35,7 @@
         {:then modelcards}
           {#each modelcards as modelcard}
             <Card 
+              color="to-primary-200"
               repository= {modelcard.repository} 
               name= {modelcard.name}
               version= {modelcard.version}
