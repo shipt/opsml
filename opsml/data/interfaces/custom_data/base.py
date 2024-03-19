@@ -178,7 +178,7 @@ class Dataset(BaseModel):
     description: Description = Description()
 
     @field_serializer("data_dir", return_type=str)
-    def serialize_data_dir(self, data_dir: Path, _info):
+    def serialize_data_dir(self, data_dir: Path, _info: Any) -> str:
         return data_dir.as_posix()
 
     def split_data(self) -> None:

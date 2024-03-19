@@ -31,6 +31,7 @@ from opsml.settings.config import config
 from opsml.storage import client
 from opsml.types import (
     AllowedDataType,
+    CardType,
     RegistryTableNames,
     RegistryType,
     SaveName,
@@ -38,14 +39,14 @@ from opsml.types import (
 )
 from opsml.types.model import ModelMetadata, OnnxModel
 
-CardType = Union[DataCard, ModelCard, RunCard, PipelineCard, AuditCard, ProjectCard]
+Card = Union[DataCard, ModelCard, RunCard, PipelineCard, AuditCard, ProjectCard]
 
 logger = ArtifactLogger.get_logger()
 
 
 class CardMap:
     @staticmethod
-    def get_card(card_type: str) -> Type[CardType]:
+    def get_card(card_type: str) -> Type[Card]:
         if card_type == RegistryType.DATA.value:
             return DataCard
         if card_type == RegistryType.MODEL.value:
@@ -229,22 +230,21 @@ class CardLoader:
             # load card from JSON
             with self._load_object(SaveName.CARD.value, Suffix.JSON.value, rpath) as lpath:
                 with lpath.open(encoding="utf-8") as lfile:
-                    loaded_card: Dict[str, Any] = json.load(lfile)
+                    return cast(Dict[str, Any], json.load(lfile))
 
-        except Exception as e:
+        except Exception as error:  # pylint: disable=broad-except
             logger.warning(
                 """Error loading card JSON version of card. Falling back to joblib. Newer versions
                 of OpsML use JSON to save cards. Older versions use joblib. Error: {}""",
-                e,
+                error,
             )
             try:
                 with self._load_object(SaveName.CARD.value, Suffix.JSON.value, rpath) as lpath:
-                    loaded_card: Dict[str, Any] = joblib.load(lpath)
-            except Exception as e:
-                logger.error("Error loading card: {}", e)
-                raise e
+                    return cast(Dict[str, Any], joblib.load(lpath))
 
-        return loaded_card
+            except Exception as joblib_error:  # pylint: disable=broad-except
+                logger.error("Error loading card: {}", joblib_error)
+                raise joblib_error
 
     def _load_dataset(self, rpath: Path) -> Dict[str, Any]:
         """Loads dataset from storage
@@ -260,7 +260,7 @@ class CardLoader:
 
         return loaded_card
 
-    def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> CardType:
+    def load_card(self, interface: Optional[Union[Type[DataInterface], Type[ModelInterface]]] = None) -> Card:
         """Loads an ArtifactCard from card arguments
 
         Returns:
@@ -440,10 +440,9 @@ class ModelCardLoader(CardLoader):
 
         lpath = self.download(lpath, rpath, SaveName.ONNX_CONFIG.value, Suffix.JOBLIB.value)
 
-        config = joblib.load(lpath)
-        self.card.interface.onnx_args.config = config
+        self.card.interface.onnx_args.config = joblib.load(lpath)
 
-        return None
+        return
 
     def _load_huggingface_preprocessors(self, lpath: Path, rpath: Path) -> None:
         """Loads huggingface tokenizer and feature extractors. Skips if already loaded or not found

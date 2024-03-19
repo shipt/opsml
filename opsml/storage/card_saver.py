@@ -69,10 +69,10 @@ class ModelInterfaceIncludeArgs:
     ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
         args = self.get_default_args()
 
-        if self.interface_type == ModelInterfaceTypes.HuggingFaceModel.value:
+        if self.interface_type == ModelInterfaceTypes.HUGGINGFACE.value:
             return {**args, **self.get_hf_args()}
 
-        if self.interface_type == ModelInterfaceTypes.VowpalWabbitModel.value:
+        if self.interface_type == ModelInterfaceTypes.VOWPALWABBIT.value:
             return {**args, **self.get_vw_args()}
 
         print(args)
@@ -218,7 +218,7 @@ class DataCardSaver(CardSaver):
 
         save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
 
-        if self.card.interface.name in [AllowedDataType.IMAGE.value, AllowedDataType.TEXT.value]:
+        if self.card.interface.name() in [AllowedDataType.IMAGE.value, AllowedDataType.TEXT.value]:
             # remove text and image dataset interface
             dumped_datacard["interface"] = None
 

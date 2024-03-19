@@ -522,12 +522,12 @@ class ModelCard(Protocol):
 
 
 class ModelInterfaceTypes(str, Enum):
-    CatBoostModel = "CatBoostModel"
-    HuggingFaceModel = "HuggingFaceModel"
-    LightGBMModel = "LightGBMModel"
-    LightningModel = "LightningModel"
-    TorchModel = "TorchModel"
-    SklearnModel = "SklearnModel"
-    TensorFlowModel = "TensorFlowModel"
-    VowpalWabbitModel = "VowpalWabbitModel"
-    XGBoostModel = "XGBoostModel"
+    CATBOOST = "CatBoostModel"
+    HUGGINGFACE = "HuggingFaceModel"
+    LIGHTGBM = "LightGBMModel"
+    LIGHTNINGMODEL = "LightningModel"
+    TORCH = "TorchModel"
+    SKLEARN = "SklearnModel"
+    TENSORFLOW = "TensorFlowModel"
+    VOWPALWABBIT = "VowpalWabbitModel"
+    XGBOOST = "XGBoostModel"
