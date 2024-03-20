@@ -9,7 +9,7 @@ python = ">=3.9,<3.12"
 opsml = {version ="^2", extras = ["gcs", "postgres", "server"]}
 
 [tool.poetry.dev-dependencies]
-black = "^22.3.0"
+black = "^24.3.0"
 darglint = "^1.8.1"
 debugpy = "^1.6.0"
 flake8 = "^4.0.1"
