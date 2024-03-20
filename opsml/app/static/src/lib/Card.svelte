@@ -6,15 +6,19 @@
   export let date: string;
   export let defaultClass = `block p-2 mb-2 hover:from-stone-50 hover:to-stone-50 bg-gradient-to-r from-slate-100 to-white rounded-2xl w-full border border-black shadow-[-6px_6px_0px_0px_black]`;
 
-  export function calculateDaysBetween(date: string): number {
+  export function calculateDaysBetween(date: string): string {
+    # change to timestamp
+    let presentDate: Date = new Date();
+    let date1: Date = new Date(date);
 
-    let presentDate = new Date();
-    let date1 = new Date(date);
+    let hours = Math.abs(presentDate.getTime() - date1.getTime()) / 3600000
+    if (hours > 24) {
+      let days = Math.round(hours / 24);
+      return `Updated ${days} days ago`
+    } else {
+      return `Updated ${Math.round(hours)} hours ago`
+    }
 
-    let diff = presentDate.getTime() - date1.getTime();
-    let days: number = Math.round(diff / (1000 * 3600 * 24));
-
-    return days
   }
     
 </script>
@@ -31,7 +35,7 @@
     </svg>
     <span class="truncate">Created
       <time datetime={ date } >
-        { calculateDaysBetween(date) } days ago
+        { calculateDaysBetween(date) }
       </time>
     </span>
     <span class="px-1.5 text-gray-900">- </span>
