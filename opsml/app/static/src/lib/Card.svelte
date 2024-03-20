@@ -1,22 +1,20 @@
 <script lang="ts">
 
-  export let name;
-  export let repository;
-  export let version;
-  export let registry;
-  export let date;
-  export let color;
-  export let defaultClass = `block p-2 mb-2 bg-gradient-to-r from-white from-50% ${color} rounded-2xl w-full border border-black shadow-[-6px_6px_0px_0px_black]`;
+  export let name: string;
+  export let repository: string;
+  export let version: string;
+  export let date: string;
+  export let defaultClass = `block p-2 mb-2 hover:from-stone-50 hover:to-stone-50 bg-gradient-to-r from-slate-100 to-white rounded-2xl w-full border border-black shadow-[-6px_6px_0px_0px_black]`;
 
-  export function calculateDaysBetween(date) {
+  export function calculateDaysBetween(date: string): number {
 
     let presentDate = new Date();
     let date1 = new Date(date);
 
     let diff = presentDate.getTime() - date1.getTime();
-    let days = Math.round(diff / (1000 * 3600 * 24));
+    let days: number = Math.round(diff / (1000 * 3600 * 24));
 
-    return days;
+    return days
   }
     
 </script>
@@ -32,7 +30,7 @@
       <path fill="#5e0fb7" d="M 12 0 C 5.371094 0 0 5.371094 0 12 C 0 18.628906 5.371094 24 12 24 C 18.628906 24 24 18.628906 24 12 C 24 5.371094 18.628906 0 12 0 Z M 12 2 C 17.523438 2 22 6.476563 22 12 C 22 17.523438 17.523438 22 12 22 C 6.476563 22 2 17.523438 2 12 C 2 6.476563 6.476563 2 12 2 Z M 10.9375 3.875 L 10.5 12.0625 L 10.59375 12.9375 L 16.75 18.375 L 17.71875 17.375 L 12.625 11.96875 L 12.1875 3.875 Z"></path>
     </svg>
     <span class="truncate">Created
-      <time date={ date } >
+      <time datetime={ date } >
         { calculateDaysBetween(date) } days ago
       </time>
     </span>

@@ -13,10 +13,10 @@
 
     <div class="flex flex-1 items-center">
   
-      <a class="flex items-center lg:mr:6">
+      <div class="flex items-center lg:mr:6">
         <img src={logo} class="h-5 sm:h-10" alt="Opsml Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
-      </a>
+      </div>
     </div>
 
     <nav>

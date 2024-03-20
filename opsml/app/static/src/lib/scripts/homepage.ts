@@ -15,20 +15,11 @@ interface CardJson {
   tags: Map<string, string>;
 }
 
-// extend CardJson
-interface ModelCardJson extends CardJson {
-  datacard_uid: string;
-  sample_data_type: string;
-  model_type: string;
-  pipelinecard_uid: string;
-  auditcard_uid: string;
+interface CardResponse {
+  cards: CardJson[];
 }
 
-interface ModelCardResponse {
-  cards: ModelCardJson[];
-}
-
-async function getModelCards(): Promise<ModelCardJson[]> {
+async function getModelCards(): Promise<CardJson[]> {
   const modelcards = await fetch("/opsml/cards/list", {
     method: "POST",
     headers: {
@@ -38,9 +29,39 @@ async function getModelCards(): Promise<ModelCardJson[]> {
     body: JSON.stringify({ registry_type: "model", limit: 10 }),
   });
 
-  let response: ModelCardResponse = await modelcards.json();
+  let response: CardResponse = await modelcards.json();
   console.log(response);
   return response.cards;
 }
 
-export { getModelCards };
+async function getDataCards(): Promise<CardJson[]> {
+  const modelcards = await fetch("/opsml/cards/list", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ registry_type: "data", limit: 10 }),
+  });
+
+  let response: CardResponse = await modelcards.json();
+  console.log(response);
+  return response.cards;
+}
+
+async function getRunCards(): Promise<CardJson[]> {
+  const modelcards = await fetch("/opsml/cards/list", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ registry_type: "run", limit: 10 }),
+  });
+
+  let response: CardResponse = await modelcards.json();
+  console.log(response);
+  return response.cards;
+}
+
+export { getModelCards, getDataCards, getRunCards };

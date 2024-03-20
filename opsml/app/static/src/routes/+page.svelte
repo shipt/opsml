@@ -5,7 +5,7 @@
   import modelcard from '$lib/images/modelcard-circuit.svg';
   import { onMount } from 'svelte';
   import  { getModelCards } from '$lib/scripts/homepage';
-  import Card from '$lib/card.svelte';
+  import Card from '$lib/Card.svelte';
 	
   interface CardRequest {
   registry_type: string;
@@ -20,7 +20,7 @@
 <div class="container mx-auto mb-16 pt-12 sm:mb-32 sm:pt-20">
   <div class="mb-10 flex items-center justify-center gap-2 text-xl font-bold sm:mb-8">
       <div class="mr-2 h-px flex-1 translate-y-px bg-gradient-to-l from-primary-200 to-white"></div>
-        Recent <img src={logo} class="w-8" alt=""> Assets
+        Recent <img src={logo} class="w-12" alt=""> Assets
       <div class="ml-2 h-px flex-1 translate-y-px bg-gradient-to-r from-primary-200 to-white"></div>
   </div>
   <div class="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -35,11 +35,9 @@
         {:then modelcards}
           {#each modelcards as modelcard}
             <Card 
-              color="to-primary-200"
               repository= {modelcard.repository} 
               name= {modelcard.name}
               version= {modelcard.version}
-              registry= {modelcard.registry}
               date= {modelcard.date}
             />
           {/each}
@@ -60,7 +58,6 @@
               repository= {modelcard.repository} 
               name= {modelcard.name}
               version= {modelcard.version}
-              registry= {modelcard.registry}
               date= {modelcard.date}
             />
           {/each}

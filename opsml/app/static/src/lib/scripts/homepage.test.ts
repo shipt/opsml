@@ -42,3 +42,25 @@ it("displays the list of recent posts", async () => {
     ],
   });
 });
+
+it("displays the list of recent posts", async () => {
+  const cards = await page.getDataCards();
+  expect(cards).toEqual({
+    cards: [
+      {
+        uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
+      },
+    ],
+  });
+});
+
+it("displays the list of recent posts", async () => {
+  const cards = await page.getRunCards();
+  expect(cards).toEqual({
+    cards: [
+      {
+        uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
+      },
+    ],
+  });
+});
