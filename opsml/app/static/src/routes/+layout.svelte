@@ -10,20 +10,19 @@
   <link rel="icon" type="image/x-icon" href={favicon} />
 </svelte:head>
 
-<div class="layout overflow-auto">
+<div class="layout overflow-auto" id="page">
     <Navbar />
-    <div class="image"></div>
     <slot></slot>
 </div>
 
 
 
 <style>
-  .image {
+  #page {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url("$lib/images/opsml-background.svg");
+    background-image: url("$lib/images/opsml-web-background.svg");
     z-index: -1;
   }
 </style>

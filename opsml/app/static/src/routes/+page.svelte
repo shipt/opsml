@@ -4,7 +4,8 @@
   import logo from '$lib/images/opsml-logo.png';
   import modelcard from '$lib/images/modelcard-circuit.svg';
   import { onMount } from 'svelte';
-  import  { getModelCards } from '$lib/scripts/homepage';
+  import  { getRecentCards } from '$lib/scripts/homepage';
+  import HomeSpan from '$lib/Homepage_span.svelte';
   import Card from '$lib/Card.svelte';
 	
   interface CardRequest {
@@ -12,64 +13,66 @@
   limit: number;
   }
 
-  const modelcards = getModelCards();
+  const cards = getRecentCards();
 
 
 </script>
   
-<div class="container mx-auto mb-16 pt-12 sm:mb-32 sm:pt-20">
+<div class="container mx-auto mb-4 pt-12 sm:mb-4 sm:pt-20">
   <div class="mb-10 flex items-center justify-center gap-2 text-xl font-bold sm:mb-8">
       <div class="mr-2 h-px flex-1 translate-y-px bg-gradient-to-l from-primary-200 to-white"></div>
         Recent <img src={logo} class="w-12" alt=""> Assets
       <div class="ml-2 h-px flex-1 translate-y-px bg-gradient-to-r from-primary-200 to-white"></div>
   </div>
+
+
   <div class="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
-    <div class="relative col-span-1 flex flex-col items-stretch text-center">
-      <h2 class="mb-5 flex items-center justify-center  text-lg font-semibold 2xl:mb-6 2xl:text-xl">
-        <img src={modelcard} class="w-24" alt="">
-        ModelCards
-      </h2>
-      <div class="mb-3 flex flex-col items-center gap-2.5 rounded-xl bg-white/40 p-3 backdrop-blur-lg sm:mb-7">
-        {#await modelcards}
-          <div>Loading...</div>
-        {:then modelcards}
-          {#each modelcards as modelcard}
-            <Card 
-              repository= {modelcard.repository} 
-              name= {modelcard.name}
-              version= {modelcard.version}
-              date= {modelcard.date}
-            />
-          {/each}
-        {/await}
-      </div>
-    </div>
-    <div class="relative col-span-1 flex flex-col items-stretch text-center">
-      <h2 class="mb-5 flex items-center justify-center  text-lg font-semibold 2xl:mb-6 2xl:text-xl">
-        <img src={modelcard} class="w-24" alt="">
-        DataCards
-      </h2>
-      <div class="mb-3 flex flex-col items-center gap-2.5 rounded-xl bg-white/40 p-3 backdrop-blur-lg sm:mb-7">
-        {#await modelcards}
-          <div>Loading...</div>
-        {:then modelcards}
-          {#each modelcards as modelcard}
-            <Card 
-              repository= {modelcard.repository} 
-              name= {modelcard.name}
-              version= {modelcard.version}
-              date= {modelcard.date}
-            />
-          {/each}
-        {/await}
-      </div>
-    </div>
-    <div class="relative col-span-1 flex flex-col items-stretch text-center">
-      <h2 class="mb-5 flex items-center justify-center  text-lg font-semibold 2xl:mb-6 2xl:text-xl">
-        <img src={modelcard} class="w-24" alt="">
-        Runs
-      </h2>
-    </div>
+
+    <HomeSpan logo={modelcard} header="ModelCards" >
+      {#await cards}
+        <div>Loading...</div>
+      {:then cards}
+        {#each cards.modelcards as modelcard}
+          <Card 
+            repository= {modelcard.repository} 
+            name= {modelcard.name}
+            version= {modelcard.version}
+            date= {modelcard.date}
+          />
+        {/each}
+      {/await}
+    </HomeSpan>
+
+    <HomeSpan logo={modelcard} header="DataCards" >
+      {#await cards}
+        <div>Loading...</div>
+      {:then cards}
+        {#each cards.datacards as datacard}
+          <Card 
+            repository= {datacard.repository} 
+            name= {datacard.name}
+            version= {datacard.version}
+            date= {datacard.date}
+          />
+        {/each}
+      {/await}
+    </HomeSpan>
+
+    <HomeSpan logo={modelcard} header="RunCards" >
+      {#await cards}
+        <div>Loading...</div>
+      {:then cards}
+        {#each cards.runcards as runcard}
+          <Card 
+            repository= {runcard.repository} 
+            name= {runcard.name}
+            version= {runcard.version}
+            date= {runcard.date}
+          />
+        {/each}
+      {/await}
+    </HomeSpan>
+
   </div>
 </div>
 

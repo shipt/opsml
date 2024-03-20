@@ -32,32 +32,29 @@ afterAll(() => server.close());
 // without affecting other, unrelated tests.
 afterEach(() => server.resetHandlers());
 
-it("displays the list of recent posts", async () => {
-  const cards = await page.getModelCards();
+it("get card test", async () => {
+  const cards = await page.getCards("model");
+  expect(cards).toEqual([
+    {
+      uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
+    },
+  ]);
+});
+
+it("recent card tests", async () => {
+  const cards = await page.getRecentCards();
   expect(cards).toEqual({
-    cards: [
+    datacards: [
       {
         uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
       },
     ],
-  });
-});
-
-it("displays the list of recent posts", async () => {
-  const cards = await page.getDataCards();
-  expect(cards).toEqual({
-    cards: [
+    modelcards: [
       {
         uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
       },
     ],
-  });
-});
-
-it("displays the list of recent posts", async () => {
-  const cards = await page.getRunCards();
-  expect(cards).toEqual({
-    cards: [
+    runcards: [
       {
         uid: "f8dd058f-9006-4174-8d49-e3086bc39c21",
       },
