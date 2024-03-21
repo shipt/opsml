@@ -3,26 +3,17 @@
   import Navbar from '$lib/Navbar.svelte';
   import Footer from '$lib/Footer.svelte';
   import favicon from '$lib/images/opsml-green.ico';
+  import background from '$lib/images/opsml-gradient-background.svg';
 
 </script>
 
 <svelte:head>
-  <link rel="icon" type="image/x-icon" href={favicon} />
+  <link rel="icon" type="image/x-icon" href={favicon}/>
 </svelte:head>
 
-<div class="layout overflow-auto" id="page">
+<div class="bg-cover bg-center layout overflow-auto" style="background-image: url({background})" id="page">
     <Navbar />
     <slot></slot>
 </div>
 
 
-
-<style>
-  #page {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image: url("$lib/images/opsml-web-background.svg");
-    z-index: -1;
-  }
-</style>

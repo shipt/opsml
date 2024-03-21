@@ -4,7 +4,7 @@
   export let repository: string;
   export let version: string;
   export let date: string;
-  export let defaultClass = `block p-2 mb-2 hover:from-stone-50 hover:to-stone-50 bg-gradient-to-r from-slate-100 to-white rounded-2xl w-full border border-black shadow-[-6px_6px_0px_0px_black]`;
+  export let defaultClass = `block card card-hover p-4 rounded-2xl w-full`;
 
   export function calculateDaysBetween(date: number): string {
     let presentDate: Date = new Date();
