@@ -1,8 +1,21 @@
 <script>
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
   import logo from '$lib/images/opsml_word.png';
   import Fa from 'svelte-fa'
   import { faFlag } from '@fortawesome/free-solid-svg-icons'
+  import js from 'jquery';
+
+  onMount(() => {
+    window.jq = js;
+    jq('#hamburger').click(function() {
+      console.log('clicked');
+      jq('#hamburger-options').toggle();
+    });
+
+  });
+
+
 
   
 </script>
@@ -20,7 +33,7 @@
     </div>
 
     <nav>
-      <ul class="flex items-center space-x-2 xl:space-x-3">
+      <ul class="invisible flex items-center space-x-2 xl:space-x-3 md:visible">
 
         <li>
           <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/model' class:active={$page.url.pathname === '/opsml/registry/model'}>
@@ -54,6 +67,15 @@
 
       </ul>
     </nav>
+
+    <button id="hamburger" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
+      <span class="sr-only">Open main menu</span>
+      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+          <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+      </svg>
+    </button>
+
+
     <div class="flex items-center border-l border-slate-200 ml-4 pl-2">
       <a href="https://github.com/shipt/opsml" class="ml-2 block text-slate-400 hover:text-slate-500">
         <span class="sr-only">Opsml on GitHub</span>
@@ -63,8 +85,16 @@
       </a>
     </div>
   </div>
+
 </header>
 
+<div class="hidden w-full md:inline md:w-auto" id="hamburger-options">
+  <ul class="absolute font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
+    <li>
+      <a href="#" class="relative py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0" >Home</a>
+    </li>
+  </ul>
+</div>
 
 <style>
 

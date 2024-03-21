@@ -6,10 +6,10 @@
   export let date: string;
   export let defaultClass = `block p-2 mb-2 hover:from-stone-50 hover:to-stone-50 bg-gradient-to-r from-slate-100 to-white rounded-2xl w-full border border-black shadow-[-6px_6px_0px_0px_black]`;
 
-  export function calculateDaysBetween(date: string): string {
-    # change to timestamp
+  export function calculateDaysBetween(date: number): string {
     let presentDate: Date = new Date();
     let date1: Date = new Date(date);
+    console.log(presentDate);
 
     let hours = Math.abs(presentDate.getTime() - date1.getTime()) / 3600000
     if (hours > 24) {
