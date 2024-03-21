@@ -68,12 +68,25 @@
       </ul>
     </nav>
 
-    <button id="hamburger" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
-      <span class="sr-only">Open main menu</span>
-      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-          <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-      </svg>
-    </button>
+    <div class="relative-group">
+      <button id="hamburger" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
+        <span class="sr-only">Open main menu</span>
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+            <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+        </svg>
+      </button>
+
+
+      <div class="hidden absolute top-full z-10 mt-1 w-auto min-w-0 max-w-xs overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg right-0 !w-52 !mt-3 id="hamburger-options">
+        <ul class="min-w-full">
+          <li>
+            <div class="col-span-full flex items-center justify-between whitespace-nowrap bg-gradient-to-r to-white font-semibold dark:to-gray-925 px-4 py-0.5 text-blue-800 from-blue-50 dark:text-blue-100 dark:from-blue-900">
+              Website
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
 
 
     <div class="flex items-center border-l border-slate-200 ml-4 pl-2">
@@ -88,13 +101,8 @@
 
 </header>
 
-<div class="hidden w-full md:inline md:w-auto" id="hamburger-options">
-  <ul class="absolute font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
-    <li>
-      <a href="#" class="relative py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0" >Home</a>
-    </li>
-  </ul>
-</div>
+
+
 
 <style>
 
