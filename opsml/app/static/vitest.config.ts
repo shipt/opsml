@@ -7,5 +7,9 @@ export default defineConfig({
   test: {
     include: ["./src/tests/*.test.ts"],
     environment: "jsdom",
+    coverage: {
+      include: ["**/src/**"],
+      exclude: ["**/src/lib/Navbar.svelte"],
+    },
   },
 });
