@@ -13,3 +13,7 @@ it("render homepage", () => {
     svgClass: "test",
   });
 });
+
+it("render span", () => {
+  render(HomeSpan);
+});
