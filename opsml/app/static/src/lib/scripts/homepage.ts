@@ -35,22 +35,23 @@ async function getCards(registry: string): Promise<CardJson[]> {
     body: JSON.stringify({ registry_type: registry, limit: 10 }),
   });
 
-  let response: CardResponse = await modelcards.json();
+  const response: CardResponse = await modelcards.json();
   return response.cards;
 }
 
 async function getRecentCards(): Promise<RecentCards> {
-  let modelcards: CardJson[] = await getCards("model");
-  let datacards: CardJson[] = await getCards("data");
-  let runcards: CardJson[] = await getCards("run");
+  const modelcards: CardJson[] = await getCards("model");
+  const datacards: CardJson[] = await getCards("data");
+  const runcards: CardJson[] = await getCards("run");
 
-  let recentCards: RecentCards = {
-    modelcards: modelcards,
-    datacards: datacards,
-    runcards: runcards,
+  const recentCards: RecentCards = {
+    modelcards,
+    datacards,
+    runcards,
   };
 
   return recentCards;
 }
 
 export { getRecentCards, getCards };
+export type { CardJson, RecentCards };

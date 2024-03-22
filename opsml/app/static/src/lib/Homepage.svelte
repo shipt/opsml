@@ -1,22 +1,16 @@
 <script lang="ts">
-  import modelcard from '$lib/images/modelcard-circuit.svg';
-  import  { getRecentCards } from '$lib/scripts/homepage';
-  import HomeSpan from '$lib/Homepage_span.svelte';
-  import Card from '$lib/Card.svelte';
-	
-  interface CardRequest {
-  registry_type: string;
-  limit: number;
-  }
+  import logo from "$lib/images/opsml-logo.png";
+  import modelcard from "$lib/images/modelcard-circuit.svg";
+  import type { RecentCards } from "$lib/scripts/homepage";
+  import HomeSpan from "$lib/Homepage_span.svelte";
+  import Card from "$lib/Card.svelte";
 
-  const cards = getRecentCards();
-  export let logo: string = '$lib/images/opsml-logo.png';
-
+  export let cards: RecentCards;
 
 </script>
-  
+
 <div id="active-page">
-  
+
   <div class="container mx-auto mb-4 pt-12 sm:mb-4 sm:pt-20">
     <div class="mb-10 flex items-center justify-center gap-2 text-xl font-bold sm:mb-8">
         <div class="mr-2 h-px flex-1 translate-y-px bg-gradient-to-l from-primary-500 to-white"></div>
@@ -24,7 +18,6 @@
         <div class="ml-2 h-px flex-1 translate-y-px bg-gradient-to-r from-primary-500 to-white"></div>
     </div>
 
-  
     <div class="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
 
       <HomeSpan logo={modelcard} header="ModelCards" >
@@ -32,9 +25,9 @@
           <div>Loading...</div>
         {:then cards}
           {#each cards.modelcards as modelcard}
-            <Card 
+            <Card
               hoverColor="hover:text-primary-600 dark:hover:text-primary-300"
-              repository= {modelcard.repository} 
+              repository= {modelcard.repository}
               name= {modelcard.name}
               version= {modelcard.version}
               date= {modelcard.date}
@@ -49,10 +42,10 @@
           <div>Loading...</div>
         {:then cards}
           {#each cards.datacards as datacard}
-            <Card 
+            <Card
               hoverColor=hover:text-secondary-600
               svgClass="flex-none w-3 mr-0.5 fill-secondary-600"
-              repository= {datacard.repository} 
+              repository= {datacard.repository}
               name= {datacard.name}
               version= {datacard.version}
               date= {datacard.date}
@@ -66,10 +59,10 @@
           <div>Loading...</div>
         {:then cards}
           {#each cards.runcards as runcard}
-            <Card 
+            <Card
               hoverColor=hover:text-error-600
               svgClass="flex-none w-3 mr-0.5 fill-error-600"
-              repository= {runcard.repository} 
+              repository= {runcard.repository}
               name= {runcard.name}
               version= {runcard.version}
               date= {runcard.date}

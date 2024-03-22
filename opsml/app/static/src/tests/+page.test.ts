@@ -1,7 +1,28 @@
 import { render } from "@testing-library/svelte";
-import HomeSpan from "../lib/Homepage_span.svelte";
-import Card from "../lib/Card.svelte";
 import { it } from "vitest";
+import Homepage from "../lib/Homepage.svelte";
+import Card from "../lib/Card.svelte";
+import type { RecentCards, CardJson } from "$lib/scripts/homepage";
+
+const cards: CardJson[] = [
+  {
+    date: "2021-09-01T00:00:00Z",
+    app_env: "test",
+    uid: "test",
+    repository: "test",
+    contact: "test",
+    name: "test",
+    version: "0.1.0",
+    timestamp: "test",
+    tags: new Map(),
+  },
+];
+
+const recentCards: RecentCards = {
+  modelcards: cards,
+  datacards: cards,
+  runcards: cards,
+};
 
 it("render homepage", () => {
   render(Card, {
@@ -15,5 +36,5 @@ it("render homepage", () => {
 });
 
 it("render span", () => {
-  render(HomeSpan);
+  render(Homepage, { cards: recentCards });
 });

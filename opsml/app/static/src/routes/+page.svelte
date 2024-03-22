@@ -1,13 +1,10 @@
-
-
 <script lang="ts">
 
-  import logo from '$lib/images/opsml-logo.png';
-  import Homepage from '$lib/Homepage.svelte';
+  import Homepage from "$lib/Homepage.svelte";
+  import { getRecentCards } from "$lib/scripts/homepage";
+
+  const cards: any = getRecentCards();
 
 </script>
-  
-<Homepage logo={logo} />
 
-
-		
+<Homepage cards={cards} />

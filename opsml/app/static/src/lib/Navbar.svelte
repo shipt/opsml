@@ -1,31 +1,35 @@
 <script>
-  import { page } from '$app/stores';
-  import { onMount } from 'svelte';
-  import logo from '$lib/images/opsml_word.png';
-  import Fa from 'svelte-fa'
-  import { faFlag } from '@fortawesome/free-solid-svg-icons'
-  import js from 'jquery';
-  import { LightSwitch } from '@skeletonlabs/skeleton';
+  import { onMount } from "svelte";
+  import Fa from "svelte-fa";
+  import { faFlag } from "@fortawesome/free-solid-svg-icons";
+  import js from "jquery";
+  import { LightSwitch } from "@skeletonlabs/skeleton";
+  import logo from "$lib/images/opsml_word.png";
+  import { page } from "$app/stores";
 
   onMount(() => {
+    // @ts-ignore
     window.jq = js;
-    jq('#hamburger').click(function() {
-      console.log('clicked');
-      jq('#hamburger-options').toggle();
-    });
 
+    // @ts-ignore
+    window.jq("#hamburger").click(() => {
+      console.log("clicked");
+
+      // @ts-ignore
+      window.jq("#hamburger-options").toggle();
+    });
   });
 
-  const names = ['Model', 'Data', 'Run', 'Audit', 'Docs'];
-  
+  const names = ["Model", "Data", "Run", "Audit", "Docs"];
+
 </script>
 
 <div class="shadow-lg bg-primary-500" id="header">
-  
+
   <div class="mx-auto px-4 container relative flex h-16 items-center">
 
     <div class="flex flex-1 items-center">
-  
+
       <div class="hidden flex items-center lg:mr:6 md:block">
         <img src={logo} class="h-5 sm:h-10" alt="Opsml Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
@@ -36,12 +40,12 @@
       <ul class="flex items-center space-x-2 xl:space-x-3">
         {#each names as name}
           <li class="hidden md:block">
-            <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === '/opsml/registry/{name.toLowerCase()}'}>
+            <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === "/opsml/registry/{name.toLowerCase()}"}>
               {name}
             </a>
           </li>
         {/each}
-      
+
         <li>
           <div class="relative-group">
             <button id="hamburger" type="button" class="inline-flex items-center w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
@@ -72,9 +76,6 @@
 
     </nav>
 
-    
-
-
     <div class="flex items-center border-l border-slate-200 ml-4 mr-4 pl-2">
       <a href="https://github.com/shipt/opsml" class="ml-2 block text-slate-400 hover:text-slate-500">
         <span class="sr-only">Opsml on GitHub</span>
@@ -90,7 +91,6 @@
 
 </div>
 
-
 <style>
 
   nav a:focus {
@@ -100,7 +100,6 @@
     font-weight: 700;
   }
 
-  
   nav a:hover {
     text-decoration: underline;
     text-decoration-color: rgb(26, 255, 163);
@@ -115,11 +114,4 @@
     font-weight: 700;
   }
 
-
 </style>
-
-
-
-
-
-
