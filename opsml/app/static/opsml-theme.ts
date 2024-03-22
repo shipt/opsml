@@ -1,6 +1,6 @@
 import type { CustomThemeConfig } from "@skeletonlabs/tw-plugin";
 
-export const myCustomTheme: CustomThemeConfig = {
+export const opsmlTheme: CustomThemeConfig = {
   name: "opsml",
   properties: {
     // =~= Theme Properties =~=
@@ -87,15 +87,15 @@ export const myCustomTheme: CustomThemeConfig = {
     "--color-error-800": "127 15 71", // #7f0f47
     "--color-error-900": "104 12 58", // #680c3a
     // surface | #495a8f
-    "--color-surface-50": "228 230 238", // #e4e6ee
-    "--color-surface-100": "219 222 233", // #dbdee9
-    "--color-surface-200": "210 214 227", // #d2d6e3
-    "--color-surface-300": "182 189 210", // #b6bdd2
-    "--color-surface-400": "128 140 177", // #808cb1
-    "--color-surface-500": "73 90 143", // #495a8f
-    "--color-surface-600": "66 81 129", // #425181
-    "--color-surface-700": "55 68 107", // #37446b
-    "--color-surface-800": "44 54 86", // #2c3656
-    "--color-surface-900": "36 44 70", // #242c46
+    "--color-surface-50": "228 225 235", // #e4e1eb
+    "--color-surface-100": "219 215 228", // #dbd7e4
+    "--color-surface-200": "210 206 221", // #d2cedd
+    "--color-surface-300": "183 176 201", // #b7b0c9
+    "--color-surface-400": "129 116 161", // #8174a1
+    "--color-surface-500": "75 57 120", // #4b3978
+    "--color-surface-600": "68 51 108", // #44336c
+    "--color-surface-700": "56 43 90", // #382b5a
+    "--color-surface-800": "45 34 72", // #2d2248
+    "--color-surface-900": "37 28 59", // #251c3b
   },
 };

@@ -19,5 +19,5 @@ export default {
     }),
   },
   preprocess: vitePreprocess(),
-  exclude: ["./node_modules", "./.svelte-kit", "./.svelte"],
+  vitePlugin: { exclude: ["./node_modules", "./.svelte-kit", "./.svelte"] },
 };

@@ -5,6 +5,7 @@
   import Fa from 'svelte-fa'
   import { faFlag } from '@fortawesome/free-solid-svg-icons'
   import js from 'jquery';
+  import { LightSwitch } from '@skeletonlabs/skeleton';
 
   onMount(() => {
     window.jq = js;
@@ -15,83 +16,66 @@
 
   });
 
-
-
+  const names = ['Model', 'Data', 'Run', 'Audit', 'Docs'];
   
 </script>
 
-<div class="shadow-lg" id="header">
+<div class="shadow-lg bg-primary-500" id="header">
   
   <div class="mx-auto px-4 container relative flex h-16 items-center">
 
     <div class="flex flex-1 items-center">
   
-      <div class="flex items-center lg:mr:6">
+      <div class="hidden flex items-center lg:mr:6 md:block">
         <img src={logo} class="h-5 sm:h-10" alt="Opsml Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
       </div>
     </div>
 
     <nav>
-      <ul class="invisible flex items-center space-x-2 xl:space-x-3 md:visible">
-
+      <ul class="flex items-center space-x-2 xl:space-x-3">
+        {#each names as name}
+          <li class="hidden md:block">
+            <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === '/opsml/registry/{name.toLowerCase()}'}>
+              {name}
+            </a>
+          </li>
+        {/each}
+      
         <li>
-          <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/model' class:active={$page.url.pathname === '/opsml/registry/model'}>
-            Model
-          </a>
-        </li>
-
-        <li>
-          <a class="group flex items-center text-white text-base md:text-lg" href='/opsml/registry/data' class:active={$page.url.pathname === '/opsml/registry/data'}>
-            Data
-          </a>
-        </li>
-
-        <li>
-          <a class="group flex items-center text-white text-base md:text-lg" href='/opsml/registry/run' class:active={$page.url.pathname === '/opsml/registry/run'}>
-            Runs
-          </a>
-        </li>
-
-        <li>
-          <a class="group flex items-center text-white text-base md:text-lg" href='/opsml/registry/audit' class:active={$page.url.pathname === '/opsml/registry/audit'}>
-            Audit
-          </a>
-        </li>
-
-        <li>
-          <a class="group flex items-center text-white text-base md:text-lg" href='/opsml/registry/audit' class:active={$page.url.pathname === '/opsml/registry/audit'}>
-            Docs
-          </a>
+          <div class="relative-group">
+            <button id="hamburger" type="button" class="inline-flex items-center w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
+              <span class="sr-only">Open main menu</span>
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                  <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+              </svg>
+            </button>
+            <div class="hidden absolute top-full z-10 mt-1 w-32 min-w-0 max-w-xs overflow-hidden rounded-xl card bg-primary-50" id="hamburger-options">
+              <section class="p-4 pb-5 space-y-4 overflow-y-auto">
+                <p class="font-bold text-2xl">Opsml</p>
+                <nav class="list-nav">
+                  <ul>
+                    {#each names as name}
+                      <li>
+                        <a href='/opsml/registry/{name.toLowerCase()}'>
+                          <span class="flex-auto">{name}</span>
+                        </a>
+                      </li>
+                    {/each}
+                </nav>
+              </section>
+            </div>
+          </div>
         </li>
 
       </ul>
 
-      <div class="relative-group">
-        <button id="hamburger" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden" aria-controls="navbar-default" aria-expanded="false">
-          <span class="sr-only">Open main menu</span>
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-              <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-          </svg>
-        </button>
-  
-  
-        <div class="hidden absolute top-full z-10 mt-1 w-auto min-w-0 max-w-xs overflow-hidden rounded-xl bg-white border border-black shadow-[-3px_3px_0px_0px_black]" id="hamburger-options">
-          <ul class="min-w-full">
-            <li>
-              <div class="col-span-full flex items-center justify-between whitespace-nowrap bg-gradient-to-r to-white font-semibold dark:to-gray-925 px-4 py-0.5 text-blue-800 from-blue-50 dark:text-blue-100 dark:from-blue-900">
-                Website
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
     </nav>
 
     
 
 
-    <div class="flex items-center border-l border-slate-200 ml-4 pl-2">
+    <div class="flex items-center border-l border-slate-200 ml-4 mr-4 pl-2">
       <a href="https://github.com/shipt/opsml" class="ml-2 block text-slate-400 hover:text-slate-500">
         <span class="sr-only">Opsml on GitHub</span>
         <svg viewBox="0 0 16 16" class="w-6 h-6 fill-white" aria-hidden="true">
@@ -99,6 +83,9 @@
         </svg>
       </a>
     </div>
+
+    <LightSwitch />
+
   </div>
 
 </div>
