@@ -20,7 +20,7 @@
 
     <div class="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-      <HomeSpan logo={modelcard} header="ModelCards" >
+      <HomeSpan header="ModelCards" >
         {#await cards}
           <div>Loading...</div>
         {:then cards}
@@ -37,7 +37,7 @@
         {/await}
       </HomeSpan>
 
-      <HomeSpan logo={modelcard} header="DataCards" >
+      <HomeSpan header="DataCards" >
         {#await cards}
           <div>Loading...</div>
         {:then cards}
@@ -54,7 +54,7 @@
         {/await}
       </HomeSpan>
 
-      <HomeSpan logo={modelcard} header="RunCards" >
+      <HomeSpan header="RunCards" >
         {#await cards}
           <div>Loading...</div>
         {:then cards}
@@ -73,4 +73,15 @@
 
     </div>
   </div>
+
+  <div class="flex justify-center items-center mx-auto mb-12">
+ 
+    <a href="#" class="card card-hover p-4 flex justify-center items-center">
+      <span>Minimal</span>
+    </a>
+
+  </div>
+  
+
+
 </div>
