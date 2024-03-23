@@ -20,7 +20,7 @@
     });
   });
 
-  const names = ["Model", "Data", "Run", "Audit", "Docs"];
+  const names = ["Models", "Data", "Runs", "Audits", "Docs"];
 
 </script>
 
