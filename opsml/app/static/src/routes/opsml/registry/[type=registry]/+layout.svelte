@@ -1,15 +1,21 @@
 <script lang="ts">
 
 	import Search from "$lib/Search.svelte";
-  const urlParams = new URLSearchParams(window.location.search);
+  import { page } from '$app/stores';
+  import { getRepos } from "$lib/scripts/repositories";
+
+  let registry: string = $page.url.searchParams.get('registry')
+
 
   / For Search Input
+  let repos = getRepos(registry);
+
 	let searchTerm = "";
 
   const searchRepos = () => {	
-		return filteredRepos = bookData.filter(book => {
-			let bookTitle = book.title.toLowerCase();
-			return bookTitle.includes(searchTerm.toLowerCase())
+		return filteredRepos = repos.filter(repo => {
+			let repoName = repo.toLowerCase();
+			return repoName.includes(searchTerm.toLowerCase())
 		});
 	}
 
@@ -24,10 +30,11 @@
       <div class="mb-20 lg:mb-4">
         <div class="mb-4 flex items-center justify-between lg:mr-8">
           <div class="relative flex min-w-0 flex-1 items-center">
-            <Search />
+            <Search bind:searchTerm on:input={searchRepos} />
           </div> 
         </div>
       </div>
     </div>
   </section>
+  <slot></slot>
 </div>

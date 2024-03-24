@@ -10,7 +10,6 @@
   export function calculateDaysBetween(date: string): string {
     const presentDate: Date = new Date();
     const date1: Date = new Date(date);
-    console.log(presentDate);
 
     const hours = Math.abs(presentDate.getTime() - date1.getTime()) / 3600000;
     if (hours > 24) {
