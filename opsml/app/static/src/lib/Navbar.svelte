@@ -20,7 +20,7 @@
     });
   });
 
-  const names = ["Models", "Data", "Runs", "Audits", "Docs"];
+  const names = ["Models", "Data", "Runs", "Audits"];
 
 </script>
 
@@ -40,9 +40,15 @@
       <ul class="flex items-center space-x-2 xl:space-x-3">
         {#each names as name}
           <li class="hidden md:block">
-            <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === "/opsml/registry/{name.toLowerCase()}"}>
-              {name}
-            </a>
+            {#if name !== "Docs"}
+              <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === "/opsml/registry/{name.toLowerCase()}"}>
+                {name}
+              </a>
+            {:else}
+              <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='https://thorrester.github.io/opsml-ghpages/'>
+                {name}
+              </a>
+            {/if}
           </li>
         {/each}
 

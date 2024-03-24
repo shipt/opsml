@@ -3,14 +3,20 @@
 	import Search from "$lib/Search.svelte";
   import { page } from '$app/stores';
   import { getRepos } from "$lib/scripts/repositories";
+  import { onMount } from 'svelte';
 
-  let registry: string = $page.url.searchParams.get('registry')
 
+  let repos: string[] = [];
+  let searchTerm = "";
+  let filteredRepos: string[] = [];
 
-  / For Search Input
-  let repos = getRepos(registry);
-
-	let searchTerm = "";
+  onMount(async () => {
+    
+    let registry: string = $page.url.pathname.split("/")[3];
+		let repos: string[] = await getRepos(registry.replace(/s+$/, ''));
+    console.log(repos);
+	
+	});
 
   const searchRepos = () => {	
 		return filteredRepos = repos.filter(repo => {

@@ -2,9 +2,9 @@ interface repositories {
   repositories: string[];
 }
 
-async function getRepos(registry: string): Promise<string[]> {
+async function getRepos(registry: string) {
   const repos = await fetch(
-    "/opsml/cards/repositories" +
+    "/opsml/cards/repositories?" +
       new URLSearchParams({
         registry_type: registry,
       })
@@ -13,3 +13,5 @@ async function getRepos(registry: string): Promise<string[]> {
   const response: repositories = await repos.json();
   return response.repositories;
 }
+
+export { getRepos };
