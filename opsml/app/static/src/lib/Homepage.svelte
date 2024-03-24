@@ -74,14 +74,4 @@
     </div>
   </div>
 
-  <div class="flex justify-center items-center mx-auto mb-12">
- 
-    <a href="#" class="card card-hover p-4 flex justify-center items-center">
-      <span>Minimal</span>
-    </a>
-
-  </div>
-  
-
-
 </div>
