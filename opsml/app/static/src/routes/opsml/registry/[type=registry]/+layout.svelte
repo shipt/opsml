@@ -3,7 +3,7 @@
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import { page } from '$app/stores';
-  import { getRepos } from "$lib/scripts/repositories";
+  import { getRepos, getNames } from "$lib/scripts/repositories";
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
 
@@ -20,7 +20,7 @@
 
   async function getRegistryNames() {
     let registry: string = $page.url.pathname.split("/")[3];
-    items = await getRepos(registry.replace(/s+$/, ''));
+    items = await getNames(registry.replace(/s+$/, ''));
     console.log("name");
   }
 
