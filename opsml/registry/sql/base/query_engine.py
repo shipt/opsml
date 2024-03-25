@@ -400,22 +400,6 @@ class QueryEngine:
         with self.session() as sess:
             return sess.scalars(query).all()
 
-    def get_repositories_with_names(self, table: CardSQLTable) -> Sequence[Dict[str, Any]]:
-        """Retrieves unique repositories in a registry
-
-        Args:
-            table:
-                Registry table to query
-
-        Returns:
-            List of unique repositories
-        """
-        repository_col = table.repository
-        query = select(table.repository, table.name).distinct().order_by(repository_col.asc(), table.name.asc())  # type:ignore[call-overload, union-attr]
-
-        with self.session() as sess:
-            return self._parse_records(sess.execute(query))
-
     def get_unique_card_names(self, repository: Optional[str], table: CardSQLTable) -> Sequence[str]:
         """Returns a list of unique card names"""
         query = select(table.name)  # type:ignore[call-overload]

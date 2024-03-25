@@ -77,36 +77,6 @@ def card_repositories(
     return RepositoriesResponse(repositories=repositories)
 
 
-@router.get("/cards/repositories/names", response_model=RepositoriesResponse, name="repositories")
-def card_repos_and_names(
-    request: Request,
-    registry_type: str,
-) -> RepositoriesResponse:
-    """Get all repositories associated with a registry
-
-    Args:
-        request:
-            FastAPI request object
-        registry_type:
-            Type of registry
-
-    Returns:
-        `RepositoriesResponse`
-    """
-    registry: CardRegistry = getattr(request.app.state.registries, registry_type)
-
-    try:
-        logger.info("Getting repositories and names")
-        artifacts = registry._registry.unique_repositories_and_names
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get repositories and names. {error}",
-        ) from error
-
-    print(artifacts)
-
-
 @router.get("/cards/names", response_model=NamesResponse, name="names")
 def card_names(
     request: Request,

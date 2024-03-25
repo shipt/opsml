@@ -39,10 +39,6 @@ class SQLRegistryBase:
         raise NotImplementedError
 
     @property
-    def unique_repositories_and_names(self) -> Sequence[Dict[str, Any]]:
-        raise NotImplementedError
-
-    @property
     def table_name(self) -> str:
         return self._table_name
 

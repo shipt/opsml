@@ -64,10 +64,6 @@ class ServerRegistry(SQLRegistryBase):
         """Returns a list of unique repositories"""
         return self.engine.get_unique_repositories(table=self._table)
 
-    @property
-    def unique_repositories_and_names(self) -> Sequence[Dict[str, Any]]:
-        return self.engine.get_repositories_with_names(table=self._table)
-
     def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         """Returns a list of unique card names
         Args:
