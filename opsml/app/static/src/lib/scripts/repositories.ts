@@ -2,6 +2,10 @@ interface repositories {
   repositories: string[];
 }
 
+interface names {
+  names: string[];
+}
+
 async function getRepos(registry: string) {
   const repos = await fetch(
     "/opsml/cards/repositories?" +
@@ -22,8 +26,8 @@ async function getNames(registry: string) {
       })
   );
 
-  const response: repositories = await repos.json();
-  return response.repositories;
+  const response: names = await repos.json();
+  return response.names;
 }
 
 export { getRepos, getNames };
