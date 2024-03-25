@@ -13,7 +13,6 @@
 
     // @ts-ignore
     window.jq("#hamburger").click(() => {
-      console.log("clicked");
 
       // @ts-ignore
       window.jq("#hamburger-options").toggle();
@@ -21,6 +20,8 @@
   });
 
   const names = ["Models", "Data", "Runs", "Audits"];
+
+  
 
 </script>
 
@@ -35,22 +36,21 @@
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
       </div>
     </div>
-
-    <nav>
+    <nav id="navbar">
       <ul class="flex items-center space-x-2 xl:space-x-3">
         {#each names as name}
+          {@const path = '/opsml/registry/' + name.toLowerCase()}
           <li class="hidden md:block">
-            {#if name !== "Docs"}
-              <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='/opsml/registry/{name.toLowerCase()}' class:active={$page.url.pathname === "/opsml/registry/{name.toLowerCase()}"}>
+              <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href={path} class:active={$page.url.pathname === path}>
                 {name}
               </a>
-            {:else}
-              <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='https://thorrester.github.io/opsml-ghpages/'>
-                {name}
-              </a>
-            {/if}
           </li>
         {/each}
+        <li class="hidden md:block">
+          <a class="group flex items-center text-white text-base md:text-lg active:font-bold" href='https://thorrester.github.io/opsml-ghpages/'>
+            Docs
+          </a>
+        </li>
 
         <li>
           <div class="relative-group">
@@ -94,8 +94,8 @@
     <LightSwitch />
 
   </div>
-
 </div>
+
 
 <style>
 

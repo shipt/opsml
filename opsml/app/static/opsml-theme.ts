@@ -88,7 +88,7 @@ export const opsmlTheme: CustomThemeConfig = {
     "--color-error-900": "104 12 58", // #680c3a
 
     // surface | #5e498f
-    "--color-surface-50": "245 243 250", // #e7e4ee
+    "--color-surface-50": "242 240 250", // #e7e4ee
     "--color-surface-100": "233 229 243", // #dfdbe9
     "--color-surface-200": "215 210 227", // #d7d2e3
     "--color-surface-300": "191 182 210", // #bfb6d2
