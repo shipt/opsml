@@ -104,7 +104,7 @@ def card_names(
     return NamesResponse(names=names)
 
 
-@router.get("/card/registry/stats", response_model=RegistryQuery, name="registry_stats")
+@router.get("/card/registry/stats", name="registry_stats")
 def query_registry_stats(
     request: Request,
     registry_type: str,

@@ -432,7 +432,7 @@ class QueryEngine:
 
         query = select(
             sqa_func.count(distinct(table.name)).label("nbr_names"),  # type: ignore
-            sqa_func.count(distinct(table.version)).label("nbr_versions"),  # type: ignore
+            sqa_func.count(table.version).label("nbr_versions"),  # type: ignore
             sqa_func.count(distinct(table.repository)).label("nbr_repos"),  # type: ignore
         )
 
@@ -446,6 +446,7 @@ class QueryEngine:
 
         with self.session() as sess:
             results = sess.execute(query).first()
+
         if not results:
             return {
                 "nbr_names": 0,
