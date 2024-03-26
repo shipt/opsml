@@ -5,6 +5,10 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
+  import {
+  getRegistryPage,
+  getRegistryStats,
+} from "$lib/scripts/registry_page";
 
   /** @type {import('./$types').PageData} */
 	export let data;
@@ -13,6 +17,8 @@
   let items = data.args.items;
   let searchTerm = data.args.searchTerm;
   let selectedRepo: string = data.args.selectedRepo;
+  let registryPage = data.args.registryPage;
+  let registryStats = data.args.registryStats;
   let activePage: number = 0;
 
 
