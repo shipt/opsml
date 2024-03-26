@@ -22,6 +22,7 @@ from opsml.app.routes.pydantic_models import (
     UpdateCardResponse,
     VersionRequest,
     VersionResponse,
+    RegistryQuery,
 )
 from opsml.app.routes.utils import get_registry_type_from_table
 from opsml.helpers.logging import ArtifactLogger
@@ -103,14 +104,15 @@ def card_names(
     return NamesResponse(names=names)
 
 
-@router.get("/cards/registry/summary", response_model=RepositoriesResponse, name="repositories")
-def get_card_info(
+@router.get("/cards/registry/query/page", response_model=RegistryQuery, name="repositories")
+def query_registry_page(
     request: Request,
     registry_type: str,
-    sort_by: str = "created_at",
+    sort_by: str = "updated_at",
     repository: Optional[str] = None,
     name: Optional[str] = None,
-) -> dict:
+    page: int = 0,
+) -> RegistryQuery:
     """Get card information from a registry
 
     Args:
@@ -124,10 +126,18 @@ def get_card_info(
     Returns:
         `dict`
     """
-    registry: CardRegistry = getattr(request.app.state.registries, registry_type)
-    card = registry._registry.get_card_summary(sort_by, repository, name)
 
-    return card
+    try:
+        registry: CardRegistry = getattr(request.app.state.registries, registry_type)
+        page = registry._registry.query_page(sort_by, page, repository, name)
+        print(page)
+        return RegistryQuery(page=page)
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to query registry. {error}",
+        ) from error
 
 
 @router.post(

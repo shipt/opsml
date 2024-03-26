@@ -18,16 +18,4 @@ async function getRepos(registry: string) {
   return response.repositories;
 }
 
-async function getNames(registry: string) {
-  const repos = await fetch(
-    "/opsml/cards/names?" +
-      new URLSearchParams({
-        registry_type: registry,
-      })
-  );
-
-  const response: names = await repos.json();
-  return response.names;
-}
-
-export { getRepos, getNames };
+export { getRepos };

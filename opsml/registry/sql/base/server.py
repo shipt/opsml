@@ -3,7 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import textwrap
-from typing import Any, Dict, List, Optional, Sequence, Tuple, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, cast, Union
 
 from opsml.cards import ArtifactCard, ModelCard
 from opsml.cards.project import ProjectCard
@@ -64,13 +64,14 @@ class ServerRegistry(SQLRegistryBase):
         """Returns a list of unique repositories"""
         return self.engine.get_unique_repositories(table=self._table)
 
-    def get_card_summary(
+    def query_page(
         self,
         sort_by: str,
+        page: int,
         repository: Optional[str] = None,
         name: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
-        """Returns summary stats for a registry for use in UI
+    ) -> List[Tuple[Union[str, int], ...]]:
+        """Query page from Card Database
 
         Args:
             sort_by:
@@ -79,9 +80,21 @@ class ServerRegistry(SQLRegistryBase):
                 Repository to filter by
             name:
                 Card name to filter by
+
+        Returns:
+            List of tuples
         """
 
-        return self.engine.get_card_summary(table=self._table, repository=repository, name=name, sort_by=sort_by)
+        return cast(
+            List[Tuple[Union[str, int], ...]],
+            self.engine.query_page(
+                table=self._table,
+                repository=repository,
+                name=name,
+                sort_by=sort_by,
+                page=page,
+            ),
+        )
 
     def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         """Returns a list of unique card names

@@ -414,14 +414,15 @@ class QueryEngine:
         with self.session() as sess:
             return sess.scalars(query).all()
 
-    def get_card_summary(
+    def query_page(
         self,
         sort_by: str,
+        page: int,
         name: Optional[str],
         repository: Optional[str],
         table: CardSQLTable,
-    ) -> None:
-        """Returns a summary of the card registry
+    ) -> Sequence[Row[Any]]:
+        """Returns a page result from card registry
 
         Args:
             sort_by:
@@ -432,6 +433,9 @@ class QueryEngine:
                 Repository of the card
             table:
                 Registry table to query
+
+        Returns:
+            Tuple of card summary
         """
 
         sub = select(
@@ -450,10 +454,16 @@ class QueryEngine:
 
         subquery = sub.subquery()
 
-        query = select(subquery, (sqa_func.row_number().over(order_by=sort_by)).label("row_number"))
+        sub2 = select(subquery, (sqa_func.row_number().over(order_by=sort_by)).label("row_number")).subquery()
+        lower_bound = page * 10
+        upper_bound = lower_bound + 10
+
+        query = select(sub2).filter(sub2.c.row_number >= lower_bound, sub2.c.row_number < upper_bound)
 
         with self.session() as sess:
             records = sess.execute(query).all()
+
+        return records
 
     def delete_card_record(
         self,

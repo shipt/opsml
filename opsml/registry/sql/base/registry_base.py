@@ -2,7 +2,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 import uuid
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from semver import VersionInfo
 
@@ -38,12 +38,13 @@ class SQLRegistryBase:
     def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         raise NotImplementedError
 
-    def get_card_summary(
+    def query_page(
         self,
         sort_by: str,
+        page: int,
         repository: Optional[str] = None,
         name: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[Tuple[Union[str, int], ...]]:
         raise NotImplementedError
 
     @property

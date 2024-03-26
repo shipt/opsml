@@ -3,29 +3,22 @@
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import { page } from '$app/stores';
-  import { getRepos, getNames } from "$lib/scripts/repositories";
+  import { getRepos } from "$lib/scripts/repositories";
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
-  import js from "jquery";
+  import { navigating } from '$app/stores';
 
   let items: string[] = [];
-  let searchTerm = "";
   let filteredItems: string[] = [];
-  let tabSet: string = "names";
-  let selectedTags: string[] = [];
-  let registry: string = $page.url.pathname.split("/")[3];
-  
-  let showNameTags: boolean = true;
-  let showRepoTags: boolean = true;
 
-  let activeTag: string = "";
+  let searchTerm = "";
+  let tabSet: string = "repos";
+  let registry: string = $page.url.pathname.split("/")[3];
+  let selectedRepo: string = "";
+  
 
   async function getRegistryRepos() {
     items = await getRepos(registry.replace(/s+$/, ''));
-  }
-
-  async function getRegistryNames() {
-    items = await getNames(registry.replace(/s+$/, ''));
   }
 
   const searchItems = () => {	
@@ -36,14 +29,14 @@
 	}
 
   onMount(() => {
-    window.jq = js;
-    getRegistryNames();
+    getRegistryRepos();
+    console.log(selectedRepo);
   });
 
-  function toggleActiveTag() {
-    window.jq(this).find('span').toggleClass('active');
+  function setActiveRepo( name: string) {
+    selectedRepo = name;
+    console.log(selectedRepo);
   }
-
 
 </script>
 
@@ -56,7 +49,6 @@
           border=""
           active='border-b-2 border-primary-500'
           >
-            <Tab on:click={getRegistryNames} bind:group={tabSet} name="names" value="names">Names</Tab>
             <Tab on:click={getRegistryRepos} bind:group={tabSet} name="repos" value="repos">Repositories</Tab>
 
           </TabGroup>
@@ -64,6 +56,8 @@
             <Search bind:searchTerm on:input={searchItems} />
           </div>
           <div class="flex flex-wrap pt-4 gap-1">
+
+          
 
             {#if searchTerm && filteredItems.length == 0}
               <p class="text-gray-400">No items found</p>
@@ -73,21 +67,24 @@
                 <Tag 
                 name={item} 
                 searchType={tabSet} 
-                on:click={toggleActiveTag}
+                active={selectedRepo}
+                on:click={() => setActiveRepo(item)}
                 />
               {/each}
 
             {:else}
               {#each items as item}
+
                 <Tag 
                   name={item} 
                   searchType={tabSet}
-                  on:click={toggleActiveTag}
+                  active={selectedRepo}
+                  on:click={() => setActiveRepo(item)}
                 />
               {/each}
 
             {/if}
-    
+
           </div>
         </div>
       </div>
