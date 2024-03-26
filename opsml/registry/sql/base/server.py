@@ -64,6 +64,20 @@ class ServerRegistry(SQLRegistryBase):
         """Returns a list of unique repositories"""
         return self.engine.get_unique_repositories(table=self._table)
 
+    def query_stats(self, search_term: Optional[str]) -> Dict[str, int]:
+        """Query stats from Card Database
+
+        Args:
+            repository:
+                Repository to filter by
+            name:
+                Card name to filter by
+
+        Returns:
+            Dictionary of stats
+        """
+        return self.engine.query_stats(table=self._table, search_term=search_term)
+
     def query_page(
         self,
         sort_by: str,

@@ -414,6 +414,50 @@ class QueryEngine:
         with self.session() as sess:
             return sess.scalars(query).all()
 
+    def query_stats(
+        self,
+        table: CardSQLTable,
+        search_term: Optional[str],
+    ) -> Dict[str, int]:
+        """Query stats for a card registry
+
+        Args:
+            table:
+                Registry table to query
+            repository:
+                Repository name
+            name:
+                Name of the card
+        """
+
+        query = select(
+            sqa_func.count(distinct(table.name)).label("nbr_names"),  # type: ignore
+            sqa_func.count(distinct(table.version)).label("nbr_versions"),  # type: ignore
+            sqa_func.count(distinct(table.repository)).label("nbr_repos"),  # type: ignore
+        )
+
+        if search_term:
+            query = query.filter(
+                or_(
+                    table.name.like(f"%{search_term}%"),  # type: ignore
+                    table.repository.like(f"%{search_term}%"),  # type: ignore
+                ),
+            )
+
+        with self.session() as sess:
+            results = sess.execute(query).first()
+        if not results:
+            return {
+                "nbr_names": 0,
+                "nbr_versions": 0,
+                "nbr_repos": 0,
+            }
+        return {
+            "nbr_names": results[0],
+            "nbr_versions": results[1],
+            "nbr_repos": results[2],
+        }
+
     def query_page(
         self,
         sort_by: str,
