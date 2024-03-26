@@ -7,17 +7,15 @@
 
 
 
-<div class="flex">
-  <div class="flex-initial w-24 ...">
-    <div class="items-center text-lg font-bold">
-      <h1>Artifacts</h1>
-    </div>
+<div class="flex-row">
+  <div class="items-center text-lg font-bold">
+    <h1>Artifacts</h1>
   </div>
-  <div class="flex-auto ...">
+  <div>
     <span class="badge variant-filled">Names: {nbr_names}</span>
   </div>
-  <div class="flex-auto ...">
-    <span class="badge variant-filled">Versions: {nbr_versions}</span>
+  <div>
+    <span class="badge variant-filled">Versions: {nbr_versions}</span>>
   </div>
 </div>
 
