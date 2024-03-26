@@ -52,59 +52,57 @@
 
 </script>
 
-<div class="bg-slate-50">
-  <div class="container mx-auto mb-4 sm:mb-4">
-    <div class="grid grid-cols-3 gap-4">
-      <div class="hidden md:block col-span-1">
-        <div class="p-4">
-          <TabGroup 
-          border=""
-          active='border-b-2 border-primary-500'
-          >
-            <Tab bind:group={tabSet} name="repos" value="repos">Repositories</Tab>
 
-          </TabGroup>
-          <div class="pt-4">
-            <Search bind:searchTerm on:input={searchItems} />
-          </div>
-          <div class="flex flex-wrap pt-4 gap-1">
+<div class="flex">
+  <div class="hidden md:block flex-initial w-1/4 pl-4 bg-slate-100 min-h-screen ...">
+    <div class="p-4">
+      <TabGroup 
+      border=""
+      active='border-b-2 border-primary-500'
+      >
+        <Tab bind:group={tabSet} name="repos" value="repos">Repositories</Tab>
 
-            {#if searchTerm && filteredItems.length == 0}
-              <p class="text-gray-400">No items found</p>
-
-            {:else if filteredItems.length > 0}
-              {#each filteredItems as item}
-                <Tag 
-                name={item} 
-                searchType={tabSet} 
-                active={selectedRepo}
-                on:click={() => setActiveRepo(item)}
-                />
-              {/each}
-
-            {:else}
-              {#each items as item}
-
-                <Tag 
-                  name={item} 
-                  searchType={tabSet}
-                  active={selectedRepo}
-                  on:click={() => setActiveRepo(item)}
-                />
-              {/each}
-
-            {/if}
-
-          </div>
-        </div>
+      </TabGroup>
+      <div class="pt-4">
+        <Search bind:searchTerm on:input={searchItems} />
       </div>
-      <div class="col-span-2 ...">
-        <ArtifactPage 
+      <div class="flex flex-wrap pt-4 gap-1">
+
+        {#if searchTerm && filteredItems.length == 0}
+          <p class="text-gray-400">No items found</p>
+
+        {:else if filteredItems.length > 0}
+          {#each filteredItems as item}
+            <Tag 
+            name={item} 
+            searchType={tabSet} 
+            active={selectedRepo}
+            on:click={() => setActiveRepo(item)}
+            />
+          {/each}
+
+        {:else}
+          {#each items as item}
+
+            <Tag 
+              name={item} 
+              searchType={tabSet}
+              active={selectedRepo}
+              on:click={() => setActiveRepo(item)}
+            />
+          {/each}
+
+        {/if}
+
+      </div>
+    </div>
+  </div>
+  <div class="flex-auto w-64 p-4 bg-white ...">
+    <ArtifactPage 
           nbr_names={registryStats.nbr_names}
           nbr_versions={registryStats.nbr_versions}
           nbr_repos={registryStats.nbr_repos} 
         />
-      </div>
-    </div>  
   </div>
 </div>
+

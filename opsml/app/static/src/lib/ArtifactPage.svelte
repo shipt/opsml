@@ -6,13 +6,19 @@
 </script>
 
 
-<section class="pt-8 border-gray-100 col-span-full pb-12">
-  <div class="mb-4 items-center space-y-3 md:flex md:space-y-0 lg:mb-6">
-    <div class="flex items-center text-lg">
-        <h1>Artifacts</h1>
-        <div class="ml-3 w-16 font-normal text-gray-400">Names: {nbr_names}</div>
-        <div class="ml-3 w-16 font-normal text-gray-400">Versions: {nbr_versions}</div>
-        <div class="ml-3 w-16 font-normal text-gray-400">Repositories: {nbr_repos}</div>
+
+<div class="flex">
+  <div class="flex-initial w-24 ...">
+    <div class="items-center text-lg font-bold">
+      <h1>Artifacts</h1>
     </div>
   </div>
-</section>
+  <div class="flex-auto ...">
+    <span class="badge variant-filled">Names: {nbr_names}</span>
+  </div>
+  <div class="flex-auto ...">
+    <span class="badge variant-filled">Versions: {nbr_versions}</span>
+  </div>
+</div>
+
+
