@@ -56,7 +56,7 @@
 
 
 <div class="flex">
-  <div class="hidden md:block flex-initial w-1/4 pl-16 bg-slate-100 min-h-screen ...">
+  <div class="hidden md:block flex-initial w-1/3 pl-16 bg-slate-100 min-h-screen ...">
     <div class="p-4">
       <TabGroup 
       border=""

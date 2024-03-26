@@ -121,6 +121,7 @@ notebooks/
 lightning_logs/
 node_modules/
 .svelte-kit
+/opsml/app/static/site
 
 # git
 **/*.orig
