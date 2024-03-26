@@ -1,5 +1,7 @@
 <script lang="ts">
 
+  import Fa from 'svelte-fa'
+  import { faCheck } from '@fortawesome/free-solid-svg-icons'
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import ArtifactPage from "$lib/ArtifactPage.svelte";
@@ -54,7 +56,7 @@
 
 
 <div class="flex">
-  <div class="hidden md:block flex-initial w-1/4 pl-4 bg-slate-100 min-h-screen ...">
+  <div class="hidden md:block flex-initial w-1/4 pl-16 bg-slate-100 min-h-screen ...">
     <div class="p-4">
       <TabGroup 
       border=""
@@ -73,23 +75,30 @@
 
         {:else if filteredItems.length > 0}
           {#each filteredItems as item}
-            <Tag 
-            name={item} 
-            searchType={tabSet} 
-            active={selectedRepo}
-            on:click={() => setActiveRepo(item)}
-            />
+           
+            <button
+              class="chip {selectedRepo === item ? 'variant-filled' : 'variant-soft'}"
+              on:click={() => { setActiveRepo(item); }}
+              on:keypress
+            >
+              {#if selectedRepo === item}<span><Fa icon={faCheck} /></span>{/if}
+              <span>{item}</span>
+            </button>
+
           {/each}
 
         {:else}
           {#each items as item}
 
-            <Tag 
-              name={item} 
-              searchType={tabSet}
-              active={selectedRepo}
-              on:click={() => setActiveRepo(item)}
-            />
+            <button
+              class="chip {selectedRepo === item ? 'variant-filled' : 'variant-soft'}"
+              on:click={() => { setActiveRepo(item); }}
+              on:keypress
+            >
+              {#if selectedRepo === item}<span><Fa icon={faCheck} /></span>{/if}
+              <span>{item}</span>
+            </button>
+        
           {/each}
 
         {/if}

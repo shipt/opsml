@@ -500,8 +500,8 @@ class QueryEngine:
         subquery = sub.subquery()
 
         sub2 = select(subquery, (sqa_func.row_number().over(order_by=sort_by)).label("row_number")).subquery()
-        lower_bound = page * 10
-        upper_bound = lower_bound + 10
+        lower_bound = page * 30
+        upper_bound = lower_bound + 30
 
         query = select(sub2).filter(sub2.c.row_number >= lower_bound, sub2.c.row_number < upper_bound)
 
