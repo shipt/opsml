@@ -64,6 +64,25 @@ class ServerRegistry(SQLRegistryBase):
         """Returns a list of unique repositories"""
         return self.engine.get_unique_repositories(table=self._table)
 
+    def get_card_summary(
+        self,
+        sort_by: str,
+        repository: Optional[str] = None,
+        name: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Returns summary stats for a registry for use in UI
+
+        Args:
+            sort_by:
+                Field to sort by
+            repository:
+                Repository to filter by
+            name:
+                Card name to filter by
+        """
+
+        return self.engine.get_card_summary(table=self._table, repository=repository, name=name, sort_by=sort_by)
+
     def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         """Returns a list of unique card names
         Args:

@@ -38,6 +38,14 @@ class SQLRegistryBase:
     def get_unique_card_names(self, repository: Optional[str] = None) -> Sequence[str]:
         raise NotImplementedError
 
+    def get_card_summary(
+        self,
+        sort_by: str,
+        repository: Optional[str] = None,
+        name: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        raise NotImplementedError
+
     @property
     def table_name(self) -> str:
         return self._table_name

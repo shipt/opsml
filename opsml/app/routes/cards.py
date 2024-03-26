@@ -103,6 +103,33 @@ def card_names(
     return NamesResponse(names=names)
 
 
+@router.get("/cards/registry/summary", response_model=RepositoriesResponse, name="repositories")
+def get_card_info(
+    request: Request,
+    registry_type: str,
+    sort_by: str = "created_at",
+    repository: Optional[str] = None,
+    name: Optional[str] = None,
+) -> dict:
+    """Get card information from a registry
+
+    Args:
+        request:
+            FastAPI request object
+        registry_type:
+            Type of registry
+        uid:
+            uid of the card
+
+    Returns:
+        `dict`
+    """
+    registry: CardRegistry = getattr(request.app.state.registries, registry_type)
+    card = registry._registry.get_card_summary(sort_by, repository, name)
+
+    return card
+
+
 @router.post(
     "/cards/version",
     response_model=Union[VersionResponse, UidExistsResponse],

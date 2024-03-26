@@ -414,6 +414,47 @@ class QueryEngine:
         with self.session() as sess:
             return sess.scalars(query).all()
 
+    def get_card_summary(
+        self,
+        sort_by: str,
+        name: Optional[str],
+        repository: Optional[str],
+        table: CardSQLTable,
+    ) -> None:
+        """Returns a summary of the card registry
+
+        Args:
+            sort_by:
+                Field to sort by
+            name:
+                Name of the card
+            repository:
+                Repository of the card
+            table:
+                Registry table to query
+        """
+
+        sub = select(
+            table.repository,
+            table.name,
+            sqa_func.count(distinct(table.version)).label("versions"),  # type:ignore
+            sqa_func.max(table.timestamp).label("updated_at"),
+            sqa_func.min(table.timestamp).label("created_at"),
+        ).group_by(table.repository, table.name)
+
+        if name is not None:
+            sub = sub.filter(table.name == name)
+
+        if repository is not None:
+            sub = sub.filter(table.repository == repository)
+
+        subquery = sub.subquery()
+
+        query = select(subquery, (sqa_func.row_number().over(order_by=sort_by)).label("row_number"))
+
+        with self.session() as sess:
+            records = sess.execute(query).all()
+
     def delete_card_record(
         self,
         table: CardSQLTable,
