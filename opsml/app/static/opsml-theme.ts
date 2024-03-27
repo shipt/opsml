@@ -88,11 +88,11 @@ export const opsmlTheme: CustomThemeConfig = {
     "--color-error-900": "104 12 58", // #680c3a
 
     // surface | #5e498f
-    "--color-surface-50": "242 240 250", // #e7e4ee
-    "--color-surface-100": "233 229 243", // #dfdbe9
-    "--color-surface-200": "215 210 227", // #d7d2e3
-    "--color-surface-300": "191 182 210", // #bfb6d2
-    "--color-surface-400": "142 128 177", // #8e80b1
+    "--color-surface-50": "247 247 247", // #f7f7f7
+    "--color-surface-100": "244 244 244", // #f4f4f4
+    "--color-surface-200": "241 241 241", // #f1f1f1
+    "--color-surface-300": "233 233 233", // #e9e9e9
+    "--color-surface-400": "216 216 216", // #d8d8d8
     "--color-surface-500": "94 73 143", // #5e498f
     "--color-surface-600": "85 66 129", // #554281
     "--color-surface-700": "71 55 107", // #47376b

@@ -26,7 +26,8 @@
         {:then cards}
           {#each cards.modelcards as modelcard}
             <Card
-              hoverColor="hover:text-primary-600 dark:hover:text-primary-300"
+              hoverColor="hover:text-primary-500 dark:hover:text-primary-500"
+              hoverBorderColor="hover:border-primary-500"
               repository= {modelcard.repository}
               name= {modelcard.name}
               version= {modelcard.version}
@@ -44,6 +45,7 @@
           {#each cards.datacards as datacard}
             <Card
               hoverColor=hover:text-secondary-600
+              hoverBorderColor="hover:border-secondary-600"
               svgClass="flex-none w-3 mr-0.5 fill-secondary-600"
               repository= {datacard.repository}
               name= {datacard.name}
@@ -61,6 +63,7 @@
           {#each cards.runcards as runcard}
             <Card
               hoverColor=hover:text-error-600
+              hoverBorderColor="hover:border-error-600"
               svgClass="flex-none w-3 mr-0.5 fill-error-600"
               repository= {runcard.repository}
               name= {runcard.name}

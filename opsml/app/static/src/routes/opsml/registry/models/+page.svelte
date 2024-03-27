@@ -5,6 +5,7 @@
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import ArtifactPage from "$lib/ArtifactPage.svelte";
+  import PageCard from "$lib/PageCard.svelte";
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
@@ -56,7 +57,7 @@
 
 
 <div class="flex">
-  <div class="hidden md:block flex-initial w-1/3 pl-16 bg-slate-100 min-h-screen ...">
+  <div class="hidden md:block flex-initial w-1/4 pl-16 bg-surface-100 dark:bg-surface-600 min-h-screen ...">
     <div class="p-4">
       <TabGroup 
       border=""
@@ -77,7 +78,7 @@
           {#each filteredItems as item}
            
             <button
-              class="chip {selectedRepo === item ? 'variant-filled' : 'variant-soft'}"
+              class="chip hover:bg-primary-300 {selectedRepo === item ? 'bg-primary-300' : 'variant-soft'}"
               on:click={() => { setActiveRepo(item); }}
               on:keypress
             >
@@ -91,7 +92,7 @@
           {#each items as item}
 
             <button
-              class="chip {selectedRepo === item ? 'variant-filled' : 'variant-soft'}"
+              class="chip hover:bg-primary-300 {selectedRepo === item ? 'bg-primary-300' : 'variant-soft'}"
               on:click={() => { setActiveRepo(item); }}
               on:keypress
             >
@@ -106,12 +107,23 @@
       </div>
     </div>
   </div>
-  <div class="flex-auto w-64 p-4 bg-white ...">
+  <div class="flex-auto w-64 p-4 bg-white dark:bg-surface-900 min-h-screen pr-16 ...">
     <ArtifactPage 
-          nbr_names={registryStats.nbr_names}
-          nbr_versions={registryStats.nbr_versions}
-          nbr_repos={registryStats.nbr_repos} 
+        nbr_names={registryStats.nbr_names}
+        nbr_versions={registryStats.nbr_versions}
+        nbr_repos={registryStats.nbr_repos} 
+      />
+    <div class="pt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {#each registryPage.page as item}
+        <PageCard 
+          name={item[0]}
+          repository={item[1]}
+          nbr_versions={item[2]}
+          updated_at={item[3]}
         />
+      {/each}
+
+    </div>
   </div>
 </div>
 
