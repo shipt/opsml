@@ -16,10 +16,10 @@ export async function load({ route }) {
 
   return {
     args: {
-      searchTerm: "",
+      searchTerm: undefined,
       items: items,
       registry: registry,
-      selectedRepo: "",
+      selectedRepo: undefined,
       registryStats: registryStats,
       registryPage: registryPage,
     },

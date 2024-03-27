@@ -21,8 +21,8 @@ import js from "jquery";
 
   // reactive statements
   let items = data.args.items;
-  let searchTerm = data.args.searchTerm;
-  let selectedRepo: string = data.args.selectedRepo;
+  let searchTerm: string | undefined = data.args.searchTerm;
+  let selectedRepo: string | undefined = data.args.selectedRepo;
   let registryPage = data.args.registryPage;
   let registryStats = data.args.registryStats;
   let activePage: number = 0;
@@ -39,6 +39,7 @@ import js from "jquery";
 			return itemName.includes(searchTerm.toLowerCase())
 		})
 	}
+
   const source = [ 0,1,2,3,4];
   let paginationSettings = {
     page: 0,
@@ -50,17 +51,18 @@ import js from "jquery";
 
   onMount(() => {
     window.jq = js;
-    let selectedRepo = "";
-    
+    let selectedRepo = undefined;
   });
 
   async function setActiveRepo( name: string) {
 
     if (selectedRepo === name) {
-      selectedRepo = "";
+      selectedRepo = undefined;
     } else {
       selectedRepo = name;
     }
+
+
 
 
   }
@@ -70,20 +72,8 @@ import js from "jquery";
     let repoToQuery: string | undefined;
     let searchText: string | undefined;
     
-    if (selectedRepo === "") {
-      repoToQuery = undefined;
-    } else {
-      repoToQuery = selectedRepo;
-    }
 
-    if (searchTerm === "") {
-      searchText = undefined;
-    } else {
-      searchText = searchTerm;
-    }
-
-
-  registryPage = await getRegistryPage(registry, undefined, repoToQuery, searchText, page);
+  registryPage = await getRegistryPage(registry, undefined, selectedRepo, searchTerm, page);
   $: paginationSettings.page = page;
 
   }
