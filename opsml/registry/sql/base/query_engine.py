@@ -463,7 +463,7 @@ class QueryEngine:
         self,
         sort_by: str,
         page: int,
-        name: Optional[str],
+        search_term: Optional[str],
         repository: Optional[str],
         table: CardSQLTable,
     ) -> Sequence[Row[Any]]:
@@ -491,19 +491,25 @@ class QueryEngine:
             sqa_func.min(table.timestamp).label("created_at"),
         ).group_by(table.repository, table.name)
 
-        if name is not None:
-            sub = sub.filter(table.name == name)
-
         if repository is not None:
             sub = sub.filter(table.repository == repository)
+
+        if search_term:
+            sub = sub.filter(
+                or_(
+                    table.name.like(f"%{search_term}%"),  # type: ignore
+                    table.repository.like(f"%{search_term}%"),  # type: ignore
+                ),
+            )
 
         subquery = sub.subquery()
 
         sub2 = select(subquery, (sqa_func.row_number().over(order_by=sort_by)).label("row_number")).subquery()
+
         lower_bound = page * 30
         upper_bound = lower_bound + 30
 
-        query = select(sub2).filter(sub2.c.row_number >= lower_bound, sub2.c.row_number < upper_bound)
+        query = select(sub2).filter(sub2.c.row_number.between(lower_bound, upper_bound))
 
         with self.session() as sess:
             records = sess.execute(query).all()

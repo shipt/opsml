@@ -11,7 +11,7 @@ interface CardJson {
   contact: string;
   name: string;
   version: string;
-  timestamp: string;
+  timestamp: number;
   tags: Map<string, string>;
 }
 

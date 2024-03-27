@@ -143,7 +143,7 @@ def query_registry_page(
     registry_type: str,
     sort_by: str = "updated_at",
     repository: Optional[str] = None,
-    name: Optional[str] = None,
+    search_term: Optional[str] = None,
     page: int = 0,
 ) -> RegistryQuery:
     """Get card information from a registry
@@ -162,8 +162,7 @@ def query_registry_page(
 
     try:
         registry: CardRegistry = getattr(request.app.state.registries, registry_type)
-        page = registry._registry.query_page(sort_by, page, repository, name)
-        print(page)
+        page = registry._registry.query_page(sort_by, page, repository, search_term)
         return RegistryQuery(page=page)
 
     except Exception as error:

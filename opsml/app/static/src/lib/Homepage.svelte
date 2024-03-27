@@ -31,7 +31,7 @@
               repository= {modelcard.repository}
               name= {modelcard.name}
               version= {modelcard.version}
-              date= {modelcard.date}
+              timestamp= {modelcard.timestamp}
               svgClass="flex-none w-3 mr-0.5 fill-primary-600 dark:fill-primary-200"
             />
           {/each}
@@ -50,7 +50,7 @@
               repository= {datacard.repository}
               name= {datacard.name}
               version= {datacard.version}
-              date= {datacard.date}
+              timestamp= {datacard.timestamp}
             />
           {/each}
         {/await}
@@ -68,7 +68,7 @@
               repository= {runcard.repository}
               name= {runcard.name}
               version= {runcard.version}
-              date= {runcard.date}
+              timestamp= {runcard.timestamp}
             />
           {/each}
         {/await}

@@ -49,7 +49,7 @@ async function getRegistryPage(
   registry: string,
   sort_by: string | undefined,
   repository: string | undefined,
-  name: string | undefined,
+  search_term: string | undefined,
   page: number | undefined
 ): Promise<registryQuery> {
   // build request
@@ -62,11 +62,11 @@ async function getRegistryPage(
   if (repository) {
     params.append("repository", repository);
   }
-  if (name) {
-    params.append("name", name);
+  if (search_term) {
+    params.append("search_term", search_term);
   }
   if (page) {
-    params.append("page", (page - 1).toString());
+    params.append("page", page.toString());
   }
 
   const page_resp = await fetch("/opsml/cards/registry/query/page?" + params);

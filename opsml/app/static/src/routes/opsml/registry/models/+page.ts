@@ -11,7 +11,7 @@ export async function load({ route }) {
     undefined,
     undefined,
     undefined,
-    1
+    0
   );
 
   return {
@@ -19,7 +19,7 @@ export async function load({ route }) {
       searchTerm: "",
       items: items,
       registry: registry,
-      selectedRepo: "",
+      selectedRepo: null,
       registryStats: registryStats,
       registryPage: registryPage,
     },

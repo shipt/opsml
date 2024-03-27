@@ -14,6 +14,7 @@
   getRegistryStats,
 } from "$lib/scripts/registry_page";
 import { Paginator } from '@skeletonlabs/skeleton';
+import js from "jquery";
 
   /** @type {import('./$types').PageData} */
 	export let data;
@@ -41,12 +42,16 @@ import { Paginator } from '@skeletonlabs/skeleton';
   const source = [ 0,1,2,3,4];
   let paginationSettings = {
     page: 0,
-    size: source.length,
+    limit: 30,
+    size: 100,
+    amounts: [],
   } satisfies PaginationSettings;
 
 
   onMount(() => {
+    window.jq = js;
     let selectedRepo = "";
+    
   });
 
   async function setActiveRepo( name: string) {
@@ -59,6 +64,18 @@ import { Paginator } from '@skeletonlabs/skeleton';
 
 
   }
+
+  function onPageChange(e: CustomEvent): void {
+    let page = e.detail;
+    let repoToQuery: string | undefined;
+    
+    let repoToQuery = ;
+    getRegistryPage(registry, undefined, paginationSettings.size).then((data) => {
+      registryPage = data;
+    });
+  $: paginationSettings.size = 200;
+  }
+
 
 
 </script>
@@ -130,13 +147,19 @@ import { Paginator } from '@skeletonlabs/skeleton';
           updated_at={item[3]}
         />
       {/each}
+    </div>
 
-     
-      <Paginator
-        bind:settings={paginationSettings}
-        showFirstLastButtons="{false}"
-        showPreviousNextButtons="{true}"
-      />
+    <div class="pt-8 flex items-center">
+   
+      <div class="flex-1 mb-12 w-64 content-center">
+        <Paginator
+          bind:settings={paginationSettings}
+          showFirstLastButtons="{true}"
+          showPreviousNextButtons="{true}"
+          justify="justify-center"
+          on:page={onPageChange}
+        />
+      </div>
     </div>
   </div>
 </div>

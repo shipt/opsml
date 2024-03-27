@@ -46,7 +46,7 @@ class SQLRegistryBase:
         sort_by: str,
         page: int,
         repository: Optional[str] = None,
-        name: Optional[str] = None,
+        search_term: Optional[str] = None,
     ) -> List[Tuple[Union[str, int], ...]]:
         raise NotImplementedError
 

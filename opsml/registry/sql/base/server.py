@@ -64,7 +64,7 @@ class ServerRegistry(SQLRegistryBase):
         """Returns a list of unique repositories"""
         return self.engine.get_unique_repositories(table=self._table)
 
-    def query_stats(self, search_term: Optional[str]) -> Dict[str, int]:
+    def query_stats(self, search_term: Optional[str] = None) -> Dict[str, int]:
         """Query stats from Card Database
 
         Args:
@@ -83,7 +83,7 @@ class ServerRegistry(SQLRegistryBase):
         sort_by: str,
         page: int,
         repository: Optional[str] = None,
-        name: Optional[str] = None,
+        search_term: Optional[str] = None,
     ) -> List[Tuple[Union[str, int], ...]]:
         """Query page from Card Database
 
@@ -104,7 +104,7 @@ class ServerRegistry(SQLRegistryBase):
             self.engine.query_page(
                 table=self._table,
                 repository=repository,
-                name=name,
+                search_term=search_term,
                 sort_by=sort_by,
                 page=page,
             ),
