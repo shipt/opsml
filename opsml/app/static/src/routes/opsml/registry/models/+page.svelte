@@ -43,7 +43,7 @@ import js from "jquery";
   let paginationSettings = {
     page: 0,
     limit: 30,
-    size: 100,
+    size: registryStats.nbr_names,
     amounts: [],
   } satisfies PaginationSettings;
 
@@ -65,15 +65,25 @@ import js from "jquery";
 
   }
 
-  function onPageChange(e: CustomEvent): void {
+  async function onPageChange(e: CustomEvent): void {
     let page = e.detail;
     let repoToQuery: string | undefined;
+    let searchText: string | undefined;
     
-    let repoToQuery = ;
-    getRegistryPage(registry, undefined, paginationSettings.size).then((data) => {
-      registryPage = data;
-    });
-  $: paginationSettings.size = 200;
+    if (selectedRepo === "") {
+      repoToQuery = undefined;
+    } else {
+      repoToQuery = selectedRepo;
+    }
+
+    if (searchTerm === "") {
+      searchText = undefined;
+    } else {
+      searchText = searchTerm;
+    }
+
+  $: paginationSettings.page = page;
+
   }
 
 

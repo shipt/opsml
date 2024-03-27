@@ -33,7 +33,7 @@ async def homepage(request: Request) -> RedirectResponse:
 async def opsml_ui(request: Request) -> HTMLResponse:
     try:
         return templates.TemplateResponse(
-            "site/index.html",
+            "site/opsml/index.html",
             {"request": request},
         )
     except Exception as e:

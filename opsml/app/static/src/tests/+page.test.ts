@@ -13,7 +13,7 @@ const cards: CardJson[] = [
     contact: "test",
     name: "test",
     version: "0.1.0",
-    timestamp: "test",
+    timestamp: 1711563309,
     tags: new Map(),
   },
 ];
@@ -30,7 +30,7 @@ it("render homepage", () => {
     repository: "test",
     name: "test",
     version: "0.1.0",
-    date: "2021-09-01T00:00:00Z",
+    timestamp: 1711563309,
     svgClass: "test",
   });
 });
