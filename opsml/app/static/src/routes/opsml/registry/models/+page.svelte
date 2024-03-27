@@ -38,10 +38,10 @@ import { Paginator } from '@skeletonlabs/skeleton';
 			return itemName.includes(searchTerm.toLowerCase())
 		})
 	}
-
+  const source = [ 0,1,2,3,4];
   let paginationSettings = {
-	  page: 0,
-    size: registryStats.nbr_versions,
+    page: 0,
+    size: source.length,
   } satisfies PaginationSettings;
 
 
@@ -59,6 +59,7 @@ import { Paginator } from '@skeletonlabs/skeleton';
 
 
   }
+
 
 </script>
 
@@ -130,12 +131,12 @@ import { Paginator } from '@skeletonlabs/skeleton';
         />
       {/each}
 
+     
       <Paginator
         bind:settings={paginationSettings}
         showFirstLastButtons="{false}"
         showPreviousNextButtons="{true}"
       />
-
     </div>
   </div>
 </div>
