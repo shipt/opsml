@@ -19,7 +19,7 @@ export async function load({ route }) {
       searchTerm: "",
       items: items,
       registry: registry,
-      selectedRepo: null,
+      selectedRepo: "",
       registryStats: registryStats,
       registryPage: registryPage,
     },

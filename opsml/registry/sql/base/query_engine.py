@@ -497,8 +497,8 @@ class QueryEngine:
         if search_term:
             sub = sub.filter(
                 or_(
-                    table.name.like(f"%{search_term}%"),  # type: ignore
-                    table.repository.like(f"%{search_term}%"),  # type: ignore
+                    sub.c.name.like(f"%{search_term}%"),  # type: ignore
+                    sub.c.repository.like(f"%{search_term}%"),  # type: ignore
                 ),
             )
 

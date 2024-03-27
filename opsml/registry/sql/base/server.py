@@ -98,7 +98,6 @@ class ServerRegistry(SQLRegistryBase):
         Returns:
             List of tuples
         """
-
         return cast(
             List[Tuple[Union[str, int], ...]],
             self.engine.query_page(

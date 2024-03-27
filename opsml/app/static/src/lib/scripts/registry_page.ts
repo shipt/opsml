@@ -69,6 +69,8 @@ async function getRegistryPage(
     params.append("page", page.toString());
   }
 
+  console.log("/opsml/cards/registry/query/page?" + params);
+
   const page_resp = await fetch("/opsml/cards/registry/query/page?" + params);
 
   const response: registryQuery = await page_resp.json();

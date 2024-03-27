@@ -30,7 +30,7 @@ import js from "jquery";
 
   let filteredItems: string[] = [];
   let tabSet: string = "repos";
-  let registry: string = $page.url.pathname.split("/")[3];
+  let registry: string = $page.url.pathname.split("/")[3].replace(/s+$/, "");
   
 
   const searchItems = () => {	
@@ -83,7 +83,7 @@ import js from "jquery";
     }
 
 
-  registryPage = await getRegistryPage(registry, undefined, undefined, undefined, page);
+  registryPage = await getRegistryPage(registry, undefined, repoToQuery, searchText, page);
   $: paginationSettings.page = page;
 
   }
