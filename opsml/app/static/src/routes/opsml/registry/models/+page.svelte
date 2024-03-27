@@ -13,6 +13,7 @@
   getRegistryPage,
   getRegistryStats,
 } from "$lib/scripts/registry_page";
+import { Paginator } from '@skeletonlabs/skeleton';
 
   /** @type {import('./$types').PageData} */
 	export let data;
@@ -37,6 +38,12 @@
 			return itemName.includes(searchTerm.toLowerCase())
 		})
 	}
+
+  let paginationSettings = {
+	  page: 0,
+    size: registryStats.nbr_versions,
+  } satisfies PaginationSettings;
+
 
   onMount(() => {
     let selectedRepo = "";
@@ -122,6 +129,12 @@
           updated_at={item[3]}
         />
       {/each}
+
+      <Paginator
+        bind:settings={paginationSettings}
+        showFirstLastButtons="{false}"
+        showPreviousNextButtons="{true}"
+      />
 
     </div>
   </div>
