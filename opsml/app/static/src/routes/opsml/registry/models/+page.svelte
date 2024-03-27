@@ -4,7 +4,6 @@
   import { faCheck } from '@fortawesome/free-solid-svg-icons'
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
-  import ArtifactPage from "$lib/ArtifactPage.svelte";
   import PageCard from "$lib/PageCard.svelte";
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
@@ -20,27 +19,17 @@ import js from "jquery";
 	export let data;
 
   // reactive statements
+  let artifactSearchTerm: string | undefined = undefined;
   let items = data.args.items;
   let searchTerm: string | undefined = data.args.searchTerm;
   let selectedRepo: string | undefined = data.args.selectedRepo;
   let registryPage = data.args.registryPage;
   let registryStats = data.args.registryStats;
   let activePage: number = 0;
-
-
   let filteredItems: string[] = [];
   let tabSet: string = "repos";
   let registry: string = $page.url.pathname.split("/")[3].replace(/s+$/, "");
   
-
-  const searchItems = () => {	
-		return filteredItems = items.filter(item => {
-			let itemName = item.toLowerCase();
-			return itemName.includes(searchTerm.toLowerCase())
-		})
-	}
-
-  const source = [ 0,1,2,3,4];
   let paginationSettings = {
     page: 0,
     limit: 30,
@@ -49,10 +38,20 @@ import js from "jquery";
   } satisfies PaginationSettings;
 
 
+
   onMount(() => {
     window.jq = js;
     let selectedRepo = undefined;
   });
+
+  // functions 
+
+  const searchItems = () => {	
+		return filteredItems = items.filter(item => {
+			let itemName = item.toLowerCase();
+			return itemName.includes(searchTerm.toLowerCase())
+		})
+	}
 
   async function setActiveRepo( name: string) {
 
@@ -62,20 +61,28 @@ import js from "jquery";
       selectedRepo = name;
     }
 
-
-
-
+    registryPage = await getRegistryPage(registry, undefined, selectedRepo, undefined, 0);
   }
 
   async function onPageChange(e: CustomEvent): void {
     let page = e.detail;
-    let repoToQuery: string | undefined;
-    let searchText: string | undefined;
-    
 
-  registryPage = await getRegistryPage(registry, undefined, selectedRepo, searchTerm, page);
-  $: paginationSettings.page = page;
+    registryPage = await getRegistryPage(registry, undefined, selectedRepo, searchTerm, page);
+    $: paginationSettings.page = page;
 
+  }
+
+  const searchPage = async function () {
+    registryPage = await getRegistryPage(registry, undefined, selectedRepo, artifactSearchTerm, 0);
+
+  }
+
+  function delay(fn, ms) {
+    let timer = 0
+    return function(...args) {
+      clearTimeout(timer)
+      timer = setTimeout(fn.bind(this, ...args), ms || 0)
+    }
   }
 
 
@@ -135,11 +142,25 @@ import js from "jquery";
     </div>
   </div>
   <div class="flex-auto w-64 p-4 bg-white dark:bg-surface-900 min-h-screen pr-16 ...">
-    <ArtifactPage 
-        nbr_names={registryStats.nbr_names}
-        nbr_versions={registryStats.nbr_versions}
-        nbr_repos={registryStats.nbr_repos} 
-      />
+    <div class="flex flex-row items-center text-lg font-bold">
+      <h1>Artifacts</h1>
+    </div>
+    
+    <div class="flex flex-row">
+      <div>
+        <span class="badge variant-filled">{registryStats.nbr_names} artifacts</span>
+      </div>
+      <div class="pl-3">
+        <span class="badge variant-filled">{registryStats.nbr_versions} versions</span>
+      </div>
+      <div class="pl-3">
+        <span class="badge variant-filled">{registryStats.nbr_repos} repos</span>
+      </div>
+      <div class="pl-3 md:w-1/2">
+        <Search bind:searchTerm={artifactSearchTerm} on:keydown={delay(searchPage, 1000)} />
+      </div>
+
+    </div>
     <div class="pt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {#each registryPage.page as item}
         <PageCard 

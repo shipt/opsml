@@ -13,5 +13,6 @@
           placeholder="Filter artifacts" 
           type="text"
           bind:value={searchTerm}
-          on:input />
+          on:input
+          on:keydown />
 </div>
