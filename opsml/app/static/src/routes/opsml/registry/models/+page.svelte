@@ -82,6 +82,8 @@ import js from "jquery";
       searchText = searchTerm;
     }
 
+
+  registryPage = await getRegistryPage(registry, undefined, undefined, undefined, page);
   $: paginationSettings.page = page;
 
   }
