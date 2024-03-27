@@ -63,6 +63,9 @@ import js from "jquery";
 
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, undefined, 0);
     registryStats = await getRegistryStats(registry, selectedRepo);
+
+    $: paginationSettings.page = 0;
+    $: paginationSettings.size = registryStats.nbr_names;
   }
 
   async function onPageChange(e: CustomEvent): void {
@@ -76,6 +79,9 @@ import js from "jquery";
   const searchPage = async function () {
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, artifactSearchTerm, 0);
     registryStats = await getRegistryStats(registry, artifactSearchTerm);
+    $: paginationSettings.page = 0;
+    $: paginationSettings.size = registryStats.nbr_names;
+
 
   }
 
