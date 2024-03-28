@@ -5,7 +5,6 @@
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import PageCard from "$lib/PageCard.svelte";
-  import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
   import {
@@ -28,7 +27,7 @@ import js from "jquery";
   let activePage: number = 0;
   let filteredItems: string[] = [];
   let tabSet: string = "repos";
-  let registry: string = $page.url.pathname.split("/")[3].replace(/s+$/, "");
+  let registry: string = data.args.registry;
 
 
 

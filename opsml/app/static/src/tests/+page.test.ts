@@ -1,8 +1,15 @@
 import { render } from "@testing-library/svelte";
-import { it } from "vitest";
+import { expect, afterAll, afterEach, beforeAll, it } from "vitest";
 import Homepage from "../lib/Homepage.svelte";
 import Card from "../lib/Card.svelte";
+import ModelPage from "../routes/opsml/registry/models/+page.svelte";
+import DataPage from "../routes/opsml/registry/data/+page.svelte";
 import type { RecentCards, CardJson } from "$lib/scripts/homepage";
+import { server } from "./server";
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 const cards: CardJson[] = [
   {
@@ -37,4 +44,28 @@ it("render homepage", () => {
 
 it("render span", () => {
   render(Homepage, { cards: recentCards });
+});
+
+it("render model page", () => {
+  let data = {
+    args: {
+      items: ["test"],
+      registry: "test",
+      registryStats: { nbr_names: 1, nbr_versions: 1, nbr_repos: 1 },
+      registryPage: { page: ["test", "test", 10, 120, 110, 10] },
+    },
+  };
+  render(ModelPage, { data });
+});
+
+it("render data page", () => {
+  let data = {
+    args: {
+      items: ["test"],
+      registry: "test",
+      registryStats: { nbr_names: 1, nbr_versions: 1, nbr_repos: 1 },
+      registryPage: { page: ["test", "test", 10, 120, 110, 10] },
+    },
+  };
+  render(DataPage, { data });
 });

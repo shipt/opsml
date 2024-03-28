@@ -5,15 +5,13 @@
 	import Search from "$lib/Search.svelte";
   import Tag from "$lib/Tag.svelte";
   import PageCard from "$lib/PageCard.svelte";
-  import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { TabGroup, Tab } from '@skeletonlabs/skeleton';
   import {
   getRegistryPage,
   getRegistryStats,
 } from "$lib/scripts/registry_page";
-import { Paginator } from '@skeletonlabs/skeleton';
-import js from "jquery";
+  import { Paginator } from '@skeletonlabs/skeleton';
 
   /** @type {import('./$types').PageData} */
 	export let data;
@@ -28,7 +26,7 @@ import js from "jquery";
   let activePage: number = 0;
   let filteredItems: string[] = [];
   let tabSet: string = "repos";
-  let registry: string = $page.url.pathname.split("/")[3].replace(/s+$/, "");
+  let registry: string = data.args.registry;
 
   let paginationSettings = {
     page: 0,
@@ -74,7 +72,6 @@ import js from "jquery";
   const searchPage = async function () {
 
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, artifactSearchTerm, 0);
-
     registryStats = await getRegistryStats(registry, artifactSearchTerm);
     $: paginationSettings.page = 0;
     $: paginationSettings.size = registryStats.nbr_names;
