@@ -29,7 +29,7 @@ import js from "jquery";
   let filteredItems: string[] = [];
   let tabSet: string = "repos";
   let registry: string = $page.url.pathname.split("/")[3].replace(/s+$/, "");
-  
+
   let paginationSettings = {
     page: 0,
     limit: 30,
@@ -38,11 +38,6 @@ import js from "jquery";
   } satisfies PaginationSettings;
 
 
-
-  onMount(() => {
-    window.jq = js;
-    let selectedRepo = undefined;
-  });
 
   // functions 
 
@@ -77,7 +72,9 @@ import js from "jquery";
   }
 
   const searchPage = async function () {
+
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, artifactSearchTerm, 0);
+
     registryStats = await getRegistryStats(registry, artifactSearchTerm);
     $: paginationSettings.page = 0;
     $: paginationSettings.size = registryStats.nbr_names;
