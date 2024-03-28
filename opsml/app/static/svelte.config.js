@@ -13,7 +13,7 @@ export default {
     adapter: adapter({
       pages: "site",
       assets: "site",
-      fallback: undefined,
+      fallback: "index.html",
       precompress: false,
       strict: true,
     }),

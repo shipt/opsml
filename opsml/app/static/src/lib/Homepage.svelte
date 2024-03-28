@@ -33,6 +33,7 @@
               version= {modelcard.version}
               timestamp= {modelcard.timestamp}
               svgClass="flex-none w-3 mr-0.5 fill-primary-600 dark:fill-primary-200"
+              registry= "model"
             />
           {/each}
         {/await}
@@ -51,6 +52,7 @@
               name= {datacard.name}
               version= {datacard.version}
               timestamp= {datacard.timestamp}
+              registry= "data"
             />
           {/each}
         {/await}
@@ -69,6 +71,7 @@
               name= {runcard.name}
               version= {runcard.version}
               timestamp= {runcard.timestamp}
+              registry= "run"
             />
           {/each}
         {/await}

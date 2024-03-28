@@ -4,9 +4,16 @@ import {
   type repositories,
 } from "$lib/scripts/types";
 
+export const ssr = false;
+
+/** @type {import('./$types').EntryGenerator} */
+export function entries() {
+  return [{ registry: "data" }, { registry: "models" }];
+}
+
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, params }) {
-  let registry: string = params.type.replace(/s+$/, "");
+  let registry: string = params.registry.replace(/s+$/, "");
 
   // get the repositories
   const repos: repositories = await fetch(

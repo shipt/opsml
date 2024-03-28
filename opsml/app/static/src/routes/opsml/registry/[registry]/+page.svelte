@@ -190,6 +190,7 @@
           repository={item[1]}
           nbr_versions={item[2]}
           updated_at={item[3]}
+          registry={registry}
         />
       {/each}
     </div>

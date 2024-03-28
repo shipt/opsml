@@ -8,11 +8,12 @@
   export let svgClass: string = "flex-none w-3 mr-0.5";
   export let hoverColor: string = "hover:text-secondary-600";
   export let hoverBorderColor: string = "hover:border-secondary-600";
+  export let registry: string;
 
 
 </script>
 
-<a class= "block border card p-4 bg-surface-200 rounded-2xl w-full { hoverColor } hover:border-solid hover:border {hoverBorderColor} dark:bg-surface-700 dark:hover:bg-surface-600" href="#">
+<a class= "block border card p-4 bg-surface-200 rounded-2xl w-full { hoverColor } hover:border-solid hover:border {hoverBorderColor} dark:bg-surface-700 dark:hover:bg-surface-600" href="/opsml/registry/{registry}/versions?name={name}&repository={repository}">
   <header class="flex items-center ml-0.5 mb-0.5" title="{repository}/{name}">
     <h4 class="text-md truncate font-boing text-smd">{repository}/{name}</h4>
   </header>
