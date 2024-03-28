@@ -25,7 +25,7 @@
   let artifactSearchTerm: string | undefined = undefined;
 
   let repos: string[];
-  $: repos = data.args.items;
+  $: repos = data.args.repos;
 
   let searchTerm: string | undefined;
   $: searchTerm = data.args.searchTerm;

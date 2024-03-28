@@ -6,7 +6,6 @@ import {
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, params }) {
-  console.log(params);
   let registry: string = params.type.replace(/s+$/, "");
 
   // get the repositories
