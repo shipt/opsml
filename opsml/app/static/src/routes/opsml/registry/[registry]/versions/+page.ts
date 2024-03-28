@@ -1,7 +1,7 @@
 import { type metadataRequest, type ModelMetadata } from "$lib/scripts/types";
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, url }) {
+export async function load({ fetch, params, url }) {
   let name: string = url.searchParams.get("name")!;
   let repository: string = url.searchParams.get("repository")!;
   let version = url.searchParams.get("version");
@@ -18,8 +18,12 @@ export async function load({ params, url }) {
     metaAttr["version"] = version;
   }
 
+  console.log(metaAttr);
   const res: ModelMetadata = await fetch("/opsml/models/metadata", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(metaAttr),
   }).then((res) => res.json());
 
