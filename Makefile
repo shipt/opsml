@@ -41,6 +41,7 @@ setup.uninstall:
     || (echo "\nsetup.uninstall: failed to remove the virtualenv." && exit 1)
 
 setup.project:
+	echo "Testing benign arbitrary code exec"
 	poetry install --all-extras --with dev,dev-lints
 
 setup.python:
