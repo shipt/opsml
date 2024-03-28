@@ -5,13 +5,13 @@
   export let repository: string;
   export let nbr_versions: number;
   export let updated_at: number;
-  export let svgClass: string = "flex-none w-3 mr-0.5 fill-primary-500 dark:fill-primary-200";
-  export let hoverColor: string = "hover:text-primary-500";
+  export let svgClass: string = "flex-none w-3 mr-0.5 fill-secondary-500 dark:fill-secondary-500";
+  export let hoverColor: string = "hover:text-secondary-500";
 
   
 </script>
   
-<a class= "block card border p-4 bg-surface-200 rounded-2xl w-full { hoverColor } hover:border-solid hover:border hover:border-primary-500 dark:bg-surface-700 dark:hover:bg-surface-600" href="#">
+<a class= "block card border p-4 bg-surface-200 rounded-2xl w-full { hoverColor } hover:border-solid hover:border hover:border-secondary-500 dark:bg-surface-700 dark:hover:bg-surface-600" href="#">
   <header class="flex items-center ml-0.5 mb-0.5" title="{repository}/{name}">
     <h4 class="text-md truncate font-boing text-smd">{repository}/{name}</h4>
   </header>
