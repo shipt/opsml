@@ -1,14 +1,4 @@
-type record = [string, string, number, number, number, number];
-
-interface registryQuery {
-  page: record[];
-}
-
-interface registryStats {
-  nbr_names: number;
-  nbr_versions: number;
-  nbr_repos: number;
-}
+import { type registryStats, type registryPage } from "$lib/scripts/types";
 
 // Function for searching general stats given a registry and search term
 //
@@ -51,7 +41,7 @@ async function getRegistryPage(
   repository: string | undefined,
   search_term: string | undefined,
   page: number | undefined
-): Promise<registryQuery> {
+): Promise<registryPage> {
   // build request
   let params = new URLSearchParams();
   params.append("registry_type", registry);
@@ -71,7 +61,7 @@ async function getRegistryPage(
 
   const page_resp = await fetch("/opsml/cards/registry/query/page?" + params);
 
-  const response: registryQuery = await page_resp.json();
+  const response: registryPage = await page_resp.json();
   return response;
 }
 

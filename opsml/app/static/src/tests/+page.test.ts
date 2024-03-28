@@ -2,8 +2,7 @@ import { render } from "@testing-library/svelte";
 import { expect, afterAll, afterEach, beforeAll, it } from "vitest";
 import Homepage from "../lib/Homepage.svelte";
 import Card from "../lib/Card.svelte";
-import ModelPage from "../routes/opsml/registry/models/+page.svelte";
-import DataPage from "../routes/opsml/registry/data/+page.svelte";
+import ModelPage from "../routes/opsml/registry/[type=registry]/+page.svelte";
 import type { RecentCards, CardJson } from "$lib/scripts/homepage";
 import { server } from "./server";
 
@@ -56,16 +55,4 @@ it("render model page", () => {
     },
   };
   render(ModelPage, { data });
-});
-
-it("render data page", () => {
-  let data = {
-    args: {
-      items: ["test"],
-      registry: "test",
-      registryStats: { nbr_names: 1, nbr_versions: 1, nbr_repos: 1 },
-      registryPage: { page: ["test", "test", 10, 120, 110, 10] },
-    },
-  };
-  render(DataPage, { data });
 });

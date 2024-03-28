@@ -11,31 +11,45 @@
   getRegistryPage,
   getRegistryStats,
 } from "$lib/scripts/registry_page";
-import { Paginator } from '@skeletonlabs/skeleton';
-import js from "jquery";
+  import { Paginator, type PaginationSettings } from '@skeletonlabs/skeleton';
+  import {
+  type registryStats,
+  type registryPage,
+  type repositories,
+} from "$lib/scripts/types";
 
   /** @type {import('./$types').PageData} */
 	export let data;
 
   // reactive statements
   let artifactSearchTerm: string | undefined = undefined;
-  let items = data.args.items;
-  let searchTerm: string | undefined = data.args.searchTerm;
-  let selectedRepo: string | undefined = data.args.selectedRepo;
-  let registryPage = data.args.registryPage;
-  let registryStats = data.args.registryStats;
+
+  let repos: string[];
+  $: repos = data.args.items;
+
+  let searchTerm: string | undefined;
+  $: searchTerm = data.args.searchTerm;
+
+  let selectedRepo: string | undefined;
+  $: selectedRepo = data.args.selectedRepo;
+
+  let registryPage: registryPage;
+  $: registryPage = data.args.registryPage;
+
+  let registryStats: registryStats;
+  $: registryStats = data.args.registryStats;
+
   let activePage: number = 0;
-  let filteredItems: string[] = [];
+  let filteredRepos: string[] = [];
   let tabSet: string = "repos";
-  let registry: string = data.args.registry;
 
-
-
+  let registry: string;
+  $: registry = data.args.registry;
 
   let paginationSettings = {
     page: 0,
     limit: 30,
-    size: registryStats.nbr_names,
+    size: data.args.registryStats.nbr_names,
     amounts: [],
   } satisfies PaginationSettings;
 
@@ -43,10 +57,10 @@ import js from "jquery";
 
   // functions 
 
-  const searchItems = () => {	
-		return filteredItems = items.filter(item => {
+  const searchRepos = () => {	
+		return filteredRepos = repos.filter(item => {
 			let itemName = item.toLowerCase();
-			return itemName.includes(searchTerm.toLowerCase())
+			return itemName.includes(searchTerm!.toLowerCase())
 		})
 	}
 
@@ -61,32 +75,35 @@ import js from "jquery";
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, undefined, 0);
     registryStats = await getRegistryStats(registry, selectedRepo);
 
-    $: paginationSettings.page = 0;
-    $: paginationSettings.size = registryStats.nbr_names;
+    paginationSettings.page = 0;
+    paginationSettings.size = registryStats.nbr_names;
   }
 
-  async function onPageChange(e: CustomEvent): void {
+  async function onPageChange(e: CustomEvent) {
     let page = e.detail;
 
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, searchTerm, page);
-    $: paginationSettings.page = page;
+    paginationSettings.page = page;
 
   }
 
   const searchPage = async function () {
+
     registryPage = await getRegistryPage(registry, undefined, selectedRepo, artifactSearchTerm, 0);
     registryStats = await getRegistryStats(registry, artifactSearchTerm);
-    $: paginationSettings.page = 0;
-    $: paginationSettings.size = registryStats.nbr_names;
+    paginationSettings.page = 0;
+    paginationSettings.size = registryStats.nbr_names;
 
 
   }
 
-  function delay(fn, ms) {
+  function delay(fn, ms: number) {
     let timer = 0
     return function(...args) {
       clearTimeout(timer)
-      timer = setTimeout(fn.bind(this, ...args), ms || 0)
+
+      // @ts-ignore
+      timer = window.setTimeout(fn.bind(this, ...args), ms || 0)
     }
   }
 
@@ -106,37 +123,37 @@ import js from "jquery";
 
       </TabGroup>
       <div class="pt-4">
-        <Search bind:searchTerm on:input={searchItems} />
+        <Search bind:searchTerm on:input={searchRepos} />
       </div>
       <div class="flex flex-wrap pt-4 gap-1">
 
-        {#if searchTerm && filteredItems.length == 0}
-          <p class="text-gray-400">No items found</p>
+        {#if searchTerm && filteredRepos.length == 0}
+          <p class="text-gray-400">No repositories found</p>
 
-        {:else if filteredItems.length > 0}
-          {#each filteredItems as item}
+        {:else if filteredRepos.length > 0}
+          {#each filteredRepos as repo}
            
             <button
-              class="chip hover:bg-primary-300 {selectedRepo === item ? 'bg-primary-300' : 'variant-soft'}"
-              on:click={() => { setActiveRepo(item); }}
+              class="chip hover:bg-primary-300 {selectedRepo === repo ? 'bg-primary-300' : 'variant-soft'}"
+              on:click={() => { setActiveRepo(repo); }}
               on:keypress
             >
-              {#if selectedRepo === item}<span><Fa icon={faCheck} /></span>{/if}
-              <span>{item}</span>
+              {#if selectedRepo === repo}<span><Fa icon={faCheck} /></span>{/if}
+              <span>{repo}</span>
             </button>
 
           {/each}
 
         {:else}
-          {#each items as item}
+          {#each repos as repo}
 
             <button
-              class="chip hover:bg-primary-300 {selectedRepo === item ? 'bg-primary-300' : 'variant-soft'}"
-              on:click={() => { setActiveRepo(item); }}
+              class="chip hover:bg-primary-300 {selectedRepo === repo ? 'bg-primary-300' : 'variant-soft'}"
+              on:click={() => { setActiveRepo(repo); }}
               on:keypress
             >
-              {#if selectedRepo === item}<span><Fa icon={faCheck} /></span>{/if}
-              <span>{item}</span>
+              {#if selectedRepo === repo}<span><Fa icon={faCheck} /></span>{/if}
+              <span>{repo}</span>
             </button>
         
           {/each}

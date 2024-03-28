@@ -2,10 +2,6 @@ interface repositories {
   repositories: string[];
 }
 
-interface names {
-  names: string[];
-}
-
 async function getRepos(registry: string) {
   const repos = await fetch(
     "/opsml/cards/repositories?" +

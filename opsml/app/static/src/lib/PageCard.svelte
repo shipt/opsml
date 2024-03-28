@@ -3,7 +3,7 @@
   import { calculateTimeBetween } from "$lib/scripts/utils";
   export let name: string;
   export let repository: string;
-  export let nbr_versions: string;
+  export let nbr_versions: number;
   export let updated_at: number;
   export let svgClass: string = "flex-none w-3 mr-0.5 fill-primary-500 dark:fill-primary-200";
   export let hoverColor: string = "hover:text-primary-500";
@@ -21,7 +21,7 @@
       <path d="M 12 0 C 5.371094 0 0 5.371094 0 12 C 0 18.628906 5.371094 24 12 24 C 18.628906 24 24 18.628906 24 12 C 24 5.371094 18.628906 0 12 0 Z M 12 2 C 17.523438 2 22 6.476563 22 12 C 22 17.523438 17.523438 22 12 22 C 6.476563 22 2 17.523438 2 12 C 2 6.476563 6.476563 2 12 2 Z M 10.9375 3.875 L 10.5 12.0625 L 10.59375 12.9375 L 16.75 18.375 L 17.71875 17.375 L 12.625 11.96875 L 12.1875 3.875 Z"></path>
     </svg>
     <span class="truncate text-black dark:text-white">
-      <time datetime={ Date(updated_at/1000) } >
+      <time datetime={ Date() } >
         Last updated { calculateTimeBetween(updated_at) }
       </time>
     </span>
