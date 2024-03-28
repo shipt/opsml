@@ -31,10 +31,12 @@
 
     <div class="flex flex-1 items-center">
 
-      <div class="hidden flex items-center lg:mr:6 md:block">
-        <img src={logo} class="h-5 sm:h-10" alt="Opsml Logo" />
-        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
-      </div>
+      <a href="/opsml" >
+        <div class="hidden flex items-center lg:mr:6 md:block">
+          <img src={logo} class="h-5 sm:h-10" alt="Opsml Logo" />
+          <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"></span>
+        </div>
+      </a>
     </div>
     <nav id="navbar">
       <ul class="flex items-center space-x-2 xl:space-x-3">
