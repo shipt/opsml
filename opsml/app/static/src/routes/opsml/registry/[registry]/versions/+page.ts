@@ -2,15 +2,16 @@
 export async function load({ params, url }) {
   let name = url.searchParams.get("name");
   let repository = url.searchParams.get("repository");
-
-  console.log(params);
-  console.log(url);
-
-  console.log(name);
-  console.log(repository);
-
   let registry = params.registry.replace(/s+$/, "");
-  console.log(registry);
+  let path = params.registry;
+
+  return {
+    registry: registry,
+    repository: repository,
+    name: name,
+    version: "1.0.0",
+    path: path,
+  };
 }
 
 /** @type {import('./$types').EntryGenerator} */
