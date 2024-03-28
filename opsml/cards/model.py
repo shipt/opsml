@@ -51,6 +51,7 @@ class ModelCard(ArtifactCard):
         arbitrary_types_allowed=True,
         protected_namespaces=("protect_",),
         validate_assignment=True,
+        extra="forbid",
     )
 
     interface: SerializeAsAny[ModelInterface]

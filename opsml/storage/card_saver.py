@@ -1,10 +1,11 @@
 # Copyright (c) Shipt, Inc.
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+import json
 import tempfile
 from functools import cached_property
 from pathlib import Path
-from typing import Optional, cast
+from typing import Dict, Optional, Union, cast
 
 import joblib
 from pydantic import BaseModel
@@ -21,10 +22,62 @@ from opsml.helpers.logging import ArtifactLogger
 from opsml.model.interfaces.huggingface import HuggingFaceModel
 from opsml.model.metadata_creator import _TrainedModelMetadataCreator
 from opsml.storage import client
-from opsml.types import CardType, ModelMetadata, SaveName, UriNames
-from opsml.types.extra import Suffix
+from opsml.types import (
+    AllowedDataType,
+    CardType,
+    ModelInterfaceTypes,
+    ModelMetadata,
+    SaveName,
+    Suffix,
+    UriNames,
+)
 
 logger = ArtifactLogger.get_logger()
+
+
+class ModelInterfaceIncludeArgs:
+    """Helper class for defining include logic for saving modelcards"""
+
+    def __init__(self, interface_type: str):
+        self.interface_type = interface_type
+
+    def get_default_args(self) -> Dict[str, bool]:
+        return {
+            "task_type": True,
+            "model_type": True,
+            "data_type": True,
+            "modelcard_uid": True,
+            "preprocessor_name": True,
+            "onnx_args": True,
+            "metadata": True,
+        }
+
+    def get_vw_args(self) -> Dict[str, bool]:
+        return {"arguments": True}
+
+    def get_hf_args(self) -> Dict[str, Union[bool, Dict[str, bool]]]:
+        return {
+            "tokenizer_name": True,
+            "feature_extractor_name": True,
+            "is_pipeline": True,
+            "backend": True,
+            "onnx_args": {"quantize": True, "ort_type": True, "provider": True},
+        }
+
+    def get_save_args(
+        self,
+    ) -> Union[Dict[str, Union[bool, Dict[str, bool]]], Dict[str, bool],]:
+        args = self.get_default_args()
+
+        if self.interface_type == ModelInterfaceTypes.HUGGINGFACE.value:
+            return {**args, **self.get_hf_args()}
+
+        if self.interface_type == ModelInterfaceTypes.VOWPALWABBIT.value:
+            return {**args, **self.get_vw_args()}
+
+        print(args)
+
+        return args
 
 
 class CardUris(BaseModel):
@@ -36,6 +89,7 @@ class CardUris(BaseModel):
     quantized_model_uri: Optional[Path] = None
     tokenizer_uri: Optional[Path] = None
     feature_extractor_uri: Optional[Path] = None
+    onnx_config_uri: Optional[Path] = None
 
     lpath: Optional[Path] = None
     rpath: Optional[Path] = None
@@ -110,6 +164,12 @@ class DataCardSaver(CardSaver):
         save_path = self.lpath / SaveName.DATA.value
         self.card.interface.save_data(save_path)
 
+        dumped_interface = self.card.interface.model_dump()
+
+        # save dataset class to joblib
+        save_path = (self.lpath / SaveName.DATASET.value).with_suffix(Suffix.JOBLIB.value)
+        joblib.dump(dumped_interface, save_path)
+
     def _save_data_interface(self) -> None:
         """Logic for saving subclasses of DataInterface"""
 
@@ -156,9 +216,15 @@ class DataCardSaver(CardSaver):
 
         dumped_datacard = self.card.model_dump(exclude=exclude_attr)
 
-        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
 
-        joblib.dump(dumped_datacard, save_path)
+        if self.card.interface.name() in [AllowedDataType.IMAGE.value, AllowedDataType.TEXT.value]:
+            # remove text and image dataset interface
+            dumped_datacard["interface"] = None
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_datacard, file_)
 
     def save_artifacts(self) -> None:
         """Saves artifacts from a DataCard"""
@@ -237,6 +303,17 @@ class ModelCardSaver(CardSaver):
         self.card.interface.save_sample_data(save_path)
         self.card_uris.sample_data_uri = save_path
 
+    def _save_onnx_config(self) -> None:
+        """Saves onnx config to file system"""
+
+        assert isinstance(self.card.interface, HuggingFaceModel), "Expected HuggingFaceModel interface"
+
+        if self.card.interface.onnx_args is not None:
+            if self.card.interface.onnx_args.config is not None:
+                save_path = (self.lpath / SaveName.ONNX_CONFIG.value).with_suffix(Suffix.JOBLIB.value)
+                joblib.dump(self.card.interface.onnx_args.config, save_path)
+                self.card_uris.onnx_config_uri = save_path
+
     def _save_onnx_model(self) -> None:
         """If to_onnx is True, converts and saves a model to onnx format"""
 
@@ -248,6 +325,7 @@ class ModelCardSaver(CardSaver):
             metadata = self.card.interface.save_onnx(save_path)
 
             if isinstance(self.card.interface, HuggingFaceModel):
+                self._save_onnx_config()
                 assert self.card.interface.onnx_args is not None, "onnx_args must be set for HuggingFaceModel"
                 if self.card.interface.onnx_args.quantize:
                     self.card_uris.quantized_model_uri = self.lpath / SaveName.QUANTIZED_MODEL.value
@@ -303,6 +381,9 @@ class ModelCardSaver(CardSaver):
                 metadata.feature_extractor_uri = self.card_uris.resolve_path(UriNames.FEATURE_EXTRACTOR_URI.value)
                 metadata.feature_extractor_name = self.card.interface.feature_extractor_name
 
+            if self.card_uris.onnx_config_uri is not None:
+                metadata.onnx_config_uri = self.card_uris.resolve_path(UriNames.ONNX_CONFIG_URI.value)
+
         return metadata
 
     def _save_metadata(self) -> None:
@@ -325,8 +406,11 @@ class ModelCardSaver(CardSaver):
             if dumped_model["interface"]["onnx_args"].get("config") is not None:
                 dumped_model["interface"]["onnx_args"].pop("config")
 
-        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_model, save_path)
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_model, file_)
 
     def save_artifacts(self) -> None:
         """Prepares and saves artifacts from a modelcard"""
@@ -363,8 +447,11 @@ class AuditCardSaver(CardSaver):
     def _save_auditcard(self) -> None:
         """Save auditcard to file"""
         dumped_audit = self.card.model_dump()
-        save_path = Path(self.lpath, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_audit, save_path)
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_audit, file_)
 
     def save_artifacts(self) -> None:
         """Save auditcard artifacts"""
@@ -388,8 +475,11 @@ class RunCardSaver(CardSaver):
         """Saves a runcard"""
 
         dumped_run = self.card.model_dump(exclude={"metrics"})  # metrics are recorded to db
-        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_run, save_path)
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_run, file_)
 
     def save_artifacts(self) -> None:
         """Saves a runcard's artifacts"""
@@ -411,9 +501,12 @@ class PipelineCardSaver(CardSaver):
 
     def _save_pipelinecard(self) -> None:
         """Saves a pipelinecard"""
-        dumped_audit = self.card.model_dump()
-        save_path = Path(self.lpath, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_audit, save_path)
+        dumped_pipeline = self.card.model_dump()
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_pipeline, file_)
 
     def save_artifacts(self) -> None:
         """Saves a pipelinecard's artifacts"""
@@ -435,9 +528,12 @@ class ProjectCardSaver(CardSaver):
 
     def _save_projectcard(self) -> None:
         """Saves a projectcard"""
-        dumped_audit = self.card.model_dump()
-        save_path = Path(self.lpath, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value)
-        joblib.dump(dumped_audit, save_path)
+        dumped_project = self.card.model_dump()
+        save_path = Path(self.lpath / SaveName.CARD.value).with_suffix(Suffix.JSON.value)
+
+        # save json
+        with save_path.open("w", encoding="utf-8") as file_:
+            json.dump(dumped_project, file_)
 
     def save_artifacts(self) -> None:
         """Saves a projectcard's artifacts"""

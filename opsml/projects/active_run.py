@@ -9,10 +9,14 @@ from typing import Any, Dict, List, Optional, Union, cast
 
 from numpy.typing import NDArray
 
-from opsml.cards.base import ArtifactCard
-from opsml.cards.data import DataCard
-from opsml.cards.model import ModelCard
-from opsml.cards.run import RunCard
+from opsml.cards import (
+    ArtifactCard,
+    DataCard,
+    ModelCard,
+    PipelineCard,
+    ProjectCard,
+    RunCard,
+)
 from opsml.helpers.logging import ArtifactLogger
 from opsml.registry.registry import CardRegistries, CardRegistry
 from opsml.registry.semver import VersionType
@@ -28,6 +32,7 @@ from opsml.types import (
 )
 
 logger = ArtifactLogger.get_logger()
+Card = Union[ModelCard, DataCard, RunCard, ProjectCard, PipelineCard]
 
 
 # dataclass inheritance doesnt handle default vals well for <= py3.9
@@ -51,7 +56,7 @@ class CardHandler:
     @staticmethod
     def register_card(
         registries: CardRegistries,
-        card: ArtifactCard,
+        card: Card,
         version_type: Union[VersionType, str] = VersionType.MINOR,
     ) -> None:
         """Registers and ArtifactCard"""
@@ -67,7 +72,7 @@ class CardHandler:
         return registry.load_card(name=info.name, version=info.version, uid=info.uid)
 
     @staticmethod
-    def update_card(registries: CardRegistries, card: ArtifactCard) -> None:
+    def update_card(registries: CardRegistries, card: Card) -> None:
         """Updates an ArtifactCard"""
         registry: CardRegistry = getattr(registries, card.card_type)
         registry.update_card(card=card)
@@ -130,7 +135,7 @@ class ActiveRun:
 
     def register_card(
         self,
-        card: ArtifactCard,
+        card: Card,
         version_type: Union[VersionType, str] = VersionType.MINOR,
     ) -> None:
         """

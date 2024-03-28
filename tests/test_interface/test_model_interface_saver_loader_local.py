@@ -54,10 +54,10 @@ def test_save_huggingface_modelcard(huggingface_torch_distilbert: HuggingFaceMod
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.TOKENIZER.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.QUANTIZED_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -118,9 +118,9 @@ def test_save_huggingface_pipeline_modelcard(huggingface_text_classification_pip
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.TOKENIZER.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -175,11 +175,11 @@ def test_save_sklearn_modelcard(random_forest_classifier: SklearnModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -227,11 +227,11 @@ def test_save_lgb_booster_modelcard(lgb_booster_model: LightGBMModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".txt").exists()
-    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.TEXT.value).exists()
+    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -276,11 +276,11 @@ def test_save_lgb_sklearn_modelcard(
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -328,7 +328,7 @@ def test_save_xgb_booster_modelcard(
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.JSON.value).exists()
     assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.DMATRIX.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -370,10 +370,10 @@ def test_save_torch_modelcard(pytorch_simple: TorchModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".pt").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.PT.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -428,10 +428,10 @@ def test_save_torch_tuple_modelcard(pytorch_simple_tuple: TorchModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".pt").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.PT.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -482,10 +482,10 @@ def test_save_torch_lightning_modelcard(lightning_regression: LightningModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".ckpt").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.CKPT.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -533,9 +533,9 @@ def test_save_tensorflow_modelcard(tf_transformer_example: TensorFlowModel):
 
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -583,9 +583,9 @@ def test_save_tensorflow_multi_input_modelcard(multi_input_tf_example: TensorFlo
 
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -633,9 +633,9 @@ def test_save_huggingface_pipeline_modelcard(huggingface_text_classification_pip
 
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -690,9 +690,9 @@ def test_save_huggingface_vit_pipeline_modelcard(huggingface_vit_pipeline: Huggi
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.FEATURE_EXTRACTOR.value).exists()
     assert not Path(modelcard.uri, SaveName.TOKENIZER.value).exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -776,7 +776,7 @@ def test_save_catboost_modelcard(catboost_regressor: CatBoostModel):
     assert Path(modelcard.uri, SaveName.PREPROCESSOR.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
     assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -822,10 +822,10 @@ def test_save_torch_byo_bytes_modelcard(pytorch_onnx_byo_bytes: TorchModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".pt").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.PT.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -880,10 +880,10 @@ def test_save_torch_byo_file_modelcard(pytorch_onnx_byo_file: TorchModel):
     save_card_artifacts(modelcard)
 
     # check paths exist on server
-    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(".pt").exists()
-    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(".joblib").exists()
-    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(".onnx").exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(".joblib").exists()
+    assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.PT.value).exists()
+    assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.ONNX_MODEL.value).with_suffix(Suffix.ONNX.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -942,7 +942,7 @@ def test_save_vowpal_modelcard(vowpal_wabbit_cb: VowpalWabbitModel):
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
@@ -983,7 +983,7 @@ def test_save_vowpal_modelcard(vowpal_wabbit_cb: VowpalWabbitModel):
     # check paths exist on server
     assert Path(modelcard.uri, SaveName.TRAINED_MODEL.value).with_suffix(Suffix.MODEL.value).exists()
     assert Path(modelcard.uri, SaveName.SAMPLE_MODEL_DATA.value).with_suffix(Suffix.JOBLIB.value).exists()
-    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JOBLIB.value).exists()
+    assert Path(modelcard.uri, SaveName.CARD.value).with_suffix(Suffix.JSON.value).exists()
 
     # load objects
     loader = CardLoader(
